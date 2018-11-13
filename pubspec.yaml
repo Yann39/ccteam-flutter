@@ -27,6 +27,9 @@ flutter:
   assets:
     - images/chachatte-team-banner.png
     - images/finish-flag.png
+    - images/helmet-blue.png
+    - images/helmet-green.png
+    - images/helmet-yellow.png
 
   # To add assets to your application, add an assets section, like this:
   # assets:
