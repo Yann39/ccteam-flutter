@@ -63,6 +63,7 @@ class _GalleryState extends State<Gallery> with SingleTickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
+    print(">>>>>>> INITSTATE");
     _controller = AnimationController(vsync: this)
       ..addListener(_handleFlingAnimation);
   }
@@ -121,6 +122,7 @@ class _GalleryState extends State<Gallery> with SingleTickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
+    print(">>>>>>> BUILD");
     return GestureDetector(
       onScaleStart: _handleOnScaleStart,
       onScaleUpdate: _handleOnScaleUpdate,
@@ -156,6 +158,7 @@ class GalleryPhotoItem extends StatelessWidget {
   final BannerTapCallback onBannerTap; // User taps on the photo's header or footer.
 
   void showPhoto(BuildContext context) {
+    print(">>>>>>> SHOWPHOTO");
     Navigator.push(context, MaterialPageRoute<void>(
         builder: (BuildContext context) {
           return Scaffold(
@@ -175,8 +178,10 @@ class GalleryPhotoItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    print(">>>>>>> BUILD2");
     final Widget image = GestureDetector(
-        onTap: () { showPhoto(context); },
+        onTap: () {
+          print(">>>>>>> ON TAP"); showPhoto(context); },
         child: Hero(
             key: Key(photo.assetName),
             tag: photo.tag,
@@ -232,6 +237,7 @@ class GalleryPhotoItem extends StatelessWidget {
 }
 
 class GalleryListDemo extends StatefulWidget {
+
   const GalleryListDemo({ Key key }) : super(key: key);
 
   static const String routeName = '/material/gallery-list';
@@ -248,26 +254,6 @@ class GalleryListDemoState extends State<GalleryListDemo> {
       assetName: 'images/chachatte-team-banner.png',
       title: 'Image1',
       caption: 'Test image 1',
-    ),
-    Photo(
-      assetName: 'images/finish-flag.png',
-      title: 'Image2',
-      caption: 'Test image 2',
-    ),
-    Photo(
-      assetName: 'images/helmet-blue.png',
-      title: 'Image3',
-      caption: 'Test image 3',
-    ),
-    Photo(
-      assetName: 'images/helmet-green.png',
-      title: 'Image4',
-      caption: 'Test image 4',
-    ),
-    Photo(
-      assetName: 'images/helmet-yellow.png',
-      title: 'Image5',
-      caption: 'Test image 5',
     )
   ];
 
@@ -279,6 +265,7 @@ class GalleryListDemoState extends State<GalleryListDemo> {
 
   @override
   Widget build(BuildContext context) {
+    print(">>>>>>> BUILD PHOTOS");
     final Orientation orientation = MediaQuery.of(context).orientation;
     return Scaffold(
       appBar: AppBar(
