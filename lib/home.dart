@@ -56,7 +56,11 @@ class _HomeState extends State<Home> {
           new HomeCard("Séance remise des prix",
             new AssetImage("images/helmet-green.png"), Colors.green[600], Colors.green[300]),
           new HomeCard("Réunion le 02 oct.",
-            new AssetImage("images/helmet-yellow.png"), Colors.lime[600], Colors.lime[300])
+              new AssetImage("images/helmet-yellow.png"), Colors.lime[600], Colors.lime[300]),
+          new HomeCard("Sortie annuelle du club",
+              new AssetImage("images/helmet-red.png"), Colors.red[600], Colors.red[300]),
+          new HomeCard("Soirée disco chez Boris",
+              new AssetImage("images/helmet-purple.png"), Colors.purple[600], Colors.purple[300])
         ],
       ),
     ),

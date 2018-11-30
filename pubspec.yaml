@@ -30,6 +30,8 @@ flutter:
     - images/helmet-blue.png
     - images/helmet-green.png
     - images/helmet-yellow.png
+    - images/helmet-red.png
+    - images/helmet-purple.png
 
   # To add assets to your application, add an assets section, like this:
   # assets:
