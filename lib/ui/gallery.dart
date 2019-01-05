@@ -1,10 +1,6 @@
 import 'package:flutter/material.dart';
 
-enum GalleryTileStyle {
-  imageOnly,
-  oneLine,
-  twoLine
-}
+enum GalleryTileStyle { imageOnly, oneLine, twoLine }
 
 typedef BannerTapCallback = void Function(Photo photo);
 
@@ -23,13 +19,14 @@ class Photo {
   final String caption;
 
   bool isFavorite;
+
   String get tag => assetName; // Assuming that all asset names are unique.
 
   bool get isValid => assetName != null && title != null && caption != null && isFavorite != null;
 }
 
 class Gallery extends StatefulWidget {
-  const Gallery({ Key key, this.photo }) : super(key: key);
+  const Gallery({Key key, this.photo}) : super(key: key);
 
   final Photo photo;
 
@@ -64,8 +61,7 @@ class _GalleryState extends State<Gallery> with SingleTickerProviderStateMixin {
   void initState() {
     super.initState();
     print(">>>>>>> INITSTATE");
-    _controller = AnimationController(vsync: this)
-      ..addListener(_handleFlingAnimation);
+    _controller = AnimationController(vsync: this)..addListener(_handleFlingAnimation);
   }
 
   @override
@@ -107,14 +103,10 @@ class _GalleryState extends State<Gallery> with SingleTickerProviderStateMixin {
 
   void _handleOnScaleEnd(ScaleEndDetails details) {
     final double magnitude = details.velocity.pixelsPerSecond.distance;
-    if (magnitude < _kMinFlingVelocity)
-      return;
+    if (magnitude < _kMinFlingVelocity) return;
     final Offset direction = details.velocity.pixelsPerSecond / magnitude;
     final double distance = (Offset.zero & context.size).shortestSide;
-    _flingAnimation = _controller.drive(Tween<Offset>(
-        begin: _offset,
-        end: _clampOffset(_offset + direction * distance)
-    ));
+    _flingAnimation = _controller.drive(Tween<Offset>(begin: _offset, end: _clampOffset(_offset + direction * distance)));
     _controller
       ..value = 0.0
       ..fling(velocity: magnitude / 1000.0);
@@ -143,12 +135,8 @@ class _GalleryState extends State<Gallery> with SingleTickerProviderStateMixin {
 }
 
 class GalleryPhotoItem extends StatelessWidget {
-  GalleryPhotoItem({
-    Key key,
-    @required this.photo,
-    @required this.tileStyle,
-    @required this.onBannerTap
-  }) : assert(photo != null && photo.isValid),
+  GalleryPhotoItem({Key key, @required this.photo, @required this.tileStyle, @required this.onBannerTap})
+      : assert(photo != null && photo.isValid),
         assert(tileStyle != null),
         assert(onBannerTap != null),
         super(key: key);
@@ -159,21 +147,17 @@ class GalleryPhotoItem extends StatelessWidget {
 
   void showPhoto(BuildContext context) {
     print(">>>>>>> SHOWPHOTO");
-    Navigator.push(context, MaterialPageRoute<void>(
-        builder: (BuildContext context) {
-          return Scaffold(
-            appBar: AppBar(
-                title: Text(photo.title)
-            ),
-            body: SizedBox.expand(
-              child: Hero(
-                tag: photo.tag,
-                child: Gallery(photo: photo),
-              ),
-            ),
-          );
-        }
-    ));
+    Navigator.push(context, MaterialPageRoute<void>(builder: (BuildContext context) {
+      return Scaffold(
+        appBar: AppBar(title: Text(photo.title)),
+        body: SizedBox.expand(
+          child: Hero(
+            tag: photo.tag,
+            child: Gallery(photo: photo),
+          ),
+        ),
+      );
+    }));
   }
 
   @override
@@ -181,16 +165,16 @@ class GalleryPhotoItem extends StatelessWidget {
     print(">>>>>>> BUILD2");
     final Widget image = GestureDetector(
         onTap: () {
-          print(">>>>>>> ON TAP"); showPhoto(context); },
+          print(">>>>>>> ON TAP");
+          showPhoto(context);
+        },
         child: Hero(
             key: Key(photo.assetName),
             tag: photo.tag,
             child: Image.asset(
               photo.assetName,
               fit: BoxFit.cover,
-            )
-        )
-    );
+            )));
 
     final IconData icon = photo.isFavorite ? Icons.star : Icons.star_border;
 
@@ -201,7 +185,9 @@ class GalleryPhotoItem extends StatelessWidget {
       case GalleryTileStyle.oneLine:
         return GridTile(
           header: GestureDetector(
-            onTap: () { onBannerTap(photo); },
+            onTap: () {
+              onBannerTap(photo);
+            },
             child: GridTileBar(
               title: _GalleryTitleText(photo.title),
               backgroundColor: Colors.black45,
@@ -217,7 +203,9 @@ class GalleryPhotoItem extends StatelessWidget {
       case GalleryTileStyle.twoLine:
         return GridTile(
           footer: GestureDetector(
-            onTap: () { onBannerTap(photo); },
+            onTap: () {
+              onBannerTap(photo);
+            },
             child: GridTileBar(
               backgroundColor: Colors.black45,
               title: _GalleryTitleText(photo.title),
@@ -237,8 +225,7 @@ class GalleryPhotoItem extends StatelessWidget {
 }
 
 class GalleryListDemo extends StatefulWidget {
-
-  const GalleryListDemo({ Key key }) : super(key: key);
+  const GalleryListDemo({Key key}) : super(key: key);
 
   static const String routeName = '/material/gallery-list';
 
@@ -274,19 +261,19 @@ class GalleryListDemoState extends State<GalleryListDemo> {
           PopupMenuButton<GalleryTileStyle>(
             onSelected: changeTileStyle,
             itemBuilder: (BuildContext context) => <PopupMenuItem<GalleryTileStyle>>[
-              const PopupMenuItem<GalleryTileStyle>(
-                value: GalleryTileStyle.imageOnly,
-                child: Text('Image only'),
-              ),
-              const PopupMenuItem<GalleryTileStyle>(
-                value: GalleryTileStyle.oneLine,
-                child: Text('One line'),
-              ),
-              const PopupMenuItem<GalleryTileStyle>(
-                value: GalleryTileStyle.twoLine,
-                child: Text('Two line'),
-              ),
-            ],
+                  const PopupMenuItem<GalleryTileStyle>(
+                    value: GalleryTileStyle.imageOnly,
+                    child: Text('Image only'),
+                  ),
+                  const PopupMenuItem<GalleryTileStyle>(
+                    value: GalleryTileStyle.oneLine,
+                    child: Text('One line'),
+                  ),
+                  const PopupMenuItem<GalleryTileStyle>(
+                    value: GalleryTileStyle.twoLine,
+                    child: Text('Two line'),
+                  ),
+                ],
           ),
         ],
       ),
@@ -310,8 +297,7 @@ class GalleryListDemoState extends State<GalleryListDemo> {
                         setState(() {
                           photo.isFavorite = !photo.isFavorite;
                         });
-                      }
-                  );
+                      });
                 }).toList(),
               ),
             ),
