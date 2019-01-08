@@ -17,6 +17,7 @@ class AppString {
   static const String tabGallery = 'Gallerie';
 
   static const String newsCreated = 'L\'actualité à été créée avec succès !';
+  static const String newsUpdated = 'L\'actualité à été mise à jour avec succès !';
   static const String createNews = 'Ajouter une actualité';
   static const String newsTitle = 'Titre';
   static const String newsTitleHint = 'Saisissez le titre de l\'actualité';

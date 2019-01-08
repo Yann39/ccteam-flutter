@@ -1,15 +1,42 @@
 import 'dart:math';
-
 import 'package:chachatte_team/models/news.dart';
 import 'package:chachatte_team/services/news_service.dart';
-import 'package:chachatte_team/ui/home_card.dart';
-import 'package:chachatte_team/utils/date_utils.dart';
+import 'package:chachatte_team/ui/add_news.dart';
+import 'package:chachatte_team/ui/news_card.dart';
 import 'package:flutter/material.dart';
 
 class NewsList extends StatefulWidget {
   @override
   State<StatefulWidget> createState() {
     return _NewsListState();
+  }
+}
+
+/// class representing the floating action button to add a news
+/// await the result from the "Add News" screen to display a message
+class _AddNewsButton extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return FloatingActionButton(
+        elevation: 0.0,
+        child: new Icon(Icons.add),
+        backgroundColor: Colors.red[700],
+        onPressed: () {
+          _navigateAndDisplaySelection(context);
+        });
+  }
+
+  /// Method that launches the Add News screen and awaits the result from Navigator.pop
+  _navigateAndDisplaySelection(BuildContext context) async {
+    // Navigator.push returns a Future that will complete after we call Navigator.pop on the Add News Screen
+    final result = await Navigator.push(context, MaterialPageRoute(builder: (context) => AddNews()));
+
+    // after the Add News Screen returns a result, hide any previous snack bars and show the new result
+    if (result != null) {
+      Scaffold.of(context)
+        ..removeCurrentSnackBar()
+        ..showSnackBar(SnackBar(content: Text("$result")));
+    }
   }
 }
 
@@ -65,8 +92,8 @@ class _NewsListState extends State<NewsList> {
                           child: new ListView.builder(
                               itemCount: snapshot.data.length,
                               itemBuilder: (context, index) {
-                                final int index = random.nextInt(5);
-                                return new HomeCard(snapshot.data[index].title, DateUtils.convertToString(snapshot.data[index].newsDate, "d/M/y HH:mm"), new AssetImage(helmets[0]), Colors.purple[600], Colors.purple[200]);
+                                final int randomIndex = random.nextInt(5);
+                                return new NewsCard(snapshot.data[index], new AssetImage(helmets[0]), Colors.purple[600], Colors.purple[200]);
                               }))
                     ],
                   );
@@ -88,6 +115,7 @@ class _NewsListState extends State<NewsList> {
           ),
         ),
       ),
+      floatingActionButton: _AddNewsButton(),
     );
   }
 }

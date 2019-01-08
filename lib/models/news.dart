@@ -1,6 +1,6 @@
 /// class representing a News object
 class News {
-  String id;
+  int id;
   String title;
   String content;
   DateTime newsDate;

@@ -48,6 +48,26 @@ class NewsService {
     }
   }
 
+  /// Update the specified [news] into the database
+  /// Send a POST request to the Restful API
+  /// Throw an exception if response status code is different from 200
+  Future<void> updateNews(News news) async {
+    // convert News object to JSON string
+    final String jsonString = _toJson(news);
+
+    // call to API
+    final response = await http.post(AppConstants.API_ROOT_URL + AppConstants.API_UPDATE_NEWS_ENDPOINT, headers: {'Content-Type': 'application/json'}, body: jsonString);
+
+    // handle server response code
+    if (response.statusCode == 200) {
+      return;
+    } else if (response.statusCode == 503) {
+      throw Exception('Failed to update the news');
+    }  else {
+      throw Exception('Unexpected server response, news has not been updated');
+    }
+  }
+
   /// Convert specified [news] object to the corresponding JSON string
   String _toJson(News news) {
     final Map map = new Map();
@@ -59,6 +79,6 @@ class NewsService {
 
   /// Convert specified [json] map to the corresponding News object
   News _fromJson(Map<String, dynamic> json) {
-    return News(id: json['id'], title: json['title'], content: json['content'], newsDate: new DateFormat("y-M-d H:m:s").parseStrict(json['news_date']));
+    return News(id: int.parse(json['id']), title: json['title'], content: json['content'], newsDate: new DateFormat("y-M-d H:m:s").parseStrict(json['news_date']));
   }
 }

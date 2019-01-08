@@ -7,6 +7,10 @@ import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 
 class AddNews extends StatefulWidget {
+  final News news;
+
+  const AddNews({Key key, this.news}) : super(key: key);
+
   @override
   State<StatefulWidget> createState() {
     return _AddNewsState();
@@ -22,14 +26,17 @@ class _AddNewsState extends State<AddNews> {
   final News newNews = new News();
 
   /// Initialize and display a Date picker related to the specified [controller] in the specified [context]
-  Future _chooseDate(BuildContext context, TextEditingController controller) async {
-    final DateTime now = new DateTime.now();
-    final TimeOfDay initialTime = TimeOfDay.now();
-    DateTime initialDate = DateUtils.convertToDate(controller.text, "d/M/y H:m") ?? now;
-    initialDate = (initialDate.year >= now.year - 5 && initialDate.year <= now.year + 5 ? initialDate : now);
+  Future _chooseDate(BuildContext context, TextEditingController controller, DateTime defaultValue) async {
+    final DateTime currentDate = DateTime.now();
+    final TimeOfDay currentTime = TimeOfDay.now();
+
+    // define initial date and time from the specified default DateTime value
+    final DateTime initialDate = defaultValue ?? currentDate;
+    final TimeOfDay initialTime = defaultValue != null ? TimeOfDay.fromDateTime(defaultValue) : currentTime;
 
     // show the date picker and await for the chosen date
-    final DateTime dateResult = await showDatePicker(context: context, initialDate: initialDate, firstDate: new DateTime(now.year - 5), lastDate: new DateTime(now.year + 5));
+    final DateTime dateResult =
+        await showDatePicker(context: context, initialDate: initialDate, firstDate: DateTime(currentDate.year - 5), lastDate: DateTime(currentDate.year + 5));
     if (dateResult == null) return;
 
     // show the time picker and await for the chosen time
@@ -37,16 +44,16 @@ class _AddNewsState extends State<AddNews> {
     if (timeResult == null) return;
 
     // build final date with time
-    DateTime finalDateTime = new DateTime(dateResult.year, dateResult.month, dateResult.day, timeResult.hour, timeResult.minute);
+    final DateTime finalDateTime = DateTime(dateResult.year, dateResult.month, dateResult.day, timeResult.hour, timeResult.minute);
 
     // notify the framework that the internal state of this object has changed
     setState(() {
-      controller.text = new DateFormat("d/M/y H:m").format(finalDateTime);
+      controller.text = DateFormat("dd/MM/yyyy HH:mm").format(finalDateTime);
     });
   }
 
   /// Validate the form then submit data to backend
-  void submitForm() {
+  void submitForm(News news) {
     final FormState form = _formKey.currentState;
 
     if (!form.validate()) {
@@ -55,12 +62,20 @@ class _AddNewsState extends State<AddNews> {
       // this invokes each onSaved event
       form.save();
 
-      // submit data to backend
       var newsService = new NewsService();
-      newsService.createNews(newNews); //.then((value) => showMessage('News successfully created', Colors.green));
 
-      // go back with a message, the result is awaited in caller
-      Navigator.pop(context, AppString.newsCreated);
+      print(" =========> ${news.id}");
+
+      // submit data to backend, if id is set this is an update, else a creation
+      if (news.id != null) {
+        newsService.updateNews(news);
+        // go back with a message, the result is awaited in caller
+        Navigator.pop(context, AppString.newsUpdated);
+      } else {
+        newsService.createNews(news);
+        // go back with a message, the result is awaited in caller
+        Navigator.pop(context, AppString.newsCreated);
+      }
     }
   }
 
@@ -70,6 +85,11 @@ class _AddNewsState extends State<AddNews> {
   }
 
   Widget build(BuildContext context) {
+    // the current News to be edited
+    final News currNews = widget.news != null ? widget.news : newNews;
+
+    _controller.text = DateUtils.convertToString(currNews.newsDate, "dd/MM/yyyy HH:mm");
+
     return Scaffold(
         key: _scaffoldKey,
         appBar: AppBar(
@@ -86,7 +106,7 @@ class _AddNewsState extends State<AddNews> {
                   new Expanded(
                       child: new FlatButton(
                     child: Text(AppString.save.toUpperCase()),
-                    onPressed: submitForm,
+                    onPressed: () => submitForm(currNews),
                   )),
                 ],
               ),
@@ -115,7 +135,8 @@ class _AddNewsState extends State<AddNews> {
                         maxLines: 1,
                         inputFormatters: [new LengthLimitingTextInputFormatter(128)],
                         validator: (val) => val.isEmpty ? AppString.newsTitleMandatory : null,
-                        onSaved: (val) => newNews.title = val,
+                        onSaved: (val) => currNews.title = val,
+                        initialValue: currNews.title,
                       ),
                       new TextFormField(
                         decoration: const InputDecoration(
@@ -126,10 +147,11 @@ class _AddNewsState extends State<AddNews> {
                         maxLines: 5,
                         inputFormatters: [new LengthLimitingTextInputFormatter(128)],
                         validator: (val) => val.isEmpty ? AppString.newsContentMandatory : null,
-                        onSaved: (val) => newNews.content = val,
+                        onSaved: (val) => currNews.content = val,
+                        initialValue: currNews.content,
                       ),
                       new GestureDetector(
-                          onTap: () => _chooseDate(context, _controller),
+                          onTap: () => _chooseDate(context, _controller, currNews.newsDate),
                           child: AbsorbPointer(
                               child: new TextFormField(
                             decoration: new InputDecoration(
@@ -139,8 +161,8 @@ class _AddNewsState extends State<AddNews> {
                             ),
                             controller: _controller,
                             keyboardType: TextInputType.datetime,
-                                validator: (val) => DateUtils.isBeforeNow(val, "d/M/y H:m") ? (val.isEmpty ? AppString.newsDateMandatory : null) : AppString.newsDateNotValid,
-                            onSaved: (val) => newNews.newsDate = new DateFormat("d/M/y H:m").parseStrict(val),
+                            validator: (val) => DateUtils.isBeforeNow(val, "dd/MM/yyyy HH:mm") ? (val.isEmpty ? AppString.newsDateMandatory : null) : AppString.newsDateNotValid,
+                            onSaved: (val) => currNews.newsDate = new DateFormat("dd/MM/yyyy HH:mm").parseStrict(val),
                           ))),
                     ],
                   ))),
