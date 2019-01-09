@@ -22,7 +22,7 @@ class _AddNewsState extends State<AddNews> {
   final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
   final TextEditingController _controller = new TextEditingController();
 
-  // the current News to be created
+  // the News to be created
   final News newNews = new News();
 
   /// Initialize and display a Date picker related to the specified [controller] in the specified [context]
@@ -64,8 +64,6 @@ class _AddNewsState extends State<AddNews> {
 
       var newsService = new NewsService();
 
-      print(" =========> ${news.id}");
-
       // submit data to backend, if id is set this is an update, else a creation
       if (news.id != null) {
         newsService.updateNews(news);
@@ -88,6 +86,7 @@ class _AddNewsState extends State<AddNews> {
     // the current News to be edited
     final News currNews = widget.news != null ? widget.news : newNews;
 
+    // set controller text
     _controller.text = DateUtils.convertToString(currNews.newsDate, "dd/MM/yyyy HH:mm");
 
     return Scaffold(

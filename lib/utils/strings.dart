@@ -30,6 +30,31 @@ class AppString {
   static const String newsDateMandatory = 'La date est obligatoire';
   static const String newsDateNotValid = 'La date indiquée n\'est pas valide';
 
+  static const String memberCreated = 'Le membre à été créée avec succès !';
+  static const String memberUpdated = 'Le membre à été mise à jour avec succès !';
+  static const String createMember = 'Ajouter une actualité';
+  static const String memberFirstName = 'Prénom';
+  static const String memberFirstNameHint = 'Prénom du membre';
+  static const String memberFirstNameMandatory = 'Le prénom est obligatoire';
+  static const String memberLastName = 'Nom';
+  static const String memberLastNameHint = 'Nom du membre';
+  static const String memberLastNameMandatory = 'Le nom est obligatoire';
+  static const String memberEmail = 'E-mail';
+  static const String memberEmailHint = 'Adresse e-mail du membre';
+  static const String memberEmailMandatory = 'L\'adresse e-mail est obligatoire';
+  static const String memberEmailNotValid = 'L\'adresse e-mail indiquée n\'est pas valide';
+  static const String memberPhone = 'Téléphone';
+  static const String memberPhoneHint = 'Numéro de téléphone du membre';
+  static const String memberPhoneMandatory = 'Le numéro de téléphone est obligatoire';
+  static const String memberPhoneNotValid = 'Le numéro de téléphone indiqué n\'est pas valide';
+  static const String memberBike = 'Moto';
+  static const String memberBikeHint = 'Moto du membre';
+  static const String memberBikeMandatory = 'La moto est obligatoire';
+  static const String memberRegistrationDate = 'Date d\'inscription';
+  static const String memberRegistrationDateHint = 'Date d\'inscription du membre';
+  static const String memberRegistrationDateMandatory = 'La date d\'inscription est obligatoire';
+  static const String memberRegistrationDateNotValid = 'La date indiquée n\'est pas valide';
+
   static const String calendarTitle = 'Calendrier';
 
   static const String teamTitle = 'Équipe';

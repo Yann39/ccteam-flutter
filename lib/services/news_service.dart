@@ -63,7 +63,7 @@ class NewsService {
       return;
     } else if (response.statusCode == 503) {
       throw Exception('Failed to update the news');
-    }  else {
+    } else {
       throw Exception('Unexpected server response, news has not been updated');
     }
   }
