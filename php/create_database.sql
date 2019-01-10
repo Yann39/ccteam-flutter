@@ -42,6 +42,6 @@ INSERT INTO `members` (`id`, `first_name`, `last_name`, `email`, `phone`, `bike`
 (2, 'Jenna', 'Jonhnson', 'jenna.jonhnson@mail.com', NULL, 'Kawasaki ZX6R 636 2015', '2018-02-30 00:00:00', '2018-07-01 09:37:12', NULL);
 
 INSERT INTO `events` (`id`, `title`, `description`, `event_date`, `location`, `created`, `modified`) VALUES
-(1, 'Repas du club', 'Repas de club avec tartiflettre géante', '2018-07-12 18:30:00', 'Champagnole', '2018-06-01 00:35:07', NULL),
+(1, 'Repas du club', 'Repas de club avec tartiflette géante', '2018-07-12 18:30:00', 'Champagnole', '2018-06-01 00:35:07', NULL),
 (2, 'Réunion de dèbut d\'année', 'Réunion de dèbut d\'année pour oganiser les roulages', '2018-08-02 17:00:00', 'Lons-le-saunier', '2018-06-01 00:35:07', NULL),
 (3, 'Réunion pour organisation foire au 2 roues', 'Réunion pour organisation foire au 2 roues qui auralieu de 21 mars 2020', '2018-08-28 14:00:00', 'Lons-le-saunier', '2018-06-01 00:35:07', NULL);

@@ -71,6 +71,7 @@ class NewsService {
   /// Convert specified [news] object to the corresponding JSON string
   String _toJson(News news) {
     final Map map = new Map();
+    map["id"] = news.id;
     map["title"] = news.title;
     map["content"] = news.content;
     map["news_date"] = new DateFormat("y-M-d H:m:s.S").format(news.newsDate);

@@ -21,7 +21,7 @@ $member = new Member($db);
 $data = json_decode(file_get_contents("php://input"));
 
 // make sure data is not empty
-if (!empty($data->$first_name) && !empty($data->$last_name) && !empty($data->$email) && !empty($data->$phone) && !empty($data->bike) && !empty($data->$registration_date)) {
+if (!empty($data->first_name) && !empty($data->last_name) && !empty($data->email) && !empty($data->phone) && !empty($data->bike) && !empty($data->registration_date)) {
 
     // set member property values
     $member->first_name = $data->first_name;

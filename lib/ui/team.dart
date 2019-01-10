@@ -11,32 +11,36 @@ class Team extends StatefulWidget {
   }
 }
 
-/// class representing the floating action button to add a member
-/// await the result from the "Add Member" screen to display a message
-class _AddMemberButton extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return FloatingActionButton(
-        elevation: 0.0,
-        child: new Icon(Icons.add),
-        backgroundColor: Colors.red[700],
-        onPressed: () {
-          _navigateAndDisplaySelection(context);
-        });
-  }
+/// Method that launches the Add Member screen and awaits the result from Navigator.pop
+_navigateAndDisplaySelection(BuildContext context) async {
+  // Navigator.push returns a Future that will complete after we call Navigator.pop on the Add News Screen
+  final result = await Navigator.push(context, MaterialPageRoute(builder: (context) => AddMember()));
 
-  /// Method that launches the Add Member screen and awaits the result from Navigator.pop
-  _navigateAndDisplaySelection(BuildContext context) async {
-    // Navigator.push returns a Future that will complete after we call Navigator.pop on the Add News Screen
-    final result = await Navigator.push(context, MaterialPageRoute(builder: (context) => AddMember()));
-
-    // after the Add News Screen returns a result, hide any previous snack bars and show the new result
-    if (result != null) {
-      Scaffold.of(context)
-        ..removeCurrentSnackBar()
-        ..showSnackBar(SnackBar(content: Text("$result")));
-    }
+  // after the Add News Screen returns a result, hide any previous snack bars and show the new result
+  if (result != null) {
+    Scaffold.of(context)
+      ..removeCurrentSnackBar()
+      ..showSnackBar(SnackBar(content: Text("$result")));
   }
+}
+
+/// Method that launches the Edit Member screen and awaits the result from Navigator.pop
+_navigateAndDisplaySelection2(BuildContext context, Member member) async {
+  // Navigator.push returns a Future that will complete after we call Navigator.pop on the Add News Screen
+  final result = await Navigator.push(context, MaterialPageRoute(builder: (context) => AddMember(member: member)));
+
+  // after the Edit Member Screen returns a result, hide any previous snack bars and show the new result
+  if (result != null) {
+    Scaffold.of(context)
+      ..removeCurrentSnackBar()
+      ..showSnackBar(SnackBar(content: Text("$result")));
+  }
+}
+
+/// Class representing a list item
+class _MemberListItem extends ListTile {
+  _MemberListItem(Member member)
+      : super(title: new Text(member.firstName + " " + member.lastName), subtitle: new Text(member.bike), leading: new CircleAvatar(child: new Text(member.firstName[0])));
 }
 
 class _TeamState extends State<Team> {
@@ -49,8 +53,7 @@ class _TeamState extends State<Team> {
         backgroundColor: Colors.blue[300],
         leading: new Icon(Icons.group),
       ),
-      body: /*new ContactList(kContacts),*/
-          FutureBuilder<List<Member>>(
+      body: FutureBuilder<List<Member>>(
         future: membersService.fetchMembers(),
         builder: (context, snapshot) {
           if (snapshot.hasData) {
@@ -61,8 +64,13 @@ class _TeamState extends State<Team> {
                         child: new ListView.builder(
                             itemCount: snapshot.data.length,
                             itemBuilder: (context, index) {
-                              /*return new NewsCard(snapshot.data[index], new AssetImage(helmets[0]), Colors.purple[600], Colors.purple[200]);*/
-                              return new _ContactListItem(snapshot.data[index]);
+                              return new Material(
+                                child: InkWell(
+                                  child: new _MemberListItem(snapshot.data[index]),
+                                  onTap: () => _navigateAndDisplaySelection2(context, snapshot.data[index]),
+                                ),
+                                color: Colors.transparent,
+                              );
                             }),
                         decoration: new BoxDecoration(
                           gradient: new LinearGradient(
@@ -81,19 +89,13 @@ class _TeamState extends State<Team> {
           return CircularProgressIndicator();
         },
       ),
-      floatingActionButton: _AddMemberButton(),
+      floatingActionButton: FloatingActionButton(
+          elevation: 0.0,
+          child: new Icon(Icons.add),
+          backgroundColor: Colors.red[700],
+          onPressed: () {
+            _navigateAndDisplaySelection(context);
+          }),
     );
   }
-}
-
-class _ContactListItem extends ListTile {
-  _ContactListItem(Member member)
-      : super(title: new Text(member.firstName + " " + member.lastName), subtitle: new Text(member.bike), leading: new CircleAvatar(child: new Text(member.firstName[0])));
-}
-
-class Contact {
-  final String fullName;
-  final String email;
-
-  const Contact({this.fullName, this.email});
 }

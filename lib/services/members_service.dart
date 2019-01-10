@@ -71,6 +71,7 @@ class MembersService {
   /// Convert specified [member] object to the corresponding JSON string
   String _toJson(Member member) {
     final Map map = new Map();
+    map["id"] = member.id;
     map["first_name"] = member.firstName;
     map["last_name"] = member.lastName;
     map["email"] = member.email;
