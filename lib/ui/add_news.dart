@@ -1,5 +1,6 @@
 import 'package:chachatte_team/models/news.dart';
 import 'package:chachatte_team/services/news_service.dart';
+import 'package:chachatte_team/utils/constants.dart';
 import 'package:chachatte_team/utils/date_utils.dart';
 import 'package:chachatte_team/utils/strings.dart';
 import 'package:flutter/material.dart';
@@ -48,7 +49,7 @@ class _AddNewsState extends State<AddNews> {
 
     // notify the framework that the internal state of this object has changed
     setState(() {
-      controller.text = DateFormat("dd/MM/yyyy HH:mm").format(finalDateTime);
+      controller.text = DateFormat(AppConstants.DATE_FORMAT).format(finalDateTime);
     });
   }
 
@@ -66,13 +67,19 @@ class _AddNewsState extends State<AddNews> {
 
       // submit data to backend, if id is set this is an update, else a creation
       if (news.id != null) {
-        newsService.updateNews(news);
-        // go back with a message, the result is awaited in caller
-        Navigator.pop(context, AppString.newsUpdated);
+        // update the news then go back with a message, the result is awaited in caller
+        newsService.updateNews(news).then((value) {
+          Navigator.pop(context, AppString.newsUpdated);
+        }, onError: (error) {
+          Navigator.pop(context, AppString.newsUpdateFailed);
+        });
       } else {
-        newsService.createNews(news);
-        // go back with a message, the result is awaited in caller
-        Navigator.pop(context, AppString.newsCreated);
+        // create the news then go back with a message, the result is awaited in caller
+        newsService.createNews(news).then((value) {
+          Navigator.pop(context, AppString.newsCreated);
+        }, onError: (error) {
+          Navigator.pop(context, AppString.newsUpdateFailed);
+        });
       }
     }
   }
@@ -87,7 +94,7 @@ class _AddNewsState extends State<AddNews> {
     final News currNews = widget.news != null ? widget.news : newNews;
 
     // set controller text
-    _controller.text = DateUtils.convertToString(currNews.newsDate, "dd/MM/yyyy HH:mm");
+    _controller.text = DateUtils.convertToString(currNews.newsDate, AppConstants.DATE_FORMAT);
 
     return Scaffold(
         key: _scaffoldKey,
@@ -160,8 +167,8 @@ class _AddNewsState extends State<AddNews> {
                             ),
                             controller: _controller,
                             keyboardType: TextInputType.datetime,
-                            validator: (val) => DateUtils.isBeforeNow(val, "dd/MM/yyyy HH:mm") ? (val.isEmpty ? AppString.newsDateMandatory : null) : AppString.newsDateNotValid,
-                            onSaved: (val) => currNews.newsDate = new DateFormat("dd/MM/yyyy HH:mm").parseStrict(val),
+                            validator: (val) => DateUtils.isBeforeNow(val, AppConstants.DATE_FORMAT) ? (val.isEmpty ? AppString.newsDateMandatory : null) : AppString.newsDateNotValid,
+                            onSaved: (val) => currNews.newsDate = new DateFormat(AppConstants.DATE_FORMAT).parseStrict(val),
                           ))),
                     ],
                   ))),

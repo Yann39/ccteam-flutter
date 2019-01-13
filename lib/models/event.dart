@@ -1,4 +1,4 @@
-/// class representing a Event object
+/// class representing a track event
 class Event {
   int id;
   String title;

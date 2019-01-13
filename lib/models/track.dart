@@ -1,4 +1,4 @@
-/// class representing a Track object
+/// class representing a track
 class Track {
   int id;
   String name;

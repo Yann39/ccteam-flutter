@@ -1,47 +1,70 @@
 import 'package:chachatte_team/models/event.dart';
 import 'package:chachatte_team/services/events_service.dart';
 import 'package:chachatte_team/ui/add_event.dart';
+import 'package:chachatte_team/utils/constants.dart';
 import 'package:chachatte_team/utils/date_utils.dart';
+import 'package:chachatte_team/utils/strings.dart';
 import 'package:flutter/material.dart';
 
-/// class representing the floating action button to edit a event
-/// await the result from the "Add Event" screen to display a message
-class _EditEventButton extends StatelessWidget {
-  final Event event;
-
-  const _EditEventButton({Key key, this.event}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return IconButton(
-        icon: Icon(
-          Icons.edit,
-          color: Colors.white,
-        ),
-        onPressed: () {
-          _navigateAndDisplaySelection(context, event);
-        });
-  }
-
-  /// Method that launches the Add Event screen and awaits the result from Navigator.pop
-  _navigateAndDisplaySelection(BuildContext context, Event event) async {
-    // Navigator.push returns a Future that will complete after we call Navigator.pop on the Add Event Screen
-    final result = await Navigator.push(context, MaterialPageRoute(builder: (context) => AddEvent(event: event)));
-
-    // after the Add Event Screen returns a result, hide any previous snack bars and show the new result
-    if (result != null) {
-      Scaffold.of(context)
-        ..removeCurrentSnackBar()
-        ..showSnackBar(SnackBar(content: Text("$result")));
-    }
-  }
-}
+enum ConfirmDialogAction { yes, no }
 
 class EventCard extends StatelessWidget {
   final Event event;
   final EventsService eventsService;
 
   EventCard(this.event, this.eventsService);
+
+  /// Method that launches the event form screen and awaits the result from Navigator.pop
+  void _navigateAndDisplaySelection(BuildContext context, Event event) async {
+    // Navigator.push returns a Future that will complete after we call Navigator.pop on the event form Screen
+    final result = await Navigator.push(context, MaterialPageRoute(builder: (context) => AddEvent(event: event)));
+
+    // after the event form Screen returns a result, hide any previous snack bars and show the new result
+    if (result != null) {
+      Scaffold.of(context)
+        ..removeCurrentSnackBar()
+        ..showSnackBar(SnackBar(content: Text("$result")));
+    }
+  }
+
+  /// Display a confirmation popup when trying to delete an event
+  void _showConfirmation(BuildContext context, String value) {
+    showDialog(
+        context: context,
+        builder: (_) => new AlertDialog(
+              title: new Text(AppString.confirmation),
+              content: new Text(value),
+              actions: <Widget>[
+                new FlatButton(
+                    onPressed: () {
+                      _dialogueResult(context, ConfirmDialogAction.yes);
+                    },
+                    child: new Text(AppString.confirm)),
+                new FlatButton(
+                    onPressed: () {
+                      _dialogueResult(context, ConfirmDialogAction.no);
+                    },
+                    child: new Text(AppString.cancel)),
+              ],
+            ));
+  }
+
+  /// Handle result of the event deletion confirmation dialog
+  void _dialogueResult(BuildContext context, ConfirmDialogAction value) {
+    if (value == ConfirmDialogAction.yes) {
+      // delete event
+      eventsService.deleteEvent(event).then((value) {
+        Scaffold.of(context)
+          ..removeCurrentSnackBar()
+          ..showSnackBar(SnackBar(content: Text(AppString.eventDeleted)));
+      }, onError: (error) {
+        Scaffold.of(context)
+          ..removeCurrentSnackBar()
+          ..showSnackBar(SnackBar(content: Text(AppString.eventDeletionFailed)));
+      });
+    }
+    Navigator.pop(context);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -69,7 +92,7 @@ class EventCard extends StatelessWidget {
                       size: 12.0,
                     ),
                     new SizedBox(width: 4.0), // fake horizontal space between the 2 lines of text
-                    new Text(DateUtils.convertToString(event.eventDate, "d/M/y HH:mm"),
+                    new Text(DateUtils.convertToString(event.eventDate, AppConstants.DATE_FORMAT),
                         softWrap: false, textScaleFactor: 0.9, style: new TextStyle(color: Colors.white), maxLines: 1, overflow: TextOverflow.ellipsis)
                   ])),
                   new SizedBox(height: 4.0), // vertical space between the 2 lines of text
@@ -77,18 +100,21 @@ class EventCard extends StatelessWidget {
                       child: new Text(event.trackId.toString() + " - " + event.title,
                           softWrap: false, textScaleFactor: 1.2, style: new TextStyle(color: Colors.white), maxLines: 1, overflow: TextOverflow.ellipsis))
                 ])),
-                _EditEventButton(event: event),
+                IconButton(
+                    icon: Icon(
+                      Icons.edit,
+                      color: Colors.white,
+                    ),
+                    onPressed: () {
+                      _navigateAndDisplaySelection(context, event);
+                    }),
                 IconButton(
                     icon: Icon(
                       Icons.delete_forever,
                       color: Colors.white,
                     ),
                     onPressed: () {
-                      // delete event
-                      eventsService.deleteEvent(event);
-                      Scaffold.of(context)
-                        ..removeCurrentSnackBar()
-                        ..showSnackBar(SnackBar(content: Text("Event ${event.title} successfully deleted")));
+                      _showConfirmation(context, AppString.eventDeletionAreYouSure);
                     })
               ]),
             ),

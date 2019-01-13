@@ -34,7 +34,7 @@ class EventsService {
     final String jsonString = _toJson(event);
 
     // call to API
-    final response = await http.post(AppConstants.API_ROOT_URL + AppConstants.API_CREATE_EVENTS_ENDPOINT, headers: {'Content-Type': 'application/json'}, body: jsonString);
+    final response = await http.post(AppConstants.API_ROOT_URL + AppConstants.API_CREATE_EVENT_ENDPOINT, headers: {'Content-Type': 'application/json'}, body: jsonString);
 
     // handle server response code
     if (response.statusCode == 201) {
@@ -56,7 +56,7 @@ class EventsService {
     final String jsonString = _toJson(event);
 
     // call to API
-    final response = await http.post(AppConstants.API_ROOT_URL + AppConstants.API_UPDATE_EVENTS_ENDPOINT, headers: {'Content-Type': 'application/json'}, body: jsonString);
+    final response = await http.post(AppConstants.API_ROOT_URL + AppConstants.API_UPDATE_EVENT_ENDPOINT, headers: {'Content-Type': 'application/json'}, body: jsonString);
 
     // handle server response code
     if (response.statusCode == 200) {

@@ -33,7 +33,7 @@ class TracksService {
     final String jsonString = _toJson(track);
 
     // call to API
-    final response = await http.post(AppConstants.API_ROOT_URL + AppConstants.API_CREATE_TRACKS_ENDPOINT, headers: {'Content-Type': 'application/json'}, body: jsonString);
+    final response = await http.post(AppConstants.API_ROOT_URL + AppConstants.API_CREATE_TRACK_ENDPOINT, headers: {'Content-Type': 'application/json'}, body: jsonString);
 
     // handle server response code
     if (response.statusCode == 201) {
@@ -55,7 +55,7 @@ class TracksService {
     final String jsonString = _toJson(track);
 
     // call to API
-    final response = await http.post(AppConstants.API_ROOT_URL + AppConstants.API_UPDATE_TRACKS_ENDPOINT, headers: {'Content-Type': 'application/json'}, body: jsonString);
+    final response = await http.post(AppConstants.API_ROOT_URL + AppConstants.API_UPDATE_TRACK_ENDPOINT, headers: {'Content-Type': 'application/json'}, body: jsonString);
 
     // handle server response code
     if (response.statusCode == 200) {
@@ -64,6 +64,21 @@ class TracksService {
       throw Exception('Failed to update the track');
     } else {
       throw Exception('Unexpected server response, track has not been updated');
+    }
+  }
+
+  /// Delete specified track from the database
+  /// Send a POST request to the Restful API
+  /// Throw an exception if response status code is different from 204
+  Future<void> deleteMember(Track track) async {
+    // convert Track object to JSON string
+    final String jsonString = _toJson(track);
+
+    // call to API
+    final response = await http.post(AppConstants.API_ROOT_URL + AppConstants.API_DELETE_NEWS_ENDPOINT, headers: {'Content-Type': 'application/json'}, body: jsonString);
+
+    if (response.statusCode != 204) {
+      throw Exception('Unexpected server response');
     }
   }
 

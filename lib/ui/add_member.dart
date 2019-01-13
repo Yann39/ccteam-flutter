@@ -1,5 +1,6 @@
 import 'package:chachatte_team/models/member.dart';
 import 'package:chachatte_team/services/members_service.dart';
+import 'package:chachatte_team/utils/constants.dart';
 import 'package:chachatte_team/utils/date_utils.dart';
 import 'package:chachatte_team/utils/string_utils.dart';
 import 'package:chachatte_team/utils/strings.dart';
@@ -75,7 +76,7 @@ class _AddMemberState extends State<AddMember> {
 
     // notify the framework that the internal state of this object has changed
     setState(() {
-      controller.text = DateFormat("dd/MM/yyyy HH:mm").format(finalDateTime);
+      controller.text = DateFormat(AppConstants.DATE_FORMAT).format(finalDateTime);
     });
   }
 
@@ -93,13 +94,19 @@ class _AddMemberState extends State<AddMember> {
 
       // submit data to backend, if id is set this is an update, else a creation
       if (member.id != null) {
-        membersService.updateMember(member);
-        // go back with a message, the result is awaited in caller
-        Navigator.pop(context, AppString.memberUpdated);
+        // update the news go back with a message, the result is awaited in caller
+        membersService.updateMember(member).then((value) {
+          Navigator.pop(context, AppString.memberUpdated);
+        }, onError: (error) {
+          Navigator.pop(context, AppString.memberUpdateFailed);
+        });
       } else {
-        membersService.createMember(member);
-        // go back with a message, the result is awaited in caller
-        Navigator.pop(context, AppString.memberCreated);
+        // create the news go back with a message, the result is awaited in caller
+        membersService.createMember(member).then((value) {
+          Navigator.pop(context, AppString.memberCreated);
+        }, onError: (error) {
+          Navigator.pop(context, AppString.memberCreationFailed);
+        });
       }
     }
   }
@@ -114,7 +121,7 @@ class _AddMemberState extends State<AddMember> {
     final Member currMember = widget.member != null ? widget.member : newMember;
 
     // set controller text
-    _controller.text = DateUtils.convertToString(currMember.registrationDate, "dd/MM/yyyy HH:mm");
+    _controller.text = DateUtils.convertToString(currMember.registrationDate, AppConstants.DATE_FORMAT);
 
     return Scaffold(
         key: _scaffoldKey,
@@ -223,10 +230,10 @@ class _AddMemberState extends State<AddMember> {
                             ),
                             controller: _controller,
                             keyboardType: TextInputType.datetime,
-                            validator: (val) => DateUtils.isBeforeNow(val, "dd/MM/yyyy HH:mm")
+                            validator: (val) => DateUtils.isBeforeNow(val, AppConstants.DATE_FORMAT)
                                 ? (val.isEmpty ? AppString.memberRegistrationDateMandatory : null)
                                 : AppString.memberRegistrationDateNotValid,
-                            onSaved: (val) => currMember.registrationDate = new DateFormat("dd/MM/yyyy HH:mm").parseStrict(val),
+                            onSaved: (val) => currMember.registrationDate = new DateFormat(AppConstants.DATE_FORMAT).parseStrict(val),
                           ))),
                     ],
                   ))),

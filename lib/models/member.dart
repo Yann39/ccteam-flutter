@@ -1,4 +1,4 @@
-/// class representing a Member object
+/// class representing a team member
 class Member {
   int id;
   String firstName;

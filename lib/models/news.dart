@@ -1,4 +1,4 @@
-/// class representing a News object
+/// class representing a news
 class News {
   int id;
   String title;

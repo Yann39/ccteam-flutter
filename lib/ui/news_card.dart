@@ -1,5 +1,6 @@
 import 'package:chachatte_team/models/news.dart';
 import 'package:chachatte_team/ui/add_news.dart';
+import 'package:chachatte_team/utils/constants.dart';
 import 'package:chachatte_team/utils/date_utils.dart';
 import 'package:flutter/material.dart';
 
@@ -73,7 +74,7 @@ class NewsCard extends StatelessWidget {
                           size: 12.0,
                         ),
                         new SizedBox(width: 4.0), // fake horizontal space between the 2 lines of text
-                    new Text(DateUtils.convertToString(news.newsDate, "d/M/y HH:mm"), softWrap: false, textScaleFactor: 0.9, style: new TextStyle(color: Colors.white), maxLines: 1, overflow: TextOverflow.ellipsis)
+                    new Text(DateUtils.convertToString(news.newsDate, AppConstants.DATE_FORMAT), softWrap: false, textScaleFactor: 0.9, style: new TextStyle(color: Colors.white), maxLines: 1, overflow: TextOverflow.ellipsis)
                   ])),
                   new SizedBox(height: 4.0), // vertical space between the 2 lines of text
                   new Flexible(

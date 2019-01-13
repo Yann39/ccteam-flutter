@@ -34,7 +34,7 @@ class MembersService {
     final String jsonString = _toJson(member);
 
     // call to API
-    final response = await http.post(AppConstants.API_ROOT_URL + AppConstants.API_CREATE_MEMBERS_ENDPOINT, headers: {'Content-Type': 'application/json'}, body: jsonString);
+    final response = await http.post(AppConstants.API_ROOT_URL + AppConstants.API_CREATE_MEMBER_ENDPOINT, headers: {'Content-Type': 'application/json'}, body: jsonString);
 
     // handle server response code
     if (response.statusCode == 201) {
@@ -56,7 +56,7 @@ class MembersService {
     final String jsonString = _toJson(member);
 
     // call to API
-    final response = await http.post(AppConstants.API_ROOT_URL + AppConstants.API_UPDATE_MEMBERS_ENDPOINT, headers: {'Content-Type': 'application/json'}, body: jsonString);
+    final response = await http.post(AppConstants.API_ROOT_URL + AppConstants.API_UPDATE_MEMBER_ENDPOINT, headers: {'Content-Type': 'application/json'}, body: jsonString);
 
     // handle server response code
     if (response.statusCode == 200) {
@@ -65,6 +65,21 @@ class MembersService {
       throw Exception('Failed to update the member');
     } else {
       throw Exception('Unexpected server response, member has not been updated');
+    }
+  }
+
+  /// Delete specified member from the database
+  /// Send a POST request to the Restful API
+  /// Throw an exception if response status code is different from 204
+  Future<void> deleteMember(Member member) async {
+    // convert Member object to JSON string
+    final String jsonString = _toJson(member);
+
+    // call to API
+    final response = await http.post(AppConstants.API_ROOT_URL + AppConstants.API_DELETE_MEMBER_ENDPOINT, headers: {'Content-Type': 'application/json'}, body: jsonString);
+
+    if (response.statusCode != 204) {
+      throw Exception('Unexpected server response');
     }
   }
 

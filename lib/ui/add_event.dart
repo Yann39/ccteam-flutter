@@ -2,6 +2,7 @@ import 'package:chachatte_team/models/event.dart';
 import 'package:chachatte_team/models/track.dart';
 import 'package:chachatte_team/services/events_service.dart';
 import 'package:chachatte_team/services/tracks_service.dart';
+import 'package:chachatte_team/utils/constants.dart';
 import 'package:chachatte_team/utils/date_utils.dart';
 import 'package:chachatte_team/utils/string_utils.dart';
 import 'package:chachatte_team/utils/strings.dart';
@@ -23,12 +24,13 @@ class AddEvent extends StatefulWidget {
 class _AddEventState extends State<AddEvent> {
   final GlobalKey<FormState> _formKey = new GlobalKey<FormState>();
   final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
-  final TextEditingController _controller = new TextEditingController();
-  static final TracksService tracksService = new TracksService();
+  final TextEditingController _datePickerController = new TextEditingController();
+  final TracksService tracksService = new TracksService();
 
   Future<List<Track>> _futureTracks;
   Track _selectedTrack;
 
+  // fetch the tracks in initState so it is not fetch each time the state change
   initState() {
     _futureTracks = tracksService.fetchTracks();
     return super.initState();
@@ -60,7 +62,7 @@ class _AddEventState extends State<AddEvent> {
 
     // notify the framework that the internal state of this object has changed
     setState(() {
-      controller.text = DateFormat("dd/MM/yyyy HH:mm").format(finalDateTime);
+      controller.text = DateFormat(AppConstants.DATE_FORMAT).format(finalDateTime);
     });
   }
 
@@ -78,31 +80,31 @@ class _AddEventState extends State<AddEvent> {
 
       // submit data to backend, if id is set this is an update, else a creation
       if (event.id != null) {
-        eventsService.updateEvent(event);
-        // go back with a message, the result is awaited in caller
-        Navigator.pop(context, AppString.eventUpdated);
+        // update the event and go back with a message, the result is awaited in caller
+        eventsService.updateEvent(event).then((value) {
+          Navigator.pop(context, AppString.eventUpdated);
+        }, onError: (error) {
+          Navigator.pop(context, AppString.eventUpdateFailed);
+        });
       } else {
-        eventsService.createEvent(event);
-        // go back with a message, the result is awaited in caller
-        Navigator.pop(context, AppString.eventCreated);
+        // create the event and go back with a message, the result is awaited in caller
+        eventsService.createEvent(event).then((value) {
+          Navigator.pop(context, AppString.eventCreated);
+        }, onError: (error) {
+          Navigator.pop(context, AppString.eventCreationFailed);
+        });
       }
     }
   }
-
-  /// Go back to previous page
-  void goBack() {
-    Navigator.pop(context);
-  }
-
 
   Widget build(BuildContext context) {
     // the current Event to be edited
     final Event currEvent = widget.event != null ? widget.event : newEvent;
 
     // set controller text
-    _controller.text = DateUtils.convertToString(currEvent.eventDate, "dd/MM/yyyy HH:mm");
+    _datePickerController.text = DateUtils.convertToString(currEvent.eventDate, AppConstants.DATE_FORMAT);
 
-    final formatter = new NumberFormat("###.###");
+    final priceFormatter = new NumberFormat("####.##");
 
     return Scaffold(
         key: _scaffoldKey,
@@ -115,7 +117,7 @@ class _AddEventState extends State<AddEvent> {
                   new Expanded(
                       child: new FlatButton(
                     child: Text(AppString.cancel.toUpperCase()),
-                    onPressed: goBack,
+                    onPressed: () => Navigator.pop(context),
                   )),
                   new Expanded(
                       child: new FlatButton(
@@ -147,7 +149,7 @@ class _AddEventState extends State<AddEvent> {
                           labelText: AppString.eventTitle,
                         ),
                         maxLines: 1,
-                        inputFormatters: [new LengthLimitingTextInputFormatter(64)],
+                        inputFormatters: [new LengthLimitingTextInputFormatter(128)],
                         validator: (val) => val.isEmpty ? AppString.eventTitleMandatory : null,
                         onSaved: (val) => currEvent.title = val,
                         initialValue: currEvent.title,
@@ -159,7 +161,7 @@ class _AddEventState extends State<AddEvent> {
                           labelText: AppString.eventDescription,
                         ),
                         maxLines: 1,
-                        inputFormatters: [new LengthLimitingTextInputFormatter(64)],
+                        inputFormatters: [new LengthLimitingTextInputFormatter(2048)],
                         validator: (val) => val.isEmpty ? AppString.eventDescriptionMandatory : null,
                         onSaved: (val) => currEvent.description = val,
                         initialValue: currEvent.description,
@@ -171,21 +173,20 @@ class _AddEventState extends State<AddEvent> {
                           labelText: AppString.eventPrice,
                         ),
                         maxLines: 1,
-                        inputFormatters: [new LengthLimitingTextInputFormatter(128)],
+                        keyboardType: TextInputType.numberWithOptions(decimal: true, signed: false),
+                        inputFormatters: [new LengthLimitingTextInputFormatter(7)],
                         validator: (val) => val.isEmpty ? AppString.eventPriceMandatory : (StringUtils.isValidPrice(val) ? null : AppString.eventPriceNotValid),
                         onSaved: (val) => currEvent.price = double.parse(val),
-                        initialValue: currEvent.price != null ? formatter.format(currEvent.price) : "",
+                        initialValue: currEvent.price != null ? priceFormatter.format(currEvent.price) : "",
                       ),
                       new FutureBuilder<List<Track>>(
                         future: _futureTracks,
                         builder: (context, snapshot) {
                           if (snapshot.hasData) {
-                            //if(_selectedTrack == null) _selectedTrack = snapshot.data.first;
                             return new Column(
                               children: <Widget>[
                                 new DropdownButtonFormField<Track>(
-                                  value: _selectedTrack,
-                                  //hint: const Text(AppString.eventTrackIdHint),
+                                  value: _selectedTrack != null ? _selectedTrack : widget.event != null ? snapshot.data.firstWhere((Track t) => t.id == widget.event.trackId) : null,
                                   decoration: const InputDecoration(
                                     icon: const Icon(Icons.gesture),
                                     hintText: AppString.eventTrackIdHint,
@@ -224,7 +225,7 @@ class _AddEventState extends State<AddEvent> {
                         initialValue: currEvent.organizer,
                       ),
                       new GestureDetector(
-                          onTap: () => _chooseDate(context, _controller, currEvent.eventDate),
+                          onTap: () => _chooseDate(context, _datePickerController, currEvent.eventDate),
                           child: AbsorbPointer(
                               child: new TextFormField(
                             decoration: new InputDecoration(
@@ -232,10 +233,10 @@ class _AddEventState extends State<AddEvent> {
                               hintText: AppString.eventDateHint,
                               labelText: AppString.eventDate,
                             ),
-                            controller: _controller,
+                            controller: _datePickerController,
                             keyboardType: TextInputType.datetime,
-                            validator: (val) => DateUtils.isBeforeNow(val, "dd/MM/yyyy HH:mm") ? (val.isEmpty ? AppString.eventDateMandatory : null) : AppString.eventDateNotValid,
-                            onSaved: (val) => currEvent.eventDate = new DateFormat("dd/MM/yyyy HH:mm").parseStrict(val),
+                            validator: (val) => DateUtils.isBeforeNow(val, AppConstants.DATE_FORMAT) ? (val.isEmpty ? AppString.eventDateMandatory : null) : AppString.eventDateNotValid,
+                            onSaved: (val) => currEvent.eventDate = new DateFormat(AppConstants.DATE_FORMAT).parseStrict(val),
                           ))),
                     ],
                   ))),

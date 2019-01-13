@@ -68,6 +68,21 @@ class NewsService {
     }
   }
 
+  /// Delete specified news from the database
+  /// Send a POST request to the Restful API
+  /// Throw an exception if response status code is different from 204
+  Future<void> deleteMember(News news) async {
+    // convert News object to JSON string
+    final String jsonString = _toJson(news);
+
+    // call to API
+    final response = await http.post(AppConstants.API_ROOT_URL + AppConstants.API_DELETE_NEWS_ENDPOINT, headers: {'Content-Type': 'application/json'}, body: jsonString);
+
+    if (response.statusCode != 204) {
+      throw Exception('Unexpected server response');
+    }
+  }
+
   /// Convert specified [news] object to the corresponding JSON string
   String _toJson(News news) {
     final Map map = new Map();

@@ -13,7 +13,7 @@ CREATE TABLE IF NOT EXISTS `members` (
   `first_name` varchar(64) NOT NULL,
   `last_name` varchar(64) NOT NULL,
   `email` varchar(128) NOT NULL,
-  `phone` varchar(16) NULL,
+  `phone` varchar(13) NULL,
   `bike` varchar(64) NULL,
   `registration_date` datetime NOT NULL,
   `created` timestamp NOT NULL,
