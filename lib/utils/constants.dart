@@ -10,4 +10,13 @@ class AppConstants {
   static const String API_CREATE_MEMBERS_ENDPOINT = '/members/create.php';
   static const String API_UPDATE_MEMBERS_ENDPOINT = '/members/update.php';
 
+  static const String API_GET_ALL_EVENTS_ENDPOINT = '/events/read.php';
+  static const String API_CREATE_EVENTS_ENDPOINT = '/events/create.php';
+  static const String API_UPDATE_EVENTS_ENDPOINT = '/events/update.php';
+  static const String API_DELETE_EVENT_ENDPOINT = '/events/delete.php';
+
+  static const String API_GET_ALL_TRACKS_ENDPOINT = '/tracks/read.php';
+  static const String API_CREATE_TRACKS_ENDPOINT = '/tracks/create.php';
+  static const String API_UPDATE_TRACKS_ENDPOINT = '/tracks/update.php';
+
 }

@@ -12,19 +12,11 @@ class NewsList extends StatefulWidget {
   }
 }
 
-/// class representing the floating action button to add a news
-/// await the result from the "Add News" screen to display a message
-class _AddNewsButton extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return FloatingActionButton(
-        elevation: 0.0,
-        child: new Icon(Icons.add),
-        backgroundColor: Colors.red[700],
-        onPressed: () {
-          _navigateAndDisplaySelection(context);
-        });
-  }
+class _NewsListState extends State<NewsList> {
+  static final NewsService newsService = new NewsService();
+
+  List helmets = ["images/helmet-blue.png", "images/helmet-green.png", "images/helmet-purple.png", "images/helmet-red.png", "images/helmet-yellow.png"];
+  Random random = new Random();
 
   /// Method that launches the Add News screen and awaits the result from Navigator.pop
   _navigateAndDisplaySelection(BuildContext context) async {
@@ -38,13 +30,6 @@ class _AddNewsButton extends StatelessWidget {
         ..showSnackBar(SnackBar(content: Text("$result")));
     }
   }
-}
-
-class _NewsListState extends State<NewsList> {
-  static final NewsService newsService = new NewsService();
-
-  List helmets = ["images/helmet-blue.png", "images/helmet-green.png", "images/helmet-purple.png", "images/helmet-red.png", "images/helmet-yellow.png"];
-  Random random = new Random();
 
   Widget build(BuildContext context) {
     return new Scaffold(
@@ -115,7 +100,13 @@ class _NewsListState extends State<NewsList> {
           ),
         ),
       ),
-      floatingActionButton: _AddNewsButton(),
+      floatingActionButton: FloatingActionButton(
+          elevation: 0.0,
+          child: new Icon(Icons.add),
+          backgroundColor: Colors.red[700],
+          onPressed: () {
+            _navigateAndDisplaySelection(context);
+          }),
     );
   }
 }

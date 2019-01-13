@@ -4,53 +4,49 @@ header("Access-Control-Allow-Origin: *");
 header("Content-Type: application/json; charset=UTF-8");
 
 // include database and object files
-include_once '../config/core.php';
 include_once '../config/database.php';
-include_once '../objects/news.php';
+include_once '../objects/tracks.php';
 
-// instantiate database and news object
+// instantiate database and track object
 $database = new Database();
 $db = $database->getConnection();
 
 // initialize object
-$news = new News($db);
+$track = new Track($db);
 
-// get keywords
-$keywords = isset($_GET["s"]) ? $_GET["s"] : "";
-
-// query news
-$stmt = $news->search($keywords);
+// query tracks
+$stmt = $track->read();
 $num = $stmt->rowCount();
 
-// check if more than 0 record found
+// check if at least one record has been found
 if ($num > 0) {
 
-    // news array
-    $news_arr = array();
-    $news_arr["records"] = array();
+    // tracks array
+    $track_arr = array();
+    $track_arr["records"] = array();
 
-    // retrieve our table contents
+    // retrieve table content
     while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+
         // extract row, this will make $row['name'] to just $name only
         extract($row);
 
-        $news_item = array(
+        $track_item = array(
             "id" => $id,
-            "title" => $title,
-            "content" => $content,
-            "news_date" => $news_date
+            "name" => $name,
+            "description" => $description,
         );
 
-        array_push($news_arr["records"], $news_item);
+        array_push($track_arr["records"], $track_item);
     }
 
     // set response code - 200 OK
     http_response_code(200);
 
-    // show news data
-    echo json_encode($news_arr);
+    // show news data in json format
+    echo json_encode($track_arr);
 } else {
+
     // set response code - 404 Not Found
     http_response_code(404);
 }
-?>

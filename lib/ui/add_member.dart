@@ -1,6 +1,7 @@
 import 'package:chachatte_team/models/member.dart';
 import 'package:chachatte_team/services/members_service.dart';
 import 'package:chachatte_team/utils/date_utils.dart';
+import 'package:chachatte_team/utils/string_utils.dart';
 import 'package:chachatte_team/utils/strings.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -17,6 +18,33 @@ class AddMember extends StatefulWidget {
   }
 }
 
+/// Input formatter class for E.164 phone number
+class NumberTextInputFormatter extends TextInputFormatter {
+  @override
+  TextEditingValue formatEditUpdate(TextEditingValue oldValue, TextEditingValue newValue) {
+    final int newTextLength = newValue.text.length;
+    int selectionIndex = newValue.selection.end;
+    int usedSubstringIndex = 0;
+    final StringBuffer newText = new StringBuffer();
+    // add a "+" in front of the text
+    if (newTextLength >= 1) {
+      newText.write('+');
+      if (newValue.selection.end >= 1) selectionIndex++;
+    }
+    // add a space after the 3rd character
+    if (newTextLength >= 3) {
+      newText.write(newValue.text.substring(0, usedSubstringIndex = 2) + ' ');
+      if (newValue.selection.end >= 2) selectionIndex += 1;
+    }
+    // then write following characters
+    if (newTextLength >= usedSubstringIndex) newText.write(newValue.text.substring(usedSubstringIndex));
+    return new TextEditingValue(
+      text: newText.toString(),
+      selection: new TextSelection.collapsed(offset: selectionIndex),
+    );
+  }
+}
+
 class _AddMemberState extends State<AddMember> {
   final GlobalKey<FormState> _formKey = new GlobalKey<FormState>();
   final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
@@ -30,13 +58,12 @@ class _AddMemberState extends State<AddMember> {
     final DateTime currentDate = DateTime.now();
     final TimeOfDay currentTime = TimeOfDay.now();
 
-    // define initial date and time from the specified default DateTime value
+    // define initial date and time from the specified default DateTime value if set
     final DateTime initialDate = defaultValue ?? currentDate;
     final TimeOfDay initialTime = defaultValue != null ? TimeOfDay.fromDateTime(defaultValue) : currentTime;
 
     // show the date picker and await for the chosen date
-    final DateTime dateResult =
-        await showDatePicker(context: context, initialDate: initialDate, firstDate: DateTime(currentDate.year - 5), lastDate: DateTime(currentDate.year + 5));
+    final DateTime dateResult = await showDatePicker(context: context, initialDate: initialDate, firstDate: DateTime(currentDate.year - 5), lastDate: DateTime(currentDate.year + 5));
     if (dateResult == null) return;
 
     // show the time picker and await for the chosen time
@@ -75,16 +102,6 @@ class _AddMemberState extends State<AddMember> {
         Navigator.pop(context, AppString.memberCreated);
       }
     }
-  }
-
-  bool isValidPhoneNumber(String input) {
-    final RegExp regex = new RegExp(r'^\(\d\d\d\)\d\d\d\-\d\d\d\d$');
-    return regex.hasMatch(input);
-  }
-
-  bool isValidEmail(String input) {
-    final RegExp regex = new RegExp(r"^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,253}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,253}[a-zA-Z0-9])?)*$");
-    return regex.hasMatch(input);
   }
 
   /// Go back to previous page
@@ -131,7 +148,7 @@ class _AddMemberState extends State<AddMember> {
               bottom: false,
               child: new Form(
                   key: _formKey,
-                  autovalidate: true,
+                  autovalidate: false,
                   child: new ListView(
                     padding: const EdgeInsets.symmetric(horizontal: 16.0),
                     children: <Widget>[
@@ -167,7 +184,7 @@ class _AddMemberState extends State<AddMember> {
                         ),
                         maxLines: 1,
                         inputFormatters: [new LengthLimitingTextInputFormatter(128)],
-                        validator: (val) => val.isEmpty ? AppString.memberEmailMandatory : (isValidEmail(val) ? null : AppString.memberEmailNotValid),
+                        validator: (val) => val.isEmpty ? AppString.memberEmailMandatory : (StringUtils.isValidEmail(val) ? null : AppString.memberEmailNotValid),
                         onSaved: (val) => currMember.email = val,
                         initialValue: currMember.email,
                       ),
@@ -178,8 +195,8 @@ class _AddMemberState extends State<AddMember> {
                           labelText: AppString.memberPhone,
                         ),
                         maxLines: 1,
-                        inputFormatters: [new LengthLimitingTextInputFormatter(16), new WhitelistingTextInputFormatter(new RegExp(r'^[()\d -]{1,15}$'))],
-                        validator: (val) => val.isEmpty ? AppString.memberPhoneMandatory : (isValidPhoneNumber(val) ? null : AppString.memberPhoneNotValid),
+                        inputFormatters: <TextInputFormatter>[new LengthLimitingTextInputFormatter(13), WhitelistingTextInputFormatter.digitsOnly, NumberTextInputFormatter()],
+                        validator: (val) => val.isEmpty ? AppString.memberPhoneMandatory : (StringUtils.isValidPhoneNumber(val) ? null : AppString.memberPhoneNotValid),
                         onSaved: (val) => currMember.phone = val,
                         initialValue: currMember.phone,
                       ),

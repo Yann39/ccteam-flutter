@@ -30,7 +30,7 @@ class _AddNewsState extends State<AddNews> {
     final DateTime currentDate = DateTime.now();
     final TimeOfDay currentTime = TimeOfDay.now();
 
-    // define initial date and time from the specified default DateTime value
+    // define initial date and time from the specified default DateTime value if set
     final DateTime initialDate = defaultValue ?? currentDate;
     final TimeOfDay initialTime = defaultValue != null ? TimeOfDay.fromDateTime(defaultValue) : currentTime;
 
@@ -121,7 +121,7 @@ class _AddNewsState extends State<AddNews> {
               bottom: false,
               child: new Form(
                   key: _formKey,
-                  autovalidate: true,
+                  autovalidate: false,
                   child: new ListView(
                     padding: const EdgeInsets.symmetric(horizontal: 16.0),
                     children: <Widget>[
@@ -144,7 +144,7 @@ class _AddNewsState extends State<AddNews> {
                           labelText: AppString.newsContent,
                         ),
                         maxLines: 5,
-                        inputFormatters: [new LengthLimitingTextInputFormatter(128)],
+                        inputFormatters: [new LengthLimitingTextInputFormatter(2048)],
                         validator: (val) => val.isEmpty ? AppString.newsContentMandatory : null,
                         onSaved: (val) => currNews.content = val,
                         initialValue: currNews.content,

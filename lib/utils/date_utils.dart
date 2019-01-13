@@ -25,11 +25,17 @@ class DateUtils {
     }
   }
 
-
-
-  /// check if the specified [date] (as string according to the specified [format]) is before now
+  /// check if the specified [date] (as string according to the specified [format]) is before the current date
   /// also return true if the specified date string is null or empty
   static bool isBeforeNow(String date, String format) {
+    if (date.isEmpty) return true;
+    var d = convertToDate(date, format);
+    return d != null && d.isBefore(new DateTime.now());
+  }
+
+  /// check if the specified [date] (as string according to the specified [format]) is after the current date
+  /// also return true if the specified date string is null or empty
+  static bool isAfterNow(String date, String format) {
     if (date.isEmpty) return true;
     var d = convertToDate(date, format);
     return d != null && d.isAfter(new DateTime.now());

@@ -11,32 +11,6 @@ class Team extends StatefulWidget {
   }
 }
 
-/// Method that launches the Add Member screen and awaits the result from Navigator.pop
-_navigateAndDisplaySelection(BuildContext context) async {
-  // Navigator.push returns a Future that will complete after we call Navigator.pop on the Add News Screen
-  final result = await Navigator.push(context, MaterialPageRoute(builder: (context) => AddMember()));
-
-  // after the Add News Screen returns a result, hide any previous snack bars and show the new result
-  if (result != null) {
-    Scaffold.of(context)
-      ..removeCurrentSnackBar()
-      ..showSnackBar(SnackBar(content: Text("$result")));
-  }
-}
-
-/// Method that launches the Edit Member screen and awaits the result from Navigator.pop
-_navigateAndDisplaySelection2(BuildContext context, Member member) async {
-  // Navigator.push returns a Future that will complete after we call Navigator.pop on the Add News Screen
-  final result = await Navigator.push(context, MaterialPageRoute(builder: (context) => AddMember(member: member)));
-
-  // after the Edit Member Screen returns a result, hide any previous snack bars and show the new result
-  if (result != null) {
-    Scaffold.of(context)
-      ..removeCurrentSnackBar()
-      ..showSnackBar(SnackBar(content: Text("$result")));
-  }
-}
-
 /// Class representing a list item
 class _MemberListItem extends ListTile {
   _MemberListItem(Member member)
@@ -46,10 +20,36 @@ class _MemberListItem extends ListTile {
 class _TeamState extends State<Team> {
   static final MembersService membersService = new MembersService();
 
+  /// Method that launches the Add Member screen and awaits the result from Navigator.pop
+  _navigateAndDisplaySelection(BuildContext context) async {
+    // Navigator.push returns a Future that will complete after we call Navigator.pop on the Add News Screen
+    final result = await Navigator.push(context, MaterialPageRoute(builder: (context) => AddMember()));
+
+    // after the Add Member Screen returns a result, hide any previous snack bars and show the new result
+    if (result != null) {
+      Scaffold.of(context)
+        ..removeCurrentSnackBar()
+        ..showSnackBar(SnackBar(content: Text("$result")));
+    }
+  }
+
+  /// Method that launches the Edit Member screen and awaits the result from Navigator.pop
+  _navigateAndDisplaySelection2(BuildContext context, Member member) async {
+    // Navigator.push returns a Future that will complete after we call Navigator.pop on the Add News Screen
+    final result = await Navigator.push(context, MaterialPageRoute(builder: (context) => AddMember(member: member)));
+
+    // after the Edit Member Screen returns a result, hide any previous snack bars and show the new result
+    if (result != null) {
+      Scaffold.of(context)
+        ..removeCurrentSnackBar()
+        ..showSnackBar(SnackBar(content: Text("$result")));
+    }
+  }
+
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(AppString.teamTitle),
+        title: Text(AppString.eventTitle),
         backgroundColor: Colors.blue[300],
         leading: new Icon(Icons.group),
       ),

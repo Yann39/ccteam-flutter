@@ -6,7 +6,7 @@ import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 
 class MembersService {
-  /// Fetch all MEMBERS from the database
+  /// Fetch all members from the database
   /// Send a GET request to the Restful API
   /// Throw an exception if response status code is different from 200 or 404
   /// Return empty array if no data found (404)

@@ -55,8 +55,32 @@ class AppString {
   static const String memberRegistrationDateMandatory = 'La date d\'inscription est obligatoire';
   static const String memberRegistrationDateNotValid = 'La date indiquée n\'est pas valide';
 
-  static const String calendarTitle = 'Calendrier';
+  static const String eventCreated = 'L\'événement à été créée avec succès !';
+  static const String eventUpdated = 'L\'événement à été mise à jour avec succès !';
+  static const String createEvent = 'Ajouter un événement';
+  static const String eventTitle = 'Titre';
+  static const String eventTitleHint = 'Titre de l\'événement';
+  static const String eventTitleMandatory = 'Le titre est obligatoire';
+  static const String eventDescription = 'Description';
+  static const String eventDescriptionHint = 'Description de l\'événement';
+  static const String eventDescriptionMandatory = 'La description est obligatoire';
+  static const String eventPrice = 'Prix';
+  static const String eventPriceHint = 'Prix de l\'événement';
+  static const String eventPriceMandatory = 'Le prix est obligatoire';
+  static const String eventPriceNotValid = 'Le prix indiqué n\'est pas valide';
+  static const String eventTrackId = 'Circuit';
+  static const String eventTrackIdHint = 'Circuit';
+  static const String eventTrackIdMandatory = 'Le circuit est obligatoire';
+  static const String eventTrackIdNotValid = 'Le circuit indiqué n\'est pas valide';
+  static const String eventOrganizer = 'Organisateur';
+  static const String eventOrganizerHint = 'Organisateur de l\'événement';
+  static const String eventOrganizerMandatory = 'L\'organisateur est obligatoire';
+  static const String eventDate = 'Date';
+  static const String eventDateHint = 'Date de l\'événement';
+  static const String eventDateMandatory = 'La date est obligatoire';
+  static const String eventDateNotValid = 'La date indiquée n\'est pas valide';
 
+  static const String calendarTitle = 'Calendrier';
   static const String teamTitle = 'Équipe';
 
 }
