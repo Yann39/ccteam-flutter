@@ -49,7 +49,7 @@ class _TeamState extends State<Team> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(AppString.eventTitle),
+        title: Text(AppString.teamTitle),
         backgroundColor: Colors.blue[300],
         leading: new Icon(Icons.group),
       ),

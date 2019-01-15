@@ -28,6 +28,16 @@ CREATE TABLE IF NOT EXISTS `tracks` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1;
 
+CREATE TABLE IF NOT EXISTS `photos` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `title` varchar(64) NOT NULL,
+  `description` text NULL,
+  `link` text NOT NULL,
+  `created` timestamp NOT NULL,
+  `modified` timestamp NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1;
+
 CREATE TABLE IF NOT EXISTS `events` (
   `id` int NOT NULL AUTO_INCREMENT,
   `title` varchar(128) NOT NULL,
@@ -63,3 +73,10 @@ INSERT INTO `events` (`id`, `title`, `description`, `event_date`, `track_id`, `o
 (1, 'Roulage', '', '2018-07-12 00:00:00', 2, 'ActivBike', 189, '2018-06-01 09:35:07', NULL),
 (2, 'Roulage', '', '2018-08-02 00:00:00', 5, 'ActivBike', 90, '2018-02-08 14:30:29', NULL),
 (3, 'Roulage', '', '2018-08-28 00:00:00', 1, 'Team Blatz', 125, '2018-04-20 17:14:27', NULL);
+
+INSERT INTO `photos` (`id`, `title`, `description`, `link`, `created`, `modified`) VALUES
+(1, 'Lorenzo', 'Lorenzo qui célèbre sa victoire', 'http://example.com/uploads/2018/06/IMG_1.jpg', '2018-09-12 10:33:19', NULL),
+(2, 'Marc Màrquez', 'Marc Màrquez dans le 1er virage', 'http://example.com/uploads/2018/06/IMG_2.jpg', '2018-02-08 14:30:29', NULL),
+(3, 'Johann Zarco', 'Johann Zarco', 'http://example.com/uploads/2018/06/IMG_3.jpg', '2018-04-20 17:14:27', NULL),
+(4, 'Enea Bastianini', 'Enea Bastianini', 'http://example.com/uploads/2018/06/IMG_4.jpg', '2018-11-21 14:09:04', NULL),
+(5, 'Enea Bastianini', 'Enea Bastianini', 'http://example.com/uploads/2018/06/IMG_5.jpg', '2018-04-06 11:55:21', NULL);

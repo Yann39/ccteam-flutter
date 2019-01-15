@@ -98,6 +98,24 @@ class AppString {
   static const String eventDateMandatory = 'La date est obligatoire';
   static const String eventDateNotValid = 'La date indiquée n\'est pas valide';
 
+  static const String photoCreated = 'La photo à été créée avec succès !';
+  static const String photoCreationFailed = 'Echec lors de la création de la photo';
+  static const String photoUpdated = 'La photo à été mise à jour avec succès !';
+  static const String photoUpdateFailed = 'Echec lors de la mise à jour de la photo';
+  static const String photoDeleted = 'La photo à été supprimé avec succès !';
+  static const String photoDeletionFailed = 'Echec lors de la suppression de la photo';
+  static const String photoDeletionAreYouSure = 'Etes-vous sûr de vouloir supprimer cette photo ?';
+  static const String createPhoto = 'Ajouter une photo';
+  static const String photoTitle = 'Titre';
+  static const String photoTitleHint = 'Titre de la photo';
+  static const String photoTitleMandatory = 'Le titre est obligatoire';
+  static const String photoDescription = 'Description';
+  static const String photoDescriptionHint = 'Description de la photo';
+  static const String photoDescriptionMandatory = 'La description est obligatoire';
+  static const String photoLink = 'Lien';
+  static const String photoLinkHint = 'Lien de la photo';
+  static const String photoLinkMandatory = 'Le lien de la photo est obligatoire';
+
   static const String calendarTitle = 'Calendrier';
   static const String teamTitle = 'Équipe';
 

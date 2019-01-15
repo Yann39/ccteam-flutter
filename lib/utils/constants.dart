@@ -22,6 +22,11 @@ class AppConstants {
   static const String API_UPDATE_TRACK_ENDPOINT = '/tracks/update.php';
   static const String API_DELETE_TRACK_ENDPOINT = '/tracks/delete.php';
 
+  static const String API_GET_ALL_PHOTOS_ENDPOINT = '/photos/read.php';
+  static const String API_CREATE_PHOTO_ENDPOINT = '/photos/create.php';
+  static const String API_UPDATE_PHOTO_ENDPOINT = '/photos/update.php';
+  static const String API_DELETE_PHOTO_ENDPOINT = '/photos/delete.php';
+
   static const String DATE_FORMAT = 'dd/MM/yyyy HH:mm';
 
 }

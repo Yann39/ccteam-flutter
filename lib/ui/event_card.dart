@@ -30,23 +30,26 @@ class EventCard extends StatelessWidget {
   /// Display a confirmation popup when trying to delete an event
   void _showConfirmation(BuildContext context, String value) {
     showDialog(
-        context: context,
-        builder: (_) => new AlertDialog(
-              title: new Text(AppString.confirmation),
-              content: new Text(value),
-              actions: <Widget>[
-                new FlatButton(
-                    onPressed: () {
-                      _dialogueResult(context, ConfirmDialogAction.yes);
-                    },
-                    child: new Text(AppString.confirm)),
-                new FlatButton(
-                    onPressed: () {
-                      _dialogueResult(context, ConfirmDialogAction.no);
-                    },
-                    child: new Text(AppString.cancel)),
-              ],
-            ));
+      context: context,
+      builder: (_) => new AlertDialog(
+            title: new Text(AppString.confirmation),
+            content: new Text(value),
+            actions: <Widget>[
+              new FlatButton(
+                onPressed: () {
+                  _dialogueResult(context, ConfirmDialogAction.yes);
+                },
+                child: new Text(AppString.confirm),
+              ),
+              new FlatButton(
+                onPressed: () {
+                  _dialogueResult(context, ConfirmDialogAction.no);
+                },
+                child: new Text(AppString.cancel),
+              ),
+            ],
+          ),
+    );
   }
 
   /// Handle result of the event deletion confirmation dialog
@@ -72,53 +75,100 @@ class EventCard extends StatelessWidget {
         color: Colors.transparent,
         height: 60.0,
         margin: const EdgeInsets.symmetric(
-          vertical: 8.0, // vertical space between cards
-          horizontal: 18.0,
+          vertical: 8.0,
+          horizontal: 8.0,
         ),
-        child: new Stack(
-          children: <Widget>[
-            new Container(
-              height: 60.0,
-              padding: new EdgeInsets.fromLTRB(8.0, 8.0, 8.0, 8.0),
-              decoration: new BoxDecoration(color: new Color.fromRGBO(255, 255, 255, 0.4), shape: BoxShape.rectangle, borderRadius: new BorderRadius.circular(8.0)),
-              child: new Row(children: <Widget>[
-                Expanded(
-                    child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                  new Flexible(
-                      child: new Row(children: <Widget>[
-                    Icon(
-                      Icons.date_range,
-                      color: Colors.white,
-                      size: 12.0,
-                    ),
-                    new SizedBox(width: 4.0), // fake horizontal space between the 2 lines of text
-                    new Text(DateUtils.convertToString(event.eventDate, AppConstants.DATE_FORMAT),
-                        softWrap: false, textScaleFactor: 0.9, style: new TextStyle(color: Colors.white), maxLines: 1, overflow: TextOverflow.ellipsis)
-                  ])),
-                  new SizedBox(height: 4.0), // vertical space between the 2 lines of text
-                  new Flexible(
-                      child: new Text(event.trackId.toString() + " - " + event.title,
-                          softWrap: false, textScaleFactor: 1.2, style: new TextStyle(color: Colors.white), maxLines: 1, overflow: TextOverflow.ellipsis))
-                ])),
-                IconButton(
-                    icon: Icon(
-                      Icons.edit,
-                      color: Colors.white,
-                    ),
-                    onPressed: () {
-                      _navigateAndDisplaySelection(context, event);
-                    }),
-                IconButton(
-                    icon: Icon(
-                      Icons.delete_forever,
-                      color: Colors.white,
-                    ),
-                    onPressed: () {
-                      _showConfirmation(context, AppString.eventDeletionAreYouSure);
-                    })
-              ]),
+        child: InkWell(
+          onTap: () => _navigateAndDisplaySelection(context, event),
+          child: new Container(
+            height: 60.0,
+            decoration: new BoxDecoration(
+              color: new Color.fromRGBO(255, 255, 255, 0.4),
+              shape: BoxShape.rectangle,
+              borderRadius: new BorderRadius.circular(8.0),
             ),
-          ],
-        ));
+            child: Column(
+              children: [
+                Stack(
+                  alignment: Alignment.centerLeft,
+                  children: <Widget>[
+                    Container(
+                      alignment: Alignment.center,
+                      height: 30.0,
+                      decoration: new BoxDecoration(
+                        color: Colors.red[900],
+                        shape: BoxShape.rectangle,
+                        borderRadius: new BorderRadius.only(
+                          topLeft: Radius.circular(8.0),
+                          topRight: Radius.circular(8.0),
+                        ),
+                      ),
+                      child: Text(
+                        DateUtils.convertToString(event.eventDate, "MMMM"),
+                        textAlign: TextAlign.center,
+                        maxLines: 1,
+                        style: TextStyle(color: Colors.white),
+                      ),
+                    ),
+                    Padding(
+                      padding: EdgeInsets.only(left: 6.0),
+                      child: Icon(
+                        Icons.date_range,
+                        color: Colors.white,
+                        size: 18.0,
+                      ),
+                    ),
+                  ],
+                ),
+                SizedBox(height: 8.0),
+                new Text(
+                  DateUtils.convertToString(event.eventDate, "dd"),
+                  softWrap: false,
+                  textScaleFactor: 3,
+                  style: new TextStyle(color: Colors.white),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  textAlign: TextAlign.center,
+                ),
+                SizedBox(height: 8.0),
+                Text(
+                  DateUtils.convertToString(event.eventDate, AppConstants.DATE_FORMAT),
+                  softWrap: false,
+                  textScaleFactor: 0.9,
+                  style: new TextStyle(color: Colors.white),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                SizedBox(height: 8.0),
+                Text(
+                  event.title,
+                  softWrap: false,
+                  textScaleFactor: 1.3,
+                  style: new TextStyle(color: Colors.white),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  textAlign: TextAlign.center,
+                ),
+              ],
+            ),
+          ),
+        )
+        /*IconButton(
+                icon: Icon(
+                  Icons.edit,
+                  color: Colors.white,
+                ),
+                onPressed: () {
+                  _navigateAndDisplaySelection(context, event);
+                }),
+            IconButton(
+                icon: Icon(
+                  Icons.delete_forever,
+                  color: Colors.white,
+                ),
+                onPressed: () {
+                  _showConfirmation(context, AppString.eventDeletionAreYouSure);
+                })*/
+        );
   }
 }

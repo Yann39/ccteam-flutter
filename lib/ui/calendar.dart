@@ -36,19 +36,19 @@ class _CalendarState extends State<Calendar> {
         leading: new Icon(Icons.event),
       ),
       body: Container(
+        padding: const EdgeInsets.all(8.0),
         child: FutureBuilder<List<Event>>(
           future: eventsService.fetchEvents(),
           builder: (context, snapshot) {
             if (snapshot.hasData) {
-              return new Column(
-                children: <Widget>[
-                  new Expanded(
-                      child: new ListView.builder(
-                          itemCount: snapshot.data.length,
-                          itemBuilder: (context, index) {
-                            return new EventCard(snapshot.data[index], eventsService);
-                          }))
-                ],
+              return GridView.count(
+                // Create a grid with 2 columns. If you change the scrollDirection to
+                // horizontal, this would produce 2 rows.
+                crossAxisCount: 2,
+                // Generate 100 Widgets that display their index in the List+
+                children: List.generate(snapshot.data.length, (index) {
+                  return new EventCard(snapshot.data[index], eventsService);
+                }),
               );
             } else if (snapshot.hasError) {
               return Text("${snapshot.error}");
@@ -57,7 +57,6 @@ class _CalendarState extends State<Calendar> {
             return CircularProgressIndicator();
           },
         ),
-
         decoration: new BoxDecoration(
           gradient: new LinearGradient(
               colors: [Colors.blue[300], Colors.green[300]],
