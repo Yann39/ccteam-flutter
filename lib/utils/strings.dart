@@ -118,5 +118,6 @@ class AppString {
 
   static const String calendarTitle = 'Calendrier';
   static const String teamTitle = 'Équipe';
+  static const String galleryTitle = 'Gallerie';
 
 }

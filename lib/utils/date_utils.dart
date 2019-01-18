@@ -40,4 +40,5 @@ class DateUtils {
     var d = convertToDate(date, format);
     return d != null && d.isAfter(new DateTime.now());
   }
+
 }

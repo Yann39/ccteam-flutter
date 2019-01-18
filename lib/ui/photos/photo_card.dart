@@ -1,6 +1,6 @@
 import 'package:chachatte_team/models/photo.dart';
 import 'package:chachatte_team/services/photos_service.dart';
-import 'package:chachatte_team/ui/add_photo.dart';
+import 'package:chachatte_team/ui/photos/add_photo.dart';
 import 'package:chachatte_team/utils/strings.dart';
 import 'package:flutter/material.dart';
 
@@ -70,37 +70,36 @@ class PhotoCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return new Container(
-        color: Colors.transparent,
-        margin: const EdgeInsets.symmetric(
-          vertical: 4.0,
-          horizontal: 4.0,
-        ),
-        child: InkWell(
-          onTap: () => _navigateAndDisplaySelection(context, photo),
-          child: Stack(
-              children: [
-                Image.network(
-                  photo.link,
-                  fit: BoxFit.fitWidth
+      color: Colors.transparent,
+      margin: const EdgeInsets.symmetric(
+        vertical: 4.0,
+        horizontal: 4.0,
+      ),
+      child: InkWell(
+        onTap: () => _navigateAndDisplaySelection(context, photo),
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            Image.network(photo.link, fit: BoxFit.fitWidth),
+            new Align(
+              alignment: FractionalOffset.bottomCenter,
+              child: Container(
+                height: 20.0,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(shape: BoxShape.rectangle, color: Colors.black.withOpacity(0.5)),
+                child: Text(
+                  photo.title,
+                  softWrap: false,
+                  style: new TextStyle(color: Colors.white),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  textAlign: TextAlign.center,
                 ),
-                new Align(
-                  alignment: FractionalOffset.bottomCenter,
-                  child: Container(
-                  height: 20.0,
-                  alignment: Alignment.center,
-                  decoration: BoxDecoration(shape: BoxShape.rectangle, color: Colors.black.withOpacity(0.5)),
-                  child: Text(
-                    photo.title,
-                    softWrap: false,
-                    style: new TextStyle(color: Colors.white),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    textAlign: TextAlign.center,
-                  ),
-                ),),
-              ],
+              ),
             ),
-        )
-        );
+          ],
+        ),
+      ),
+    );
   }
 }

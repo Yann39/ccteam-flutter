@@ -1,6 +1,7 @@
 import 'package:chachatte_team/models/member.dart';
 import 'package:chachatte_team/services/members_service.dart';
-import 'package:chachatte_team/ui/add_member.dart';
+import 'package:chachatte_team/ui/members/add_member.dart';
+import 'package:chachatte_team/ui/members/member_detail.dart';
 import 'package:chachatte_team/utils/strings.dart';
 import 'package:flutter/material.dart';
 
@@ -33,10 +34,10 @@ class _TeamState extends State<Team> {
     }
   }
 
-  /// Method that launches the Edit Member screen and awaits the result from Navigator.pop
-  _navigateAndDisplaySelection2(BuildContext context, Member member) async {
+  /// Method that launches the View Member screen and awaits the result from Navigator.pop
+  _navigateAndDisplaySelection3(BuildContext context, Member member) async {
     // Navigator.push returns a Future that will complete after we call Navigator.pop on the Add News Screen
-    final result = await Navigator.push(context, MaterialPageRoute(builder: (context) => AddMember(member: member)));
+    final result = await Navigator.push(context, MaterialPageRoute(builder: (context) => MemberDetail(member: member)));
 
     // after the Edit Member Screen returns a result, hide any previous snack bars and show the new result
     if (result != null) {
@@ -60,26 +61,28 @@ class _TeamState extends State<Team> {
             return new Column(
               children: <Widget>[
                 new Expanded(
-                    child: new Container(
-                        child: new ListView.builder(
-                            itemCount: snapshot.data.length,
-                            itemBuilder: (context, index) {
-                              return new Material(
-                                child: InkWell(
-                                  child: new _MemberListItem(snapshot.data[index]),
-                                  onTap: () => _navigateAndDisplaySelection2(context, snapshot.data[index]),
-                                ),
-                                color: Colors.transparent,
-                              );
-                            }),
-                        decoration: new BoxDecoration(
-                          gradient: new LinearGradient(
-                              colors: [Colors.blue[300], Colors.green[300]],
-                              begin: const FractionalOffset(0.0, 0.0),
-                              end: const FractionalOffset(0.0, 1.0),
-                              stops: [0.0, 1.0],
-                              tileMode: TileMode.clamp),
-                        )))
+                  child: new Container(
+                    child: new ListView.builder(
+                        itemCount: snapshot.data.length,
+                        itemBuilder: (context, index) {
+                          return new Material(
+                            child: InkWell(
+                              child: new _MemberListItem(snapshot.data[index]),
+                              onTap: () => _navigateAndDisplaySelection3(context, snapshot.data[index]),
+                            ),
+                            color: Colors.transparent,
+                          );
+                        }),
+                    decoration: new BoxDecoration(
+                      gradient: new LinearGradient(
+                          colors: [Colors.blue[300], Colors.green[300]],
+                          begin: const FractionalOffset(0.0, 0.0),
+                          end: const FractionalOffset(0.0, 1.0),
+                          stops: [0.0, 1.0],
+                          tileMode: TileMode.clamp),
+                    ),
+                  ),
+                )
               ],
             );
           } else if (snapshot.hasError) {

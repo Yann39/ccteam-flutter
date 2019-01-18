@@ -21,7 +21,7 @@ $photo = new Photo($db);
 $data = json_decode(file_get_contents("php://input"));
 
 // make sure data is not empty
-if (!empty($data->title) && !empty($data->description) && !empty($data->photo_date) && !empty($data->track_id) && !empty($data->organizer) && !empty($data->price)) {
+if (!empty($data->title) && !empty($data->description) && !empty($data->link)) {
 
     // set photo property values
     $photo->title = $data->title;

@@ -28,5 +28,6 @@ class AppConstants {
   static const String API_DELETE_PHOTO_ENDPOINT = '/photos/delete.php';
 
   static const String DATE_FORMAT = 'dd/MM/yyyy HH:mm';
+  static const String PRICE_FORMAT = '####.##';
 
 }

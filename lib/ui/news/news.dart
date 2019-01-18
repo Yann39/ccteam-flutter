@@ -1,8 +1,8 @@
 import 'dart:math';
 import 'package:chachatte_team/models/news.dart';
 import 'package:chachatte_team/services/news_service.dart';
-import 'package:chachatte_team/ui/add_news.dart';
-import 'package:chachatte_team/ui/news_card.dart';
+import 'package:chachatte_team/ui/news/add_news.dart';
+import 'package:chachatte_team/ui/news/news_card.dart';
 import 'package:flutter/material.dart';
 
 class NewsList extends StatefulWidget {

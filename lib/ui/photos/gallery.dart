@@ -1,26 +1,26 @@
-import 'package:chachatte_team/models/event.dart';
-import 'package:chachatte_team/services/events_service.dart';
-import 'package:chachatte_team/ui/add_event.dart';
-import 'package:chachatte_team/ui/event_card.dart';
+import 'package:chachatte_team/models/photo.dart';
+import 'package:chachatte_team/services/photos_service.dart';
+import 'package:chachatte_team/ui/photos/add_photo.dart';
+import 'package:chachatte_team/ui/photos/photo_card.dart';
 import 'package:chachatte_team/utils/strings.dart';
 import 'package:flutter/material.dart';
 
-class Calendar extends StatefulWidget {
+class Gallery extends StatefulWidget {
   @override
   State<StatefulWidget> createState() {
-    return _CalendarState();
+    return _GalleryState();
   }
 }
 
-class _CalendarState extends State<Calendar> {
-  static final EventsService eventsService = new EventsService();
+class _GalleryState extends State<Gallery> {
+  static final PhotosService photosService = new PhotosService();
 
-  /// Method that launches the Add Member screen and awaits the result from Navigator.pop
+  /// Method that launches the Add Photo screen and awaits the result from Navigator.pop
   _navigateAndDisplaySelection(BuildContext context) async {
     // Navigator.push returns a Future that will complete after we call Navigator.pop on the Add News Screen
-    final result = await Navigator.push(context, MaterialPageRoute(builder: (context) => AddEvent()));
+    final result = await Navigator.push(context, MaterialPageRoute(builder: (context) => AddPhoto()));
 
-    // after the Add Member Screen returns a result, hide any previous snack bars and show the new result
+    // after the Add Photo Screen returns a result, hide any previous snack bars and show the new result
     if (result != null) {
       Scaffold.of(context)
         ..removeCurrentSnackBar()
@@ -31,23 +31,21 @@ class _CalendarState extends State<Calendar> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(AppString.calendarTitle),
+        title: Text(AppString.galleryTitle),
         backgroundColor: Colors.blue[300],
         leading: new Icon(Icons.event),
       ),
       body: Container(
         padding: const EdgeInsets.all(8.0),
-        child: FutureBuilder<List<Event>>(
-          future: eventsService.fetchEvents(),
+        child: FutureBuilder<List<Photo>>(
+          future: photosService.fetchPhotos(),
           builder: (context, snapshot) {
             if (snapshot.hasData) {
               return GridView.count(
-                // Create a grid with 2 columns. If you change the scrollDirection to
-                // horizontal, this would produce 2 rows.
+                childAspectRatio: 1.5,
                 crossAxisCount: 2,
-                // Generate 100 Widgets that display their index in the List+
                 children: List.generate(snapshot.data.length, (index) {
-                  return new EventCard(snapshot.data[index], eventsService);
+                  return new PhotoCard(snapshot.data[index], photosService);
                 }),
               );
             } else if (snapshot.hasError) {
@@ -63,7 +61,7 @@ class _CalendarState extends State<Calendar> {
               begin: const FractionalOffset(0.0, 0.0),
               end: const FractionalOffset(0.0, 1.0),
               stops: [0.0, 1.0],
-              tileMode: TileMode.clamp),
+              tileMode: TileMode.clamp,),
         ),
       ),
       floatingActionButton: FloatingActionButton(
@@ -72,7 +70,7 @@ class _CalendarState extends State<Calendar> {
           backgroundColor: Colors.red[700],
           onPressed: () {
             _navigateAndDisplaySelection(context);
-          }),
+          },),
     );
   }
 }

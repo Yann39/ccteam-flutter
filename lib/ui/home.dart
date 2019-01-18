@@ -1,7 +1,7 @@
-import 'package:chachatte_team/ui/calendar.dart';
-import 'package:chachatte_team/ui/gallery.dart';
-import 'package:chachatte_team/ui/news.dart';
-import 'package:chachatte_team/ui/team.dart';
+import 'package:chachatte_team/ui/events/calendar.dart';
+import 'package:chachatte_team/ui/photos/gallery.dart';
+import 'package:chachatte_team/ui/news/news.dart';
+import 'package:chachatte_team/ui/members/team.dart';
 import 'package:chachatte_team/utils/strings.dart';
 import 'package:flutter/material.dart';
 

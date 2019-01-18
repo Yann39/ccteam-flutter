@@ -1,6 +1,6 @@
 import 'package:chachatte_team/models/event.dart';
 import 'package:chachatte_team/services/events_service.dart';
-import 'package:chachatte_team/ui/add_event.dart';
+import 'package:chachatte_team/ui/events/add_event.dart';
 import 'package:chachatte_team/utils/constants.dart';
 import 'package:chachatte_team/utils/date_utils.dart';
 import 'package:chachatte_team/utils/strings.dart';

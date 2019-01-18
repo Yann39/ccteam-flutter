@@ -1,5 +1,5 @@
 import 'package:chachatte_team/models/news.dart';
-import 'package:chachatte_team/ui/add_news.dart';
+import 'package:chachatte_team/ui/news/add_news.dart';
 import 'package:chachatte_team/utils/constants.dart';
 import 'package:chachatte_team/utils/date_utils.dart';
 import 'package:flutter/material.dart';
