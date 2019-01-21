@@ -6,6 +6,7 @@ header("Content-Type: application/json; charset=UTF-8");
 // include database and object files
 include_once '../config/database.php';
 include_once '../objects/events.php';
+include_once '../objects/members.php';
 
 // instantiate database and event object
 $database = new Database();
@@ -13,6 +14,7 @@ $db = $database->getConnection();
 
 // initialize object
 $event = new Event($db);
+$member = new Member($db);
 
 // query events
 $stmt = $event->read();
@@ -31,6 +33,31 @@ if ($num > 0) {
         // extract row, this will make $row['name'] to just $name only
         extract($row);
 
+        $stmt2 = $member->readByEvent($id);
+        $num2 = $stmt2->rowCount();
+
+        if ($num2 > 0) {
+
+            $member_arr = array();
+
+            // get retrieved rows
+            while ($row2 = $stmt2->fetch(PDO::FETCH_ASSOC)) {
+
+                // create array
+                $member_item = array(
+                    "id" =>  $row2['id'],
+                    "first_name" => $row2['first_name'],
+                    "last_name" => $row2['last_name'],
+                    "email" => $row2['email'],
+                    "phone" => $row2['phone'],
+                    "bike" => $row2['bike'],
+                    "registration_date" => $row2['registration_date']
+                );
+
+                array_push($member_arr, $member_item);
+            }
+        }
+
         $event_item = array(
             "id" => $id,
             "title" => $title,
@@ -39,6 +66,7 @@ if ($num > 0) {
             "track_id" => $track_id,
             "organizer" => $organizer,
             "price" => $price,
+            "members" => $member_arr,
             "created" => $created,
             "modified" => $modified
         );

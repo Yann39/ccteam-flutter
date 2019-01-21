@@ -52,6 +52,16 @@ CREATE TABLE IF NOT EXISTS `events` (
   CONSTRAINT fk_track FOREIGN KEY (track_id) REFERENCES tracks(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1;
 
+CREATE TABLE IF NOT EXISTS `events_members` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `event_id` int NOT NULL,
+  `member_id` int NOT NULL,
+  `created` timestamp NOT NULL,
+  PRIMARY KEY (`id`),
+  CONSTRAINT fk_event FOREIGN KEY (event_id) REFERENCES events(id),
+  CONSTRAINT fk_member FOREIGN KEY (member_id) REFERENCES members(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1;
+
 INSERT INTO `news` (`id`, `title`, `content`, `news_date`, `created`, `modified`) VALUES
 (1, 'Repas du club', 'Repas de club avec tartiflettre géante', '2018-05-30 23:17:12', '2018-06-01 00:35:07', NULL),
 (2, 'Réunion de dèbut d\'année', 'Réunion de dèbut d\'année pour oganiser les roulages', '2018-05-30 23:31:44', '2018-06-01 00:35:07', NULL),
@@ -80,3 +90,9 @@ INSERT INTO `photos` (`id`, `title`, `description`, `link`, `created`, `modified
 (3, 'Johann Zarco', 'Johann Zarco', 'http://example.com/uploads/2018/06/IMG_3.jpg', '2018-04-20 17:14:27', NULL),
 (4, 'Enea Bastianini', 'Enea Bastianini', 'http://example.com/uploads/2018/06/IMG_4.jpg', '2018-11-21 14:09:04', NULL),
 (5, 'Enea Bastianini', 'Enea Bastianini', 'http://example.com/uploads/2018/06/IMG_5.jpg', '2018-04-06 11:55:21', NULL);
+
+INSERT INTO `events_members` (`id`, `event_id`, `member_id`, `created`) VALUES
+(1, 3, 2, '2018-06-01 09:35:07'),
+(2, 1, 1, '2018-02-08 14:30:29'),
+(3, 3, 1, '2018-04-20 17:14:27'),
+(4, 2, 1, '2017-11-18 10:42:55');

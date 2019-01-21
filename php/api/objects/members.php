@@ -65,6 +65,21 @@ class Member {
         $this->modified = $row['modified'];
     }
 
+    // read event
+    function readByEvent($event_id) {
+
+        // select all query
+        $query = "SELECT n.id, n.first_name, n.last_name, n.email, n.phone, n.bike, n.registration_date, n.created, n.modified FROM " . $this->table_name . " n INNER JOIN events_members em ON n.id = em.member_id WHERE em.event_id = $event_id ORDER BY n.registration_date DESC";
+
+        // prepare query statement
+        $stmt = $this->conn->prepare($query);
+
+        // execute query
+        $stmt->execute();
+
+        return $stmt;
+    }
+
     // create member
     function create() {
 
