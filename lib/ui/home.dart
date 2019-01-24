@@ -27,17 +27,6 @@ class _HomeState extends State<Home> {
 
   Widget build(BuildContext context) {
     return new Scaffold(
-        appBar: AppBar(
-          title: Text(AppString.applicationTitle),
-          leading: new Icon(Icons.motorcycle),
-          actions: <Widget>[
-            PopupMenuButton(
-              itemBuilder: (BuildContext context) {
-                return [PopupMenuItem(child: Text(AppString.about)), PopupMenuItem(child: Text(AppString.contact))];
-              },
-            )
-          ],
-        ),
         backgroundColor: Colors.transparent,
         body: _children[_currentIndex],
         bottomNavigationBar: BottomNavigationBar(
@@ -53,7 +42,6 @@ class _HomeState extends State<Home> {
           ],
         ),
       );
-    //]));
   }
 
   void onTabTapped(int index) {

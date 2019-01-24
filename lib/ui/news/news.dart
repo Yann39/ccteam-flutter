@@ -3,6 +3,7 @@ import 'package:chachatte_team/models/news.dart';
 import 'package:chachatte_team/services/news_service.dart';
 import 'package:chachatte_team/ui/news/add_news.dart';
 import 'package:chachatte_team/ui/news/news_card.dart';
+import 'package:chachatte_team/utils/strings.dart';
 import 'package:flutter/material.dart';
 
 class NewsList extends StatefulWidget {
@@ -33,6 +34,17 @@ class _NewsListState extends State<NewsList> {
 
   Widget build(BuildContext context) {
     return new Scaffold(
+        appBar: AppBar(
+          title: Text(AppString.applicationTitle),
+          leading: new Icon(Icons.motorcycle),
+          actions: <Widget>[
+            PopupMenuButton(
+              itemBuilder: (BuildContext context) {
+                return [PopupMenuItem(child: Text(AppString.about)), PopupMenuItem(child: Text(AppString.contact))];
+              },
+            )
+          ],
+        ),
       body: new NestedScrollView(
         headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
           final double width = MediaQuery.of(context).size.width;
@@ -55,7 +67,7 @@ class _NewsListState extends State<NewsList> {
                 ),
                 decoration: new BoxDecoration(
                   gradient: new LinearGradient(
-                      colors: [Colors.green[300], Colors.green[400]],
+                      colors: [Colors.white, Colors.blue[100]],
                       begin: const FractionalOffset(0.0, 0.0),
                       end: const FractionalOffset(0.0, 1.0),
                       stops: [0.0, 1.0],
@@ -92,7 +104,7 @@ class _NewsListState extends State<NewsList> {
           ),
           decoration: new BoxDecoration(
             gradient: new LinearGradient(
-                colors: [Colors.green[400], Colors.blue[300]],
+                colors: [Colors.blue[100], Colors.blue[600]],
                 begin: const FractionalOffset(0.0, 0.0),
                 end: const FractionalOffset(0.0, 1.0),
                 stops: [0.0, 1.0],

@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:chachatte_team/models/event.dart';
+import 'package:chachatte_team/models/member.dart';
 import 'package:chachatte_team/utils/constants.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
@@ -93,11 +94,45 @@ class EventsService {
     map["track_id"] = event.trackId;
     map["organizer"] = event.organizer;
     map["price"] = event.price;
+
+    List<Map> maps = <Map>[];
+    for (Member m in event.members) {
+      final Map map2 = new Map();
+      map2["id"] = m.id;
+      map2["first_name"] = m.firstName;
+      map2["last_name"] = m.lastName;
+      map2["email"] = m.email;
+      map2["phone"] = m.phone;
+      map2["bike"] = m.bike;
+      map2["registration_date"] = new DateFormat("y-M-d H:m:s.S").format(m.registrationDate);
+      maps.add(map2);
+    }
+
+    map["members"] = maps;
+
+    print(json.encode(map));
+
     return json.encode(map);
   }
 
   /// Convert specified [json] map to the corresponding Event object
   Event _fromJson(Map<String, dynamic> json) {
+    List<dynamic> jsonMembers = json['members'];
+    List<Member> members = new List();
+
+    if (jsonMembers != null) {
+      for (dynamic jsonMember in jsonMembers) {
+        members.add(new Member(
+            id: int.parse(jsonMember['id']),
+            firstName: jsonMember['first_name'],
+            lastName: jsonMember['last_name'],
+            email: jsonMember['email'],
+            phone: jsonMember['phone'],
+            bike: jsonMember['bike'],
+            registrationDate: new DateFormat("y-M-d H:m:s").parseStrict(jsonMember['registration_date'])));
+      }
+    }
+
     return Event(
         id: int.parse(json['id']),
         title: json['title'],
@@ -105,6 +140,7 @@ class EventsService {
         eventDate: new DateFormat("y-M-d H:m:s").parseStrict(json['event_date']),
         trackId: int.parse(json['track_id']),
         organizer: json['organizer'],
-        price: double.parse(json['price']));
+        price: double.parse(json['price']),
+        members: members);
   }
 }
