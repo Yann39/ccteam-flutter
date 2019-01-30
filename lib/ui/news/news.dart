@@ -3,6 +3,7 @@ import 'package:chachatte_team/models/news.dart';
 import 'package:chachatte_team/services/news_service.dart';
 import 'package:chachatte_team/ui/news/add_news.dart';
 import 'package:chachatte_team/ui/news/news_card.dart';
+import 'package:chachatte_team/ui/news/news_detail.dart';
 import 'package:chachatte_team/utils/strings.dart';
 import 'package:flutter/material.dart';
 
@@ -16,12 +17,20 @@ class NewsList extends StatefulWidget {
 class _NewsListState extends State<NewsList> {
   static final NewsService newsService = new NewsService();
 
-  List helmets = ["images/helmet-blue.png", "images/helmet-green.png", "images/helmet-purple.png", "images/helmet-red.png", "images/helmet-yellow.png"];
+  List helmets = ["images/helmet-blue.png", "images/helmet-green.png", "images/helmet-red.png", "images/helmet-purple.png", "images/helmet-yellow.png"];
+  List bgColors = [
+    Color.fromRGBO(0, 100, 200, 0.4),
+    //Color.fromRGBO(255, 255, 255, 0.3),
+    Color.fromRGBO(25, 120, 25, 0.5),
+    Color.fromRGBO(180, 0, 25, 0.5),
+    Color.fromRGBO(200, 0, 100, 0.5),
+    Color.fromRGBO(200, 200, 100, 1)
+  ];
   Random random = new Random();
 
   /// Method that launches the Add News screen and awaits the result from Navigator.pop
-  _navigateAndDisplaySelection(BuildContext context) async {
-    // Navigator.push returns a Future that will complete after we call Navigator.pop on the Add News Screen
+  _navigateToAddNewsScreen(BuildContext context) async {
+    // Navigator.push returns a Future that will complete after we call Navigator.pop on the Add News screen
     final result = await Navigator.push(context, MaterialPageRoute(builder: (context) => AddNews()));
 
     // after the Add News Screen returns a result, hide any previous snack bars and show the new result
@@ -32,19 +41,32 @@ class _NewsListState extends State<NewsList> {
     }
   }
 
+  /// Method that launches the News detail screen and awaits the result from Navigator.pop
+  _navigateToNewsDetailScreen(BuildContext context, News news) async {
+    // Navigator.push returns a Future that will complete after we call Navigator.pop on the News detail screen
+    final result = await Navigator.push(context, MaterialPageRoute(builder: (context) => NewsDetail(news: news)));
+
+    // after the Edit Member Screen returns a result, hide any previous snack bars and show the new result
+    if (result != null) {
+      Scaffold.of(context)
+        ..removeCurrentSnackBar()
+        ..showSnackBar(SnackBar(content: Text("$result")));
+    }
+  }
+
   Widget build(BuildContext context) {
     return new Scaffold(
-        appBar: AppBar(
-          title: Text(AppString.applicationTitle),
-          leading: new Icon(Icons.motorcycle),
-          actions: <Widget>[
-            PopupMenuButton(
-              itemBuilder: (BuildContext context) {
-                return [PopupMenuItem(child: Text(AppString.about)), PopupMenuItem(child: Text(AppString.contact))];
-              },
-            )
-          ],
-        ),
+      appBar: AppBar(
+        title: Text(AppString.applicationTitle),
+        leading: new Icon(Icons.home),
+        actions: <Widget>[
+          PopupMenuButton(
+            itemBuilder: (BuildContext context) {
+              return [PopupMenuItem(child: Text(AppString.about)), PopupMenuItem(child: Text(AppString.contact))];
+            },
+          )
+        ],
+      ),
       body: new NestedScrollView(
         headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
           final double width = MediaQuery.of(context).size.width;
@@ -67,7 +89,7 @@ class _NewsListState extends State<NewsList> {
                 ),
                 decoration: new BoxDecoration(
                   gradient: new LinearGradient(
-                      colors: [Colors.white, Colors.blue[100]],
+                      colors: [Colors.white, Colors.blue[200]],
                       begin: const FractionalOffset(0.0, 0.0),
                       end: const FractionalOffset(0.0, 1.0),
                       stops: [0.0, 1.0],
@@ -86,12 +108,17 @@ class _NewsListState extends State<NewsList> {
                   return new Column(
                     children: <Widget>[
                       new Expanded(
-                          child: new ListView.builder(
-                              itemCount: snapshot.data.length,
-                              itemBuilder: (context, index) {
-                                final int randomIndex = random.nextInt(5);
-                                return new NewsCard(snapshot.data[index], new AssetImage(helmets[0]), Colors.purple[600], Colors.purple[200]);
-                              }))
+                        child: new ListView.builder(
+                          itemCount: snapshot.data.length,
+                          itemBuilder: (context, index) {
+                            final int randomIndex = random.nextInt(3);
+                            return new InkWell(
+                              child: NewsCard(snapshot.data[index], new AssetImage(helmets[0]), bgColors[0], Colors.purple[200]),
+                              onTap: () => _navigateToNewsDetailScreen(context, snapshot.data[index]),
+                            );
+                          },
+                        ),
+                      ),
                     ],
                   );
                 } else if (snapshot.hasError) {
@@ -104,7 +131,7 @@ class _NewsListState extends State<NewsList> {
           ),
           decoration: new BoxDecoration(
             gradient: new LinearGradient(
-                colors: [Colors.blue[100], Colors.blue[600]],
+                colors: [Colors.blue[200], Colors.blue[500]],
                 begin: const FractionalOffset(0.0, 0.0),
                 end: const FractionalOffset(0.0, 1.0),
                 stops: [0.0, 1.0],
@@ -117,7 +144,7 @@ class _NewsListState extends State<NewsList> {
           child: new Icon(Icons.add),
           backgroundColor: Colors.red[700],
           onPressed: () {
-            _navigateAndDisplaySelection(context);
+            _navigateToAddNewsScreen(context);
           }),
     );
   }

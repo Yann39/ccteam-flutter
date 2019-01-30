@@ -34,7 +34,7 @@ class _MemberDetailState extends State<MemberDetail> {
   }
 
   /// Method that launches the Edit Member screen and awaits the result from Navigator.pop
-  _navigateAndDisplaySelection(BuildContext context, Member member) async {
+  _navigateToEditMemberScreen(BuildContext context, Member member) async {
     // Navigator.push returns a Future that will complete after we call Navigator.pop on the Add News Screen
     final result = await Navigator.push(context, MaterialPageRoute(builder: (context) => AddMember(member: member)));
 
@@ -100,7 +100,7 @@ class _MemberDetailState extends State<MemberDetail> {
                 IconButton(
                   icon: const Icon(Icons.edit),
                   tooltip: 'Edit',
-                  onPressed: () => _navigateAndDisplaySelection(context, widget.member),
+                  onPressed: () => _navigateToEditMemberScreen(context, widget.member),
                 ),
                 IconButton(
                   icon: const Icon(Icons.delete_forever),

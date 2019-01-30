@@ -21,10 +21,16 @@ class AddNews extends StatefulWidget {
 class _AddNewsState extends State<AddNews> {
   final GlobalKey<FormState> _formKey = new GlobalKey<FormState>();
   final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
-  final TextEditingController _controller = new TextEditingController();
+  final TextEditingController _datePickerController = new TextEditingController();
 
   // the News to be created
   final News _newNews = new News();
+
+  initState() {
+    // set date picker text
+    _datePickerController.text = DateUtils.convertToString(widget.news.newsDate, AppConstants.DATE_FORMAT);
+    return super.initState();
+  }
 
   /// Initialize and display a Date picker related to the specified [controller] in the specified [context]
   Future _chooseDate(BuildContext context, TextEditingController controller, DateTime defaultValue) async {
@@ -87,9 +93,6 @@ class _AddNewsState extends State<AddNews> {
   Widget build(BuildContext context) {
     // the current News to be edited
     final News currNews = widget.news != null ? widget.news : _newNews;
-
-    // set controller text
-    _controller.text = DateUtils.convertToString(currNews.newsDate, AppConstants.DATE_FORMAT);
 
     return Scaffold(
       key: _scaffoldKey,
@@ -154,7 +157,7 @@ class _AddNewsState extends State<AddNews> {
                   initialValue: currNews.content,
                 ),
                 new GestureDetector(
-                  onTap: () => _chooseDate(context, _controller, currNews.newsDate),
+                  onTap: () => _chooseDate(context, _datePickerController, currNews.newsDate),
                   child: AbsorbPointer(
                     child: new TextFormField(
                       decoration: new InputDecoration(
@@ -162,7 +165,7 @@ class _AddNewsState extends State<AddNews> {
                         hintText: AppString.newsDateHint,
                         labelText: AppString.newsDate,
                       ),
-                      controller: _controller,
+                      controller: _datePickerController,
                       keyboardType: TextInputType.datetime,
                       validator: (val) => DateUtils.isBeforeNow(val, AppConstants.DATE_FORMAT) ? (val.isEmpty ? AppString.newsDateMandatory : null) : AppString.newsDateNotValid,
                       onSaved: (val) => currNews.newsDate = new DateFormat(AppConstants.DATE_FORMAT).parseStrict(val),

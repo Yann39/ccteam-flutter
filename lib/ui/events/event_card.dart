@@ -1,7 +1,6 @@
 import 'package:chachatte_team/models/event.dart';
 import 'package:chachatte_team/services/events_service.dart';
 import 'package:chachatte_team/ui/events/add_event.dart';
-import 'package:chachatte_team/utils/constants.dart';
 import 'package:chachatte_team/utils/date_utils.dart';
 import 'package:chachatte_team/utils/strings.dart';
 import 'package:flutter/material.dart';
@@ -83,7 +82,7 @@ class EventCard extends StatelessWidget {
           child: new Container(
             height: 60.0,
             decoration: new BoxDecoration(
-              color: new Color.fromRGBO(255, 255, 255, 0.4),
+              color: new Color.fromRGBO(255, 255, 255, 0.5),
               shape: BoxShape.rectangle,
               borderRadius: new BorderRadius.circular(8.0),
             ),

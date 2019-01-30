@@ -61,7 +61,7 @@ class NewsCard extends StatelessWidget {
               height: 60.0,
               margin: new EdgeInsets.only(left: 20.0),
               padding: new EdgeInsets.fromLTRB(0, 8.0, 0.0, 8.0),
-              decoration: new BoxDecoration(color: new Color.fromRGBO(0, 100, 200, 0.3), shape: BoxShape.rectangle, borderRadius: new BorderRadius.circular(8.0)),
+              decoration: new BoxDecoration(color: primaryColor, shape: BoxShape.rectangle, borderRadius: new BorderRadius.circular(8.0)),
               child: new Row(children: <Widget>[
                 new Container(width: 38.0), // fake horizontal space between image and text
                 Expanded(

@@ -49,10 +49,16 @@ class NumberTextInputFormatter extends TextInputFormatter {
 class _AddMemberState extends State<AddMember> {
   final GlobalKey<FormState> _formKey = new GlobalKey<FormState>();
   final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
-  final TextEditingController _controller = new TextEditingController();
+  final TextEditingController _datePickerController = new TextEditingController();
 
   // the Member to be created
   final Member _newMember = new Member();
+
+  initState() {
+    // set date picker text
+    _datePickerController.text = DateUtils.convertToString(widget.member.registrationDate, AppConstants.DATE_FORMAT);
+    return super.initState();
+  }
 
   /// Initialize and display a Date picker related to the specified [controller] in the specified [context]
   Future _chooseDate(BuildContext context, TextEditingController controller, DateTime defaultValue) async {
@@ -115,9 +121,6 @@ class _AddMemberState extends State<AddMember> {
   Widget build(BuildContext context) {
     // the current Member to be edited
     final Member currMember = widget.member != null ? widget.member : _newMember;
-
-    // set controller text
-    _controller.text = DateUtils.convertToString(currMember.registrationDate, AppConstants.DATE_FORMAT);
 
     return Scaffold(
       key: _scaffoldKey,
@@ -218,7 +221,7 @@ class _AddMemberState extends State<AddMember> {
                   initialValue: currMember.bike,
                 ),
                 new GestureDetector(
-                  onTap: () => _chooseDate(context, _controller, currMember.registrationDate),
+                  onTap: () => _chooseDate(context, _datePickerController, currMember.registrationDate),
                   child: AbsorbPointer(
                     child: new TextFormField(
                       decoration: new InputDecoration(
@@ -226,7 +229,7 @@ class _AddMemberState extends State<AddMember> {
                         hintText: AppString.memberRegistrationDateHint,
                         labelText: AppString.memberRegistrationDate,
                       ),
-                      controller: _controller,
+                      controller: _datePickerController,
                       keyboardType: TextInputType.datetime,
                       validator: (val) => DateUtils.isBeforeNow(val, AppConstants.DATE_FORMAT)
                           ? (val.isEmpty ? AppString.memberRegistrationDateMandatory : null)

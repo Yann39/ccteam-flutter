@@ -32,8 +32,14 @@ class _CalendarState extends State<Calendar> {
     return Scaffold(
       appBar: AppBar(
         title: Text(AppString.calendarTitle),
-        backgroundColor: Colors.blue[300],
         leading: new Icon(Icons.event),
+        actions: <Widget>[
+          PopupMenuButton(
+            itemBuilder: (BuildContext context) {
+              return [PopupMenuItem(child: Text(AppString.about)), PopupMenuItem(child: Text(AppString.contact))];
+            },
+          )
+        ],
       ),
       body: Container(
         padding: const EdgeInsets.all(8.0),
@@ -56,7 +62,7 @@ class _CalendarState extends State<Calendar> {
         ),
         decoration: new BoxDecoration(
           gradient: new LinearGradient(
-            colors: [Colors.blue[300], Colors.green[300]],
+            colors: [Colors.blue[200], Colors.blue[600]],
             begin: const FractionalOffset(0.0, 0.0),
             end: const FractionalOffset(0.0, 1.0),
             stops: [0.0, 1.0],

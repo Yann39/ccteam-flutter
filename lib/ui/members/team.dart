@@ -22,8 +22,8 @@ class _TeamState extends State<Team> {
   static final MembersService membersService = new MembersService();
 
   /// Method that launches the Add Member screen and awaits the result from Navigator.pop
-  _navigateAndDisplaySelection(BuildContext context) async {
-    // Navigator.push returns a Future that will complete after we call Navigator.pop on the Add News Screen
+  _navigateToAddMemberScreen(BuildContext context) async {
+    // Navigator.push returns a Future that will complete after we call Navigator.pop on the Add Member screen
     final result = await Navigator.push(context, MaterialPageRoute(builder: (context) => AddMember()));
 
     // after the Add Member Screen returns a result, hide any previous snack bars and show the new result
@@ -34,9 +34,9 @@ class _TeamState extends State<Team> {
     }
   }
 
-  /// Method that launches the View Member screen and awaits the result from Navigator.pop
-  _navigateAndDisplaySelection3(BuildContext context, Member member) async {
-    // Navigator.push returns a Future that will complete after we call Navigator.pop on the Add News Screen
+  /// Method that launches the Member detail screen and awaits the result from Navigator.pop
+  _navigateToMemberDetailScreen(BuildContext context, Member member) async {
+    // Navigator.push returns a Future that will complete after we call Navigator.pop on the Member detail screen
     final result = await Navigator.push(context, MaterialPageRoute(builder: (context) => MemberDetail(member: member)));
 
     // after the Edit Member Screen returns a result, hide any previous snack bars and show the new result
@@ -51,8 +51,14 @@ class _TeamState extends State<Team> {
     return Scaffold(
       appBar: AppBar(
         title: Text(AppString.teamTitle),
-        backgroundColor: Colors.blue[300],
         leading: new Icon(Icons.group),
+        actions: <Widget>[
+          PopupMenuButton(
+            itemBuilder: (BuildContext context) {
+              return [PopupMenuItem(child: Text(AppString.about)), PopupMenuItem(child: Text(AppString.contact))];
+            },
+          )
+        ],
       ),
       body: FutureBuilder<List<Member>>(
         future: membersService.fetchMembers(),
@@ -68,7 +74,7 @@ class _TeamState extends State<Team> {
                           return new Material(
                             child: InkWell(
                               child: new _MemberListItem(snapshot.data[index]),
-                              onTap: () => _navigateAndDisplaySelection3(context, snapshot.data[index]),
+                              onTap: () => _navigateToMemberDetailScreen(context, snapshot.data[index]),
                             ),
                             color: Colors.transparent,
                           );
@@ -97,7 +103,7 @@ class _TeamState extends State<Team> {
           child: new Icon(Icons.add),
           backgroundColor: Colors.red[700],
           onPressed: () {
-            _navigateAndDisplaySelection(context);
+            _navigateToAddMemberScreen(context);
           }),
     );
   }

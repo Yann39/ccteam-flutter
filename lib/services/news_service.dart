@@ -71,7 +71,7 @@ class NewsService {
   /// Delete specified news from the database
   /// Send a POST request to the Restful API
   /// Throw an exception if response status code is different from 204
-  Future<void> deleteMember(News news) async {
+  Future<void> deleteNews(News news) async {
     // convert News object to JSON string
     final String jsonString = _toJson(news);
 

@@ -30,9 +30,11 @@ class _AddEventState extends State<AddEvent> {
   Future<List<Track>> _futureTracks;
   Track _selectedTrack;
 
-  // fetch the tracks in initState so it is not fetch each time the state change
   initState() {
+    // fetch the tracks in initState so it is not fetch each time the state change
     _futureTracks = _tracksService.fetchTracks();
+    // set date picker text
+    _datePickerController.text = DateUtils.convertToString(widget.event.eventDate, AppConstants.DATE_FORMAT);
     return super.initState();
   }
 
@@ -62,7 +64,9 @@ class _AddEventState extends State<AddEvent> {
 
     // notify the framework that the internal state of this object has changed
     setState(() {
+      print("before : ${controller.text}");
       controller.text = DateFormat(AppConstants.DATE_FORMAT).format(finalDateTime);
+      print("after : ${controller.text}");
     });
   }
 
@@ -100,9 +104,6 @@ class _AddEventState extends State<AddEvent> {
   Widget build(BuildContext context) {
     // the current Event to be edited
     final Event currEvent = widget.event != null ? widget.event : _newEvent;
-
-    // set controller text
-    _datePickerController.text = DateUtils.convertToString(currEvent.eventDate, AppConstants.DATE_FORMAT);
 
     final priceFormatter = new NumberFormat(AppConstants.PRICE_FORMAT);
 
@@ -230,15 +231,16 @@ class _AddEventState extends State<AddEvent> {
                   onTap: () => _chooseDate(context, _datePickerController, currEvent.eventDate),
                   child: AbsorbPointer(
                     child: new TextFormField(
-                      decoration: new InputDecoration(
-                        icon: const Icon(Icons.calendar_today),
-                        hintText: AppString.eventDateHint,
-                        labelText: AppString.eventDate,
-                      ),
-                      controller: _datePickerController,
-                      keyboardType: TextInputType.datetime,
-                      validator: (val) => DateUtils.isBeforeNow(val, AppConstants.DATE_FORMAT) ? (val.isEmpty ? AppString.eventDateMandatory : null) : AppString.eventDateNotValid,
-                      onSaved: (val) => currEvent.eventDate = new DateFormat(AppConstants.DATE_FORMAT).parseStrict(val),
+                        decoration: new InputDecoration(
+                          icon: const Icon(Icons.calendar_today),
+                          hintText: AppString.eventDateHint,
+                          labelText: AppString.eventDate,
+                        ),
+                        controller: _datePickerController,
+                        keyboardType: TextInputType.datetime,
+                        validator: (val) =>
+                            DateUtils.isBeforeNow(val, AppConstants.DATE_FORMAT) ? (val.isEmpty ? AppString.eventDateMandatory : null) : AppString.eventDateNotValid,
+                        onSaved: (val) => currEvent.eventDate = new DateFormat(AppConstants.DATE_FORMAT).parseStrict(val),
                     ),
                   ),
                 ),

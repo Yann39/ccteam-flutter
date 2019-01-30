@@ -32,8 +32,14 @@ class _GalleryState extends State<Gallery> {
     return Scaffold(
       appBar: AppBar(
         title: Text(AppString.galleryTitle),
-        backgroundColor: Colors.blue[300],
-        leading: new Icon(Icons.event),
+        leading: new Icon(Icons.collections),
+        actions: <Widget>[
+          PopupMenuButton(
+            itemBuilder: (BuildContext context) {
+              return [PopupMenuItem(child: Text(AppString.about)), PopupMenuItem(child: Text(AppString.contact))];
+            },
+          )
+        ],
       ),
       body: Container(
         padding: const EdgeInsets.all(8.0),
