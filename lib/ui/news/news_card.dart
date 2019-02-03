@@ -4,40 +4,6 @@ import 'package:chachatte_team/utils/constants.dart';
 import 'package:chachatte_team/utils/date_utils.dart';
 import 'package:flutter/material.dart';
 
-/// class representing the floating action button to add a news
-/// await the result from the "Add News" screen to display a message
-class _EditNewsButton extends StatelessWidget {
-
-  final News news;
-
-  const _EditNewsButton({Key key, this.news}): super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return IconButton(
-        icon: Icon(
-          Icons.favorite_border,
-          color: Colors.white,
-        ),
-        onPressed: () {
-          _navigateAndDisplaySelection(context, news);
-        });
-  }
-
-  /// Method that launches the Add News screen and awaits the result from Navigator.pop
-  _navigateAndDisplaySelection(BuildContext context, News news) async {
-    // Navigator.push returns a Future that will complete after we call Navigator.pop on the Add News Screen
-    final result = await Navigator.push(context, MaterialPageRoute(builder: (context) => AddNews(news: news)));
-
-    // after the Add News Screen returns a result, hide any previous snack bars and show the new result
-    if (result != null) {
-      Scaffold.of(context)
-        ..removeCurrentSnackBar()
-        ..showSnackBar(SnackBar(content: Text("$result")));
-    }
-  }
-}
-
 class NewsCard extends StatelessWidget {
   final News news;
   final AssetImage image;
@@ -45,6 +11,11 @@ class NewsCard extends StatelessWidget {
   final Color shadowColor;
 
   NewsCard(this.news, this.image, this.primaryColor, this.shadowColor);
+
+  /// Method to like a News
+  _likeNews(BuildContext context, News news) async {
+
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -80,7 +51,14 @@ class NewsCard extends StatelessWidget {
                   new Flexible(
                       child: new Text(news.title, softWrap: false, textScaleFactor: 1.2, style: new TextStyle(color: Colors.white), maxLines: 1, overflow: TextOverflow.ellipsis))
                 ])),
-                _EditNewsButton(news: news),
+                IconButton(
+                    icon: Icon(
+                      Icons.favorite_border,
+                      color: Colors.white,
+                    ),
+                    onPressed: () {
+                      _likeNews(context, news);
+                    })
               ]),
             ),
             new Container(

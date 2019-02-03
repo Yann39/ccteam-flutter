@@ -1,12 +1,8 @@
 import 'package:chachatte_team/models/photo.dart';
-import 'package:chachatte_team/models/track.dart';
 import 'package:chachatte_team/services/photos_service.dart';
-import 'package:chachatte_team/services/tracks_service.dart';
-import 'package:chachatte_team/utils/constants.dart';
 import 'package:chachatte_team/utils/strings.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:intl/intl.dart';
 
 class AddPhoto extends StatefulWidget {
   final Photo photo;

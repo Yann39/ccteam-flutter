@@ -6,7 +6,7 @@ class DateUtils {
   /// return null if the specified input string is not a valid date
   static DateTime convertToDate(String input, String format) {
     try {
-      var d = new DateFormat(format).parseStrict(input);
+      var d = new DateFormat(format, 'fr').parseStrict(input);
       return d;
     } catch (e) {
       return null;
@@ -17,7 +17,7 @@ class DateUtils {
   /// return null if the specified input is not a valid date
   static String convertToString(DateTime input, String format) {
     try {
-      var formatter = new DateFormat(format);
+      var formatter = new DateFormat(format, 'fr');
       String formatted = formatter.format(input);
       return formatted;
     } catch (e) {

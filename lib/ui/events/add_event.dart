@@ -33,8 +33,10 @@ class _AddEventState extends State<AddEvent> {
   initState() {
     // fetch the tracks in initState so it is not fetch each time the state change
     _futureTracks = _tracksService.fetchTracks();
-    // set date picker text
-    _datePickerController.text = DateUtils.convertToString(widget.event.eventDate, AppConstants.DATE_FORMAT);
+    // set date picker text if set
+    if (widget.event != null) {
+      _datePickerController.text = DateUtils.convertToString(widget.event.eventDate, AppConstants.DATE_FORMAT);
+    }
     return super.initState();
   }
 

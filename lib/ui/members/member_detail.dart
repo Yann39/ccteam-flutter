@@ -3,6 +3,7 @@ import 'package:chachatte_team/services/members_service.dart';
 import 'package:chachatte_team/ui/members/add_member.dart';
 import 'package:chachatte_team/utils/strings.dart';
 import 'package:flutter/material.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 class MemberDetail extends StatefulWidget {
   final Member member;
@@ -130,7 +131,11 @@ class _MemberDetailState extends State<MemberDetail> {
                           Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: <Widget>[
-                              Image.network('https://images.freeimages.com/images/large-previews/e71/frog-1371919.jpg', fit: BoxFit.fitHeight),
+                              CachedNetworkImage(
+                                placeholder: CircularProgressIndicator(),
+                                imageUrl: 'https://images.freeimages.com/images/large-previews/e71/frog-1371919.jpg',
+                              ),
+                              //Image.network('https://images.freeimages.com/images/large-previews/e71/frog-1371919.jpg', fit: BoxFit.fitHeight),
                             ],
                           ),
                           const DecoratedBox(

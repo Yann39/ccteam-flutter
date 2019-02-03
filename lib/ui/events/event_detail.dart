@@ -1,25 +1,25 @@
-import 'package:chachatte_team/models/news.dart';
-import 'package:chachatte_team/services/news_service.dart';
-import 'package:chachatte_team/ui/news/add_news.dart';
+import 'package:chachatte_team/models/event.dart';
+import 'package:chachatte_team/services/events_service.dart';
+import 'package:chachatte_team/ui/events/add_event.dart';
 import 'package:chachatte_team/utils/constants.dart';
 import 'package:chachatte_team/utils/date_utils.dart';
 import 'package:chachatte_team/utils/strings.dart';
 import 'package:flutter/material.dart';
 
-class NewsDetail extends StatefulWidget {
-  final News news;
+class EventDetail extends StatefulWidget {
+  final Event event;
 
-  const NewsDetail({Key key, this.news}) : super(key: key);
+  const EventDetail({Key key, this.event}) : super(key: key);
 
   @override
   State<StatefulWidget> createState() {
-    return _NewsDetailState();
+    return _EventDetailState();
   }
 }
 
 enum ConfirmDialogAction { yes, no }
 
-class _NewsDetailState extends State<NewsDetail> {
+class _EventDetailState extends State<EventDetail> {
   ScrollController _scrollController;
 
   @override
@@ -30,9 +30,9 @@ class _NewsDetailState extends State<NewsDetail> {
   }
 
   /// Method that launches the Edit New screen and awaits the result from Navigator.pop
-  _navigateToEditNewsScreen(BuildContext context, News news) async {
-    // Navigator.push returns a Future that will complete after we call Navigator.pop on the Add News Screen
-    final result = await Navigator.push(context, MaterialPageRoute(builder: (context) => AddNews(news: news)));
+  _navigateToEditEventScreen(BuildContext context, Event event) async {
+    // Navigator.push returns a Future that will complete after we call Navigator.pop on the Add Event Screen
+    final result = await Navigator.push(context, MaterialPageRoute(builder: (context) => AddEvent(event: event)));
 
     // after the Edit New Screen returns a result, hide any previous snack bars and show the new result
     if (result != null) {
@@ -42,7 +42,7 @@ class _NewsDetailState extends State<NewsDetail> {
     }
   }
 
-  /// Display a confirmation popup when trying to delete a news
+  /// Display a confirmation popup when trying to delete a event
   void _showConfirmation(BuildContext context, String value) {
     showDialog(
       context: context,
@@ -67,19 +67,19 @@ class _NewsDetailState extends State<NewsDetail> {
     );
   }
 
-  /// Handle result of the news deletion confirmation dialog
+  /// Handle result of the event deletion confirmation dialog
   void _dialogueResult(BuildContext context, ConfirmDialogAction value) {
     if (value == ConfirmDialogAction.yes) {
-      final NewsService newsService = new NewsService();
-      // delete news
-      newsService.deleteNews(widget.news).then((value) {
+      final EventsService eventsService = new EventsService();
+      // delete event
+      eventsService.deleteEvent(widget.event).then((value) {
         Scaffold.of(context)
           ..removeCurrentSnackBar()
-          ..showSnackBar(SnackBar(content: Text(AppString.newsDeleted)));
+          ..showSnackBar(SnackBar(content: Text(AppString.eventDeleted)));
       }, onError: (error) {
         Scaffold.of(context)
           ..removeCurrentSnackBar()
-          ..showSnackBar(SnackBar(content: Text(AppString.newsDeletionFailed)));
+          ..showSnackBar(SnackBar(content: Text(AppString.eventDeletionFailed)));
       });
     }
     Navigator.pop(context);
@@ -92,15 +92,15 @@ class _NewsDetailState extends State<NewsDetail> {
           IconButton(
             icon: const Icon(Icons.edit),
             tooltip: 'Edit',
-            onPressed: () => _navigateToEditNewsScreen(context, widget.news),
+            onPressed: () => _navigateToEditEventScreen(context, widget.event),
           ),
           IconButton(
             icon: const Icon(Icons.delete_forever),
             tooltip: 'Delete',
-            onPressed: () => _showConfirmation(context, AppString.newsDeletionAreYouSure),
+            onPressed: () => _showConfirmation(context, AppString.eventDeletionAreYouSure),
           )
         ],
-        title: Text('News detail'),
+        title: Text('Event detail'),
         leading: IconButton(
           icon: Icon(Icons.arrow_back),
           onPressed: () => Navigator.pop(context),
@@ -111,12 +111,12 @@ class _NewsDetailState extends State<NewsDetail> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: <Widget>[
-            Text(DateUtils.convertToString(widget.news.newsDate, AppConstants.DATE_FORMAT), textAlign: TextAlign.left),
-            Text(widget.news.title, textScaleFactor: 2, textAlign: TextAlign.center),
+            Text(DateUtils.convertToString(widget.event.eventDate, AppConstants.DATE_FORMAT), textAlign: TextAlign.left),
+            Text(widget.event.title, textScaleFactor: 2, textAlign: TextAlign.center),
             SizedBox(
               height: 10,
             ),
-            Text(widget.news.content),
+            Text(widget.event.description),
           ],
         ),
         decoration: new BoxDecoration(

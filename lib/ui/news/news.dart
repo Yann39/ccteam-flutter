@@ -6,6 +6,7 @@ import 'package:chachatte_team/ui/news/news_card.dart';
 import 'package:chachatte_team/ui/news/news_detail.dart';
 import 'package:chachatte_team/utils/strings.dart';
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class NewsList extends StatefulWidget {
   @override
@@ -13,6 +14,8 @@ class NewsList extends StatefulWidget {
     return _NewsListState();
   }
 }
+
+enum QuickActions { about, contact }
 
 class _NewsListState extends State<NewsList> {
   static final NewsService newsService = new NewsService();
@@ -46,11 +49,26 @@ class _NewsListState extends State<NewsList> {
     // Navigator.push returns a Future that will complete after we call Navigator.pop on the News detail screen
     final result = await Navigator.push(context, MaterialPageRoute(builder: (context) => NewsDetail(news: news)));
 
-    // after the Edit Member Screen returns a result, hide any previous snack bars and show the new result
+    // after the Edit News Screen returns a result, hide any previous snack bars and show the new result
     if (result != null) {
       Scaffold.of(context)
         ..removeCurrentSnackBar()
         ..showSnackBar(SnackBar(content: Text("$result")));
+    }
+  }
+
+  _launchURL() async {
+    const url = 'mailto:rockyracer@mailfence.com';
+    if (await canLaunch(url)) {
+      await launch(url);
+    } else {
+      throw 'Could not launch $url';
+    }
+  }
+
+  void _select(QuickActions choice) {
+    if (choice == QuickActions.contact) {
+      _launchURL();
     }
   }
 
@@ -60,10 +78,20 @@ class _NewsListState extends State<NewsList> {
         title: Text(AppString.applicationTitle),
         leading: new Icon(Icons.home),
         actions: <Widget>[
-          PopupMenuButton(
+          PopupMenuButton<QuickActions>(
             itemBuilder: (BuildContext context) {
-              return [PopupMenuItem(child: Text(AppString.about)), PopupMenuItem(child: Text(AppString.contact))];
+              return [
+                PopupMenuItem<QuickActions>(
+                  child: Text(AppString.about),
+                  value: QuickActions.about,
+                ),
+                PopupMenuItem<QuickActions>(
+                  child: Text(AppString.contact),
+                  value: QuickActions.contact,
+                ),
+              ];
             },
+            onSelected: _select,
           )
         ],
       ),
@@ -131,7 +159,7 @@ class _NewsListState extends State<NewsList> {
           ),
           decoration: new BoxDecoration(
             gradient: new LinearGradient(
-                colors: [Colors.blue[200], Colors.blue[500]],
+                colors: [Colors.blue[200], Colors.blue[400]],
                 begin: const FractionalOffset(0.0, 0.0),
                 end: const FractionalOffset(0.0, 1.0),
                 stops: [0.0, 1.0],

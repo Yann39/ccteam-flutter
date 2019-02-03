@@ -4,6 +4,7 @@ import 'package:chachatte_team/ui/news/news.dart';
 import 'package:chachatte_team/ui/members/team.dart';
 import 'package:chachatte_team/utils/strings.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/date_symbol_data_local.dart';
 
 class Home extends StatefulWidget {
   @override
@@ -13,6 +14,12 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> {
+
+  @override
+  void initState() {
+    super.initState();
+    initializeDateFormatting();
+  }
 
   // current page index of the bottom navigation bar
   int _currentIndex = 0;

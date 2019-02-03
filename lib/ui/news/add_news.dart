@@ -27,8 +27,10 @@ class _AddNewsState extends State<AddNews> {
   final News _newNews = new News();
 
   initState() {
-    // set date picker text
-    _datePickerController.text = DateUtils.convertToString(widget.news.newsDate, AppConstants.DATE_FORMAT);
+    // set date picker text if set
+    if (widget.news != null) {
+      _datePickerController.text = DateUtils.convertToString(widget.news.newsDate, AppConstants.DATE_FORMAT);
+    }
     return super.initState();
   }
 
@@ -116,7 +118,7 @@ class _AddNewsState extends State<AddNews> {
                 ),
               ],
             ),
-            decoration: new BoxDecoration(color: Colors.green[400]),
+            decoration: new BoxDecoration(color: Colors.blue[200]),
             height: 50.0,
           ),
           preferredSize: Size.fromHeight(50.0),
@@ -178,7 +180,7 @@ class _AddNewsState extends State<AddNews> {
         ),
         decoration: new BoxDecoration(
           gradient: new LinearGradient(
-            colors: [Colors.green[300], Colors.blue[300]],
+            colors: [Colors.blue[100], Colors.blue[400]],
             begin: const FractionalOffset(0.0, 0.0),
             end: const FractionalOffset(0.0, 1.0),
             stops: [0.0, 1.0],

@@ -55,8 +55,10 @@ class _AddMemberState extends State<AddMember> {
   final Member _newMember = new Member();
 
   initState() {
-    // set date picker text
-    _datePickerController.text = DateUtils.convertToString(widget.member.registrationDate, AppConstants.DATE_FORMAT);
+    // set date picker text if set
+    if (widget.member != null) {
+      _datePickerController.text = DateUtils.convertToString(widget.member.registrationDate, AppConstants.DATE_FORMAT);
+    }
     return super.initState();
   }
 
@@ -209,11 +211,7 @@ class _AddMemberState extends State<AddMember> {
                   initialValue: currMember.phone,
                 ),
                 new TextFormField(
-                  decoration: const InputDecoration(
-                    icon: const Icon(Icons.motorcycle),
-                    hintText: AppString.memberBikeHint,
-                    labelText: AppString.memberBike,
-                  ),
+                  decoration: const InputDecoration(icon: const Icon(Icons.motorcycle), hintText: AppString.memberBikeHint, labelText: AppString.memberBike),
                   maxLines: 1,
                   inputFormatters: [new LengthLimitingTextInputFormatter(64)],
                   validator: (val) => val.isEmpty ? AppString.memberBikeMandatory : null,

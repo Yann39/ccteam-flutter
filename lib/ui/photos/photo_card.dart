@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:chachatte_team/models/photo.dart';
 import 'package:chachatte_team/services/photos_service.dart';
 import 'package:chachatte_team/ui/photos/add_photo.dart';
@@ -80,7 +81,11 @@ class PhotoCard extends StatelessWidget {
         child: Stack(
           fit: StackFit.expand,
           children: [
-            Image.network(photo.link, fit: BoxFit.fitWidth),
+            CachedNetworkImage(
+              placeholder: CircularProgressIndicator(),
+              imageUrl: photo.link,
+            ),
+            //Image.network(photo.link, fit: BoxFit.fitWidth),
             new Align(
               alignment: FractionalOffset.bottomCenter,
               child: Container(

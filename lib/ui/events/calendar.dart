@@ -15,6 +15,8 @@ class Calendar extends StatefulWidget {
 class _CalendarState extends State<Calendar> {
   static final EventsService eventsService = new EventsService();
 
+  static int nbCol = 2;
+
   /// Method that launches the Add Event screen and awaits the result from Navigator.pop
   _navigateAndDisplaySelection(BuildContext context) async {
     // Navigator.push returns a Future that will complete after we call Navigator.pop on the Add News Screen
@@ -34,6 +36,14 @@ class _CalendarState extends State<Calendar> {
         title: Text(AppString.calendarTitle),
         leading: new Icon(Icons.event),
         actions: <Widget>[
+          IconButton(
+            icon: nbCol == 2 ? Icon(Icons.filter_3) : Icon(Icons.filter_2),
+            onPressed: () {
+              setState(() {
+                nbCol = nbCol == 2 ? 3 : 2;
+              });
+            },
+          ),
           PopupMenuButton(
             itemBuilder: (BuildContext context) {
               return [PopupMenuItem(child: Text(AppString.about)), PopupMenuItem(child: Text(AppString.contact))];
@@ -48,9 +58,9 @@ class _CalendarState extends State<Calendar> {
           builder: (context, snapshot) {
             if (snapshot.hasData) {
               return GridView.count(
-                crossAxisCount: 2,
+                crossAxisCount: nbCol,
                 children: List.generate(snapshot.data.length, (index) {
-                  return new EventCard(snapshot.data[index], eventsService);
+                  return new EventCard(snapshot.data[index], eventsService, nbCol);
                 }),
               );
             } else if (snapshot.hasError) {
