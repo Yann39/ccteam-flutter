@@ -51,7 +51,7 @@ class _AddMemberState extends State<AddMember> {
   final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
   final TextEditingController _datePickerController = new TextEditingController();
 
-  // the Member to be created
+  // the member to be created
   final Member _newMember = new Member();
 
   initState() {
@@ -127,7 +127,7 @@ class _AddMemberState extends State<AddMember> {
     return Scaffold(
       key: _scaffoldKey,
       appBar: AppBar(
-        title: Text(AppString.createMember),
+        title: Text(AppString.memberCreate),
         bottom: PreferredSize(
           child: Container(
             child: Row(
@@ -146,7 +146,7 @@ class _AddMemberState extends State<AddMember> {
                 ),
               ],
             ),
-            decoration: new BoxDecoration(color: Colors.green[400]),
+            decoration: new BoxDecoration(color: Colors.blue[200]),
             height: 50.0,
           ),
           preferredSize: Size.fromHeight(50.0),
@@ -242,7 +242,7 @@ class _AddMemberState extends State<AddMember> {
         ),
         decoration: new BoxDecoration(
           gradient: new LinearGradient(
-            colors: [Colors.green[300], Colors.blue[300]],
+            colors: [Colors.blue[100], Colors.blue[300]],
             begin: const FractionalOffset(0.0, 0.0),
             end: const FractionalOffset(0.0, 1.0),
             stops: [0.0, 1.0],

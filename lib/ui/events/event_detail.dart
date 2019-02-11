@@ -20,21 +20,12 @@ class EventDetail extends StatefulWidget {
 enum ConfirmDialogAction { yes, no }
 
 class _EventDetailState extends State<EventDetail> {
-  ScrollController _scrollController;
-
-  @override
-  void initState() {
-    super.initState();
-
-    _scrollController = ScrollController()..addListener(() => setState(() {}));
-  }
-
-  /// Method that launches the Edit New screen and awaits the result from Navigator.pop
+  /// Method that launches the Edit event screen and awaits the result from Navigator.pop
   _navigateToEditEventScreen(BuildContext context, Event event) async {
-    // Navigator.push returns a Future that will complete after we call Navigator.pop on the Add Event Screen
+    // Navigator.push returns a Future that will complete after we call Navigator.pop on the target screen
     final result = await Navigator.push(context, MaterialPageRoute(builder: (context) => AddEvent(event: event)));
 
-    // after the Edit New Screen returns a result, hide any previous snack bars and show the new result
+    // after the target screen returns a result, hide any previous snack bars and show the new result
     if (result != null) {
       Scaffold.of(context)
         ..removeCurrentSnackBar()
@@ -89,18 +80,18 @@ class _EventDetailState extends State<EventDetail> {
     return Scaffold(
       appBar: AppBar(
         actions: <Widget>[
-          IconButton(
-            icon: const Icon(Icons.edit),
-            tooltip: 'Edit',
-            onPressed: () => _navigateToEditEventScreen(context, widget.event),
+          Builder(
+            builder: (context) => IconButton(
+                  icon: const Icon(Icons.edit),
+                  onPressed: () => _navigateToEditEventScreen(context, widget.event),
+                ),
           ),
           IconButton(
             icon: const Icon(Icons.delete_forever),
-            tooltip: 'Delete',
             onPressed: () => _showConfirmation(context, AppString.eventDeletionAreYouSure),
           )
         ],
-        title: Text('Event detail'),
+        title: Text(AppString.eventDetailScreenTitle),
         leading: IconButton(
           icon: Icon(Icons.arrow_back),
           onPressed: () => Navigator.pop(context),
@@ -121,7 +112,7 @@ class _EventDetailState extends State<EventDetail> {
         ),
         decoration: new BoxDecoration(
           gradient: new LinearGradient(
-            colors: [Colors.blue[100], Colors.blue[400]],
+            colors: [Colors.blue[100], Colors.blue[300]],
             begin: const FractionalOffset(0.0, 0.0),
             end: const FractionalOffset(0.0, 1.0),
             stops: [0.0, 1.0],

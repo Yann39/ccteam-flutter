@@ -9,3 +9,4 @@ build/
 ios/.generated/
 packages
 .flutter-plugins
+.php/api/config/database.php

@@ -66,9 +66,7 @@ class _AddEventState extends State<AddEvent> {
 
     // notify the framework that the internal state of this object has changed
     setState(() {
-      print("before : ${controller.text}");
       controller.text = DateFormat(AppConstants.DATE_FORMAT).format(finalDateTime);
-      print("after : ${controller.text}");
     });
   }
 
@@ -97,7 +95,7 @@ class _AddEventState extends State<AddEvent> {
         eventsService.createEvent(event).then((value) {
           Navigator.pop(context, AppString.eventCreated);
         }, onError: (error) {
-          Navigator.pop(context, AppString.eventCreationFailed);
+          Navigator.pop(context, AppString.eventCreationFailed + " : " + error.toString());
         });
       }
     }
@@ -112,27 +110,40 @@ class _AddEventState extends State<AddEvent> {
     return Scaffold(
       key: _scaffoldKey,
       appBar: AppBar(
-        title: Text(AppString.createEvent),
+        title: Text(AppString.eventCreate),
         bottom: PreferredSize(
           child: Container(
             child: Row(
               children: <Widget>[
                 new Expanded(
-                  child: new FlatButton(
-                    child: Text(AppString.cancel.toUpperCase()),
-                    onPressed: () => Navigator.pop(context),
+                  child: new Container(
+                    child: new FlatButton(
+                      child: Text(
+                        AppString.cancel.toUpperCase(),
+                        style: TextStyle(color: Colors.white),
+                      ),
+                      onPressed: () => Navigator.pop(context),
+                    ),
+                    decoration: new BoxDecoration(color: Colors.red[700]),
                   ),
                 ),
+                new SizedBox(width: 6.0),
                 new Expanded(
-                  child: new FlatButton(
-                    child: Text(AppString.save.toUpperCase()),
-                    onPressed: () => submitForm(currEvent),
+                  child: new Container(
+                    child: new FlatButton(
+                      child: Text(
+                        AppString.save.toUpperCase(),
+                        style: TextStyle(color: Colors.white),
+                      ),
+                      onPressed: () => submitForm(currEvent),
+                    ),
+                    decoration: new BoxDecoration(color: Colors.green[700]),
                   ),
                 ),
               ],
             ),
-            decoration: new BoxDecoration(color: Colors.green[400]),
-            height: 50.0,
+            decoration: new BoxDecoration(color: Colors.blue[100]),
+            padding: EdgeInsets.all(6.0),
           ),
           preferredSize: Size.fromHeight(50.0),
         ),
@@ -233,16 +244,15 @@ class _AddEventState extends State<AddEvent> {
                   onTap: () => _chooseDate(context, _datePickerController, currEvent.eventDate),
                   child: AbsorbPointer(
                     child: new TextFormField(
-                        decoration: new InputDecoration(
-                          icon: const Icon(Icons.calendar_today),
-                          hintText: AppString.eventDateHint,
-                          labelText: AppString.eventDate,
-                        ),
-                        controller: _datePickerController,
-                        keyboardType: TextInputType.datetime,
-                        validator: (val) =>
-                            DateUtils.isBeforeNow(val, AppConstants.DATE_FORMAT) ? (val.isEmpty ? AppString.eventDateMandatory : null) : AppString.eventDateNotValid,
-                        onSaved: (val) => currEvent.eventDate = new DateFormat(AppConstants.DATE_FORMAT).parseStrict(val),
+                      decoration: new InputDecoration(
+                        icon: const Icon(Icons.calendar_today),
+                        hintText: AppString.eventDateHint,
+                        labelText: AppString.eventDate,
+                      ),
+                      controller: _datePickerController,
+                      keyboardType: TextInputType.datetime,
+                      validator: (val) => !DateUtils.isBeforeNow(val, AppConstants.DATE_FORMAT) ? (val.isEmpty ? AppString.eventDateMandatory : null) : AppString.eventDateNotValid,
+                      onSaved: (val) => currEvent.eventDate = new DateFormat(AppConstants.DATE_FORMAT).parseStrict(val),
                     ),
                   ),
                 ),
@@ -252,7 +262,7 @@ class _AddEventState extends State<AddEvent> {
         ),
         decoration: new BoxDecoration(
           gradient: new LinearGradient(
-              colors: [Colors.green[300], Colors.blue[300]],
+              colors: [Colors.blue[100], Colors.blue[300]],
               begin: const FractionalOffset(0.0, 0.0),
               end: const FractionalOffset(0.0, 1.0),
               stops: [0.0, 1.0],

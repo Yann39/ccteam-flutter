@@ -95,20 +95,21 @@ class EventsService {
     map["organizer"] = event.organizer;
     map["price"] = event.price;
 
-    List<Map> maps = <Map>[];
-    for (Member m in event.members) {
-      final Map map2 = new Map();
-      map2["id"] = m.id;
-      map2["first_name"] = m.firstName;
-      map2["last_name"] = m.lastName;
-      map2["email"] = m.email;
-      map2["phone"] = m.phone;
-      map2["bike"] = m.bike;
-      map2["registration_date"] = new DateFormat("y-M-d H:m:s.S").format(m.registrationDate);
-      maps.add(map2);
+    if (event.members != null) {
+      List<Map> maps = <Map>[];
+      for (Member m in event.members) {
+        final Map map2 = new Map();
+        map2["id"] = m.id;
+        map2["first_name"] = m.firstName;
+        map2["last_name"] = m.lastName;
+        map2["email"] = m.email;
+        map2["phone"] = m.phone;
+        map2["bike"] = m.bike;
+        map2["registration_date"] = new DateFormat("y-M-d H:m:s.S").format(m.registrationDate);
+        maps.add(map2);
+      }
+      map["members"] = maps;
     }
-
-    map["members"] = maps;
 
     print(json.encode(map));
 

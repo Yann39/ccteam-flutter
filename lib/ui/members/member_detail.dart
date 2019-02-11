@@ -36,10 +36,10 @@ class _MemberDetailState extends State<MemberDetail> {
 
   /// Method that launches the Edit Member screen and awaits the result from Navigator.pop
   _navigateToEditMemberScreen(BuildContext context, Member member) async {
-    // Navigator.push returns a Future that will complete after we call Navigator.pop on the Add News Screen
+    // Navigator.push returns a Future that will complete after we call Navigator.pop on the target screen
     final result = await Navigator.push(context, MaterialPageRoute(builder: (context) => AddMember(member: member)));
 
-    // after the Edit Member Screen returns a result, hide any previous snack bars and show the new result
+    // after the target screen returns a result, hide any previous snack bars and show the new result
     if (result != null) {
       Scaffold.of(context)
         ..removeCurrentSnackBar()
@@ -166,7 +166,7 @@ class _MemberDetailState extends State<MemberDetail> {
                               children: <Widget>[
                                 Container(
                                   child: Text(
-                                    widget.member.bike,
+                                    widget.member.bike != null ? widget.member.bike : 'test',
                                     style: TextStyle(color: Colors.white),
                                     textScaleFactor: 1.6,
                                   ),
@@ -192,7 +192,7 @@ class _MemberDetailState extends State<MemberDetail> {
                               children: <Widget>[
                                 Container(
                                   child: Text(
-                                    widget.member.phone,
+                                    widget.member.phone != null ? widget.member.phone : 'test',
                                     style: TextStyle(color: Colors.white),
                                     textScaleFactor: 1.6,
                                   ),
@@ -218,7 +218,7 @@ class _MemberDetailState extends State<MemberDetail> {
                               children: <Widget>[
                                 Container(
                                   child: Text(
-                                    widget.member.email,
+                                    widget.member.email != null ? widget.member.email : 'test',
                                     style: TextStyle(color: Colors.white),
                                     textScaleFactor: 1.6,
                                   ),
@@ -239,7 +239,7 @@ class _MemberDetailState extends State<MemberDetail> {
         ),
         decoration: new BoxDecoration(
           gradient: new LinearGradient(
-            colors: [Colors.blue[300], Colors.green[300]],
+            colors: [Colors.blue[100], Colors.blue[300]],
             begin: const FractionalOffset(0.0, 0.0),
             end: const FractionalOffset(0.0, 1.0),
             stops: [0.0, 1.0],

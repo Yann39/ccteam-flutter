@@ -15,14 +15,15 @@ class Calendar extends StatefulWidget {
 class _CalendarState extends State<Calendar> {
   static final EventsService eventsService = new EventsService();
 
-  static int nbCol = 2;
+  // if user wants to display more event per line
+  bool more = false;
 
   /// Method that launches the Add Event screen and awaits the result from Navigator.pop
-  _navigateAndDisplaySelection(BuildContext context) async {
-    // Navigator.push returns a Future that will complete after we call Navigator.pop on the Add News Screen
+  _navigateToAddEventScreen(BuildContext context) async {
+    // Navigator.push returns a Future that will complete after we call Navigator.pop on the target screen
     final result = await Navigator.push(context, MaterialPageRoute(builder: (context) => AddEvent()));
 
-    // after the Add Event screen returns a result, hide any previous snack bars and show the new result
+    // after the target screen returns a result, hide any previous snack bars and show the new result
     if (result != null) {
       Scaffold.of(context)
         ..removeCurrentSnackBar()
@@ -31,16 +32,29 @@ class _CalendarState extends State<Calendar> {
   }
 
   Widget build(BuildContext context) {
+    // get screen orientation
+    final Orientation orientation = MediaQuery.of(context).orientation;
+
+    // number of events per line
+    final int nbCol = orientation == Orientation.portrait ? (more ? 3 : 2) : (more ? 6 : 4);
+
+    // icon to display for the number of event per line option
+    final Icon nbColIcon = orientation == Orientation.portrait ? (more ? Icon(Icons.filter_2) : Icon(Icons.filter_3)) : (more ? Icon(Icons.filter_4) : Icon(Icons.filter_6));
+    final String nbColIconTooltip = orientation == Orientation.portrait
+        ? (more ? AppString.eventDisplay2ItemsTooltip : AppString.eventDisplay3ItemsTooltip)
+        : (more ? AppString.eventDisplay4ItemsTooltip : AppString.eventDisplay6ItemsTooltip);
+
     return Scaffold(
       appBar: AppBar(
-        title: Text(AppString.calendarTitle),
+        title: Text(AppString.eventScreenTitle),
         leading: new Icon(Icons.event),
         actions: <Widget>[
           IconButton(
-            icon: nbCol == 2 ? Icon(Icons.filter_3) : Icon(Icons.filter_2),
+            icon: nbColIcon,
+            tooltip: nbColIconTooltip,
             onPressed: () {
               setState(() {
-                nbCol = nbCol == 2 ? 3 : 2;
+                more = !more;
               });
             },
           ),
@@ -48,7 +62,7 @@ class _CalendarState extends State<Calendar> {
             itemBuilder: (BuildContext context) {
               return [PopupMenuItem(child: Text(AppString.about)), PopupMenuItem(child: Text(AppString.contact))];
             },
-          )
+          ),
         ],
       ),
       body: Container(
@@ -72,7 +86,7 @@ class _CalendarState extends State<Calendar> {
         ),
         decoration: new BoxDecoration(
           gradient: new LinearGradient(
-            colors: [Colors.blue[200], Colors.blue[600]],
+            colors: [Colors.blue[200], Colors.blue[300]],
             begin: const FractionalOffset(0.0, 0.0),
             end: const FractionalOffset(0.0, 1.0),
             stops: [0.0, 1.0],
@@ -85,7 +99,7 @@ class _CalendarState extends State<Calendar> {
         child: new Icon(Icons.add),
         backgroundColor: Colors.red[700],
         onPressed: () {
-          _navigateAndDisplaySelection(context);
+          _navigateToAddEventScreen(context);
         },
       ),
     );

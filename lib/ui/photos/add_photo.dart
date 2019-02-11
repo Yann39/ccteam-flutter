@@ -60,7 +60,7 @@ class _AddPhotoState extends State<AddPhoto> {
     return Scaffold(
       key: _scaffoldKey,
       appBar: AppBar(
-        title: Text(AppString.createPhoto),
+        title: Text(AppString.photoCreate),
         bottom: PreferredSize(
           child: Container(
             child: Row(
@@ -79,7 +79,7 @@ class _AddPhotoState extends State<AddPhoto> {
                 ),
               ],
             ),
-            decoration: new BoxDecoration(color: Colors.green[400]),
+            decoration: new BoxDecoration(color: Colors.blue[200]),
             height: 50.0,
           ),
           preferredSize: Size.fromHeight(50.0),
@@ -137,7 +137,7 @@ class _AddPhotoState extends State<AddPhoto> {
         ),
         decoration: new BoxDecoration(
           gradient: new LinearGradient(
-            colors: [Colors.green[300], Colors.blue[300]],
+            colors: [Colors.blue[100], Colors.blue[300]],
             begin: const FractionalOffset(0.0, 0.0),
             end: const FractionalOffset(0.0, 1.0),
             stops: [0.0, 1.0],

@@ -23,10 +23,10 @@ class _TeamState extends State<Team> {
 
   /// Method that launches the Add Member screen and awaits the result from Navigator.pop
   _navigateToAddMemberScreen(BuildContext context) async {
-    // Navigator.push returns a Future that will complete after we call Navigator.pop on the Add Member screen
+    // Navigator.push returns a Future that will complete after we call Navigator.pop on the target screen
     final result = await Navigator.push(context, MaterialPageRoute(builder: (context) => AddMember()));
 
-    // after the Add Member Screen returns a result, hide any previous snack bars and show the new result
+    // after the target screen returns a result, hide any previous snack bars and show the new result
     if (result != null) {
       Scaffold.of(context)
         ..removeCurrentSnackBar()
@@ -36,10 +36,10 @@ class _TeamState extends State<Team> {
 
   /// Method that launches the Member detail screen and awaits the result from Navigator.pop
   _navigateToMemberDetailScreen(BuildContext context, Member member) async {
-    // Navigator.push returns a Future that will complete after we call Navigator.pop on the Member detail screen
+    // Navigator.push returns a Future that will complete after we call Navigator.pop on the target screen
     final result = await Navigator.push(context, MaterialPageRoute(builder: (context) => MemberDetail(member: member)));
 
-    // after the Edit Member Screen returns a result, hide any previous snack bars and show the new result
+    // after the target screen returns a result, hide any previous snack bars and show the new result
     if (result != null) {
       Scaffold.of(context)
         ..removeCurrentSnackBar()
@@ -50,7 +50,7 @@ class _TeamState extends State<Team> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(AppString.teamTitle),
+        title: Text(AppString.memberScreenTitle),
         leading: new Icon(Icons.group),
         actions: <Widget>[
           PopupMenuButton(
@@ -81,7 +81,7 @@ class _TeamState extends State<Team> {
                         }),
                     decoration: new BoxDecoration(
                       gradient: new LinearGradient(
-                          colors: [Colors.blue[300], Colors.green[300]],
+                          colors: [Colors.blue[100], Colors.blue[300]],
                           begin: const FractionalOffset(0.0, 0.0),
                           end: const FractionalOffset(0.0, 1.0),
                           stops: [0.0, 1.0],

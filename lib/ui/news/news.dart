@@ -1,4 +1,6 @@
+import 'dart:async';
 import 'dart:math';
+
 import 'package:chachatte_team/models/news.dart';
 import 'package:chachatte_team/services/news_service.dart';
 import 'package:chachatte_team/ui/news/add_news.dart';
@@ -33,10 +35,10 @@ class _NewsListState extends State<NewsList> {
 
   /// Method that launches the Add News screen and awaits the result from Navigator.pop
   _navigateToAddNewsScreen(BuildContext context) async {
-    // Navigator.push returns a Future that will complete after we call Navigator.pop on the Add News screen
+    // Navigator.push returns a Future that will complete after we call Navigator.pop on the target screen
     final result = await Navigator.push(context, MaterialPageRoute(builder: (context) => AddNews()));
 
-    // after the Add News Screen returns a result, hide any previous snack bars and show the new result
+    // after the target screen returns a result, hide any previous snack bars and show the new result
     if (result != null) {
       Scaffold.of(context)
         ..removeCurrentSnackBar()
@@ -46,10 +48,10 @@ class _NewsListState extends State<NewsList> {
 
   /// Method that launches the News detail screen and awaits the result from Navigator.pop
   _navigateToNewsDetailScreen(BuildContext context, News news) async {
-    // Navigator.push returns a Future that will complete after we call Navigator.pop on the News detail screen
+    // Navigator.push returns a Future that will complete after we call Navigator.pop on the target screen
     final result = await Navigator.push(context, MaterialPageRoute(builder: (context) => NewsDetail(news: news)));
 
-    // after the Edit News Screen returns a result, hide any previous snack bars and show the new result
+    // after the target screen returns a result, hide any previous snack bars and show the new result
     if (result != null) {
       Scaffold.of(context)
         ..removeCurrentSnackBar()
@@ -117,7 +119,7 @@ class _NewsListState extends State<NewsList> {
                 ),
                 decoration: new BoxDecoration(
                   gradient: new LinearGradient(
-                      colors: [Colors.white, Colors.blue[200]],
+                      colors: [Colors.white, Colors.blue[100]],
                       begin: const FractionalOffset(0.0, 0.0),
                       end: const FractionalOffset(0.0, 1.0),
                       stops: [0.0, 1.0],
@@ -159,7 +161,7 @@ class _NewsListState extends State<NewsList> {
           ),
           decoration: new BoxDecoration(
             gradient: new LinearGradient(
-                colors: [Colors.blue[200], Colors.blue[400]],
+                colors: [Colors.blue[100], Colors.blue[300]],
                 begin: const FractionalOffset(0.0, 0.0),
                 end: const FractionalOffset(0.0, 1.0),
                 stops: [0.0, 1.0],

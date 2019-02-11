@@ -23,7 +23,7 @@ class _AddNewsState extends State<AddNews> {
   final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
   final TextEditingController _datePickerController = new TextEditingController();
 
-  // the News to be created
+  // the news to be created
   final News _newNews = new News();
 
   initState() {
@@ -99,7 +99,7 @@ class _AddNewsState extends State<AddNews> {
     return Scaffold(
       key: _scaffoldKey,
       appBar: AppBar(
-        title: Text(AppString.createNews),
+        title: Text(AppString.newsCreate),
         bottom: PreferredSize(
           child: Container(
             child: Row(
@@ -169,7 +169,7 @@ class _AddNewsState extends State<AddNews> {
                       ),
                       controller: _datePickerController,
                       keyboardType: TextInputType.datetime,
-                      validator: (val) => DateUtils.isBeforeNow(val, AppConstants.DATE_FORMAT) ? (val.isEmpty ? AppString.newsDateMandatory : null) : AppString.newsDateNotValid,
+                      validator: (val) => !DateUtils.isBeforeNow(val, AppConstants.DATE_FORMAT) ? (val.isEmpty ? AppString.newsDateMandatory : null) : AppString.newsDateNotValid,
                       onSaved: (val) => currNews.newsDate = new DateFormat(AppConstants.DATE_FORMAT).parseStrict(val),
                     ),
                   ),
@@ -180,7 +180,7 @@ class _AddNewsState extends State<AddNews> {
         ),
         decoration: new BoxDecoration(
           gradient: new LinearGradient(
-            colors: [Colors.blue[100], Colors.blue[400]],
+            colors: [Colors.blue[100], Colors.blue[300]],
             begin: const FractionalOffset(0.0, 0.0),
             end: const FractionalOffset(0.0, 1.0),
             stops: [0.0, 1.0],

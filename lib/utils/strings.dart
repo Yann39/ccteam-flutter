@@ -19,6 +19,7 @@ class AppString {
   static const String tabTeam = 'Équipe';
   static const String tabGallery = 'Gallerie';
 
+  static const String newsCreate = 'Ajouter une actualité';
   static const String newsCreated = 'L\'actualité à été créée avec succès !';
   static const String newsCreationFailed = 'Echec lors de la création de l\'actualité';
   static const String newsUpdated = 'L\'actualité à été mise à jour avec succès !';
@@ -26,7 +27,6 @@ class AppString {
   static const String newsDeleted = 'L\'actualité à été supprimé avec succès !';
   static const String newsDeletionFailed = 'Echec lors de la suppression de l\'actualité';
   static const String newsDeletionAreYouSure = 'Etes-vous sûr de vouloir supprimer cette actualité ?';
-  static const String createNews = 'Ajouter une actualité';
   static const String newsTitle = 'Titre';
   static const String newsTitleHint = 'Saisissez le titre de l\'actualité';
   static const String newsTitleMandatory = 'Le titre est obligatoire';
@@ -38,6 +38,8 @@ class AppString {
   static const String newsDateMandatory = 'La date est obligatoire';
   static const String newsDateNotValid = 'La date indiquée n\'est pas valide';
 
+  static const String memberScreenTitle = 'Équipe';
+  static const String memberCreate = 'Ajouter un membre';
   static const String memberCreated = 'Le membre à été créée avec succès !';
   static const String memberCreationFailed = 'Echec lors de la création du membre';
   static const String memberUpdated = 'Le membre à été mise à jour avec succès !';
@@ -45,7 +47,6 @@ class AppString {
   static const String memberDeleted = 'Le membre à été supprimé avec succès !';
   static const String memberDeletionFailed = 'Echec lors de la suppression du membre';
   static const String memberDeletionAreYouSure = 'Etes-vous sûr de vouloir supprimer ce membre ?';
-  static const String createMember = 'Ajouter un membre';
   static const String memberFirstName = 'Prénom';
   static const String memberFirstNameHint = 'Prénom du membre';
   static const String memberFirstNameMandatory = 'Le prénom est obligatoire';
@@ -68,6 +69,8 @@ class AppString {
   static const String memberRegistrationDateMandatory = 'La date d\'inscription est obligatoire';
   static const String memberRegistrationDateNotValid = 'La date indiquée n\'est pas valide';
 
+  static const String eventScreenTitle = 'Calendrier';
+  static const String eventCreate = 'Ajouter un événement';
   static const String eventCreated = 'L\'événement à été créée avec succès !';
   static const String eventCreationFailed = 'Echec lors de la création de l\'événement';
   static const String eventUpdated = 'L\'événement à été mise à jour avec succès !';
@@ -75,7 +78,6 @@ class AppString {
   static const String eventDeleted = 'L\'événement à été supprimé avec succès !';
   static const String eventDeletionFailed = 'Echec lors de la suppression de l\'événement';
   static const String eventDeletionAreYouSure = 'Etes-vous sûr de vouloir supprimer cet événement ?';
-  static const String createEvent = 'Ajouter un événement';
   static const String eventTitle = 'Titre';
   static const String eventTitleHint = 'Titre de l\'événement';
   static const String eventTitleMandatory = 'Le titre est obligatoire';
@@ -97,7 +99,14 @@ class AppString {
   static const String eventDateHint = 'Date de l\'événement';
   static const String eventDateMandatory = 'La date est obligatoire';
   static const String eventDateNotValid = 'La date indiquée n\'est pas valide';
+  static const String eventDisplay2ItemsTooltip = 'Afficher 2 événements par ligne';
+  static const String eventDisplay3ItemsTooltip = 'Afficher 3 événements par ligne';
+  static const String eventDisplay4ItemsTooltip = 'Afficher 4 événements par ligne';
+  static const String eventDisplay6ItemsTooltip = 'Afficher 6 événements par ligne';
+  static const String eventDetailScreenTitle = 'Détail de l\'événement';
 
+  static const String photoScreenTitle = 'Gallerie';
+  static const String photoCreate = 'Ajouter une photo';
   static const String photoCreated = 'La photo à été créée avec succès !';
   static const String photoCreationFailed = 'Echec lors de la création de la photo';
   static const String photoUpdated = 'La photo à été mise à jour avec succès !';
@@ -105,7 +114,6 @@ class AppString {
   static const String photoDeleted = 'La photo à été supprimé avec succès !';
   static const String photoDeletionFailed = 'Echec lors de la suppression de la photo';
   static const String photoDeletionAreYouSure = 'Etes-vous sûr de vouloir supprimer cette photo ?';
-  static const String createPhoto = 'Ajouter une photo';
   static const String photoTitle = 'Titre';
   static const String photoTitleHint = 'Titre de la photo';
   static const String photoTitleMandatory = 'Le titre est obligatoire';
@@ -116,8 +124,7 @@ class AppString {
   static const String photoLinkHint = 'Lien de la photo';
   static const String photoLinkMandatory = 'Le lien de la photo est obligatoire';
 
-  static const String calendarTitle = 'Calendrier';
-  static const String teamTitle = 'Équipe';
-  static const String galleryTitle = 'Gallerie';
+  static const String participant = 'participant';
+  static const String participants = 'participants';
 
 }

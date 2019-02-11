@@ -29,9 +29,10 @@ class _GalleryState extends State<Gallery> {
   }
 
   Widget build(BuildContext context) {
+    final Orientation orientation = MediaQuery.of(context).orientation;
     return Scaffold(
       appBar: AppBar(
-        title: Text(AppString.galleryTitle),
+        title: Text(AppString.photoScreenTitle),
         leading: new Icon(Icons.collections),
         actions: <Widget>[
           PopupMenuButton(
@@ -49,7 +50,7 @@ class _GalleryState extends State<Gallery> {
             if (snapshot.hasData) {
               return GridView.count(
                 childAspectRatio: 1.5,
-                crossAxisCount: 2,
+                crossAxisCount: (orientation == Orientation.portrait) ? 2 : 3,
                 children: List.generate(snapshot.data.length, (index) {
                   return new PhotoCard(snapshot.data[index], photosService);
                 }),
@@ -63,7 +64,7 @@ class _GalleryState extends State<Gallery> {
         ),
         decoration: new BoxDecoration(
           gradient: new LinearGradient(
-              colors: [Colors.blue[300], Colors.green[300]],
+              colors: [Colors.blue[100], Colors.blue[300]],
               begin: const FractionalOffset(0.0, 0.0),
               end: const FractionalOffset(0.0, 1.0),
               stops: [0.0, 1.0],
