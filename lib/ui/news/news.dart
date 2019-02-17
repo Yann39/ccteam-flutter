@@ -3,6 +3,7 @@ import 'dart:math';
 
 import 'package:chachatte_team/models/news.dart';
 import 'package:chachatte_team/services/news_service.dart';
+import 'package:chachatte_team/ui/login.dart';
 import 'package:chachatte_team/ui/news/add_news.dart';
 import 'package:chachatte_team/ui/news/news_card.dart';
 import 'package:chachatte_team/ui/news/news_detail.dart';
@@ -17,7 +18,7 @@ class NewsList extends StatefulWidget {
   }
 }
 
-enum QuickActions { about, contact }
+enum QuickActions { about, contact, logout }
 
 class _NewsListState extends State<NewsList> {
   static final NewsService newsService = new NewsService();
@@ -71,6 +72,8 @@ class _NewsListState extends State<NewsList> {
   void _select(QuickActions choice) {
     if (choice == QuickActions.contact) {
       _launchURL();
+    } else if (choice == QuickActions.logout) {
+      Navigator.push(context, MaterialPageRoute(builder: (context) => Login()));
     }
   }
 
@@ -90,6 +93,10 @@ class _NewsListState extends State<NewsList> {
                 PopupMenuItem<QuickActions>(
                   child: Text(AppString.contact),
                   value: QuickActions.contact,
+                ),
+                PopupMenuItem<QuickActions>(
+                  child: Text(AppString.logout),
+                  value: QuickActions.logout,
                 ),
               ];
             },
@@ -119,11 +126,12 @@ class _NewsListState extends State<NewsList> {
                 ),
                 decoration: new BoxDecoration(
                   gradient: new LinearGradient(
-                      colors: [Colors.white, Colors.blue[100]],
-                      begin: const FractionalOffset(0.0, 0.0),
-                      end: const FractionalOffset(0.0, 1.0),
-                      stops: [0.0, 1.0],
-                      tileMode: TileMode.clamp),
+                    colors: [Colors.white, Colors.blue[100]],
+                    begin: const FractionalOffset(0.0, 0.0),
+                    end: const FractionalOffset(0.0, 1.0),
+                    stops: [0.0, 1.0],
+                    tileMode: TileMode.clamp,
+                  ),
                 ),
               ),
             ),
@@ -161,11 +169,12 @@ class _NewsListState extends State<NewsList> {
           ),
           decoration: new BoxDecoration(
             gradient: new LinearGradient(
-                colors: [Colors.blue[100], Colors.blue[300]],
-                begin: const FractionalOffset(0.0, 0.0),
-                end: const FractionalOffset(0.0, 1.0),
-                stops: [0.0, 1.0],
-                tileMode: TileMode.clamp),
+              colors: [Colors.blue[100], Colors.blue[300]],
+              begin: const FractionalOffset(0.0, 0.0),
+              end: const FractionalOffset(0.0, 1.0),
+              stops: [0.0, 1.0],
+              tileMode: TileMode.clamp,
+            ),
           ),
         ),
       ),

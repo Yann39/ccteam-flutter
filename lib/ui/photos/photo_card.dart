@@ -8,6 +8,8 @@ import 'package:flutter/material.dart';
 
 enum ConfirmDialogAction { yes, no }
 
+
+
 class PhotoCard extends StatelessWidget {
   final Photo photo;
   final PhotosService photosService;

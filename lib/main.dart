@@ -1,4 +1,5 @@
 import 'package:chachatte_team/ui/home.dart';
+import 'package:chachatte_team/ui/login.dart';
 import 'package:chachatte_team/utils/strings.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -11,7 +12,7 @@ class ChachatteTeamApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: AppString.applicationTitle,
-      home: Home(),
+      home: Login(),
       theme: new ThemeData(
         primarySwatch: Colors.blue,
         primaryColor: Colors.red[700],

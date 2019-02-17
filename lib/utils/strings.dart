@@ -13,6 +13,7 @@ class AppString {
 
   static const String about = 'A propos';
   static const String contact = 'Contact';
+  static const String logout = 'Se déconnecter';
 
   static const String tabHome = 'Accueil';
   static const String tabCalendar = 'Calendrier';
