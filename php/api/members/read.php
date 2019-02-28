@@ -37,6 +37,7 @@ if ($num > 0) {
             "last_name" => $last_name,
             "email" => $email,
             "phone" => $phone,
+            "active" => $active,
             "bike" => $bike,
             "registration_date" => $registration_date,
             "created" => $created,
@@ -49,7 +50,7 @@ if ($num > 0) {
     // set response code - 200 OK
     http_response_code(200);
 
-    // show news data in json format
+    // show members data in json format
     echo json_encode($member_arr);
 } else {
 

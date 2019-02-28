@@ -39,6 +39,7 @@ if ($num > 0) {
             "first_name" => $first_name,
             "last_name" => $last_name,
             "email" => $email,
+            "active" => $active,
             "phone" => $phone,
             "bike" => $bike,
             "registration_date" => $registration_date

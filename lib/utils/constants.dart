@@ -11,6 +11,7 @@ class AppConstants {
   static const String API_CREATE_MEMBER_ENDPOINT = '/members/create.php';
   static const String API_UPDATE_MEMBER_ENDPOINT = '/members/update.php';
   static const String API_DELETE_MEMBER_ENDPOINT = '/members/delete.php';
+  static const String API_LOGIN_MEMBER_ENDPOINT = '/members/login.php';
 
   static const String API_GET_ALL_EVENTS_ENDPOINT = '/events/read.php';
   static const String API_CREATE_EVENT_ENDPOINT = '/events/create.php';

@@ -45,6 +45,42 @@ class _RegisterState extends State<Register> {
           padding: EdgeInsets.fromLTRB(16, 36, 16, 0)),
     );
 
+    final firstName = Padding(
+      padding: EdgeInsets.only(left: 16.0, right: 16.0),
+      child: TextFormField(
+        keyboardType: TextInputType.text,
+        keyboardAppearance: Brightness.dark,
+        autofocus: false,
+        style: TextStyle(color: Colors.white),
+        decoration: InputDecoration(
+          enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.white)),
+          focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.white)),
+          icon: Icon(Icons.person, color: Colors.white),
+          hintText: 'Votre prénom',
+          hintStyle: TextStyle(color: Colors.grey[400]),
+          contentPadding: EdgeInsets.fromLTRB(16.0, 12.0, 16.0, 12.0),
+        ),
+      ),
+    );
+
+    final lastName = Padding(
+      padding: EdgeInsets.only(left: 16.0, right: 16.0),
+      child: TextFormField(
+        keyboardType: TextInputType.text,
+        keyboardAppearance: Brightness.dark,
+        autofocus: false,
+        style: TextStyle(color: Colors.white),
+        decoration: InputDecoration(
+          enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.white)),
+          focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.white)),
+          icon: Icon(Icons.person, color: Colors.white),
+          hintText: 'Votre nom',
+          hintStyle: TextStyle(color: Colors.grey[400]),
+          contentPadding: EdgeInsets.fromLTRB(16.0, 12.0, 16.0, 12.0),
+        ),
+      ),
+    );
+
     final email = Padding(
       padding: EdgeInsets.only(left: 16.0, right: 16.0),
       child: TextFormField(
@@ -132,7 +168,7 @@ class _RegisterState extends State<Register> {
               crossAxisAlignment: CrossAxisAlignment.center,
               children: <Widget>[
                 Column(
-                  children: <Widget>[logo, SizedBox(height: 32.0), email, SizedBox(height: 8.0), password, SizedBox(height: 8.0), passwordBis, SizedBox(height: 24.0), loginButton],
+                  children: <Widget>[logo, SizedBox(height: 32.0), firstName, SizedBox(height: 8.0), lastName, SizedBox(height: 8.0), email, SizedBox(height: 8.0), password, SizedBox(height: 8.0), passwordBis, SizedBox(height: 24.0), loginButton],
                 ),
               ],
             ),

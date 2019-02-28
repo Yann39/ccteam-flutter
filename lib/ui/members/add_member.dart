@@ -236,6 +236,16 @@ class _AddMemberState extends State<AddMember> {
                     ),
                   ),
                 ),
+                Container(
+                  margin: EdgeInsets.only(left: 12.0),
+                  child: new CheckboxListTile(
+                    title: Text(AppString.memberActive),
+                    value: currMember.active,
+                    selected: currMember.active,
+                    onChanged: (val) => setState(() { currMember.active = val; }),
+                    controlAffinity: ListTileControlAffinity.leading,
+                  ),
+                ),
               ],
             ),
           ),

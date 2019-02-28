@@ -23,7 +23,7 @@ $member->id = isset($_GET['id']) ? $_GET['id'] : die();
 // read the details of member to be edited
 $member->readOne();
 
-if ($member->title!=null) {
+if ($member->email != null) {
 
     // create array
     $member_arr = array(
@@ -31,6 +31,7 @@ if ($member->title!=null) {
         "first_name" => $member->first_name,
         "last_name" => $member->last_name,
         "email" => $member->email,
+        "active" => $active,
         "phone" => $member->phone,
         "bike" => $member->bike,
         "registration_date" => $member->registration_date

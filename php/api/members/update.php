@@ -27,6 +27,7 @@ $member->id = $data->id;
 $member->first_name = $data->first_name;
 $member->last_name = $data->last_name;
 $member->email = $data->email;
+$member->active = $data->active;
 $member->phone = $data->phone;
 $member->bike = $data->bike;
 $member->registration_date = $data->registration_date;

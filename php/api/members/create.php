@@ -21,12 +21,16 @@ $member = new Member($db);
 $data = json_decode(file_get_contents("php://input"));
 
 // make sure data is not empty
-if (!empty($data->first_name) && !empty($data->last_name) && !empty($data->email) && !empty($data->phone) && !empty($data->bike) && !empty($data->registration_date)) {
+if (!empty($data->first_name) && !empty($data->last_name) && !empty($data->email) && !empty($data->password) && !empty($data->phone) && !empty($data->bike) && !empty($data->registration_date)) {
+
+    // hash password
+    $hashed_password = password_hash($password, PASSWORD_DEFAULT);
 
     // set member property values
     $member->first_name = $data->first_name;
     $member->last_name = $data->last_name;
     $member->email = $data->email;
+    $member->password = $hashed_password;
     $member->phone = $data->phone;
     $member->bike = $data->bike;
     $member->registration_date = $data->registration_date;

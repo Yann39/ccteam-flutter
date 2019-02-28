@@ -37,6 +37,8 @@ The application offers the following features :
 
 The application is connected to an external MariaDB database via REST web services.
 
+Passwords are hashed using PHP default hashing algorithm (which uses bcrypt as I'm using PHP 7).
+
 # License
 
 [General Public License (GPL) v3](https://www.gnu.org/licenses/gpl-3.0.en.html)

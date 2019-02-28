@@ -13,6 +13,8 @@ CREATE TABLE IF NOT EXISTS `members` (
   `first_name` varchar(64) NOT NULL,
   `last_name` varchar(64) NOT NULL,
   `email` varchar(128) NOT NULL,
+  `password` varchar(255) NOT NULL,
+  `active` boolean NOT NULL DEFAULT FALSE,
   `phone` varchar(13) NULL,
   `bike` varchar(64) NULL,
   `registration_date` datetime NOT NULL,
@@ -68,8 +70,8 @@ INSERT INTO `news` (`id`, `title`, `content`, `news_date`, `created`, `modified`
 (3, 'Réunion pour organisation foire au 2 roues', 'Réunion pour organisation foire au 2 roues qui auralieu de 21 mars 2020', '2018-06-01 00:01:36', '2018-06-01 00:35:07', NULL);
 
 INSERT INTO `members` (`id`, `first_name`, `last_name`, `email`, `phone`, `bike`, `created`, `modified`) VALUES
-(1, 'John', 'Doe', 'john.doe@mail.fr', '+33608080808', 'Honda CBR 600 RR 2007', '2018-01-30 00:00:00', '2018-07-01 09:30:54', NULL),
-(2, 'Jenna', 'Jonhnson', 'jenna.jonhnson@mail.com', NULL, 'Kawasaki ZX6R 636 2015', '2018-02-30 00:00:00', '2018-07-01 09:37:12', NULL);
+(1, 'John', 'Doe', 'john.doe@mail.fr', '1234', 1, '+33608080808', 'Honda CBR 600 RR 2007', '2018-01-30 00:00:00', '2018-07-01 09:30:54', NULL),
+(2, 'Jenna', 'Jonhnson', 'jenna.jonhnson@mail.com', '1234', 0, NULL, 'Kawasaki ZX6R 636 2015', '2018-02-30 00:00:00', '2018-07-01 09:37:12', NULL);
 
 INSERT INTO `tracks` (`id`, `name`, `description`) VALUES
 (1, 'Bresse', ''),

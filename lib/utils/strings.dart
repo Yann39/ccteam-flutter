@@ -69,6 +69,7 @@ class AppString {
   static const String memberRegistrationDateHint = 'Date d\'inscription du membre';
   static const String memberRegistrationDateMandatory = 'La date d\'inscription est obligatoire';
   static const String memberRegistrationDateNotValid = 'La date indiquée n\'est pas valide';
+  static const String memberActive = 'Actif ?';
 
   static const String eventScreenTitle = 'Calendrier';
   static const String eventCreate = 'Ajouter un événement';

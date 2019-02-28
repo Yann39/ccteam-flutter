@@ -90,6 +90,7 @@ class MembersService {
     map["first_name"] = member.firstName;
     map["last_name"] = member.lastName;
     map["email"] = member.email;
+    map["active"] = member.active;
     map["phone"] = member.phone;
     map["bike"] = member.bike;
     map["registration_date"] = new DateFormat("y-M-d H:m:s.S").format(member.registrationDate);
@@ -103,6 +104,7 @@ class MembersService {
         firstName: json['first_name'],
         lastName: json['last_name'],
         email: json['email'],
+        active: json['active'] == '1',
         phone: json['phone'],
         bike: json['bike'],
         registrationDate: new DateFormat("y-M-d H:m:s").parseStrict(json['registration_date']));
