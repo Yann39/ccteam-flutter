@@ -1,7 +1,11 @@
 import 'dart:ui';
 
-import 'package:chachatte_team/ui/home.dart';
+import 'package:chachatte_team/models/member.dart';
+import 'package:chachatte_team/services/members_service.dart';
+import 'package:chachatte_team/utils/string_utils.dart';
+import 'package:chachatte_team/utils/strings.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 class Register extends StatefulWidget {
   @override
@@ -11,8 +15,39 @@ class Register extends StatefulWidget {
 }
 
 class _RegisterState extends State<Register> {
+  final GlobalKey<FormState> _formKey = new GlobalKey<FormState>();
+  final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
+
+  // the member to be created
+  final Member _newMember = new Member();
+
   _dismissKeyboard(BuildContext context) {
     FocusScope.of(context).requestFocus(new FocusNode());
+  }
+
+  /// Validate the form then submit data to backend
+  void submitForm(Member member) {
+    final FormState form = _formKey.currentState;
+
+    if (!form.validate()) {
+      _scaffoldKey.currentState.showSnackBar(new SnackBar(backgroundColor: Colors.red, content: new Text(AppString.formNotValid)));
+    } else {
+      // this invokes each onSaved event
+      form.save();
+
+      var membersService = new MembersService();
+
+      member.registrationDate = new DateTime.now();
+      member.active = false;
+
+      // submit data to backend, if id is set this is an update, else a creation
+      // create the news go back with a message, the result is awaited in caller
+      membersService.createMember(member).then((value) {
+        Navigator.pop(context, AppString.memberCreated);
+      }, onError: (error) {
+        Navigator.pop(context, AppString.memberCreationFailed);
+      });
+    }
   }
 
   Widget build(BuildContext context) {
@@ -60,6 +95,11 @@ class _RegisterState extends State<Register> {
           hintStyle: TextStyle(color: Colors.grey[400]),
           contentPadding: EdgeInsets.fromLTRB(16.0, 12.0, 16.0, 12.0),
         ),
+        maxLines: 1,
+        inputFormatters: [new LengthLimitingTextInputFormatter(64)],
+        validator: (val) => val.isEmpty ? AppString.memberFirstNameMandatory : null,
+        onSaved: (val) => _newMember.firstName = val,
+        initialValue: _newMember.firstName,
       ),
     );
 
@@ -78,6 +118,11 @@ class _RegisterState extends State<Register> {
           hintStyle: TextStyle(color: Colors.grey[400]),
           contentPadding: EdgeInsets.fromLTRB(16.0, 12.0, 16.0, 12.0),
         ),
+        maxLines: 1,
+        inputFormatters: [new LengthLimitingTextInputFormatter(64)],
+        validator: (val) => val.isEmpty ? AppString.memberLastNameMandatory : null,
+        onSaved: (val) => _newMember.lastName = val,
+        initialValue: _newMember.lastName,
       ),
     );
 
@@ -96,6 +141,11 @@ class _RegisterState extends State<Register> {
           hintStyle: TextStyle(color: Colors.grey[400]),
           contentPadding: EdgeInsets.fromLTRB(16.0, 12.0, 16.0, 12.0),
         ),
+        maxLines: 1,
+        inputFormatters: [new LengthLimitingTextInputFormatter(128)],
+        validator: (val) => val.isEmpty ? AppString.memberEmailMandatory : (StringUtils.isValidEmail(val) ? null : AppString.memberEmailNotValid),
+        onSaved: (val) => _newMember.email = val,
+        initialValue: _newMember.email,
       ),
     );
 
@@ -113,6 +163,11 @@ class _RegisterState extends State<Register> {
           hintStyle: TextStyle(color: Colors.grey[400]),
           contentPadding: EdgeInsets.fromLTRB(16.0, 12.0, 16.0, 12.0),
         ),
+        maxLines: 1,
+        inputFormatters: [new LengthLimitingTextInputFormatter(32)],
+        validator: (val) => val.isEmpty ? AppString.memberPasswordMandatory : null,
+        onSaved: (val) => _newMember.password = val,
+        initialValue: _newMember.password,
       ),
     );
 
@@ -130,16 +185,19 @@ class _RegisterState extends State<Register> {
           hintStyle: TextStyle(color: Colors.grey[400]),
           contentPadding: EdgeInsets.fromLTRB(16.0, 12.0, 16.0, 12.0),
         ),
+        maxLines: 1,
+        inputFormatters: [new LengthLimitingTextInputFormatter(32)],
+        validator: (val) => val.isEmpty ? AppString.memberPasswordMandatory : null,
+        onSaved: (val) => _newMember.password = val,
+        initialValue: _newMember.password,
       ),
     );
 
-    final loginButton = RaisedButton(
+    final registerButton = RaisedButton(
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(8),
       ),
-      onPressed: () {
-        Navigator.push(context, MaterialPageRoute(builder: (context) => Home()));
-      },
+      onPressed: () => submitForm(_newMember),
       padding: EdgeInsets.fromLTRB(16.0, 12.0, 16.0, 12.0),
       color: Colors.red[700],
       child: Text(
@@ -161,16 +219,40 @@ class _RegisterState extends State<Register> {
           ),
         ),
         child: Scaffold(
+          key: _scaffoldKey,
           backgroundColor: Colors.transparent,
-          body: Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: <Widget>[
-                Column(
-                  children: <Widget>[logo, SizedBox(height: 32.0), firstName, SizedBox(height: 8.0), lastName, SizedBox(height: 8.0), email, SizedBox(height: 8.0), password, SizedBox(height: 8.0), passwordBis, SizedBox(height: 24.0), loginButton],
-                ),
-              ],
+          body: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+            child: new SafeArea(
+              top: false,
+              bottom: false,
+              child: ListView(
+                children: <Widget>[
+                  new Form(
+                    key: _formKey,
+                    autovalidate: false,
+                    child: new Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: <Widget>[
+                        logo,
+                        SizedBox(height: 32.0),
+                        firstName,
+                        SizedBox(height: 8.0),
+                        lastName,
+                        SizedBox(height: 8.0),
+                        email,
+                        SizedBox(height: 8.0),
+                        password,
+                        SizedBox(height: 8.0),
+                        passwordBis,
+                        SizedBox(height: 24.0),
+                        registerButton,
+                      ],
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ),

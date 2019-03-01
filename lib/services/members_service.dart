@@ -90,10 +90,11 @@ class MembersService {
     map["first_name"] = member.firstName;
     map["last_name"] = member.lastName;
     map["email"] = member.email;
+    map["password"] = member.password;
     map["active"] = member.active;
     map["phone"] = member.phone;
     map["bike"] = member.bike;
-    map["registration_date"] = new DateFormat("y-M-d H:m:s.S").format(member.registrationDate);
+    map["registration_date"] = new DateFormat("yyyy-MM-dd HH:mm:ss").format(member.registrationDate);
     return json.encode(map);
   }
 
@@ -104,9 +105,10 @@ class MembersService {
         firstName: json['first_name'],
         lastName: json['last_name'],
         email: json['email'],
+        password: json['password'],
         active: json['active'] == '1',
         phone: json['phone'],
         bike: json['bike'],
-        registrationDate: new DateFormat("y-M-d H:m:s").parseStrict(json['registration_date']));
+        registrationDate: new DateFormat("yyyy-MM-dd HH:mm:ss").parseStrict(json['registration_date']));
   }
 }

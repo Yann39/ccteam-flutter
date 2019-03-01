@@ -122,7 +122,7 @@ class _AddMemberState extends State<AddMember> {
 
   Widget build(BuildContext context) {
     // the current Member to be edited
-    final Member currMember = widget.member != null ? widget.member : _newMember;
+    final Member _currMember = widget.member != null ? widget.member : _newMember;
 
     return Scaffold(
       key: _scaffoldKey,
@@ -141,7 +141,7 @@ class _AddMemberState extends State<AddMember> {
                 new Expanded(
                   child: new FlatButton(
                     child: Text(AppString.save.toUpperCase()),
-                    onPressed: () => submitForm(currMember),
+                    onPressed: () => submitForm(_currMember),
                   ),
                 ),
               ],
@@ -171,8 +171,8 @@ class _AddMemberState extends State<AddMember> {
                   maxLines: 1,
                   inputFormatters: [new LengthLimitingTextInputFormatter(64)],
                   validator: (val) => val.isEmpty ? AppString.memberFirstNameMandatory : null,
-                  onSaved: (val) => currMember.firstName = val,
-                  initialValue: currMember.firstName,
+                  onSaved: (val) => _currMember.firstName = val,
+                  initialValue: _currMember.firstName,
                 ),
                 new TextFormField(
                   decoration: const InputDecoration(
@@ -183,8 +183,8 @@ class _AddMemberState extends State<AddMember> {
                   maxLines: 1,
                   inputFormatters: [new LengthLimitingTextInputFormatter(64)],
                   validator: (val) => val.isEmpty ? AppString.memberLastNameMandatory : null,
-                  onSaved: (val) => currMember.lastName = val,
-                  initialValue: currMember.lastName,
+                  onSaved: (val) => _currMember.lastName = val,
+                  initialValue: _currMember.lastName,
                 ),
                 new TextFormField(
                   decoration: const InputDecoration(
@@ -195,8 +195,8 @@ class _AddMemberState extends State<AddMember> {
                   maxLines: 1,
                   inputFormatters: [new LengthLimitingTextInputFormatter(128)],
                   validator: (val) => val.isEmpty ? AppString.memberEmailMandatory : (StringUtils.isValidEmail(val) ? null : AppString.memberEmailNotValid),
-                  onSaved: (val) => currMember.email = val,
-                  initialValue: currMember.email,
+                  onSaved: (val) => _currMember.email = val,
+                  initialValue: _currMember.email,
                 ),
                 new TextFormField(
                   decoration: const InputDecoration(
@@ -207,19 +207,19 @@ class _AddMemberState extends State<AddMember> {
                   maxLines: 1,
                   inputFormatters: <TextInputFormatter>[new LengthLimitingTextInputFormatter(13), WhitelistingTextInputFormatter.digitsOnly, NumberTextInputFormatter()],
                   validator: (val) => val.isEmpty ? AppString.memberPhoneMandatory : (StringUtils.isValidPhoneNumber(val) ? null : AppString.memberPhoneNotValid),
-                  onSaved: (val) => currMember.phone = val,
-                  initialValue: currMember.phone,
+                  onSaved: (val) => _currMember.phone = val,
+                  initialValue: _currMember.phone,
                 ),
                 new TextFormField(
                   decoration: const InputDecoration(icon: const Icon(Icons.motorcycle), hintText: AppString.memberBikeHint, labelText: AppString.memberBike),
                   maxLines: 1,
                   inputFormatters: [new LengthLimitingTextInputFormatter(64)],
                   validator: (val) => val.isEmpty ? AppString.memberBikeMandatory : null,
-                  onSaved: (val) => currMember.bike = val,
-                  initialValue: currMember.bike,
+                  onSaved: (val) => _currMember.bike = val,
+                  initialValue: _currMember.bike,
                 ),
                 new GestureDetector(
-                  onTap: () => _chooseDate(context, _datePickerController, currMember.registrationDate),
+                  onTap: () => _chooseDate(context, _datePickerController, _currMember.registrationDate),
                   child: AbsorbPointer(
                     child: new TextFormField(
                       decoration: new InputDecoration(
@@ -232,7 +232,7 @@ class _AddMemberState extends State<AddMember> {
                       validator: (val) => DateUtils.isBeforeNow(val, AppConstants.DATE_FORMAT)
                           ? (val.isEmpty ? AppString.memberRegistrationDateMandatory : null)
                           : AppString.memberRegistrationDateNotValid,
-                      onSaved: (val) => currMember.registrationDate = new DateFormat(AppConstants.DATE_FORMAT).parseStrict(val),
+                      onSaved: (val) => _currMember.registrationDate = new DateFormat(AppConstants.DATE_FORMAT).parseStrict(val),
                     ),
                   ),
                 ),
@@ -240,9 +240,9 @@ class _AddMemberState extends State<AddMember> {
                   margin: EdgeInsets.only(left: 12.0),
                   child: new CheckboxListTile(
                     title: Text(AppString.memberActive),
-                    value: currMember.active,
-                    selected: currMember.active,
-                    onChanged: (val) => setState(() { currMember.active = val; }),
+                    value: _currMember.active,
+                    selected: _currMember.active,
+                    onChanged: (val) => setState(() { _currMember.active = val; }),
                     controlAffinity: ListTileControlAffinity.leading,
                   ),
                 ),

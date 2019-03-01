@@ -21,7 +21,7 @@ $member = new Member($db);
 $data = json_decode(file_get_contents("php://input"));
 
 // make sure data is not empty
-if (!empty($data->first_name) && !empty($data->last_name) && !empty($data->email) && !empty($data->password) && !empty($data->phone) && !empty($data->bike) && !empty($data->registration_date)) {
+if (!empty($data->first_name) && !empty($data->last_name) && !empty($data->email) && !empty($data->password)) {
 
     // hash password
     $hashed_password = password_hash($password, PASSWORD_DEFAULT);
@@ -31,9 +31,16 @@ if (!empty($data->first_name) && !empty($data->last_name) && !empty($data->email
     $member->last_name = $data->last_name;
     $member->email = $data->email;
     $member->password = $hashed_password;
-    $member->phone = $data->phone;
-    $member->bike = $data->bike;
-    $member->registration_date = $data->registration_date;
+    if ($data->phone != null) {
+        $member->phone = $data->phone;
+    }
+    if ($data->phone != null) {
+        $member->bike = $data->bike;
+    }
+    if ($data->phone != null) {
+        $member->registration_date = date_format($data->registration_date, 'Y-m-d H:i:s');
+    }
+    $member->active = false;
     $member->created = date('Y-m-d H:i:s');
 
     // create the member
