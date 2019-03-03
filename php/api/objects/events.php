@@ -40,10 +40,10 @@ class Event {
         $this->conn = $db;
     }
 
-    // read event
+    // get all events
     function read() {
 
-        // select all query
+        // query to get all records
         $query = "SELECT n.id, n.title, n.description, n.event_date, n.track_id, n.organizer, n.price, n.created, n.modified FROM " . $this->table_name . " n ORDER BY n.event_date DESC";
 
         // prepare query statement
@@ -55,16 +55,16 @@ class Event {
         return $stmt;
     }
 
-    // used when filling up the update event form
+    // get an event given its id
     function readOne() {
 
-        // query to read single record
+        // query to get record corresponding to specified id
         $query = "SELECT n.title, n.description, n.event_date, n.track_id, n.organizer, n.price, n.created, n.modified FROM " . $this->table_name . " n WHERE n.id = ? LIMIT 0,1";
 
         // prepare query statement
         $stmt = $this->conn->prepare($query);
 
-        // bind id of product to be updated
+        // bind id
         $stmt->bindParam(1, $this->id);
 
         // execute query
@@ -119,10 +119,10 @@ class Event {
         return false;
     }
 
-    // update the event
+    // update event
     function update() {
 
-        // update query
+        // query to update record
         $query = "UPDATE " . $this->table_name . " SET title = :title, description = :description, event_date = :event_date, track_id = :track_id, organizer = :organizer, price = :price WHERE id = :id";
 
         // prepare query statement
@@ -154,10 +154,10 @@ class Event {
         return false;
     }
 
-    // delete the event
+    // delete event
     function delete() {
 
-        // delete query
+        // query to delete record
         $query = "DELETE FROM " . $this->table_name . " WHERE id = ?";
 
         // prepare query
@@ -180,7 +180,7 @@ class Event {
     // search event
     function search($keywords){
 
-        // select all query
+        // query to search across all records
         $query = "SELECT n.title, n.description, n.event_date, n.track_id, n.organizer, n.price, n.created FROM " . $this->table_name . " n WHERE n.title LIKE ? OR n.description LIKE ? OR n.organizer LIKE ? ORDER BY n.event_date DESC";
 
         // prepare query statement
@@ -190,7 +190,7 @@ class Event {
         $keywords = htmlspecialchars(strip_tags($keywords));
         $keywords = "%{$keywords}%";
 
-        // bind
+        // bind values
         $stmt->bindParam(1, $keywords);
         $stmt->bindParam(2, $keywords);
         $stmt->bindParam(3, $keywords);

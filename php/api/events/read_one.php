@@ -25,7 +25,7 @@ header("Access-Control-Allow-Methods: GET");
 header("Access-Control-Allow-Credentials: true");
 header('Content-Type: application/json');
 
-// include database and object files
+// include needed classes
 include_once '../config/database.php';
 include_once '../objects/events.php';
 
@@ -33,18 +33,19 @@ include_once '../objects/events.php';
 $database = new Database();
 $db = $database->getConnection();
 
-// prepare event object
+// prepare Event object
 $event = new Event($db);
 
-// set ID property of record to read
+// set id property got from parameter
 $event->id = isset($_GET['id']) ? $_GET['id'] : die();
 
-// read the details of event to be edited
+// query event
 $event->readOne();
 
-if ($event->title!=null) {
+// if it has been found
+if ($event->title != null) {
 
-    // create array
+    // event array which will be the returned response content
     $event_arr = array(
         "id" =>  $event->id,
         "title" =>  $event->title,
@@ -58,7 +59,7 @@ if ($event->title!=null) {
     // set response code - 200 OK
     http_response_code(200);
 
-    // make it json format
+    // display response in json format
     echo json_encode($event_arr);
 } else {
 

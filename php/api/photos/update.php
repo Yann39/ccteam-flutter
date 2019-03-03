@@ -25,7 +25,7 @@ header("Access-Control-Allow-Methods: POST");
 header("Access-Control-Max-Age: 3600");
 header("Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With");
 
-// include database and object files
+// include needed classes
 include_once '../config/database.php';
 include_once '../objects/photos.php';
 
@@ -33,16 +33,14 @@ include_once '../objects/photos.php';
 $database = new Database();
 $db = $database->getConnection();
 
-// prepare photo object
+// prepare Photo object
 $photo = new Photo($db);
 
 // get id of photo to be edited
 $data = json_decode(file_get_contents("php://input"));
 
-// set ID property of photo to be edited
-$photo->id = $data->id;
-
 // set photo property values
+$photo->id = $data->id;
 $photo->title = $data->title;
 $photo->description = $data->description;
 $photo->link = $data->link;

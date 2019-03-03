@@ -25,7 +25,7 @@ header("Access-Control-Allow-Methods: POST");
 header("Access-Control-Max-Age: 3600");
 header("Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With");
 
-// include database and object files
+// include needed classes
 include_once '../config/database.php';
 include_once '../objects/events.php';
 
@@ -33,16 +33,14 @@ include_once '../objects/events.php';
 $database = new Database();
 $db = $database->getConnection();
 
-// prepare event object
+// prepare Event object
 $event = new Event($db);
 
-// get id of event to be edited
+// get posted data
 $data = json_decode(file_get_contents("php://input"));
 
-// set ID property of event to be edited
-$event->id = $data->id;
-
 // set event property values
+$event->id = $data->id;
 $event->title = $data->title;
 $event->description = $data->description;
 $event->event_date = $data->event_date;

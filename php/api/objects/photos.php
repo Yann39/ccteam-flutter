@@ -37,10 +37,10 @@ class Photo {
         $this->conn = $db;
     }
 
-    // read photo
+    // get all photos
     function read() {
 
-        // select all query
+        // query to get all records
         $query = "SELECT n.id, n.title, n.description, n.link, n.created, n.modified FROM " . $this->table_name . " n ORDER BY n.created DESC";
 
         // prepare query statement
@@ -52,16 +52,16 @@ class Photo {
         return $stmt;
     }
 
-    // used when filling up the update photo form
+    // get a photo given its id
     function readOne() {
 
-        // query to read single record
+        // query to get record corresponding to specified id
         $query = "SELECT n.title, n.description, n.link, n.created, n.modified FROM " . $this->table_name . " n WHERE n.id = ? LIMIT 0,1";
 
         // prepare query statement
         $stmt = $this->conn->prepare($query);
 
-        // bind id of product to be updated
+        // bind id
         $stmt->bindParam(1, $this->id);
 
         // execute query
@@ -107,10 +107,10 @@ class Photo {
         return false;
     }
 
-    // update the photo
+    // update photo
     function update() {
 
-        // update query
+        // query to update record
         $query = "UPDATE " . $this->table_name . " SET title = :title, description = :description, link = :link WHERE id = :id";
 
         // prepare query statement
@@ -136,10 +136,10 @@ class Photo {
         return false;
     }
 
-    // delete the photo
+    // delete photo
     function delete() {
 
-        // delete query
+        // query to delete record
         $query = "DELETE FROM " . $this->table_name . " WHERE id = ?";
 
         // prepare query
@@ -162,7 +162,7 @@ class Photo {
     // search photo
     function search($keywords){
 
-        // select all query
+        // query to search across all records
         $query = "SELECT n.title, n.description, n.link, n.created FROM " . $this->table_name . " n WHERE n.title LIKE ? OR n.description LIKE ? ORDER BY n.created DESC";
 
         // prepare query statement
@@ -172,7 +172,7 @@ class Photo {
         $keywords = htmlspecialchars(strip_tags($keywords));
         $keywords = "%{$keywords}%";
 
-        // bind
+        // bind values
         $stmt->bindParam(1, $keywords);
         $stmt->bindParam(2, $keywords);
         $stmt->bindParam(3, $keywords);

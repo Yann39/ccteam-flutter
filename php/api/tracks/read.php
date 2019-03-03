@@ -22,25 +22,25 @@
 header("Access-Control-Allow-Origin: *");
 header("Content-Type: application/json; charset=UTF-8");
 
-// include database and object files
+// include needed classes
 include_once '../config/database.php';
 include_once '../objects/tracks.php';
 
-// instantiate database and track object
+// get database connection
 $database = new Database();
 $db = $database->getConnection();
 
-// initialize object
+// prepare Track object
 $track = new Track($db);
 
-// query tracks
+// query tracks and get number of records
 $stmt = $track->read();
 $num = $stmt->rowCount();
 
-// check if at least one record has been found
+// if at least one record has been found
 if ($num > 0) {
 
-    // tracks array
+    // tracks array which will be the returned response content
     $track_arr = array();
     $track_arr["records"] = array();
 
@@ -50,19 +50,21 @@ if ($num > 0) {
         // extract row, this will make $row['name'] to just $name only
         extract($row);
 
+        // array representing the track
         $track_item = array(
             "id" => $id,
             "name" => $name,
             "description" => $description,
         );
 
+        // add it to the tracks array
         array_push($track_arr["records"], $track_item);
     }
 
     // set response code - 200 OK
     http_response_code(200);
 
-    // show news data in json format
+    // display response in json format
     echo json_encode($track_arr);
 } else {
 

@@ -25,21 +25,21 @@ header("Access-Control-Allow-Methods: POST");
 header("Access-Control-Max-Age: 3600");
 header("Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With");
 
-// get database connection
+// include needed classes
 include_once '../config/database.php';
-
-// instantiate news object
 include_once '../objects/news.php';
 
+// get database connection
 $database = new Database();
 $db = $database->getConnection();
 
+// prepare News object
 $news = new News($db);
 
 // get posted data
 $data = json_decode(file_get_contents("php://input"));
 
-// make sure data is not empty
+// make sure required data is not empty
 if (!empty($data->title) && !empty($data->content) && !empty($data->news_date)) {
 
     // set news property values

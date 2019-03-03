@@ -25,7 +25,7 @@ header("Access-Control-Allow-Methods: GET");
 header("Access-Control-Allow-Credentials: true");
 header('Content-Type: application/json');
 
-// include database and object files
+// include needed classes
 include_once '../config/database.php';
 include_once '../objects/members.php';
 
@@ -33,7 +33,7 @@ include_once '../objects/members.php';
 $database = new Database();
 $db = $database->getConnection();
 
-// prepare member object
+// prepare Member object
 $member = new Member($db);
 
 // set ID property of record to read
@@ -44,13 +44,14 @@ $member->readOne();
 
 if ($member->email != null) {
 
-    // create array
+    // member array which will be the returned response content
     $member_arr = array(
         "id" =>  $member->id,
         "first_name" => $member->first_name,
         "last_name" => $member->last_name,
         "email" => $member->email,
         "active" => $active,
+        "admin" => $admin,
         "phone" => $member->phone,
         "bike" => $member->bike,
         "registration_date" => $member->registration_date
@@ -59,7 +60,7 @@ if ($member->email != null) {
     // set response code - 200 OK
     http_response_code(200);
 
-    // make it json format
+    // display response in json format
     echo json_encode($member_arr);
 } else {
 

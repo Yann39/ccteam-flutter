@@ -25,21 +25,21 @@ header("Access-Control-Allow-Methods: POST");
 header("Access-Control-Max-Age: 3600");
 header("Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With");
 
-// get database connection
+// include needed classes
 include_once '../config/database.php';
-
-// instantiate event object
 include_once '../objects/events.php';
 
+// get database connection
 $database = new Database();
 $db = $database->getConnection();
 
+// prepare Event object
 $event = new Event($db);
 
 // get posted data
 $data = json_decode(file_get_contents("php://input"));
 
-// make sure data is not empty
+// make sure required data is not empty
 if (!empty($data->title) && !empty($data->description) && !empty($data->event_date) && !empty($data->track_id) && !empty($data->organizer) && !empty($data->price)) {
 
     // set event property values

@@ -25,15 +25,15 @@ header("Access-Control-Allow-Methods: POST");
 header("Access-Control-Max-Age: 3600");
 header("Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With");
 
-// get database connection
+// include needed classes
 include_once '../config/database.php';
-
-// instantiate member object
 include_once '../objects/members.php';
 
+// get database connection
 $database = new Database();
 $db = $database->getConnection();
 
+// prepare Member object
 $member = new Member($db);
 
 // get posted data
@@ -43,29 +43,30 @@ $data = json_decode(file_get_contents("php://input"));
 if (!empty($data->email) && !empty($data->password)) {
 
     // query members
-    $stmt = $member->readByEmail($data->email);
+    $stmt = $member->readByEmailForLogin($data->email);
 
     // check if at least one record has been found
     if ($member->email != null) {
 
-        // members array
-        $member_arr = array();
-        $member_arr["records"] = array();
+        // if member is active
+        if ($member->active == true) {
 
-        $is_valid = false;
-        if (password_verify($data->password, $member->$password)) {
-            $is_valid = true;
+            if (password_verify($data->password, $member->password)) {
+                // set response code - 200 OK
+                http_response_code(200);
+            } else {
+                // set response code - 401 Unauthorized
+                http_response_code(401);
+            }
+
+        } else {
+            // set response code - 403 Forbidden
+            http_response_code(403);
         }
 
-        $member_item = array("allowed" => $is_valid);
-        array_push($member_arr["records"], $member_item);
-
-        // set response code - 200 OK
-        http_response_code(200);
-
-        // show response in json format
-        echo json_encode($member_arr);
-
+    } else {
+        // set response code - 404 Not Found
+        http_response_code(404);
     }
 
 }

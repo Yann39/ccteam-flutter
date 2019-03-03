@@ -22,27 +22,27 @@
 header("Access-Control-Allow-Origin: *");
 header("Content-Type: application/json; charset=UTF-8");
 
-// include database and object files
+// include needed classes
 include_once '../config/database.php';
 include_once '../objects/events.php';
 include_once '../objects/members.php';
 
-// instantiate database and event object
+// get database connection
 $database = new Database();
 $db = $database->getConnection();
 
-// initialize object
+// prepare Event and Member objects
 $event = new Event($db);
 $member = new Member($db);
 
-// query events
+// query events and get number of records
 $stmt = $event->read();
 $num = $stmt->rowCount();
 
-// check if at least one record has been found
+// if at least one record has been found
 if ($num > 0) {
 
-    // events array
+    // events array which will be the returned response content
     $event_arr = array();
     $event_arr["records"] = array();
 
@@ -52,17 +52,20 @@ if ($num > 0) {
         // extract row, this will make $row['name'] to just $name only
         extract($row);
 
+        // query members for that specific event and get number of records
         $stmt2 = $member->readByEvent($id);
         $num2 = $stmt2->rowCount();
 
+        // if at least one record has been found
         if ($num2 > 0) {
 
+            // members array to include in the response
             $member_arr = array();
 
             // get retrieved rows
             while ($row2 = $stmt2->fetch(PDO::FETCH_ASSOC)) {
 
-                // create array
+                // array representing the member
                 $member_item = array(
                     "id" =>  $row2['id'],
                     "first_name" => $row2['first_name'],
@@ -73,10 +76,12 @@ if ($num > 0) {
                     "registration_date" => $row2['registration_date']
                 );
 
+                // add it to the members array
                 array_push($member_arr, $member_item);
             }
         }
 
+        // array representing the event
         $event_item = array(
             "id" => $id,
             "title" => $title,
@@ -90,13 +95,14 @@ if ($num > 0) {
             "modified" => $modified
         );
 
+        // add it to the events array
         array_push($event_arr["records"], $event_item);
     }
 
     // set response code - 200 OK
     http_response_code(200);
 
-    // show news data in json format
+    // display response in json format
     echo json_encode($event_arr);
 } else {
 

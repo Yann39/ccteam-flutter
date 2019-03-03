@@ -25,7 +25,7 @@ header("Access-Control-Allow-Methods: POST");
 header("Access-Control-Max-Age: 3600");
 header("Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With");
 
-// include database and object file
+// include needed classes
 include_once '../config/database.php';
 include_once '../objects/tracks.php';
 
@@ -33,13 +33,13 @@ include_once '../objects/tracks.php';
 $database = new Database();
 $db = $database->getConnection();
 
-// prepare product object
+// prepare Track object
 $track = new Track($db);
 
 // get track id
 $data = json_decode(file_get_contents("php://input"));
 
-// set track id to be deleted
+// set id of the track to be deleted
 $track->id = $data->id;
 
 // delete the track
@@ -49,7 +49,7 @@ if ($track->delete()) {
     http_response_code(204);
 }
 
-// if unable to delete the track
+// unable to delete the track
 else {
 
     // set response code - 503 Service Unavailable

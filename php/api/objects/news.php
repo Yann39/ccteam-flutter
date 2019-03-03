@@ -37,10 +37,10 @@ class News {
         $this->conn = $db;
     }
 
-    // read news
+    // get all news
     function read() {
 
-        // select all query
+        // query to get all records
         $query = "SELECT n.id, n.title, n.content, n.news_date, n.created, n.modified FROM " . $this->table_name . " n ORDER BY n.news_date DESC";
 
         // prepare query statement
@@ -52,16 +52,16 @@ class News {
         return $stmt;
     }
 
-    // used when filling up the update news form
+    // get a news given its id
     function readOne() {
 
-        // query to read single record
+        // query to get record corresponding to specified id
         $query = "SELECT n.title, n.content, n.news_date, n.created, n.modified FROM " . $this->table_name . " n WHERE n.id = ? LIMIT 0,1";
 
         // prepare query statement
         $stmt = $this->conn->prepare($query);
 
-        // bind id of product to be updated
+        // bind id
         $stmt->bindParam(1, $this->id);
 
         // execute query
@@ -107,10 +107,10 @@ class News {
         return false;
     }
 
-    // update the news
+    // update news
     function update() {
 
-        // update query
+        // query to update record
         $query = "UPDATE " . $this->table_name . " SET title = :title, content = :content, news_date = :news_date WHERE id = :id";
 
         // prepare query statement
@@ -136,10 +136,10 @@ class News {
         return false;
     }
 
-    // delete the news
+    // delete news
     function delete() {
 
-        // delete query
+        // query to delete record
         $query = "DELETE FROM " . $this->table_name . " WHERE id = ?";
 
         // prepare query
@@ -162,7 +162,7 @@ class News {
     // search news
     function search($keywords){
 
-        // select all query
+        // query to search across all records
         $query = "SELECT n.title, n.content, n.news_date, n.created FROM " . $this->table_name . " n WHERE n.title LIKE ? OR n.content LIKE ? ORDER BY n.created DESC";
 
         // prepare query statement
@@ -172,7 +172,7 @@ class News {
         $keywords = htmlspecialchars(strip_tags($keywords));
         $keywords = "%{$keywords}%";
 
-        // bind
+        // bind values
         $stmt->bindParam(1, $keywords);
         $stmt->bindParam(2, $keywords);
         $stmt->bindParam(3, $keywords);

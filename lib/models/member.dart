@@ -25,9 +25,10 @@ class Member {
   String email;
   String password;
   bool active;
+  bool admin;
   String phone;
   String bike;
   DateTime registrationDate;
 
-  Member({this.id, this.firstName, this.lastName, this.email, this.password, this.active, this.phone, this.bike, this.registrationDate});
+  Member({this.id, this.firstName, this.lastName, this.email, this.password, this.active, this.admin, this.phone, this.bike, this.registrationDate});
 }

@@ -25,21 +25,21 @@ header("Access-Control-Allow-Methods: POST");
 header("Access-Control-Max-Age: 3600");
 header("Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With");
 
-// get database connection
+// include needed classes
 include_once '../config/database.php';
-
-// instantiate photo object
 include_once '../objects/photos.php';
 
+// get database connection
 $database = new Database();
 $db = $database->getConnection();
 
+// prepare Photo object
 $photo = new Photo($db);
 
 // get posted data
 $data = json_decode(file_get_contents("php://input"));
 
-// make sure data is not empty
+// make sure required data is not empty
 if (!empty($data->title) && !empty($data->description) && !empty($data->link)) {
 
     // set photo property values

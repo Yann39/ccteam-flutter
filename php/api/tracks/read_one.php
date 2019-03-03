@@ -25,7 +25,7 @@ header("Access-Control-Allow-Methods: GET");
 header("Access-Control-Allow-Credentials: true");
 header('Content-Type: application/json');
 
-// include database and object files
+// include needed classes
 include_once '../config/database.php';
 include_once '../objects/tracks.php';
 
@@ -33,7 +33,7 @@ include_once '../objects/tracks.php';
 $database = new Database();
 $db = $database->getConnection();
 
-// prepare track object
+// prepare Track object
 $track = new Track($db);
 
 // set ID property of record to read
@@ -44,7 +44,7 @@ $track->readOne();
 
 if ($track->title!=null) {
 
-    // create array
+    // track array which will be the returned response content
     $track_arr = array(
         "id" =>  $track->id,
         "name" =>  $track->name
@@ -53,7 +53,7 @@ if ($track->title!=null) {
     // set response code - 200 OK
     http_response_code(200);
 
-    // make it json format
+    // display response in json format
     echo json_encode($track_arr);
 } else {
 

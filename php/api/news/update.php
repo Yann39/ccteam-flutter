@@ -25,7 +25,7 @@ header("Access-Control-Allow-Methods: POST");
 header("Access-Control-Max-Age: 3600");
 header("Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With");
 
-// include database and object files
+// include needed classes
 include_once '../config/database.php';
 include_once '../objects/news.php';
 
@@ -33,16 +33,14 @@ include_once '../objects/news.php';
 $database = new Database();
 $db = $database->getConnection();
 
-// prepare news object
+// prepare News object
 $news = new News($db);
 
 // get id of news to be edited
 $data = json_decode(file_get_contents("php://input"));
 
-// set ID property of news to be edited
-$news->id = $data->id;
-
 // set news property values
+$news->id = $data->id;
 $news->title = $data->title;
 $news->content = $data->content;
 $news->news_date = $data->news_date;

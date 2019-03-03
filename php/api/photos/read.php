@@ -22,25 +22,25 @@
 header("Access-Control-Allow-Origin: *");
 header("Content-Type: application/json; charset=UTF-8");
 
-// include database and object files
+// include needed classes
 include_once '../config/database.php';
 include_once '../objects/photos.php';
 
-// instantiate database and photo object
+// get database connection
 $database = new Database();
 $db = $database->getConnection();
 
-// initialize object
+// prepare Photo object
 $photo = new Photo($db);
 
-// query photos
+// query photos and get number of records
 $stmt = $photo->read();
 $num = $stmt->rowCount();
 
-// check if at least one record has been found
+// if at least one record has been found
 if ($num > 0) {
 
-    // photos array
+    // photos array which will be the returned response content
     $photo_arr = array();
     $photo_arr["records"] = array();
 
@@ -50,6 +50,7 @@ if ($num > 0) {
         // extract row, this will make $row['name'] to just $name only
         extract($row);
 
+        // array representing the photo
         $photo_item = array(
             "id" => $id,
             "title" => $title,
@@ -59,13 +60,14 @@ if ($num > 0) {
             "modified" => $modified
         );
 
+        // add it to the photos array
         array_push($photo_arr["records"], $photo_item);
     }
 
     // set response code - 200 OK
     http_response_code(200);
 
-    // show news data in json format
+    // display response in json format
     echo json_encode($photo_arr);
 } else {
 

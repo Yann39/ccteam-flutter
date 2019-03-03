@@ -25,7 +25,7 @@ header("Access-Control-Allow-Methods: GET");
 header("Access-Control-Allow-Credentials: true");
 header('Content-Type: application/json');
 
-// include database and object files
+// include needed classes
 include_once '../config/database.php';
 include_once '../objects/photos.php';
 
@@ -33,7 +33,7 @@ include_once '../objects/photos.php';
 $database = new Database();
 $db = $database->getConnection();
 
-// prepare photo object
+// prepare Photo object
 $photo = new Photo($db);
 
 // set ID property of record to read
@@ -42,9 +42,9 @@ $photo->id = isset($_GET['id']) ? $_GET['id'] : die();
 // read the details of photo to be edited
 $photo->readOne();
 
-if ($photo->title!=null) {
+if ($photo->title != null) {
 
-    // create array
+    // photo array which will be the returned response content
     $photo_arr = array(
         "id" =>  $photo->id,
         "title" =>  $photo->title,
@@ -55,7 +55,7 @@ if ($photo->title!=null) {
     // set response code - 200 OK
     http_response_code(200);
 
-    // make it json format
+    // display response in json format
     echo json_encode($photo_arr);
 } else {
 

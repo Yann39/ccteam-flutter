@@ -111,6 +111,7 @@ class MembersService {
     map["email"] = member.email;
     map["password"] = member.password;
     map["active"] = member.active;
+    map["admin"] = member.admin;
     map["phone"] = member.phone;
     map["bike"] = member.bike;
     map["registration_date"] = new DateFormat("yyyy-MM-dd HH:mm:ss").format(member.registrationDate);
@@ -126,6 +127,7 @@ class MembersService {
         email: json['email'],
         password: json['password'],
         active: json['active'] == '1',
+        admin: json['admin'] == '1',
         phone: json['phone'],
         bike: json['bike'],
         registrationDate: new DateFormat("yyyy-MM-dd HH:mm:ss").parseStrict(json['registration_date']));

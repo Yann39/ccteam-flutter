@@ -25,7 +25,7 @@ header("Access-Control-Allow-Methods: POST");
 header("Access-Control-Max-Age: 3600");
 header("Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With");
 
-// include database and object files
+// include needed classes
 include_once '../config/database.php';
 include_once '../objects/tracks.php';
 
@@ -33,16 +33,14 @@ include_once '../objects/tracks.php';
 $database = new Database();
 $db = $database->getConnection();
 
-// prepare track object
+// prepare Track object
 $track = new Track($db);
 
 // get id of track to be edited
 $data = json_decode(file_get_contents("php://input"));
 
-// set ID property of track to be edited
-$track->id = $data->id;
-
 // set track property values
+$track->id = $data->id;
 $track->name = $data->name;
 $track->description = $data->description;
 

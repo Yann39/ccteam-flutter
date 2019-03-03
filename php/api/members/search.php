@@ -22,57 +22,63 @@
 header("Access-Control-Allow-Origin: *");
 header("Content-Type: application/json; charset=UTF-8");
 
-// include database and object files
+// include needed classes
 include_once '../config/core.php';
 include_once '../config/database.php';
 include_once '../objects/members.php';
 
-// instantiate database and member object
+// get database connection
 $database = new Database();
 $db = $database->getConnection();
 
-// initialize object
+// prepare Member object
 $member = new Member($db);
 
-// get keywords
+// get search string from parameter
 $keywords = isset($_GET["s"]) ? $_GET["s"] : "";
 
-// query members
+// query members and get number of records
 $stmt = $member->search($keywords);
 $num = $stmt->rowCount();
 
-// check if more than 0 record found
+// if at least one record has been found
 if ($num > 0) {
 
-    // member array
+    // members array which will be the returned response content
     $member_arr = array();
     $member_arr["records"] = array();
 
     // retrieve our table contents
     while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+
         // extract row, this will make $row['name'] to just $name only
         extract($row);
 
+        // array representing the member
         $member_item = array(
             "id" => $id,
             "first_name" => $first_name,
             "last_name" => $last_name,
             "email" => $email,
             "active" => $active,
+            "admin" => $admin,
             "phone" => $phone,
             "bike" => $bike,
             "registration_date" => $registration_date
         );
 
+        // add it to the members array
         array_push($member_arr["records"], $member_item);
     }
 
     // set response code - 200 OK
     http_response_code(200);
 
-    // show member data
+    // display response in json format
     echo json_encode($member_arr);
+
 } else {
+
     // set response code - 404 Not Found
     http_response_code(404);
 }

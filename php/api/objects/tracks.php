@@ -33,10 +33,10 @@ class Track {
         $this->conn = $db;
     }
 
-    // read track
+    // get all tracks
     function read() {
 
-        // select all query
+        // query to get all records
         $query = "SELECT n.id, n.name, n.description FROM " . $this->table_name . " n ORDER BY n.name";
 
         // prepare query statement
@@ -48,16 +48,16 @@ class Track {
         return $stmt;
     }
 
-    // used when filling up the update track form
+    // get a track given its id
     function readOne() {
 
-        // query to read single record
+        // query to get record corresponding to specified id
         $query = "SELECT n.name, n.description FROM " . $this->table_name . " n WHERE n.id = ? LIMIT 0,1";
 
         // prepare query statement
         $stmt = $this->conn->prepare($query);
 
-        // bind id of product to be updated
+        // bind id
         $stmt->bindParam(1, $this->id);
 
         // execute query
@@ -96,10 +96,10 @@ class Track {
         return false;
     }
 
-    // update the track
+    // update track
     function update() {
 
-        // update query
+        // query to update record
         $query = "UPDATE " . $this->table_name . " SET name = :name, description = :description WHERE id = :id";
 
         // prepare query statement
@@ -123,10 +123,10 @@ class Track {
         return false;
     }
 
-    // delete the track
+    // delete track
     function delete() {
 
-        // delete query
+        // query to delete record
         $query = "DELETE FROM " . $this->table_name . " WHERE id = ?";
 
         // prepare query
@@ -149,7 +149,7 @@ class Track {
     // search track
     function search($keywords){
 
-        // select all query
+        // query to search across all records
         $query = "SELECT n.name, n.description FROM " . $this->table_name . " n WHERE n.name LIKE ? OR n.description LIKE ? ORDER BY n.name DESC";
 
         // prepare query statement
@@ -159,7 +159,7 @@ class Track {
         $keywords = htmlspecialchars(strip_tags($keywords));
         $keywords = "%{$keywords}%";
 
-        // bind
+        // bind values
         $stmt->bindParam(1, $keywords);
         $stmt->bindParam(2, $keywords);
         $stmt->bindParam(3, $keywords);

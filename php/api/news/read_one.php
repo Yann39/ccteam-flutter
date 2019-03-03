@@ -25,7 +25,7 @@ header("Access-Control-Allow-Methods: GET");
 header("Access-Control-Allow-Credentials: true");
 header('Content-Type: application/json');
 
-// include database and object files
+// include needed classes
 include_once '../config/database.php';
 include_once '../objects/news.php';
 
@@ -33,7 +33,7 @@ include_once '../objects/news.php';
 $database = new Database();
 $db = $database->getConnection();
 
-// prepare news object
+// prepare News object
 $news = new News($db);
 
 // set ID property of record to read
@@ -42,9 +42,9 @@ $news->id = isset($_GET['id']) ? $_GET['id'] : die();
 // read the details of news to be edited
 $news->readOne();
 
-if ($news->title!=null) {
+if ($news->title != null) {
 
-    // create array
+    // news array which will be the returned response content
     $news_arr = array(
         "id" =>  $news->id,
         "title" => $news->title,
@@ -55,7 +55,7 @@ if ($news->title!=null) {
     // set response code - 200 OK
     http_response_code(200);
 
-    // make it json format
+    // display response in json format
     echo json_encode($news_arr);
 } else {
 

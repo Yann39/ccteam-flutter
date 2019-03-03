@@ -25,41 +25,51 @@ header("Access-Control-Allow-Methods: POST");
 header("Access-Control-Max-Age: 3600");
 header("Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With");
 
-// get database connection
+// include needed classes
 include_once '../config/database.php';
-
-// instantiate member object
 include_once '../objects/members.php';
 
+// get database connection
 $database = new Database();
 $db = $database->getConnection();
 
+// prepare Member object
 $member = new Member($db);
 
 // get posted data
 $data = json_decode(file_get_contents("php://input"));
 
-// make sure data is not empty
+// make sure required data is not empty
 if (!empty($data->first_name) && !empty($data->last_name) && !empty($data->email) && !empty($data->password)) {
 
     // hash password
-    $hashed_password = password_hash($password, PASSWORD_DEFAULT);
+    $hashed_password = password_hash($data->password, PASSWORD_DEFAULT);
 
-    // set member property values
+    // set mandatory member property values
     $member->first_name = $data->first_name;
     $member->last_name = $data->last_name;
     $member->email = $data->email;
     $member->password = $hashed_password;
+
+    // set non mandatory properties if they are set
     if ($data->phone != null) {
         $member->phone = $data->phone;
     }
-    if ($data->phone != null) {
+    if ($data->bike != null) {
         $member->bike = $data->bike;
     }
-    if ($data->phone != null) {
-        $member->registration_date = date_format($data->registration_date, 'Y-m-d H:i:s');
+    $member->registration_date = date('Y-m-d H:i:s');
+    if ($data->registration_date != null) {
+        $member->registration_date = $data->registration_date;
     }
     $member->active = false;
+    if ($data->active != null) {
+        $member->active = $data->active;
+    }
+    $member->admin = false;
+    if ($data->admin != null) {
+        $member->admin = $data->admin;
+    }
     $member->created = date('Y-m-d H:i:s');
 
     // create the member

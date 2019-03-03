@@ -22,25 +22,25 @@
 header("Access-Control-Allow-Origin: *");
 header("Content-Type: application/json; charset=UTF-8");
 
-// include database and object files
+// include needed classes
 include_once '../config/database.php';
 include_once '../objects/members.php';
 
-// instantiate database and member object
+// get database connection
 $database = new Database();
 $db = $database->getConnection();
 
-// initialize object
+// prepare Member object
 $member = new Member($db);
 
-// query members
+// query members and get number of records
 $stmt = $member->read();
 $num = $stmt->rowCount();
 
-// check if at least one record has been found
+// if at least one record has been found
 if ($num > 0) {
 
-    // members array
+    // members array which will be the returned response content
     $member_arr = array();
     $member_arr["records"] = array();
 
@@ -50,6 +50,7 @@ if ($num > 0) {
         // extract row, this will make $row['name'] to just $name only
         extract($row);
 
+        // array representing the member
         $member_item = array(
             "id" => $id,
             "first_name" => $first_name,
@@ -57,19 +58,21 @@ if ($num > 0) {
             "email" => $email,
             "phone" => $phone,
             "active" => $active,
+            "admin" => $admin,
             "bike" => $bike,
             "registration_date" => $registration_date,
             "created" => $created,
             "modified" => $modified
         );
 
+        // add it to the members array
         array_push($member_arr["records"], $member_item);
     }
 
     // set response code - 200 OK
     http_response_code(200);
 
-    // show members data in json format
+    // display response in json format
     echo json_encode($member_arr);
 } else {
 
