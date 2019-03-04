@@ -56,173 +56,178 @@ class _RegisterState extends State<Register> {
 
       var membersService = new MembersService();
 
-      member.registrationDate = new DateTime.now();
-      member.active = false;
-
       // submit data to backend, if id is set this is an update, else a creation
       // create the news go back with a message, the result is awaited in caller
       membersService.createMember(member).then((value) {
+        print("OK");
         Navigator.pop(context, AppString.memberCreated);
       }, onError: (error) {
+        print("ERROR : $error");
         Navigator.pop(context, AppString.memberCreationFailed);
       });
     }
   }
 
   Widget build(BuildContext context) {
-    final logo = Hero(
+    /*final logo = Hero(
       tag: 'hero',
       child: Container(
-          child: Column(
-            children: <Widget>[
-              CircleAvatar(
-                backgroundColor: Colors.transparent,
-                radius: 24.0,
-                child: Image.asset(
-                  'images/helmet-face.png',
-                  //color: Colors.red[700],
-                ),
+        child: Column(
+          children: <Widget>[
+            CircleAvatar(
+              backgroundColor: Colors.transparent,
+              radius: 24.0,
+              child: Image.asset(
+                'images/helmet-face.png',
+                //color: Colors.red[700],
               ),
-              SizedBox(height: 6.0),
-              Text(
-                "Chachatte team",
-                style: TextStyle(color: Colors.white),
-                textScaleFactor: 1.3,
-              ),
-              SizedBox(height: 6.0),
-              Text(
-                "Inscription",
-                style: TextStyle(color: Colors.white),
-              ),
-            ],
+            ),
+            SizedBox(height: 6.0),
+            Text(
+              "Chachatte team",
+              style: TextStyle(color: Colors.white),
+              textScaleFactor: 1.3,
+            ),
+            SizedBox(height: 6.0),
+            Text(
+              "Inscription",
+              style: TextStyle(color: Colors.white),
+            ),
+          ],
+        ),
+        padding: EdgeInsets.fromLTRB(16, 36, 16, 0),
+      ),
+    );*/
+
+    final firstName = TextFormField(
+      keyboardType: TextInputType.text,
+      keyboardAppearance: Brightness.dark,
+      autofocus: false,
+      style: TextStyle(color: Colors.white),
+      decoration: InputDecoration(
+        enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.white)),
+        focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.white)),
+        icon: Icon(Icons.person, color: Colors.white),
+        hintText: 'Votre prénom',
+        hintStyle: TextStyle(color: Colors.grey[400]),
+        contentPadding: EdgeInsets.fromLTRB(16.0, 12.0, 16.0, 12.0),
+      ),
+      maxLines: 1,
+      inputFormatters: [new LengthLimitingTextInputFormatter(64)],
+      validator: (val) => val.isEmpty ? AppString.memberFirstNameMandatory : null,
+      onSaved: (val) => _newMember.firstName = val,
+      initialValue: _newMember.firstName,
+    );
+
+    final lastName = TextFormField(
+      keyboardType: TextInputType.text,
+      keyboardAppearance: Brightness.dark,
+      autofocus: false,
+      style: TextStyle(color: Colors.white),
+      decoration: InputDecoration(
+        enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.white)),
+        focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.white)),
+        icon: Icon(Icons.person, color: Colors.white),
+        hintText: 'Votre nom',
+        hintStyle: TextStyle(color: Colors.grey[400]),
+        contentPadding: EdgeInsets.fromLTRB(16.0, 12.0, 16.0, 12.0),
+      ),
+      maxLines: 1,
+      inputFormatters: [new LengthLimitingTextInputFormatter(64)],
+      validator: (val) => val.isEmpty ? AppString.memberLastNameMandatory : null,
+      onSaved: (val) => _newMember.lastName = val,
+      initialValue: _newMember.lastName,
+    );
+
+    final email = TextFormField(
+      keyboardType: TextInputType.emailAddress,
+      keyboardAppearance: Brightness.dark,
+      autofocus: false,
+      style: TextStyle(color: Colors.white),
+      decoration: InputDecoration(
+        enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.white)),
+        focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.white)),
+        icon: Icon(Icons.mail, color: Colors.white),
+        hintText: 'Votre adresse e-mail',
+        hintStyle: TextStyle(color: Colors.grey[400]),
+        contentPadding: EdgeInsets.fromLTRB(16.0, 12.0, 16.0, 12.0),
+      ),
+      maxLines: 1,
+      inputFormatters: [new LengthLimitingTextInputFormatter(128)],
+      validator: (val) => val.isEmpty ? AppString.memberEmailMandatory : (StringUtils.isValidEmail(val) ? null : AppString.memberEmailNotValid),
+      onSaved: (val) => _newMember.email = val,
+      initialValue: _newMember.email,
+    );
+
+    final password = TextFormField(
+      autofocus: false,
+      style: TextStyle(color: Colors.white),
+      obscureText: true,
+      decoration: InputDecoration(
+        enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.white)),
+        focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.white)),
+        icon: Icon(Icons.lock, color: Colors.white),
+        hintText: 'Choisissez votre mot de passe',
+        hintStyle: TextStyle(color: Colors.grey[400]),
+        contentPadding: EdgeInsets.fromLTRB(16.0, 12.0, 16.0, 12.0),
+      ),
+      maxLines: 1,
+      inputFormatters: [new LengthLimitingTextInputFormatter(32)],
+      validator: (val) => val.isEmpty ? AppString.memberPasswordMandatory : null,
+      onSaved: (val) => _newMember.password = val,
+      initialValue: _newMember.password,
+    );
+
+    final passwordBis = TextFormField(
+      autofocus: false,
+      style: TextStyle(color: Colors.white),
+      obscureText: true,
+      decoration: InputDecoration(
+        enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.white)),
+        focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.white)),
+        icon: Icon(Icons.lock, color: Colors.white),
+        hintText: 'Retapez votre mot de passe',
+        hintStyle: TextStyle(color: Colors.grey[400]),
+        contentPadding: EdgeInsets.fromLTRB(16.0, 12.0, 16.0, 12.0),
+      ),
+      maxLines: 1,
+      inputFormatters: [new LengthLimitingTextInputFormatter(32)],
+      validator: (val) => val.isEmpty ? AppString.memberPasswordMandatory : null,
+      onSaved: (val) => _newMember.password = val,
+      initialValue: _newMember.password,
+    );
+
+    final registerButton = Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: <Widget>[
+        RaisedButton(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(8),
           ),
-          padding: EdgeInsets.fromLTRB(16, 36, 16, 0)),
-    );
-
-    final firstName = Padding(
-      padding: EdgeInsets.only(left: 16.0, right: 16.0),
-      child: TextFormField(
-        keyboardType: TextInputType.text,
-        keyboardAppearance: Brightness.dark,
-        autofocus: false,
-        style: TextStyle(color: Colors.white),
-        decoration: InputDecoration(
-          enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.white)),
-          focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.white)),
-          icon: Icon(Icons.person, color: Colors.white),
-          hintText: 'Votre prénom',
-          hintStyle: TextStyle(color: Colors.grey[400]),
-          contentPadding: EdgeInsets.fromLTRB(16.0, 12.0, 16.0, 12.0),
+          onPressed: () {
+            Navigator.pop(context);
+          },
+          padding: EdgeInsets.fromLTRB(16.0, 12.0, 16.0, 12.0),
+          color: Colors.grey[700],
+          child: Text(
+            'Annuler',
+            style: TextStyle(color: Colors.white),
+          ),
         ),
-        maxLines: 1,
-        inputFormatters: [new LengthLimitingTextInputFormatter(64)],
-        validator: (val) => val.isEmpty ? AppString.memberFirstNameMandatory : null,
-        onSaved: (val) => _newMember.firstName = val,
-        initialValue: _newMember.firstName,
-      ),
-    );
-
-    final lastName = Padding(
-      padding: EdgeInsets.only(left: 16.0, right: 16.0),
-      child: TextFormField(
-        keyboardType: TextInputType.text,
-        keyboardAppearance: Brightness.dark,
-        autofocus: false,
-        style: TextStyle(color: Colors.white),
-        decoration: InputDecoration(
-          enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.white)),
-          focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.white)),
-          icon: Icon(Icons.person, color: Colors.white),
-          hintText: 'Votre nom',
-          hintStyle: TextStyle(color: Colors.grey[400]),
-          contentPadding: EdgeInsets.fromLTRB(16.0, 12.0, 16.0, 12.0),
+        SizedBox(width: 8.0),
+        RaisedButton(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(8),
+          ),
+          onPressed: () => submitForm(_newMember),
+          padding: EdgeInsets.fromLTRB(16.0, 12.0, 16.0, 12.0),
+          color: Colors.red[700],
+          child: Text(
+            'S\'inscrire',
+            style: TextStyle(color: Colors.white),
+          ),
         ),
-        maxLines: 1,
-        inputFormatters: [new LengthLimitingTextInputFormatter(64)],
-        validator: (val) => val.isEmpty ? AppString.memberLastNameMandatory : null,
-        onSaved: (val) => _newMember.lastName = val,
-        initialValue: _newMember.lastName,
-      ),
-    );
-
-    final email = Padding(
-      padding: EdgeInsets.only(left: 16.0, right: 16.0),
-      child: TextFormField(
-        keyboardType: TextInputType.emailAddress,
-        keyboardAppearance: Brightness.dark,
-        autofocus: false,
-        style: TextStyle(color: Colors.white),
-        decoration: InputDecoration(
-          enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.white)),
-          focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.white)),
-          icon: Icon(Icons.person, color: Colors.white),
-          hintText: 'Votre adresse e-mail',
-          hintStyle: TextStyle(color: Colors.grey[400]),
-          contentPadding: EdgeInsets.fromLTRB(16.0, 12.0, 16.0, 12.0),
-        ),
-        maxLines: 1,
-        inputFormatters: [new LengthLimitingTextInputFormatter(128)],
-        validator: (val) => val.isEmpty ? AppString.memberEmailMandatory : (StringUtils.isValidEmail(val) ? null : AppString.memberEmailNotValid),
-        onSaved: (val) => _newMember.email = val,
-        initialValue: _newMember.email,
-      ),
-    );
-
-    final password = Padding(
-      padding: EdgeInsets.only(left: 16.0, right: 16.0),
-      child: TextFormField(
-        autofocus: false,
-        style: TextStyle(color: Colors.white),
-        obscureText: true,
-        decoration: InputDecoration(
-          enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.white)),
-          focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.white)),
-          icon: Icon(Icons.lock, color: Colors.white),
-          hintText: 'Choisissez votre mot de passe',
-          hintStyle: TextStyle(color: Colors.grey[400]),
-          contentPadding: EdgeInsets.fromLTRB(16.0, 12.0, 16.0, 12.0),
-        ),
-        maxLines: 1,
-        inputFormatters: [new LengthLimitingTextInputFormatter(32)],
-        validator: (val) => val.isEmpty ? AppString.memberPasswordMandatory : null,
-        onSaved: (val) => _newMember.password = val,
-        initialValue: _newMember.password,
-      ),
-    );
-
-    final passwordBis = Padding(
-      padding: EdgeInsets.only(left: 16.0, right: 16.0),
-      child: TextFormField(
-        autofocus: false,
-        style: TextStyle(color: Colors.white),
-        obscureText: true,
-        decoration: InputDecoration(
-          enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.white)),
-          focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.white)),
-          icon: Icon(Icons.lock, color: Colors.white),
-          hintText: 'Retapez votre mot de passe',
-          hintStyle: TextStyle(color: Colors.grey[400]),
-          contentPadding: EdgeInsets.fromLTRB(16.0, 12.0, 16.0, 12.0),
-        ),
-        maxLines: 1,
-        inputFormatters: [new LengthLimitingTextInputFormatter(32)],
-        validator: (val) => val.isEmpty ? AppString.memberPasswordMandatory : null,
-        onSaved: (val) => _newMember.password = val,
-        initialValue: _newMember.password,
-      ),
-    );
-
-    final registerButton = RaisedButton(
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(8),
-      ),
-      onPressed: () => submitForm(_newMember),
-      padding: EdgeInsets.fromLTRB(16.0, 12.0, 16.0, 12.0),
-      color: Colors.red[700],
-      child: Text(
-        'S\'inscrire',
-        style: TextStyle(color: Colors.white),
-      ),
+      ],
     );
 
     return new GestureDetector(
@@ -241,36 +246,54 @@ class _RegisterState extends State<Register> {
           key: _scaffoldKey,
           backgroundColor: Colors.transparent,
           body: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            child: new SafeArea(
-              top: false,
-              bottom: false,
-              child: ListView(
-                children: <Widget>[
-                  new Form(
-                    key: _formKey,
-                    autovalidate: false,
-                    child: new Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: <Widget>[
-                        logo,
-                        SizedBox(height: 32.0),
-                        firstName,
-                        SizedBox(height: 8.0),
-                        lastName,
-                        SizedBox(height: 8.0),
-                        email,
-                        SizedBox(height: 8.0),
-                        password,
-                        SizedBox(height: 8.0),
-                        passwordBis,
-                        SizedBox(height: 24.0),
-                        registerButton,
-                      ],
-                    ),
+            padding: const EdgeInsets.symmetric(horizontal: 32.0),
+            child: new Form(
+              key: _formKey,
+              autovalidate: false,
+              child: new Center(
+                child: SingleChildScrollView(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: <Widget>[
+                      CircleAvatar(
+                        backgroundColor: Colors.transparent,
+                        radius: 24.0,
+                        child: Image.asset(
+                          'images/helmet-face.png',
+                          //color: Colors.red[700],
+                        ),
+                      ),
+                      SizedBox(height: 6.0),
+                      Center(
+                        child: Text(
+                          "Chachatte team",
+                          style: TextStyle(color: Colors.white),
+                          textScaleFactor: 1.3,
+                        ),
+                      ),
+                      SizedBox(height: 6.0),
+                      Center(
+                        child: Text(
+                          "Inscription",
+                          style: TextStyle(color: Colors.white),
+                        ),
+                      ),
+                      SizedBox(height: 32.0),
+                      firstName,
+                      SizedBox(height: 8.0),
+                      lastName,
+                      SizedBox(height: 8.0),
+                      email,
+                      SizedBox(height: 8.0),
+                      password,
+                      SizedBox(height: 8.0),
+                      passwordBis,
+                      SizedBox(height: 24.0),
+                      registerButton,
+                    ],
                   ),
-                ],
+                ),
               ),
             ),
           ),

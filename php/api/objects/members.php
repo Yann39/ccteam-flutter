@@ -1,3 +1,4 @@
+<?php
 /*
  * Copyright (c) 2019 by Yann39.
  *
@@ -17,7 +18,6 @@
  * along with Chachatte Team. If not, see <http://www.gnu.org/licenses/>.
  */
 
-<?php
 class Member {
 
     // database connection and table name

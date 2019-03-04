@@ -86,7 +86,7 @@ class PhotosService {
     }
   }
 
-  /// Delete specified photo from the database
+  /// Delete specified [photo] from the database
   /// Send a POST request to the Restful API
   /// Throw an exception if response status code is different from 204
   Future<void> deletePhoto(Photo photo) async {

@@ -87,7 +87,7 @@ class NewsService {
     }
   }
 
-  /// Delete specified news from the database
+  /// Delete specified [news] from the database
   /// Send a POST request to the Restful API
   /// Throw an exception if response status code is different from 204
   Future<void> deleteNews(News news) async {

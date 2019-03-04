@@ -45,6 +45,34 @@ class MembersService {
     }
   }
 
+  /// Check if the specified [member] is allowed to log in
+  /// Send a POST request to the Restful API
+  /// Throw an exception if response status code is different from 200
+  Future<void> loginMember(Member member) async {
+    // convert Member object to JSON string
+    final String jsonString = _toJson(member);
+
+    // call to API
+    final response = await http.post(AppConstants.API_ROOT_URL + AppConstants.API_LOGIN_MEMBER_ENDPOINT, headers: {'Content-Type': 'application/json'}, body: jsonString);
+
+    print("status coed : ${response.statusCode}");
+
+    // handle server response code
+    if (response.statusCode == 200) {
+      return;
+    } else if (response.statusCode == 401) {
+      throw Exception('Wrong credentials');
+    } else if (response.statusCode == 403) {
+      throw Exception('Account is not activated');
+    } else if (response.statusCode == 404) {
+      throw Exception('No member found with the specified e-mail address');
+    } else if (response.statusCode == 400) {
+      throw Exception('Bad request, member has not been logged in');
+    } else {
+      throw Exception('Unexpected server response, member has not been logged in');
+    }
+  }
+
   /// Create the specified [member] into the database
   /// Send a POST request to the Restful API
   /// Throw an exception if response status code is different from 201
@@ -87,7 +115,7 @@ class MembersService {
     }
   }
 
-  /// Delete specified member from the database
+  /// Delete specified [member] from the database
   /// Send a POST request to the Restful API
   /// Throw an exception if response status code is different from 204
   Future<void> deleteMember(Member member) async {
@@ -114,7 +142,7 @@ class MembersService {
     map["admin"] = member.admin;
     map["phone"] = member.phone;
     map["bike"] = member.bike;
-    map["registration_date"] = new DateFormat("yyyy-MM-dd HH:mm:ss").format(member.registrationDate);
+    map["registration_date"] = member.registrationDate != null ? new DateFormat("yyyy-MM-dd HH:mm:ss").format(member.registrationDate) : null;
     return json.encode(map);
   }
 
@@ -130,6 +158,6 @@ class MembersService {
         admin: json['admin'] == '1',
         phone: json['phone'],
         bike: json['bike'],
-        registrationDate: new DateFormat("yyyy-MM-dd HH:mm:ss").parseStrict(json['registration_date']));
+        registrationDate: json['registration_date'] != null ? new DateFormat("yyyy-MM-dd HH:mm:ss").parseStrict(json['registration_date']) : null);
   }
 }

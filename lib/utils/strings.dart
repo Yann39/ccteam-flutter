@@ -90,6 +90,7 @@ class AppString {
   static const String memberRegistrationDateNotValid = 'La date indiquée n\'est pas valide';
   static const String memberActive = 'Actif ?';
   static const String memberPasswordMandatory = 'Le mot de passe est obligatoire';
+  static const String memberLoginFailed = 'Connexion impossible, vérifiez vos informations et assurez-vous que votre compte est actif';
 
   static const String eventScreenTitle = 'Calendrier';
   static const String eventCreate = 'Ajouter un événement';
