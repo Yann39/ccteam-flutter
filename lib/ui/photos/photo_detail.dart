@@ -109,7 +109,7 @@ class _GridPhotoViewerState extends State<GridPhotoViewer> with SingleTickerProv
             ..translate(_offset.dx, _offset.dy)
             ..scale(_scale),
           child: CachedNetworkImage(
-            placeholder: CircularProgressIndicator(),
+            placeholder: (context, url) => CircularProgressIndicator(),
             imageUrl: widget.photo.link,
             fit: BoxFit.fitWidth,
           ),

@@ -151,7 +151,7 @@ class _MemberDetailState extends State<MemberDetail> {
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: <Widget>[
                               CachedNetworkImage(
-                                placeholder: CircularProgressIndicator(),
+                                placeholder: (context, url) => CircularProgressIndicator(),
                                 imageUrl: 'https://images.freeimages.com/images/large-previews/e71/frog-1371919.jpg',
                               ),
                               //Image.network('https://images.freeimages.com/images/large-previews/e71/frog-1371919.jpg', fit: BoxFit.fitHeight),

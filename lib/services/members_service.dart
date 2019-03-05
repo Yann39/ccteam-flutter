@@ -55,8 +55,6 @@ class MembersService {
     // call to API
     final response = await http.post(AppConstants.API_ROOT_URL + AppConstants.API_LOGIN_MEMBER_ENDPOINT, headers: {'Content-Type': 'application/json'}, body: jsonString);
 
-    print("status coed : ${response.statusCode}");
-
     // handle server response code
     if (response.statusCode == 200) {
       return;

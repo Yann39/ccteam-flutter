@@ -147,7 +147,7 @@ class PhotoCard extends StatelessWidget {
             fit: StackFit.expand,
             children: [
               CachedNetworkImage(
-                placeholder: CircularProgressIndicator(),
+                placeholder: (context, url) => CircularProgressIndicator(),
                 imageUrl: photo.link,
                 fit: BoxFit.fitWidth,
               ),

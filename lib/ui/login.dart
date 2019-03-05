@@ -20,8 +20,7 @@
 import 'dart:ui';
 
 import 'package:chachatte_team/models/member.dart';
-import 'package:chachatte_team/services/members_service.dart';
-import 'package:chachatte_team/ui/home.dart';
+import 'package:chachatte_team/ui/loading_screen.dart';
 import 'package:chachatte_team/ui/register.dart';
 import 'package:chachatte_team/utils/string_utils.dart';
 import 'package:chachatte_team/utils/strings.dart';
@@ -46,12 +45,12 @@ class _LoginState extends State<Login> {
     FocusScope.of(context).requestFocus(new FocusNode());
   }
 
-  /// Method that launches the Edit Member screen and awaits the result from Navigator.pop
+  /// Method that navigates to the Register screen and awaits the result from Navigator.pop
   _navigateToRegisterScreen(BuildContext context) async {
     // Navigator.push returns a Future that will complete after we call Navigator.pop on the target screen
     final result = await Navigator.push(context, MaterialPageRoute(builder: (context) => Register()));
 
-    // after the target screen returns a result, hide any previous snack bars and show the new result
+    // after the target screen returns a result, show a bottom sheet to display the result
     if (result != null) {
       _loginScaffoldKey.currentState.showBottomSheet<String>((BuildContext context) {
         return Container(
@@ -67,21 +66,33 @@ class _LoginState extends State<Login> {
             children: <Widget>[
               ListTile(
                 dense: true,
-                title: Text(AppString.memberCreated, style: TextStyle(color: Colors.white),),
+                title: Text(
+                  AppString.memberCreated,
+                  style: TextStyle(color: Colors.white),
+                ),
               ),
               ListTile(
                 dense: true,
-                title: Text("Votre compte doit maintenant être validé par un administrateur avant que vous puissiez vous connecter.", style: TextStyle(color: Colors.white),),
+                title: Text(
+                  "Votre compte doit maintenant être validé par un administrateur avant que vous puissiez vous connecter.",
+                  style: TextStyle(color: Colors.white),
+                ),
               ),
               ListTile(
                 dense: true,
-                title: Text("Vous serez averti par e-mail losrque votre compte sera actif.", style: TextStyle(color: Colors.white),),
+                title: Text(
+                  "Vous serez averti par e-mail losrque votre compte sera actif.",
+                  style: TextStyle(color: Colors.white),
+                ),
               ),
               ButtonTheme.bar(
                 child: ButtonBar(
                   children: <Widget>[
                     FlatButton(
-                      child: const Text("J'ai compris", style: TextStyle(color: Colors.white),),
+                      child: const Text(
+                        "J'ai compris",
+                        style: TextStyle(color: Colors.white),
+                      ),
                       onPressed: () {
                         Navigator.pop(context);
                       },
@@ -93,16 +104,11 @@ class _LoginState extends State<Login> {
           ),
         );
       });
-
-      /*Scaffold.of(context)
-        ..removeCurrentSnackBar()
-        ..showSnackBar(SnackBar(content: Text("$result")));*/
     }
   }
 
-  /// Method that launches the Edit Member screen and awaits the result from Navigator.pop
+  /// Method that do the login in a loading screen and awaits the result from Navigator.pop
   _doLogin(Member member) async {
-
     final FormState form = _loginFormKey.currentState;
 
     if (!form.validate()) {
@@ -111,102 +117,17 @@ class _LoginState extends State<Login> {
       // this invokes each onSaved event
       form.save();
 
-      // submit data to backend, if id is set this is an update, else a creation
-      if (member.email != null && member.password != null) {
-        var membersService = new MembersService();
-        // log in user then go back with a message, the result is awaited in caller
-        membersService.loginMember(member).then((value) {
-          Navigator.push(context, MaterialPageRoute(builder: (context) => Home()));
-        }, onError: (error) {
-         _loginScaffoldKey.currentState
-            ..removeCurrentSnackBar()
-            ..showSnackBar(SnackBar(content: Text(AppString.memberLoginFailed)));
-        });
-      } else {
+      // do the login and wait for the result
+      final result = await Navigator.push(context, MaterialPageRoute(builder: (context) => LoadingScreen(member: member)));
+
+      // after the target screen returns a result, hide any previous snack bars and show the new result
+      // if we come here it means an error occurred
+      if (result != null) {
         _loginScaffoldKey.currentState
           ..removeCurrentSnackBar()
-          ..showSnackBar(SnackBar(content: Text("Veuillez indiquer votre nom d\'utilisateur et votre mot de passe")));
+          ..showSnackBar(SnackBar(content: Text("$result")));
       }
-
     }
-
-    /*showModalBottomSheet(context: _loginScaffoldKey.currentState.context, builder: (BuildContext context) => Container(
-      decoration: BoxDecoration(
-        border: Border(
-          top: BorderSide(color: Colors.red),
-        ),
-        color: Colors.black,
-      ),
-      child: ListView(
-        shrinkWrap: true,
-        primary: false,
-        children: <Widget>[
-          ListTile(
-            dense: true,
-            title: Text(AppString.memberCreated, style: TextStyle(color: Colors.white),),
-          ),
-          ListTile(
-            dense: true,
-            title: Text("Votre compte doit maintenant être validé par un administrateur avant que vous puissiez vous connecter.", style: TextStyle(color: Colors.white),),
-          ),
-          ListTile(
-            dense: true,
-            title: Text("Vous serez averti par e-mail losrque votre compte sera actif.", style: TextStyle(color: Colors.white),),
-          ),
-          ButtonTheme.bar(
-            child: ButtonBar(
-              children: <Widget>[
-                FlatButton(
-                  child: const Text("J'ai compris", style: TextStyle(color: Colors.white),),
-                  onPressed: () {
-                    Navigator.pop(context);
-                  },
-                )
-              ],
-            ),
-          )
-        ],
-      ),
-    ),);*/
-
-      /*_loginScaffoldKey.currentState.showBottomSheet<String>((BuildContext context) {
-        return Container(
-          decoration: BoxDecoration(
-              border: Border(
-                top: BorderSide(color: Colors.red),
-              ),
-              color: Colors.transparent,
-          ),
-          child: ListView(
-            shrinkWrap: true,
-            primary: false,
-            children: <Widget>[
-              ListTile(
-                dense: true,
-                title: Text(AppString.memberCreated, style: TextStyle(color: Colors.white),),
-              ),
-              ListTile(
-                dense: true,
-                title: Text("Click OK to dismiss", style: TextStyle(color: Colors.white),),
-              ),
-              ButtonTheme.bar(
-                child: ButtonBar(
-                  children: <Widget>[
-                    FlatButton(
-                      child: const Text("OK", style: TextStyle(color: Colors.white),),
-                      onPressed: () {
-                        Navigator.pop(context);
-                      },
-                    )
-                  ],
-                ),
-              )
-            ],
-          ),
-        );
-      });*/
-
-      //Navigator.push(context, MaterialPageRoute(builder: (context) => Home()));
   }
 
   Widget build(BuildContext context) {
@@ -347,13 +268,13 @@ class _LoginState extends State<Login> {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: <Widget>[
               SizedBox(height: 8.0),
-          new Form(
-            key: _loginFormKey,
-            autovalidate: false,
-            child:
-              Column(
-                children: <Widget>[logo, SizedBox(height: 32.0), email, SizedBox(height: 8.0), password, SizedBox(height: 24.0), loginButton],
-              ),),
+              new Form(
+                key: _loginFormKey,
+                autovalidate: false,
+                child: Column(
+                  children: <Widget>[logo, SizedBox(height: 32.0), email, SizedBox(height: 8.0), password, SizedBox(height: 24.0), loginButton],
+                ),
+              ),
               forgotLabel
             ],
           ),
