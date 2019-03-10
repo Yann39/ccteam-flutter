@@ -20,7 +20,7 @@
 import 'dart:ui';
 
 import 'package:chachatte_team/models/member.dart';
-import 'package:chachatte_team/ui/loading_screen.dart';
+import 'package:chachatte_team/ui/login_loading_screen.dart';
 import 'package:chachatte_team/ui/register.dart';
 import 'package:chachatte_team/utils/string_utils.dart';
 import 'package:chachatte_team/utils/strings.dart';
@@ -41,6 +41,7 @@ class _LoginState extends State<Login> {
   // the member to be created
   final Member _newMember = new Member();
 
+  /// Allow to dismiss the keyboard when clicking outside
   _dismissKeyboard(BuildContext context) {
     FocusScope.of(context).requestFocus(new FocusNode());
   }
@@ -52,62 +53,57 @@ class _LoginState extends State<Login> {
 
     // after the target screen returns a result, show a bottom sheet to display the result
     if (result != null) {
-      _loginScaffoldKey.currentState.showBottomSheet<String>((BuildContext context) {
-        return Container(
-          decoration: BoxDecoration(
-            border: Border(
-              top: BorderSide(color: Colors.red),
+      _loginScaffoldKey.currentState.showBottomSheet<String>(
+        (BuildContext context) {
+          return Container(
+            decoration: BoxDecoration(
+              border: Border(
+                top: BorderSide(color: Colors.red),
+              ),
+              color: Colors.black,
             ),
-            color: Colors.black,
-          ),
-          child: ListView(
-            shrinkWrap: true,
-            primary: false,
-            children: <Widget>[
-              ListTile(
-                dense: true,
-                title: Text(
-                  AppString.memberCreated,
-                  style: TextStyle(color: Colors.white),
+            child: ListView(
+              shrinkWrap: true,
+              primary: false,
+              children: <Widget>[
+                ListTile(
+                  dense: true,
+                  title: Text(
+                    AppString.memberCreated,
+                    style: TextStyle(color: Colors.white),
+                  ),
                 ),
-              ),
-              ListTile(
-                dense: true,
-                title: Text(
-                  "Votre compte doit maintenant être validé par un administrateur avant que vous puissiez vous connecter.",
-                  style: TextStyle(color: Colors.white),
+                ListTile(
+                  dense: true,
+                  title: Text(
+                    AppString.accountWaitingAdmin,
+                    style: TextStyle(color: Colors.white),
+                  ),
                 ),
-              ),
-              ListTile(
-                dense: true,
-                title: Text(
-                  "Vous serez averti par e-mail losrque votre compte sera actif.",
-                  style: TextStyle(color: Colors.white),
-                ),
-              ),
-              ButtonTheme.bar(
-                child: ButtonBar(
-                  children: <Widget>[
-                    FlatButton(
-                      child: const Text(
-                        "J'ai compris",
-                        style: TextStyle(color: Colors.white),
-                      ),
-                      onPressed: () {
-                        Navigator.pop(context);
-                      },
-                    )
-                  ],
-                ),
-              )
-            ],
-          ),
-        );
-      });
+                ButtonTheme.bar(
+                  child: ButtonBar(
+                    children: <Widget>[
+                      FlatButton(
+                        child: const Text(
+                          AppString.understood,
+                          style: TextStyle(color: Colors.white),
+                        ),
+                        onPressed: () {
+                          Navigator.pop(context);
+                        },
+                      )
+                    ],
+                  ),
+                )
+              ],
+            ),
+          );
+        },
+      );
     }
   }
 
-  /// Method that do the login in a loading screen and awaits the result from Navigator.pop
+  /// Method that validates the form then process the login in a loading screen and awaits the result from Navigator.pop
   _doLogin(Member member) async {
     final FormState form = _loginFormKey.currentState;
 
@@ -118,10 +114,9 @@ class _LoginState extends State<Login> {
       form.save();
 
       // do the login and wait for the result
-      final result = await Navigator.push(context, MaterialPageRoute(builder: (context) => LoadingScreen(member: member)));
+      final result = await Navigator.push(context, MaterialPageRoute(builder: (context) => LoginLoadingScreen(member: member)));
 
-      // after the target screen returns a result, hide any previous snack bars and show the new result
-      // if we come here it means an error occurred
+      // after the target screen returns a result, hide any previous snack bars and show the new result (if we come here it means an error occurred)
       if (result != null) {
         _loginScaffoldKey.currentState
           ..removeCurrentSnackBar()
@@ -134,30 +129,30 @@ class _LoginState extends State<Login> {
     final logo = Hero(
       tag: 'hero',
       child: Container(
-          child: Column(
-            children: <Widget>[
-              CircleAvatar(
-                backgroundColor: Colors.transparent,
-                radius: 24.0,
-                child: Image.asset(
-                  'images/helmet-face.png',
-                  //color: Colors.red[700],
-                ),
+        child: Column(
+          children: <Widget>[
+            CircleAvatar(
+              backgroundColor: Colors.transparent,
+              radius: 24.0,
+              child: Image.asset(
+                'images/helmet-face.png',
               ),
-              SizedBox(height: 6.0),
-              Text(
-                "Chachatte team",
-                style: TextStyle(color: Colors.white),
-                textScaleFactor: 1.3,
-              ),
-              SizedBox(height: 6.0),
-              Text(
-                "Identification",
-                style: TextStyle(color: Colors.white),
-              ),
-            ],
-          ),
-          padding: EdgeInsets.fromLTRB(16, 36, 16, 0)),
+            ),
+            SizedBox(height: 6.0),
+            Text(
+              AppString.applicationTitle,
+              style: TextStyle(color: Colors.white),
+              textScaleFactor: 1.3,
+            ),
+            SizedBox(height: 6.0),
+            Text(
+              AppString.identification,
+              style: TextStyle(color: Colors.white),
+            ),
+          ],
+        ),
+        padding: EdgeInsets.fromLTRB(16, 36, 16, 0),
+      ),
     );
 
     final email = Padding(
@@ -171,7 +166,7 @@ class _LoginState extends State<Login> {
           enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.white)),
           focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.white)),
           icon: Icon(Icons.mail, color: Colors.white),
-          hintText: 'Adresse e-mail',
+          hintText: AppString.loginEmailHint,
           hintStyle: TextStyle(color: Colors.grey[400]),
           contentPadding: EdgeInsets.fromLTRB(16.0, 12.0, 16.0, 12.0),
         ),
@@ -193,7 +188,7 @@ class _LoginState extends State<Login> {
           enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.white)),
           focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.white)),
           icon: Icon(Icons.lock, color: Colors.white),
-          hintText: 'Mot de passe',
+          hintText: AppString.loginPasswordHint,
           hintStyle: TextStyle(color: Colors.grey[400]),
           contentPadding: EdgeInsets.fromLTRB(16.0, 12.0, 16.0, 12.0),
         ),
@@ -218,7 +213,7 @@ class _LoginState extends State<Login> {
           padding: EdgeInsets.fromLTRB(16.0, 12.0, 16.0, 12.0),
           color: Colors.red[700],
           child: Text(
-            'Se connecter',
+            AppString.connect,
             style: TextStyle(color: Colors.white),
           ),
         ),
@@ -233,7 +228,7 @@ class _LoginState extends State<Login> {
           padding: EdgeInsets.fromLTRB(16.0, 12.0, 16.0, 12.0),
           color: Colors.blue[700],
           child: Text(
-            'S\'inscrire',
+            AppString.register,
             style: TextStyle(color: Colors.white),
           ),
         ),
@@ -242,7 +237,7 @@ class _LoginState extends State<Login> {
 
     final forgotLabel = FlatButton(
       child: Text(
-        'Mot de passe oublié?',
+        AppString.forgotPassword,
         style: TextStyle(color: Colors.white),
       ),
       onPressed: () {},
@@ -257,26 +252,41 @@ class _LoginState extends State<Login> {
           image: new DecorationImage(
             image: new AssetImage("images/motos.jpg"),
             fit: BoxFit.cover,
-            colorFilter: ColorFilter.mode(Color.fromRGBO(255, 255, 255, 0.4), BlendMode.modulate),
+            colorFilter: ColorFilter.mode(
+              Color.fromRGBO(255, 255, 255, 0.4),
+              BlendMode.modulate,
+            ),
           ),
         ),
         child: Scaffold(
           key: _loginScaffoldKey,
           backgroundColor: Colors.transparent,
-          body: Column(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: <Widget>[
-              SizedBox(height: 8.0),
-              new Form(
-                key: _loginFormKey,
-                autovalidate: false,
-                child: Column(
-                  children: <Widget>[logo, SizedBox(height: 32.0), email, SizedBox(height: 8.0), password, SizedBox(height: 24.0), loginButton],
-                ),
+          body: Center(
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: <Widget>[
+                  SizedBox(height: 8.0),
+                  Form(
+                    key: _loginFormKey,
+                    autovalidate: false,
+                    child: Column(
+                      children: <Widget>[
+                        logo,
+                        SizedBox(height: 32.0),
+                        email,
+                        SizedBox(height: 8.0),
+                        password,
+                        SizedBox(height: 24.0),
+                        loginButton,
+                      ],
+                    ),
+                  ),
+                  forgotLabel
+                ],
               ),
-              forgotLabel
-            ],
+            ),
           ),
         ),
       ),

@@ -27,6 +27,7 @@ import 'package:chachatte_team/ui/news/news_card.dart';
 import 'package:chachatte_team/ui/news/news_detail.dart';
 import 'package:chachatte_team/utils/strings.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class NewsList extends StatefulWidget {
@@ -87,10 +88,12 @@ class _NewsListState extends State<NewsList> {
     }
   }
 
-  void _select(QuickActions choice) {
+  void _select(QuickActions choice) async {
     if (choice == QuickActions.contact) {
       _launchURL();
     } else if (choice == QuickActions.logout) {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      prefs.remove('email');
       Navigator.push(context, MaterialPageRoute(builder: (context) => Login()));
     }
   }

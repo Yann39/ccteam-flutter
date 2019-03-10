@@ -27,17 +27,37 @@ class AppString {
   static const String cancel = 'Annuler';
   static const String save = 'Enregistrer';
   static const String confirm = 'Confirmer';
+  static const String connect = 'Se connecter';
+  static const String register = 'S\'inscrire';
 
   static const String confirmation = 'Confirmation';
+  static const String identification = 'Identification';
+  static const String registration = 'Inscription';
 
   static const String about = 'A propos';
   static const String contact = 'Contact';
   static const String logout = 'Se déconnecter';
 
+  static const String forgotPassword = 'Mot de passe oublié?';
+  static const String loggingIn = 'Connexion en cours';
+  static const String understood = 'J\'ai compris';
+  static const String accountWaitingAdmin = 'Votre compte doit maintenant être validé par un administrateur avant que vous puissiez vous connecter. Vous serez averti par e-mail losrque votre compte sera actif';
+
   static const String tabHome = 'Accueil';
   static const String tabCalendar = 'Calendrier';
   static const String tabTeam = 'Équipe';
   static const String tabGallery = 'Gallerie';
+
+
+  static const String loginEmailHint = 'Adresse e-mail';
+  static const String loginPasswordHint = 'Mot de passe';
+  static const String loginFailed = 'L\'dentification a échouée, vérifiez vos informations et assurez-vous que votre compte soit actif';
+
+  static const String registrationFirstNameHint = 'Votre prénom';
+  static const String registrationLastNameHint = 'Votre nom';
+  static const String registrationEmailHint = 'Votre adresse e-mail';
+  static const String registrationPasswordHint = 'Choisissez un mot de passe';
+  static const String registrationPasswordConfirmHint = 'Confirmez votre mot de passe';
 
   static const String newsCreate = 'Ajouter une actualité';
   static const String newsCreated = 'L\'actualité à été créée avec succès !';

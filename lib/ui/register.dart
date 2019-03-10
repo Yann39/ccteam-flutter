@@ -25,6 +25,7 @@ import 'package:chachatte_team/utils/string_utils.dart';
 import 'package:chachatte_team/utils/strings.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:logging/logging.dart';
 
 class Register extends StatefulWidget {
   @override
@@ -47,6 +48,7 @@ class _RegisterState extends State<Register> {
   /// Validate the form then submit data to backend
   void submitForm(Member member) {
     final FormState form = _formKey.currentState;
+    final Logger log = new Logger('register');
 
     if (!form.validate()) {
       _scaffoldKey.currentState.showSnackBar(new SnackBar(backgroundColor: Colors.red, content: new Text(AppString.formNotValid)));
@@ -54,50 +56,52 @@ class _RegisterState extends State<Register> {
       // this invokes each onSaved event
       form.save();
 
-      var membersService = new MembersService();
+      final MembersService membersService = new MembersService();
 
-      // submit data to backend, if id is set this is an update, else a creation
-      // create the news go back with a message, the result is awaited in caller
-      membersService.createMember(member).then((value) {
-        print("OK");
-        Navigator.pop(context, AppString.memberCreated);
-      }, onError: (error) {
-        print("ERROR : $error");
-        Navigator.pop(context, AppString.memberCreationFailed);
-      });
+      // submit data to backend then display a message
+      membersService.createMember(member).then(
+        (value) {
+          log.fine("New user registered : ${member.email}");
+          Navigator.pop(context, AppString.memberCreated);
+        },
+        onError: (error) {
+          log.fine("Failed to register new user", error);
+          Navigator.pop(context, AppString.memberCreationFailed);
+        },
+      );
     }
   }
 
   Widget build(BuildContext context) {
-    /*final logo = Hero(
-      tag: 'hero',
-      child: Container(
-        child: Column(
-          children: <Widget>[
-            CircleAvatar(
-              backgroundColor: Colors.transparent,
-              radius: 24.0,
-              child: Image.asset(
-                'images/helmet-face.png',
-                //color: Colors.red[700],
-              ),
+    final logo = Container(
+      child: Column(
+        children: <Widget>[
+          CircleAvatar(
+            backgroundColor: Colors.transparent,
+            radius: 24.0,
+            child: Image.asset(
+              'images/helmet-face.png',
+              //color: Colors.red[700],
             ),
-            SizedBox(height: 6.0),
-            Text(
-              "Chachatte team",
+          ),
+          SizedBox(height: 6.0),
+          Center(
+            child: Text(
+              AppString.applicationTitle,
               style: TextStyle(color: Colors.white),
               textScaleFactor: 1.3,
             ),
-            SizedBox(height: 6.0),
-            Text(
-              "Inscription",
+          ),
+          SizedBox(height: 6.0),
+          Center(
+            child: Text(
+              AppString.registration,
               style: TextStyle(color: Colors.white),
             ),
-          ],
-        ),
-        padding: EdgeInsets.fromLTRB(16, 36, 16, 0),
+          ),
+        ],
       ),
-    );*/
+    );
 
     final firstName = TextFormField(
       keyboardType: TextInputType.text,
@@ -108,7 +112,7 @@ class _RegisterState extends State<Register> {
         enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.white)),
         focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.white)),
         icon: Icon(Icons.person, color: Colors.white),
-        hintText: 'Votre prénom',
+        hintText: AppString.registrationFirstNameHint,
         hintStyle: TextStyle(color: Colors.grey[400]),
         contentPadding: EdgeInsets.fromLTRB(16.0, 12.0, 16.0, 12.0),
       ),
@@ -128,7 +132,7 @@ class _RegisterState extends State<Register> {
         enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.white)),
         focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.white)),
         icon: Icon(Icons.person, color: Colors.white),
-        hintText: 'Votre nom',
+        hintText: AppString.registrationLastNameHint,
         hintStyle: TextStyle(color: Colors.grey[400]),
         contentPadding: EdgeInsets.fromLTRB(16.0, 12.0, 16.0, 12.0),
       ),
@@ -148,7 +152,7 @@ class _RegisterState extends State<Register> {
         enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.white)),
         focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.white)),
         icon: Icon(Icons.mail, color: Colors.white),
-        hintText: 'Votre adresse e-mail',
+        hintText: AppString.registrationEmailHint,
         hintStyle: TextStyle(color: Colors.grey[400]),
         contentPadding: EdgeInsets.fromLTRB(16.0, 12.0, 16.0, 12.0),
       ),
@@ -167,7 +171,7 @@ class _RegisterState extends State<Register> {
         enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.white)),
         focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.white)),
         icon: Icon(Icons.lock, color: Colors.white),
-        hintText: 'Choisissez votre mot de passe',
+        hintText: AppString.registrationPasswordHint,
         hintStyle: TextStyle(color: Colors.grey[400]),
         contentPadding: EdgeInsets.fromLTRB(16.0, 12.0, 16.0, 12.0),
       ),
@@ -186,7 +190,7 @@ class _RegisterState extends State<Register> {
         enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.white)),
         focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.white)),
         icon: Icon(Icons.lock, color: Colors.white),
-        hintText: 'Retapez votre mot de passe',
+        hintText: AppString.registrationPasswordConfirmHint,
         hintStyle: TextStyle(color: Colors.grey[400]),
         contentPadding: EdgeInsets.fromLTRB(16.0, 12.0, 16.0, 12.0),
       ),
@@ -210,7 +214,7 @@ class _RegisterState extends State<Register> {
           padding: EdgeInsets.fromLTRB(16.0, 12.0, 16.0, 12.0),
           color: Colors.grey[700],
           child: Text(
-            'Annuler',
+            AppString.cancel,
             style: TextStyle(color: Colors.white),
           ),
         ),
@@ -223,7 +227,7 @@ class _RegisterState extends State<Register> {
           padding: EdgeInsets.fromLTRB(16.0, 12.0, 16.0, 12.0),
           color: Colors.red[700],
           child: Text(
-            'S\'inscrire',
+            AppString.register,
             style: TextStyle(color: Colors.white),
           ),
         ),
@@ -239,46 +243,30 @@ class _RegisterState extends State<Register> {
           image: new DecorationImage(
             image: new AssetImage("images/motos.jpg"),
             fit: BoxFit.cover,
-            colorFilter: ColorFilter.mode(Color.fromRGBO(255, 255, 255, 0.4), BlendMode.modulate),
+            colorFilter: ColorFilter.mode(
+              Color.fromRGBO(255, 255, 255, 0.4),
+              BlendMode.modulate,
+            ),
           ),
         ),
         child: Scaffold(
           key: _scaffoldKey,
+          appBar: AppBar(
+            backgroundColor: Colors.transparent,
+          ),
           backgroundColor: Colors.transparent,
           body: Container(
             padding: const EdgeInsets.symmetric(horizontal: 32.0),
-            child: new Form(
+            child: Form(
               key: _formKey,
               autovalidate: false,
-              child: new Center(
+              child: Center(
                 child: SingleChildScrollView(
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: <Widget>[
-                      CircleAvatar(
-                        backgroundColor: Colors.transparent,
-                        radius: 24.0,
-                        child: Image.asset(
-                          'images/helmet-face.png',
-                          //color: Colors.red[700],
-                        ),
-                      ),
-                      SizedBox(height: 6.0),
-                      Center(
-                        child: Text(
-                          "Chachatte team",
-                          style: TextStyle(color: Colors.white),
-                          textScaleFactor: 1.3,
-                        ),
-                      ),
-                      SizedBox(height: 6.0),
-                      Center(
-                        child: Text(
-                          "Inscription",
-                          style: TextStyle(color: Colors.white),
-                        ),
-                      ),
+                      logo,
                       SizedBox(height: 32.0),
                       firstName,
                       SizedBox(height: 8.0),

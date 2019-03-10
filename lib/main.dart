@@ -17,20 +17,38 @@
  * along with Chachatte Team. If not, see <http://www.gnu.org/licenses/>.
  */
 
+import 'package:chachatte_team/ui/home.dart';
 import 'package:chachatte_team/ui/login.dart';
 import 'package:chachatte_team/utils/strings.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:logging/logging.dart';
 
-void main() => runApp(new ChachatteTeamApp());
+Future<void> main() async {
+  // logging configuration
+  Logger.root.level = Level.ALL;
+  Logger.root.onRecord.listen((LogRecord rec) {
+    debugPrint('${rec.level.name}: ${rec.time}: ${rec.message}');
+  });
+  // read shared preference
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  // if email is set, we will consider user is already logged in
+  String email = prefs.getString('email');
+  // pass email as parameter so we can redirect user to home page or login page depending on the value
+  runApp(new ChachatteTeamApp(email));
+}
 
 class ChachatteTeamApp extends StatelessWidget {
+  final String email;
+
+  ChachatteTeamApp(this.email);
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: AppString.applicationTitle,
-      home: Login(),
+      home: email != null ? Home() : Login(),
       theme: new ThemeData(
         primarySwatch: Colors.blue,
         primaryColor: Colors.red[700],
@@ -40,7 +58,6 @@ class ChachatteTeamApp extends StatelessWidget {
         const Locale('fr', 'FR'),
       ],
       localizationsDelegates: [
-        // ... app-specific localization delegate[s] here
         GlobalMaterialLocalizations.delegate,
         GlobalWidgetsLocalizations.delegate,
       ],
