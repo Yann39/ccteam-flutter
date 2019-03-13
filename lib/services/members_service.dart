@@ -128,6 +128,28 @@ class MembersService {
     }
   }
 
+  /// Ask for a password reset for the account erlated to the specified [email]
+  /// Send a POST request to the Restful API
+  /// Throw an exception if response status code is different from 201
+  Future<void> askPassword(String email) async {
+    // convert Member object to JSON string
+    final String jsonString = '{email:$email}';
+
+    // call to API
+    final response = await http.post(AppConstants.API_ROOT_URL + AppConstants.API_ASK_PASSWORD_MEMBER_ENDPOINT, headers: {'Content-Type': 'application/json'}, body: jsonString);
+
+    // handle server response code
+    if (response.statusCode == 201) {
+      return;
+    } else if (response.statusCode == 503) {
+      throw Exception('Failed to create the member');
+    } else if (response.statusCode == 400) {
+      throw Exception('Bad request, member has not been created');
+    } else {
+      throw Exception('Unexpected server response, member has not been created');
+    }
+  }
+
   /// Convert specified [member] object to the corresponding JSON string
   String _toJson(Member member) {
     final Map map = new Map();

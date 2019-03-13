@@ -57,7 +57,6 @@ class _MyHomePageState extends State<LoginLoadingScreen> {
         body: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           mainAxisAlignment: MainAxisAlignment.center,
-          mainAxisSize: MainAxisSize.max,
           children: <Widget>[
             CircularProgressIndicator(),
             Text(AppString.loggingIn),
@@ -69,9 +68,10 @@ class _MyHomePageState extends State<LoginLoadingScreen> {
 
   _checkLogin(BuildContext context) {
     final MembersService membersService = new MembersService();
-    final Logger log = new Logger('login_loading_screen');
+    final Logger log = new Logger('LoginLoadingScreen');
 
     membersService.loginMember(widget.member).then((value) async {
+      // store the user e-mail in the shared preferences
       SharedPreferences prefs = await SharedPreferences.getInstance();
       prefs.setString('email', widget.member.email);
       log.fine("User ${widget.member.email} logged in successfully");

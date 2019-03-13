@@ -41,6 +41,7 @@ class _RegisterState extends State<Register> {
   // the member to be created
   final Member _newMember = new Member();
 
+  /// Allow to dismiss the keyboard when clicking outside
   _dismissKeyboard(BuildContext context) {
     FocusScope.of(context).requestFocus(new FocusNode());
   }
@@ -48,7 +49,7 @@ class _RegisterState extends State<Register> {
   /// Validate the form then submit data to backend
   void submitForm(Member member) {
     final FormState form = _formKey.currentState;
-    final Logger log = new Logger('register');
+    final Logger log = new Logger('Register');
 
     if (!form.validate()) {
       _scaffoldKey.currentState.showSnackBar(new SnackBar(backgroundColor: Colors.red, content: new Text(AppString.formNotValid)));
@@ -59,21 +60,19 @@ class _RegisterState extends State<Register> {
       final MembersService membersService = new MembersService();
 
       // submit data to backend then display a message
-      membersService.createMember(member).then(
-        (value) {
-          log.fine("New user registered : ${member.email}");
-          Navigator.pop(context, AppString.memberCreated);
-        },
-        onError: (error) {
-          log.fine("Failed to register new user", error);
-          Navigator.pop(context, AppString.memberCreationFailed);
-        },
-      );
+      membersService.createMember(member).then((value) {
+        log.fine("New user registered : ${member.email}");
+        Navigator.pop(context, AppString.memberCreated);
+      }, onError: (error) {
+        log.fine("Failed to register new user", error);
+        Navigator.pop(context, AppString.memberCreationFailed);
+      });
     }
   }
 
   Widget build(BuildContext context) {
     final logo = Container(
+      padding: EdgeInsets.only(top: 36),
       child: Column(
         children: <Widget>[
           CircleAvatar(
@@ -111,7 +110,7 @@ class _RegisterState extends State<Register> {
       decoration: InputDecoration(
         enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.white)),
         focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.white)),
-        icon: Icon(Icons.person, color: Colors.white),
+        prefixIcon: Icon(Icons.person, color: Colors.white),
         hintText: AppString.registrationFirstNameHint,
         hintStyle: TextStyle(color: Colors.grey[400]),
         contentPadding: EdgeInsets.fromLTRB(16.0, 12.0, 16.0, 12.0),
@@ -131,7 +130,7 @@ class _RegisterState extends State<Register> {
       decoration: InputDecoration(
         enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.white)),
         focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.white)),
-        icon: Icon(Icons.person, color: Colors.white),
+        prefixIcon: Icon(Icons.person, color: Colors.white),
         hintText: AppString.registrationLastNameHint,
         hintStyle: TextStyle(color: Colors.grey[400]),
         contentPadding: EdgeInsets.fromLTRB(16.0, 12.0, 16.0, 12.0),
@@ -151,7 +150,7 @@ class _RegisterState extends State<Register> {
       decoration: InputDecoration(
         enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.white)),
         focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.white)),
-        icon: Icon(Icons.mail, color: Colors.white),
+        prefixIcon: Icon(Icons.mail, color: Colors.white),
         hintText: AppString.registrationEmailHint,
         hintStyle: TextStyle(color: Colors.grey[400]),
         contentPadding: EdgeInsets.fromLTRB(16.0, 12.0, 16.0, 12.0),
@@ -170,7 +169,7 @@ class _RegisterState extends State<Register> {
       decoration: InputDecoration(
         enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.white)),
         focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.white)),
-        icon: Icon(Icons.lock, color: Colors.white),
+        prefixIcon: Icon(Icons.lock, color: Colors.white),
         hintText: AppString.registrationPasswordHint,
         hintStyle: TextStyle(color: Colors.grey[400]),
         contentPadding: EdgeInsets.fromLTRB(16.0, 12.0, 16.0, 12.0),
@@ -189,7 +188,7 @@ class _RegisterState extends State<Register> {
       decoration: InputDecoration(
         enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.white)),
         focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.white)),
-        icon: Icon(Icons.lock, color: Colors.white),
+        prefixIcon: Icon(Icons.lock, color: Colors.white),
         hintText: AppString.registrationPasswordConfirmHint,
         hintStyle: TextStyle(color: Colors.grey[400]),
         contentPadding: EdgeInsets.fromLTRB(16.0, 12.0, 16.0, 12.0),
@@ -204,7 +203,7 @@ class _RegisterState extends State<Register> {
     final registerButton = Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: <Widget>[
-        RaisedButton(
+        /*RaisedButton(
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(8),
           ),
@@ -218,7 +217,7 @@ class _RegisterState extends State<Register> {
             style: TextStyle(color: Colors.white),
           ),
         ),
-        SizedBox(width: 8.0),
+        SizedBox(width: 8.0),*/
         RaisedButton(
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(8),
@@ -232,6 +231,16 @@ class _RegisterState extends State<Register> {
           ),
         ),
       ],
+    );
+
+    final haveAccountLabel = FlatButton(
+      child: Text(
+        AppString.alreadyHaveAccount,
+        style: TextStyle(color: Colors.white),
+      ),
+      onPressed: () {
+        Navigator.pop(context);
+      },
     );
 
     return new GestureDetector(
@@ -251,39 +260,51 @@ class _RegisterState extends State<Register> {
         ),
         child: Scaffold(
           key: _scaffoldKey,
-          appBar: AppBar(
-            backgroundColor: Colors.transparent,
-          ),
           backgroundColor: Colors.transparent,
-          body: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 32.0),
-            child: Form(
-              key: _formKey,
-              autovalidate: false,
-              child: Center(
-                child: SingleChildScrollView(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: <Widget>[
-                      logo,
-                      SizedBox(height: 32.0),
-                      firstName,
-                      SizedBox(height: 8.0),
-                      lastName,
-                      SizedBox(height: 8.0),
-                      email,
-                      SizedBox(height: 8.0),
-                      password,
-                      SizedBox(height: 8.0),
-                      passwordBis,
-                      SizedBox(height: 24.0),
-                      registerButton,
-                    ],
+          body: Stack(
+            children: <Widget>[
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 32.0),
+                child: Form(
+                  key: _formKey,
+                  autovalidate: false,
+                  child: Center(
+                    child: SingleChildScrollView(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: <Widget>[
+                          logo,
+                          SizedBox(height: 32.0),
+                          firstName,
+                          SizedBox(height: 8.0),
+                          lastName,
+                          SizedBox(height: 8.0),
+                          email,
+                          SizedBox(height: 8.0),
+                          password,
+                          SizedBox(height: 8.0),
+                          passwordBis,
+                          SizedBox(height: 24.0),
+                          registerButton,
+                          haveAccountLabel
+                        ],
+                      ),
+                    ),
                   ),
                 ),
               ),
-            ),
+              new Positioned(
+                //Place it at the top, and not use the entire screen
+                top: 0.0,
+                left: 0.0,
+                right: 0.0,
+                child: AppBar(
+                  backgroundColor: Colors.transparent, //No more green
+                  elevation: 0.0, //Shadow gone
+                ),
+              ),
+            ],
           ),
         ),
       ),

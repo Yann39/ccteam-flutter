@@ -20,6 +20,7 @@
 import 'dart:ui';
 
 import 'package:chachatte_team/models/member.dart';
+import 'package:chachatte_team/ui/forgot_password.dart';
 import 'package:chachatte_team/ui/login_loading_screen.dart';
 import 'package:chachatte_team/ui/register.dart';
 import 'package:chachatte_team/utils/string_utils.dart';
@@ -126,32 +127,29 @@ class _LoginState extends State<Login> {
   }
 
   Widget build(BuildContext context) {
-    final logo = Hero(
-      tag: 'hero',
-      child: Container(
-        child: Column(
-          children: <Widget>[
-            CircleAvatar(
-              backgroundColor: Colors.transparent,
-              radius: 24.0,
-              child: Image.asset(
-                'images/helmet-face.png',
-              ),
+    final logo = Container(
+      padding: EdgeInsets.only(top: 36),
+      child: Column(
+        children: <Widget>[
+          CircleAvatar(
+            backgroundColor: Colors.transparent,
+            radius: 24.0,
+            child: Image.asset(
+              'images/helmet-face.png',
             ),
-            SizedBox(height: 6.0),
-            Text(
-              AppString.applicationTitle,
-              style: TextStyle(color: Colors.white),
-              textScaleFactor: 1.3,
-            ),
-            SizedBox(height: 6.0),
-            Text(
-              AppString.identification,
-              style: TextStyle(color: Colors.white),
-            ),
-          ],
-        ),
-        padding: EdgeInsets.fromLTRB(16, 36, 16, 0),
+          ),
+          SizedBox(height: 6.0),
+          Text(
+            AppString.applicationTitle,
+            style: TextStyle(color: Colors.white),
+            textScaleFactor: 1.3,
+          ),
+          SizedBox(height: 6.0),
+          Text(
+            AppString.identification,
+            style: TextStyle(color: Colors.white),
+          ),
+        ],
       ),
     );
 
@@ -165,7 +163,7 @@ class _LoginState extends State<Login> {
         decoration: InputDecoration(
           enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.white)),
           focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.white)),
-          icon: Icon(Icons.mail, color: Colors.white),
+          prefixIcon: Icon(Icons.mail, color: Colors.white),
           hintText: AppString.loginEmailHint,
           hintStyle: TextStyle(color: Colors.grey[400]),
           contentPadding: EdgeInsets.fromLTRB(16.0, 12.0, 16.0, 12.0),
@@ -187,7 +185,7 @@ class _LoginState extends State<Login> {
         decoration: InputDecoration(
           enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.white)),
           focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.white)),
-          icon: Icon(Icons.lock, color: Colors.white),
+          prefixIcon: Icon(Icons.lock, color: Colors.white),
           hintText: AppString.loginPasswordHint,
           hintStyle: TextStyle(color: Colors.grey[400]),
           contentPadding: EdgeInsets.fromLTRB(16.0, 12.0, 16.0, 12.0),
@@ -240,7 +238,9 @@ class _LoginState extends State<Login> {
         AppString.forgotPassword,
         style: TextStyle(color: Colors.white),
       ),
-      onPressed: () {},
+      onPressed: () {
+        Navigator.push(context, MaterialPageRoute(builder: (context) => ForgotPassword()));
+      },
     );
 
     return new GestureDetector(
@@ -263,28 +263,23 @@ class _LoginState extends State<Login> {
           backgroundColor: Colors.transparent,
           body: Center(
             child: SingleChildScrollView(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: <Widget>[
-                  SizedBox(height: 8.0),
-                  Form(
-                    key: _loginFormKey,
-                    autovalidate: false,
-                    child: Column(
-                      children: <Widget>[
-                        logo,
-                        SizedBox(height: 32.0),
-                        email,
-                        SizedBox(height: 8.0),
-                        password,
-                        SizedBox(height: 24.0),
-                        loginButton,
-                      ],
-                    ),
-                  ),
-                  forgotLabel
-                ],
+              child: Form(
+                key: _loginFormKey,
+                autovalidate: false,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: <Widget>[
+                    logo,
+                    SizedBox(height: 32.0),
+                    email,
+                    SizedBox(height: 8.0),
+                    password,
+                    SizedBox(height: 24.0),
+                    loginButton,
+                    forgotLabel,
+                  ],
+                ),
               ),
             ),
           ),

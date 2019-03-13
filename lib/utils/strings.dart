@@ -29,19 +29,23 @@ class AppString {
   static const String confirm = 'Confirmer';
   static const String connect = 'Se connecter';
   static const String register = 'S\'inscrire';
+  static const String send = 'Envoyer';
 
   static const String confirmation = 'Confirmation';
   static const String identification = 'Identification';
   static const String registration = 'Inscription';
+  static const String askNewPassword = 'Demande de nouveau mot de passe';
 
   static const String about = 'A propos';
   static const String contact = 'Contact';
   static const String logout = 'Se déconnecter';
 
   static const String forgotPassword = 'Mot de passe oublié?';
+  static const String alreadyHaveAccount = 'J\'ai déjà un compte';
   static const String loggingIn = 'Connexion en cours';
   static const String understood = 'J\'ai compris';
   static const String accountWaitingAdmin = 'Votre compte doit maintenant être validé par un administrateur avant que vous puissiez vous connecter. Vous serez averti par e-mail losrque votre compte sera actif';
+  static const String forgotPasswordInfo = 'Veuillez indiquer votre adresse e-mail dans le champ ci-dessous puis cliquez sur "Envoyer", la procédure de réinitialisation de mot de passe vous sera envoyée';
 
   static const String tabHome = 'Accueil';
   static const String tabCalendar = 'Calendrier';
