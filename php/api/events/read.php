@@ -56,11 +56,11 @@ if ($num > 0) {
         $stmt2 = $member->readByEvent($id);
         $num2 = $stmt2->rowCount();
 
+        // members array to include in the response
+        $member_arr = array();
+
         // if at least one record has been found
         if ($num2 > 0) {
-
-            // members array to include in the response
-            $member_arr = array();
 
             // get retrieved rows
             while ($row2 = $stmt2->fetch(PDO::FETCH_ASSOC)) {

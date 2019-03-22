@@ -19,6 +19,7 @@
 
 import 'dart:convert';
 
+import 'package:chachatte_team/models/member.dart';
 import 'package:chachatte_team/models/news.dart';
 import 'package:chachatte_team/utils/constants.dart';
 import 'package:http/http.dart' as http;
@@ -102,6 +103,21 @@ class NewsService {
     }
   }
 
+  /// Set the news (identified by the specified [newsId]) as liked for the user (identified by the specified [userId]) from the database
+  /// Send a POST request to the Restful API
+  /// Throw an exception if response status code is different from 200
+  Future<void> likeNews(int newsId, int memberId) async {
+    // convert News object to JSON string
+    final String jsonString = '{"news_id":$newsId,"member_id":$memberId}';
+
+    // call to API
+    final response = await http.post(AppConstants.API_ROOT_URL + AppConstants.API_LIKE_NEWS_ENDPOINT, headers: {'Content-Type': 'application/json'}, body: jsonString);
+
+    if (response.statusCode != 200) {
+      throw Exception('Unexpected server response');
+    }
+  }
+
   /// Convert specified [news] object to the corresponding JSON string
   String _toJson(News news) {
     final Map map = new Map();
@@ -109,11 +125,51 @@ class NewsService {
     map["title"] = news.title;
     map["content"] = news.content;
     map["news_date"] = new DateFormat("y-M-d H:m:s.S").format(news.newsDate);
+
+    if (news.members != null) {
+      List<Map> maps = <Map>[];
+      for (Member m in news.members) {
+        final Map map2 = new Map();
+        map2["id"] = m.id;
+        map2["first_name"] = m.firstName;
+        map2["last_name"] = m.lastName;
+        map2["email"] = m.email;
+        map2["phone"] = m.phone;
+        map2["bike"] = m.bike;
+        map2["registration_date"] = new DateFormat("y-M-d H:m:s.S").format(m.registrationDate);
+        maps.add(map2);
+      }
+      map["members"] = maps;
+    }
+
     return json.encode(map);
   }
 
   /// Convert specified [json] map to the corresponding News object
   News _fromJson(Map<String, dynamic> json) {
-    return News(id: int.parse(json['id']), title: json['title'], content: json['content'], newsDate: new DateFormat("y-M-d H:m:s").parseStrict(json['news_date']));
+    List<dynamic> jsonMembers = json['members'];
+    List<Member> members = new List();
+
+    if (jsonMembers != null) {
+      for (dynamic jsonMember in jsonMembers) {
+        members.add(new Member(
+          id: int.parse(jsonMember['id']),
+          firstName: jsonMember['first_name'],
+          lastName: jsonMember['last_name'],
+          email: jsonMember['email'],
+          phone: jsonMember['phone'],
+          bike: jsonMember['bike'],
+          registrationDate: new DateFormat("y-M-d H:m:s").parseStrict(jsonMember['registration_date']),
+        ));
+      }
+    }
+
+    return News(
+      id: int.parse(json['id']),
+      title: json['title'],
+      content: json['content'],
+      newsDate: new DateFormat("y-M-d H:m:s").parseStrict(json['news_date']),
+      members: members,
+    );
   }
 }

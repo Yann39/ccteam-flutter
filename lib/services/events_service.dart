@@ -130,8 +130,6 @@ class EventsService {
       map["members"] = maps;
     }
 
-    print(json.encode(map));
-
     return json.encode(map);
   }
 
@@ -143,24 +141,26 @@ class EventsService {
     if (jsonMembers != null) {
       for (dynamic jsonMember in jsonMembers) {
         members.add(new Member(
-            id: int.parse(jsonMember['id']),
-            firstName: jsonMember['first_name'],
-            lastName: jsonMember['last_name'],
-            email: jsonMember['email'],
-            phone: jsonMember['phone'],
-            bike: jsonMember['bike'],
-            registrationDate: new DateFormat("y-M-d H:m:s").parseStrict(jsonMember['registration_date'])));
+          id: int.parse(jsonMember['id']),
+          firstName: jsonMember['first_name'],
+          lastName: jsonMember['last_name'],
+          email: jsonMember['email'],
+          phone: jsonMember['phone'],
+          bike: jsonMember['bike'],
+          registrationDate: new DateFormat("y-M-d H:m:s").parseStrict(jsonMember['registration_date']),
+        ));
       }
     }
 
     return Event(
-        id: int.parse(json['id']),
-        title: json['title'],
-        description: json['description'],
-        eventDate: new DateFormat("y-M-d H:m:s").parseStrict(json['event_date']),
-        trackId: int.parse(json['track_id']),
-        organizer: json['organizer'],
-        price: double.parse(json['price']),
-        members: members);
+      id: int.parse(json['id']),
+      title: json['title'],
+      description: json['description'],
+      eventDate: new DateFormat("y-M-d H:m:s").parseStrict(json['event_date']),
+      trackId: int.parse(json['track_id']),
+      organizer: json['organizer'],
+      price: double.parse(json['price']),
+      members: members,
+    );
   }
 }

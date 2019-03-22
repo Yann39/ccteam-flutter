@@ -36,7 +36,7 @@ $db = $database->getConnection();
 // prepare News object
 $news = new News($db);
 
-// get id of news to be edited
+// get posted data
 $data = json_decode(file_get_contents("php://input"));
 
 // set news property values

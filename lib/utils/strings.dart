@@ -81,6 +81,7 @@ class AppString {
   static const String newsDateHint = 'JJ/MM/AAAA';
   static const String newsDateMandatory = 'La date est obligatoire';
   static const String newsDateNotValid = 'La date indiquée n\'est pas valide';
+  static const String newsLikeFailed = 'Erreur, impossible d\'aimer cette actualité';
 
   static const String memberScreenTitle = 'Équipe';
   static const String memberCreate = 'Ajouter un membre';

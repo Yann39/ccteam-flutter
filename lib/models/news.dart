@@ -17,12 +17,15 @@
  * along with Chachatte Team. If not, see <http://www.gnu.org/licenses/>.
  */
 
+import 'package:chachatte_team/models/member.dart';
+
 /// class representing a news
 class News {
   int id;
   String title;
   String content;
   DateTime newsDate;
+  List<Member> members;
 
-  News({this.id, this.title, this.content, this.newsDate});
+  News({this.id, this.title, this.content, this.newsDate, this.members});
 }

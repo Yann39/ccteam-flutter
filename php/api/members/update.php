@@ -36,7 +36,7 @@ $db = $database->getConnection();
 // prepare Member object
 $member = new Member($db);
 
-// get id of member to be edited
+// get posted data
 $data = json_decode(file_get_contents("php://input"));
 
 // set member property values

@@ -17,25 +17,99 @@
  * along with Chachatte Team. If not, see <http://www.gnu.org/licenses/>.
  */
 
+import 'package:chachatte_team/models/member.dart';
 import 'package:chachatte_team/models/news.dart';
+import 'package:chachatte_team/services/news_service.dart';
 import 'package:chachatte_team/utils/constants.dart';
 import 'package:chachatte_team/utils/date_utils.dart';
+import 'package:chachatte_team/utils/strings.dart';
 import 'package:flutter/material.dart';
+import 'package:logging/logging.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+class LikeButton extends StatefulWidget {
+  final News news;
+  final Member member;
+
+  const LikeButton({Key key, this.news, this.member}) : super(key: key);
+
+  @override
+  State<StatefulWidget> createState() {
+    return _LikeButtonState();
+  }
+}
+
+class _LikeButtonState extends State<LikeButton> {
+  Future<String> getCurrentUserEmail() async {
+    // read shared preference
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    // if email is set, we will consider user is already logged in
+    return prefs.getString('email');
+  }
+
+  /// Method to like a news
+  _likeNews(BuildContext context, News news) async {
+    final Logger log = new Logger('NewsCard');
+    var newsService = new NewsService();
+    newsService.likeNews(news.id, widget.member.id).then((value) {
+      log.fine("News ${news.title} liked by user ${widget.member.email}");
+    }, onError: (error) {
+      Navigator.pop(context, AppString.newsLikeFailed);
+    });
+  }
+
+  String loggedUserEmail;
+
+  @override
+  Widget build(BuildContext context) {
+    getCurrentUserEmail().then((value) {
+      setState(() {
+        loggedUserEmail = value;
+      });
+    });
+
+    return Stack(
+      alignment: AlignmentDirectional.bottomCenter,
+      children: <Widget>[
+        IconButton(
+          icon: widget.news.members.any((member) => member.email == loggedUserEmail)
+              ? Icon(
+                  Icons.favorite,
+                  color: Colors.red[700],
+                  size: 20,
+                )
+              : Icon(
+                  Icons.favorite_border,
+                  color: Colors.white,
+                  size: 20,
+                ),
+          onPressed: () {
+            _likeNews(context, widget.news);
+          },
+        ),
+        Text(
+          "${widget.news.members.length}",
+          textScaleFactor: 0.6,
+          style: TextStyle(color: Colors.white),
+        ),
+      ],
+    );
+  }
+}
 
 class NewsCard extends StatelessWidget {
   final News news;
+  final Member member;
   final AssetImage image;
   final Color primaryColor;
   final Color shadowColor;
 
-  NewsCard(this.news, this.image, this.primaryColor, this.shadowColor);
-
-  /// Method to like a news
-  _likeNews(BuildContext context, News news) async {
-  }
+  NewsCard(this.news, this.member, this.image, this.primaryColor, this.shadowColor);
 
   @override
   Widget build(BuildContext context) {
+    final LikeButton likeButton = LikeButton(news: news, member: member,);
+
     return new Container(
       color: Colors.transparent,
       height: 60.0,
@@ -78,14 +152,7 @@ class NewsCard extends StatelessWidget {
                     ],
                   ),
                 ),
-                IconButton(
-                    icon: Icon(
-                      Icons.favorite_border,
-                      color: Colors.white,
-                    ),
-                    onPressed: () {
-                      _likeNews(context, news);
-                    })
+                likeButton
               ],
             ),
           ),

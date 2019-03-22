@@ -23,6 +23,7 @@ class News {
     // database connection and table name
     private $conn;
     private $table_name = "news";
+    private $news_members_table_name = "news_members";
 
     // object properties
     public $id;
@@ -82,7 +83,7 @@ class News {
     function create() {
 
         // query to insert record
-        $query = "INSERT INTO " . $this->table_name . " SET title=:title, content=:content, news_date=:news_date, created=:created";
+        $query = "INSERT INTO " . $this->table_name . " SET title = :title, content = :content, news_date = :news_date, created = :created";
 
         // prepare query
         $stmt = $this->conn->prepare($query);
@@ -181,5 +182,48 @@ class News {
         $stmt->execute();
 
         return $stmt;
+    }
+
+    // like news
+    function like($news_id, $member_id) {
+
+        // query to get all records containing the specified event
+        $query = "INSERT INTO " . $this->$news_members_table_name . " SET news_id = ?, member_id = ?, created = ?";
+
+        // prepare query statement
+        $stmt = $this->conn->prepare($query);
+
+        // bind data
+        $stmt->bindParam(1, $news_id);
+        $stmt->bindParam(2, $member_id);
+        $stmt->bindParam(3, date('Y-m-d H:i:s'));
+
+        // execute query
+        if ($stmt->execute()) {
+            return true;
+        }
+
+        return false;
+    }
+
+    // unlike news
+    function unlike($news_id, $member_id) {
+
+        // query to get all records containing the specified event
+        $query = "DELETE FROM " . $this->$news_members_table_name . " WHERE news_id = ? AND member_id = ?";
+
+        // prepare query statement
+        $stmt = $this->conn->prepare($query);
+
+        // bind data
+        $stmt->bindParam(1, $news_id);
+        $stmt->bindParam(2, $member_id);
+
+        // execute query
+        if ($stmt->execute()) {
+            return true;
+        }
+
+        return false;
     }
 }

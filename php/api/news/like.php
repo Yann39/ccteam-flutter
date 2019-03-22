@@ -27,31 +27,26 @@ header("Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers
 
 // include needed classes
 include_once '../config/database.php';
-include_once '../objects/tracks.php';
+include_once '../objects/news.php';
 
 // get database connection
 $database = new Database();
 $db = $database->getConnection();
 
-// prepare Track object
-$track = new Track($db);
+// prepare News object
+$news = new News($db);
 
 // get posted data
 $data = json_decode(file_get_contents("php://input"));
 
-// set track property values
-$track->id = $data->id;
-$track->name = $data->name;
-$track->description = $data->description;
-
-// update the track
-if ($track->update()) {
+// like the news
+if ($news->like($data->news_id, $data->member_id)) {
 
     // set response code - 200 OK
     http_response_code(200);
 }
 
-// if unable to update the track, tell the user
+// if unable to like the news, tell the user
 else{
 
     // set response code - 503 service unavailable

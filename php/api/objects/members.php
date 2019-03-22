@@ -23,6 +23,8 @@ class Member {
     // database connection and table name
     private $conn;
     private $table_name = "members";
+    private $events_members_table_name = "events_members";
+    private $news_members_table_name = "news_members";
 
     // object properties
     public $id;
@@ -92,13 +94,31 @@ class Member {
     function readByEvent($event_id) {
 
         // query to get all records containing the specified event
-        $query = "SELECT n.id, n.first_name, n.last_name, n.email, n.active, n.admin, n.phone, n.bike, n.registration_date, n.created, n.modified FROM " . $this->table_name . " n INNER JOIN events_members em ON n.id = em.member_id WHERE em.event_id = ? ORDER BY n.registration_date DESC";
+        $query = "SELECT n.id, n.first_name, n.last_name, n.email, n.active, n.admin, n.phone, n.bike, n.registration_date, n.created, n.modified FROM " . $this->table_name . " n INNER JOIN " . $this->events_members_table_name . " em ON n.id = em.member_id WHERE em.event_id = ? ORDER BY n.registration_date DESC";
 
         // prepare query statement
         $stmt = $this->conn->prepare($query);
 
         // bind id
         $stmt->bindParam(1, $event_id);
+
+        // execute query
+        $stmt->execute();
+
+        return $stmt;
+    }
+
+    // get all members of the specified news
+    function readByNews($news_id) {
+
+        // query to get all records containing the specified event
+        $query = "SELECT n.id, n.first_name, n.last_name, n.email, n.active, n.admin, n.phone, n.bike, n.registration_date, n.created, n.modified FROM " . $this->table_name . " n INNER JOIN " . $this->news_members_table_name . " nm ON n.id = nm.member_id WHERE nm.news_id = ? ORDER BY n.registration_date DESC";
+
+        // prepare query statement
+        $stmt = $this->conn->prepare($query);
+
+        // bind id
+        $stmt->bindParam(1, $news_id);
 
         // execute query
         $stmt->execute();

@@ -36,7 +36,7 @@ $db = $database->getConnection();
 // prepare Photo object
 $photo = new Photo($db);
 
-// get id of photo to be edited
+// get posted data
 $data = json_decode(file_get_contents("php://input"));
 
 // set photo property values

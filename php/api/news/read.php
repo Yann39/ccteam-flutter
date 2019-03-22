@@ -25,13 +25,15 @@ header("Content-Type: application/json; charset=UTF-8");
 // include needed classes
 include_once '../config/database.php';
 include_once '../objects/news.php';
+include_once '../objects/members.php';
 
 // get database connection
 $database = new Database();
 $db = $database->getConnection();
 
-// prepare News object
+// prepare News and Member objects
 $news = new News($db);
+$member = new Member($db);
 
 // query news and get number of records
 $stmt = $news->read();
@@ -50,12 +52,42 @@ if ($num > 0) {
         // extract row, this will make $row['name'] to just $name only
         extract($row);
 
+        // query members for that specific news and get number of records
+        $stmt2 = $member->readByNews($id);
+        $num2 = $stmt2->rowCount();
+
+        // members array to include in the response
+        $member_arr = array();
+
+        // if at least one record has been found
+        if ($num2 > 0) {
+
+            // get retrieved rows
+            while ($row2 = $stmt2->fetch(PDO::FETCH_ASSOC)) {
+
+                // array representing the member
+                $member_item = array(
+                    "id" =>  $row2['id'],
+                    "first_name" => $row2['first_name'],
+                    "last_name" => $row2['last_name'],
+                    "email" => $row2['email'],
+                    "phone" => $row2['phone'],
+                    "bike" => $row2['bike'],
+                    "registration_date" => $row2['registration_date']
+                );
+
+                // add it to the members array
+                array_push($member_arr, $member_item);
+            }
+        }
+
         // array representing the news
         $news_item = array(
             "id" => $id,
             "title" => $title,
             "content" => $content,
             "news_date" => $news_date,
+            "members" => $member_arr,
             "created" => $created,
             "modified" => $modified
         );
