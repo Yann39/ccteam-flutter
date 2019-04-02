@@ -17,6 +17,8 @@
  * along with Chachatte Team. If not, see <http://www.gnu.org/licenses/>.
  */
 
+import 'package:chachatte_team/models/member.dart';
+import 'package:chachatte_team/services/members_service.dart';
 import 'package:chachatte_team/ui/home.dart';
 import 'package:chachatte_team/ui/login.dart';
 import 'package:chachatte_team/utils/strings.dart';
@@ -31,24 +33,53 @@ Future<void> main() async {
   Logger.root.onRecord.listen((LogRecord rec) {
     debugPrint('${rec.level.name}: ${rec.time}: ${rec.message}');
   });
+
+  final Logger log = new Logger('ChachatteTeamApp');
+
   // read shared preference
   SharedPreferences prefs = await SharedPreferences.getInstance();
+
   // if email is set, we will consider user is already logged in
-  String email = prefs.getString('email');
+  final String email = prefs.getString('email');
+
+  Member member;
+  if (email != null) {
+    log.fine("Email $email found in shared preferences, let's get member from DB");
+    final MembersService membersService = new MembersService();
+    member = await membersService.getMemberByEmail(email);
+    if (member == null || member.id < 0) {
+      log.severe("Email found in shared preferences but member not found in the database !");
+    }
+  } else {
+    log.fine("No email found in shared preferences");
+  }
+
   // pass email as parameter so we can redirect user to home page or login page depending on the value
-  runApp(new ChachatteTeamApp(email));
+  runApp(new ChachatteTeamApp(member: member));
 }
 
-class ChachatteTeamApp extends StatelessWidget {
-  final String email;
+class ChachatteTeamApp extends StatefulWidget {
+  final Member member;
 
-  ChachatteTeamApp(this.email);
+  const ChachatteTeamApp({Key key, this.member}) : super(key: key);
+
+  @override
+  State<StatefulWidget> createState() {
+    return _ChachatteTeamAppState();
+  }
+}
+
+class _ChachatteTeamAppState extends State<ChachatteTeamApp> {
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: AppString.applicationTitle,
-      home: email != null ? Home() : Login(),
+      home: widget.member != null
+          ? Home(
+              member: widget.member,
+            )
+          : Login(),
       theme: new ThemeData(
         primarySwatch: Colors.blue,
         primaryColor: Colors.red[700],

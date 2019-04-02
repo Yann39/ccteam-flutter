@@ -1,4 +1,5 @@
-/*
+<?php
+ /*
  * Copyright (c) 2019 by Yann39.
  *
  * This file is part of Chachatte Team application.
@@ -17,8 +18,8 @@
  * along with Chachatte Team. If not, see <http://www.gnu.org/licenses/>.
  */
 
-<?php
-class Database{
+class Database
+{
 
     // specify your own database credentials
     private $host = "obfuscated";
@@ -28,18 +29,18 @@ class Database{
     public $conn;
 
     // get the database connection
-    public function getConnection(){
+    public function getConnection()
+    {
 
         $this->conn = null;
-
-        try{
-            $this->conn = new PDO("mysql:host=" . $this->host . ";dbname=" . $this->db_name, $this->username, $this->password);
+        try {
+            $this->conn = new PDO("mysql:host=" . $this->host . ";dbname=" . $this->db_name, $this->username, $this->password, null);
             $this->conn->exec("set names utf8");
-        }catch(PDOException $exception){
+        } catch (PDOException $exception) {
             echo "Connection error: " . $exception->getMessage();
         }
 
         return $this->conn;
     }
 }
-?>
+ 

@@ -114,8 +114,8 @@ class NewsCard extends StatelessWidget {
       color: Colors.transparent,
       height: 60.0,
       margin: const EdgeInsets.symmetric(
-        vertical: 8.0, // vertical space between cards
-        horizontal: 20.0,
+        vertical: 6.0, // vertical space between cards
+        horizontal: 10.0,
       ),
       child: new Stack(
         children: <Widget>[

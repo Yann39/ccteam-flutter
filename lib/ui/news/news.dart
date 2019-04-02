@@ -19,6 +19,7 @@
 
 import 'dart:math';
 
+import 'package:chachatte_team/models/member.dart';
 import 'package:chachatte_team/models/news.dart';
 import 'package:chachatte_team/services/news_service.dart';
 import 'package:chachatte_team/ui/login.dart';
@@ -27,10 +28,15 @@ import 'package:chachatte_team/ui/news/news_card.dart';
 import 'package:chachatte_team/ui/news/news_detail.dart';
 import 'package:chachatte_team/utils/strings.dart';
 import 'package:flutter/material.dart';
+import 'package:logging/logging.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class NewsList extends StatefulWidget {
+  final Member member;
+
+  const NewsList({Key key, this.member}) : super(key: key);
+
   @override
   State<StatefulWidget> createState() {
     return _NewsListState();
@@ -41,6 +47,7 @@ enum QuickActions { about, contact, logout }
 
 class _NewsListState extends State<NewsList> {
   static final NewsService newsService = new NewsService();
+  final Logger log = new Logger('NewsList');
 
   List helmets = ["images/helmet-blue.png", "images/helmet-green.png", "images/helmet-red.png", "images/helmet-purple.png", "images/helmet-yellow.png"];
   List bgColors = [
@@ -99,6 +106,7 @@ class _NewsListState extends State<NewsList> {
   }
 
   Widget build(BuildContext context) {
+    log.fine("Init News List scaffold for member ${widget.member}");
     return new Scaffold(
       appBar: AppBar(
         title: Text(AppString.applicationTitle),
@@ -200,12 +208,13 @@ class _NewsListState extends State<NewsList> {
         ),
       ),
       floatingActionButton: FloatingActionButton(
-          elevation: 0.0,
-          child: new Icon(Icons.add),
-          backgroundColor: Colors.red[700],
-          onPressed: () {
-            _navigateToAddNewsScreen(context);
-          }),
+        elevation: 0.0,
+        child: new Icon(Icons.add),
+        backgroundColor: Colors.red[700],
+        onPressed: () {
+          _navigateToAddNewsScreen(context);
+        },
+      ),
     );
   }
 }

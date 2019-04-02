@@ -127,10 +127,10 @@ class Member {
     }
 
     // get a member given its e-mail address
-    function readByEmailForLogin($email) {
+    function readByEmail($email) {
 
         // query to get all records corresponding to the specified e-mail address
-        $query = "SELECT n.email, n.password, n.active FROM " . $this->table_name . " n WHERE n.email = ?";
+        $query = "SELECT n.id, n.first_name, n.last_name, n.email, n.password, n.active, n.admin, n.phone, n.bike, n.registration_date, n.created, n.modified FROM " . $this->table_name . " n WHERE n.email = ?";
 
         // prepare query statement
         $stmt = $this->conn->prepare($query);
@@ -145,9 +145,18 @@ class Member {
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
 
         // set values to object properties
+        $this->id = $row['id'];
+        $this->first_name = $row['first_name'];
+        $this->last_name = $row['last_name'];
         $this->email = $row['email'];
-        $this->active = $row['active'];
         $this->password = $row['password'];
+        $this->active = $row['active'];
+        $this->admin = $row['admin'];
+        $this->phone = $row['phone'];
+        $this->bike = $row['bike'];
+        $this->registration_date = $row['registration_date'];
+        $this->created = $row['created'];
+        $this->modified = $row['modified'];
     }
 
     // create member

@@ -35,6 +35,7 @@ class LoginLoadingScreen extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<LoginLoadingScreen> {
+
   initState() {
     _checkLogin(context);
     return super.initState();
@@ -75,7 +76,7 @@ class _MyHomePageState extends State<LoginLoadingScreen> {
       SharedPreferences prefs = await SharedPreferences.getInstance();
       prefs.setString('email', widget.member.email);
       log.fine("User ${widget.member.email} logged in successfully");
-      Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => Home()));
+      Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => Home(member: widget.member)));
     }, onError: (error) {
       log.warning("User ${widget.member.email} failed to log in", error);
       Navigator.pop(context, AppString.loginFailed);

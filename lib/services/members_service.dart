@@ -71,6 +71,32 @@ class MembersService {
     }
   }
 
+  /// Get the member corresponding to the specified [email]
+  /// Send a POST request to the Restful API
+  /// Throw an exception if response status code is different from 200
+  Future<Member> getMemberByEmail(String email) async {
+    // convert Member object to JSON string
+    final String jsonString = "{\"email\":\"$email\"}";
+
+    // call to API
+    final response = await http.post(AppConstants.API_ROOT_URL + AppConstants.API_GET_SINGLE_MEMBER_ENDPOINT, headers: {'Content-Type': 'application/json'}, body: jsonString);
+
+    // handle server response code
+    if (response.statusCode == 200) {
+      // if the call to the server was successful, parse the JSON and return content
+      dynamic responseJson = json.decode(response.body);
+      return _fromJson(responseJson);
+    } else if (response.statusCode == 403) {
+      throw Exception('Account is not activated');
+    } else if (response.statusCode == 404) {
+      throw Exception('No member found with the specified e-mail address');
+    } else if (response.statusCode == 400) {
+      throw Exception('Bad request, missing email attribute');
+    } else {
+      throw Exception('Unexpected server response');
+    }
+  }
+
   /// Create the specified [member] into the database
   /// Send a POST request to the Restful API
   /// Throw an exception if response status code is different from 201
@@ -169,7 +195,7 @@ class MembersService {
   /// Convert specified [json] map to the corresponding Member object
   Member _fromJson(Map<String, dynamic> json) {
     return Member(
-        id: int.parse(json['id']),
+        id: json['id'] != null ? int.parse(json['id']) : -1,
         firstName: json['first_name'],
         lastName: json['last_name'],
         email: json['email'],

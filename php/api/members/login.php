@@ -43,7 +43,7 @@ $data = json_decode(file_get_contents("php://input"));
 if (!empty($data->email) && !empty($data->password)) {
 
     // query members
-    $stmt = $member->readByEmailForLogin($data->email);
+    $member->readByEmail($data->email);
 
     // check if at least one record has been found
     if ($member->email != null) {

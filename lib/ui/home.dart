@@ -17,6 +17,7 @@
  * along with Chachatte Team. If not, see <http://www.gnu.org/licenses/>.
  */
 
+import 'package:chachatte_team/models/member.dart';
 import 'package:chachatte_team/ui/events/calendar.dart';
 import 'package:chachatte_team/ui/members/team.dart';
 import 'package:chachatte_team/ui/news/news.dart';
@@ -24,8 +25,13 @@ import 'package:chachatte_team/ui/photos/gallery.dart';
 import 'package:chachatte_team/utils/strings.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/date_symbol_data_local.dart';
+import 'package:logging/logging.dart';
 
 class Home extends StatefulWidget {
+  final Member member;
+
+  const Home({Key key, this.member}) : super(key: key);
+
   @override
   State<StatefulWidget> createState() {
     return _HomeState();
@@ -33,6 +39,9 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> {
+
+  final Logger log = new Logger('NewsCard');
+
   @override
   void initState() {
     super.initState();
@@ -42,15 +51,16 @@ class _HomeState extends State<Home> {
   // current page index of the bottom navigation bar
   int _currentIndex = 0;
 
-  // list of pages of the bottom navigation bar
-  final List<Widget> _children = [
-    NewsList(),
-    Calendar(),
-    Team(),
-    Gallery(),
-  ];
-
   Widget build(BuildContext context) {
+
+    // list of pages of the bottom navigation bar
+    final List<Widget> _children = [
+      NewsList(member: widget.member,),
+      Calendar(),
+      Team(),
+      Gallery(),
+    ];
+
     return new Scaffold(
       backgroundColor: Colors.transparent,
       body: _children[_currentIndex],
