@@ -35,7 +35,6 @@ class LoginLoadingScreen extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<LoginLoadingScreen> {
-
   initState() {
     _checkLogin(context);
     return super.initState();
@@ -43,19 +42,19 @@ class _MyHomePageState extends State<LoginLoadingScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: new BoxDecoration(
-        image: new DecorationImage(
-          image: new AssetImage("images/motos.jpg"),
-          fit: BoxFit.cover,
-          colorFilter: ColorFilter.mode(
-            Color.fromRGBO(255, 255, 255, 0.4),
-            BlendMode.modulate,
+    return Scaffold(
+      body: Container(
+        constraints: BoxConstraints.expand(),
+        decoration: new BoxDecoration(
+          gradient: new LinearGradient(
+            colors: [Colors.blue[100], Colors.blue[400]],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            stops: [0.0, 1.0],
+            tileMode: TileMode.clamp,
           ),
         ),
-      ),
-      child: Scaffold(
-        body: Column(
+        child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
@@ -76,7 +75,14 @@ class _MyHomePageState extends State<LoginLoadingScreen> {
       SharedPreferences prefs = await SharedPreferences.getInstance();
       prefs.setString('email', widget.member.email);
       log.fine("User ${widget.member.email} logged in successfully");
-      Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => Home(member: widget.member)));
+      // get the full member from the database
+      try {
+        Member fullMember = await membersService.getMemberByEmail(widget.member.email);
+        Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => Home(member: fullMember)));
+      } catch (exception) {
+        log.warning("Problem when getting user ${widget.member.email} from database : $exception");
+        Navigator.pop(context, AppString.loginFailed);
+      }
     }, onError: (error) {
       log.warning("User ${widget.member.email} failed to log in", error);
       Navigator.pop(context, AppString.loginFailed);

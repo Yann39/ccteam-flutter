@@ -70,16 +70,11 @@ class ChachatteTeamApp extends StatefulWidget {
 }
 
 class _ChachatteTeamAppState extends State<ChachatteTeamApp> {
-
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: AppString.applicationTitle,
-      home: widget.member != null
-          ? Home(
-              member: widget.member,
-            )
-          : Login(),
+      home: widget.member != null ? Home(member: widget.member) : Login(),
       theme: new ThemeData(
         primarySwatch: Colors.blue,
         primaryColor: Colors.red[700],

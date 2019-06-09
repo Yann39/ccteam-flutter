@@ -39,7 +39,7 @@ class _LoginState extends State<Login> {
   final GlobalKey<FormState> _loginFormKey = new GlobalKey<FormState>();
   final GlobalKey<ScaffoldState> _loginScaffoldKey = new GlobalKey<ScaffoldState>();
 
-  // the member to be created
+  // the member to be logged
   final Member _newMember = new Member();
 
   /// Allow to dismiss the keyboard when clicking outside
