@@ -89,10 +89,10 @@ class News {
         $stmt = $this->conn->prepare($query);
 
         // sanitize
-        $this->title=htmlspecialchars(strip_tags($this->title));
-        $this->content=htmlspecialchars(strip_tags($this->content));
-        $this->news_date=htmlspecialchars(strip_tags($this->news_date));
-        $this->created=htmlspecialchars(strip_tags($this->created));
+        $this->title = htmlspecialchars(strip_tags($this->title));
+        $this->content = htmlspecialchars(strip_tags($this->content));
+        $this->news_date = htmlspecialchars(strip_tags($this->news_date));
+        $this->created = htmlspecialchars(strip_tags($this->created));
 
         // bind values
         $stmt->bindParam(":title", $this->title);
@@ -147,7 +147,7 @@ class News {
         $stmt = $this->conn->prepare($query);
 
         // sanitize
-        $this->id=htmlspecialchars(strip_tags($this->id));
+        $this->id = htmlspecialchars(strip_tags($this->id));
 
         // bind id of record to delete
         $stmt->bindParam(1, $this->id);
@@ -188,15 +188,15 @@ class News {
     function like($news_id, $member_id) {
 
         // query to get all records containing the specified event
-        $query = "INSERT INTO " . $this->$news_members_table_name . " SET news_id = ?, member_id = ?, created = ?";
+        $query = "INSERT INTO " . $this->$news_members_table_name . " SET news_id = :news_id, member_id = :member_id, created = :created";
 
         // prepare query statement
         $stmt = $this->conn->prepare($query);
 
         // bind data
-        $stmt->bindParam(1, $news_id);
-        $stmt->bindParam(2, $member_id);
-        $stmt->bindParam(3, date('Y-m-d H:i:s'));
+        $stmt->bindParam(':news_id', $news_id);
+        $stmt->bindParam(':member_id', $member_id);
+        $stmt->bindParam(':created', date('Y-m-d H:i:s'));
 
         // execute query
         if ($stmt->execute()) {

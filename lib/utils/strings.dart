@@ -24,6 +24,7 @@ class AppString {
 
   static const String formNotValid = 'Le formulaire n\'est pas valide. Corrigez les erreurs puis essayer à nouveau.';
 
+  static const String back = 'Retour';
   static const String cancel = 'Annuler';
   static const String save = 'Enregistrer';
   static const String confirm = 'Confirmer';

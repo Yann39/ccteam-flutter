@@ -17,10 +17,9 @@
  * along with Chachatte Team. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import 'package:chachatte_team/models/member.dart';
+import 'package:chachatte_team/providers/member_provider.dart';
 import 'package:chachatte_team/ui/events/calendar.dart';
 import 'package:chachatte_team/ui/login.dart';
-import 'package:chachatte_team/ui/members/add_member.dart';
 import 'package:chachatte_team/ui/members/team.dart';
 import 'package:chachatte_team/ui/news/news.dart';
 import 'package:chachatte_team/ui/photos/gallery.dart';
@@ -28,13 +27,14 @@ import 'package:chachatte_team/utils/strings.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:logging/logging.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-class Home extends StatefulWidget {
-  final Member member;
+import 'drawer.dart';
 
-  const Home({Key key, this.member}) : super(key: key);
+class Home extends StatefulWidget {
+  const Home({Key key}) : super(key: key);
 
   @override
   State<StatefulWidget> createState() {
@@ -43,7 +43,7 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> {
-  final Logger log = new Logger('NewsCard');
+  final Logger log = new Logger('Home');
   final GlobalKey<ScaffoldState> _homeScaffoldKey = new GlobalKey<ScaffoldState>();
 
   /// Launch URL to contact user
@@ -60,19 +60,6 @@ class _HomeState extends State<Home> {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     prefs.remove('email');
     Navigator.push(context, MaterialPageRoute(builder: (context) => Login()));
-  }
-
-  /// Method that launches the Edit Member screen and awaits the result from Navigator.pop
-  _navigateToEditMemberScreen(BuildContext context, Member member) async {
-    // Navigator.push returns a Future that will complete after we call Navigator.pop on the target screen
-    final result = await Navigator.push(context, MaterialPageRoute(builder: (context) => AddMember(member: member)));
-
-    // after the target screen returns a result, hide any previous snack bars and show the new result
-    if (result != null) {
-      Scaffold.of(context)
-        ..removeCurrentSnackBar()
-        ..showSnackBar(SnackBar(content: Text("$result")));
-    }
   }
 
   /// Handle menu item click
@@ -93,13 +80,18 @@ class _HomeState extends State<Home> {
   // current page index of the bottom navigation bar
   int _currentIndex = 0;
 
+  _openDrawer() {
+    _homeScaffoldKey.currentState.openDrawer();
+  }
+
   Widget build(BuildContext context) {
+    log.info("Build home");
     // list of pages of the bottom navigation bar
     final List<Widget> _children = [
-      NewsList(
-        member: widget.member,
+      NewsList(),
+      Calendar(
+        title: AppString.eventScreenTitle,
       ),
-      Calendar(),
       Team(),
       Gallery(),
     ];
@@ -137,69 +129,7 @@ class _HomeState extends State<Home> {
           )
         ],
       ),
-      drawer: Drawer(
-        child: Container(
-          decoration: new BoxDecoration(
-            gradient: new LinearGradient(
-              colors: [Colors.blue[100], Colors.blue[300]],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              stops: [0.0, 1.0],
-              tileMode: TileMode.clamp,
-            ),
-          ),
-          child: ListView(
-            // Important: Remove any padding from the ListView.
-            padding: EdgeInsets.zero,
-            children: <Widget>[
-              UserAccountsDrawerHeader(
-                accountName: Text("${widget.member.firstName} ${widget.member.lastName}"),
-                accountEmail: Text(widget.member.email),
-                currentAccountPicture: new CircleAvatar(
-                  backgroundImage: new NetworkImage('http://i.pravatar.cc/300'),
-                ),
-              ),
-              Column(
-                children: <Widget>[
-                  ListTile(
-                    leading: Icon(Icons.person, color: Colors.green[600],),
-                    trailing: Icon(Icons.arrow_right),
-                    title: Text('Profile'),
-                    onTap: () {
-                      _navigateToEditMemberScreen(context, widget.member);
-                    },
-                  ),
-                  ListTile(
-                    leading: Icon(Icons.notifications, color: Colors.blue[600],),
-                    trailing: Icon(Icons.arrow_right),
-                    title: Text('Notifications'),
-                    onTap: () {
-                      Navigator.pop(context);
-                    },
-                  ),
-                  ListTile(
-                    leading: Icon(Icons.settings, color: Colors.teal[600],),
-                    trailing: Icon(Icons.arrow_right),
-                    title: Text('Préférences'),
-                    onTap: () {
-                      Navigator.pop(context);
-                    },
-                  ),
-                  ListTile(
-                    leading: Icon(Icons.lock, color: Colors.purple[600],),
-                    trailing: Icon(Icons.arrow_right),
-                    title: Text('Déconnexion'),
-                    onTap: () {
-                      _logout();
-                    },
-                  ),
-                ],
-              ),
-
-            ],
-          ),
-        ),
-      ),
+      drawer: MainDrawer(member: Provider.of<MemberProvider>(context, listen: false).member),
       body: _children[_currentIndex],
       bottomNavigationBar: BottomNavigationBar(
         onTap: onTabTapped,
@@ -207,10 +137,16 @@ class _HomeState extends State<Home> {
         fixedColor: Colors.red[700],
         type: BottomNavigationBarType.shifting,
         items: [
-          new BottomNavigationBarItem(icon: new Icon(Icons.home), title: new Text(AppString.tabHome), backgroundColor: Colors.red[700]),
-          new BottomNavigationBarItem(icon: new Icon(Icons.event), title: new Text(AppString.tabCalendar), backgroundColor: Colors.red[700]),
-          new BottomNavigationBarItem(icon: new Icon(Icons.group), title: new Text(AppString.tabTeam), backgroundColor: Colors.red[700]),
-          new BottomNavigationBarItem(icon: new Icon(Icons.photo_album), title: new Text(AppString.tabGallery), backgroundColor: Colors.red[700])
+          new BottomNavigationBarItem(
+              icon: new Icon(Icons.home, color: Colors.white), title: new Text(AppString.tabHome, style: TextStyle(color: Colors.white)), backgroundColor: Colors.red[700]),
+          new BottomNavigationBarItem(
+              icon: new Icon(Icons.event, color: Colors.white), title: new Text(AppString.tabCalendar, style: TextStyle(color: Colors.white)), backgroundColor: Colors.red[700]),
+          new BottomNavigationBarItem(
+              icon: new Icon(Icons.group, color: Colors.white), title: new Text(AppString.tabTeam, style: TextStyle(color: Colors.white)), backgroundColor: Colors.red[700]),
+          new BottomNavigationBarItem(
+              icon: new Icon(Icons.photo_album, color: Colors.white),
+              title: new Text(AppString.tabGallery, style: TextStyle(color: Colors.white)),
+              backgroundColor: Colors.red[700])
         ],
       ),
     );

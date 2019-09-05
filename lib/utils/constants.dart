@@ -26,7 +26,6 @@ class AppConstants {
   static const String API_UPDATE_NEWS_ENDPOINT = '/news/update.php';
   static const String API_DELETE_NEWS_ENDPOINT = '/news/delete.php';
   static const String API_LIKE_NEWS_ENDPOINT = '/news/like.php';
-  static const String API_UNLIKE_NEWS_ENDPOINT = '/news/unlike.php';
 
   static const String API_GET_ALL_MEMBERS_ENDPOINT = '/members/read.php';
   static const String API_GET_SINGLE_MEMBER_ENDPOINT = '/members/read_one.php';

@@ -47,7 +47,7 @@ if ($news->like($data->news_id, $data->member_id)) {
 }
 
 // if unable to like the news, tell the user
-else{
+else {
 
     // set response code - 503 service unavailable
     http_response_code(503);

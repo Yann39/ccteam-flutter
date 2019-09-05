@@ -20,40 +20,36 @@
 import 'dart:ui';
 
 import 'package:chachatte_team/models/member.dart';
+import 'package:chachatte_team/providers/member_provider.dart';
 import 'package:chachatte_team/ui/forgot_password.dart';
-import 'package:chachatte_team/ui/login_loading_screen.dart';
-import 'package:chachatte_team/ui/register.dart';
 import 'package:chachatte_team/utils/string_utils.dart';
 import 'package:chachatte_team/utils/strings.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:logging/logging.dart';
+import 'package:provider/provider.dart';
 
 class Login extends StatefulWidget {
   @override
-  State<StatefulWidget> createState() {
-    return _LoginState();
-  }
+  _LoginState createState() => _LoginState();
 }
 
 class _LoginState extends State<Login> {
   final GlobalKey<FormState> _loginFormKey = new GlobalKey<FormState>();
   final GlobalKey<ScaffoldState> _loginScaffoldKey = new GlobalKey<ScaffoldState>();
+  final Logger _log = new Logger('Login');
 
   // the member to be logged
   final Member _newMember = new Member();
 
-  /// Allow to dismiss the keyboard when clicking outside
-  _dismissKeyboard(BuildContext context) {
-    FocusScope.of(context).requestFocus(new FocusNode());
-  }
-
   /// Method that navigates to the Register screen and awaits the result from Navigator.pop
   _navigateToRegisterScreen(BuildContext context) async {
+    _log.info("Going to Register page");
     // Navigator.push returns a Future that will complete after we call Navigator.pop on the target screen
-    final result = await Navigator.push(context, MaterialPageRoute(builder: (context) => Register()));
+    final _result = await Navigator.pushNamed(context, '/register');
 
     // after the target screen returns a result, show a bottom sheet to display the result
-    if (result != null) {
+    if (_result != null) {
       _loginScaffoldKey.currentState.showBottomSheet<String>(
         (BuildContext context) {
           return Container(
@@ -104,30 +100,31 @@ class _LoginState extends State<Login> {
     }
   }
 
-  /// Method that validates the form then process the login in a loading screen and awaits the result from Navigator.pop
-  _doLogin(Member member) async {
-    final FormState form = _loginFormKey.currentState;
+  /// Method that validates the form then process to the login
+  _doLogin(BuildContext context) async {
+    final FormState _form = _loginFormKey.currentState;
 
-    if (!form.validate()) {
-      _loginScaffoldKey.currentState.showSnackBar(new SnackBar(backgroundColor: Colors.red, content: new Text(AppString.formNotValid)));
+    // validate the form
+    if (!_form.validate()) {
+      _log.warning("Login form is not valid");
+      _loginScaffoldKey.currentState.showSnackBar(SnackBar(backgroundColor: Colors.red, content: Text(AppString.formNotValid)));
     } else {
       // this invokes each onSaved event
-      form.save();
+      _form.save();
 
-      // do the login and wait for the result
-      final result = await Navigator.push(context, MaterialPageRoute(builder: (context) => LoginLoadingScreen(member: member)));
-
-      // after the target screen returns a result, hide any previous snack bars and show the new result (if we come here it means an error occurred)
-      if (result != null) {
+      // do the login
+      Provider.of<MemberProvider>(context, listen: false).loginMember(_newMember).then((value) {}, onError: (error) {
         _loginScaffoldKey.currentState
           ..removeCurrentSnackBar()
-          ..showSnackBar(SnackBar(content: Text("$result")));
-      }
+          ..showSnackBar(SnackBar(backgroundColor: Colors.red, content: Text(AppString.loginFailed)));
+      });
     }
   }
 
   Widget build(BuildContext context) {
-    final logo = Container(
+    _log.info("Building Login");
+
+    final _logo = Container(
       padding: EdgeInsets.only(top: 36),
       child: Column(
         children: <Widget>[
@@ -153,7 +150,7 @@ class _LoginState extends State<Login> {
       ),
     );
 
-    final email = Padding(
+    final _emailField = Padding(
       padding: EdgeInsets.only(left: 16.0, right: 16.0),
       child: TextFormField(
         keyboardType: TextInputType.emailAddress,
@@ -169,14 +166,14 @@ class _LoginState extends State<Login> {
           contentPadding: EdgeInsets.fromLTRB(16.0, 12.0, 16.0, 12.0),
         ),
         maxLines: 1,
-        inputFormatters: [new LengthLimitingTextInputFormatter(128)],
+        inputFormatters: [LengthLimitingTextInputFormatter(128)],
         validator: (val) => val.isEmpty ? AppString.memberEmailMandatory : (StringUtils.isValidEmail(val) ? null : AppString.memberEmailNotValid),
         onSaved: (val) => _newMember.email = val,
         initialValue: _newMember.email,
       ),
     );
 
-    final password = Padding(
+    final _passwordField = Padding(
       padding: EdgeInsets.only(left: 16.0, right: 16.0),
       child: TextFormField(
         autofocus: false,
@@ -191,14 +188,14 @@ class _LoginState extends State<Login> {
           contentPadding: EdgeInsets.fromLTRB(16.0, 12.0, 16.0, 12.0),
         ),
         maxLines: 1,
-        inputFormatters: [new LengthLimitingTextInputFormatter(32)],
+        inputFormatters: [LengthLimitingTextInputFormatter(32)],
         validator: (val) => val.isEmpty ? AppString.memberPasswordMandatory : null,
         onSaved: (val) => _newMember.password = val,
         initialValue: _newMember.password,
       ),
     );
 
-    final loginButton = Row(
+    final _loginButton = Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: <Widget>[
         RaisedButton(
@@ -206,7 +203,7 @@ class _LoginState extends State<Login> {
             borderRadius: BorderRadius.circular(8),
           ),
           onPressed: () {
-            _doLogin(_newMember);
+            _doLogin(context);
           },
           padding: EdgeInsets.fromLTRB(16.0, 12.0, 16.0, 12.0),
           color: Colors.red[700],
@@ -233,7 +230,7 @@ class _LoginState extends State<Login> {
       ],
     );
 
-    final forgotLabel = FlatButton(
+    final _forgotLabel = FlatButton(
       child: Text(
         AppString.forgotPassword,
         style: TextStyle(color: Colors.white),
@@ -243,14 +240,15 @@ class _LoginState extends State<Login> {
       },
     );
 
-    return new GestureDetector(
+    return GestureDetector(
       onTap: () {
-        this._dismissKeyboard(context);
+        // allow to dismiss the keyboard when clicking outside
+        FocusScope.of(context).requestFocus(FocusNode());
       },
       child: Container(
-        decoration: new BoxDecoration(
-          image: new DecorationImage(
-            image: new AssetImage("images/motos.jpg"),
+        decoration: BoxDecoration(
+          image: DecorationImage(
+            image: AssetImage("images/motos.jpg"),
             fit: BoxFit.cover,
             colorFilter: ColorFilter.mode(
               Color.fromRGBO(255, 255, 255, 0.4),
@@ -270,14 +268,14 @@ class _LoginState extends State<Login> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: <Widget>[
-                    logo,
+                    Provider.of<MemberProvider>(context).status == Status.Authenticating ? CircularProgressIndicator() : _logo,
                     SizedBox(height: 32.0),
-                    email,
+                    _emailField,
                     SizedBox(height: 8.0),
-                    password,
+                    _passwordField,
                     SizedBox(height: 24.0),
-                    loginButton,
-                    forgotLabel,
+                    _loginButton,
+                    _forgotLabel,
                   ],
                 ),
               ),

@@ -165,14 +165,18 @@ class MembersService {
     final response = await http.post(AppConstants.API_ROOT_URL + AppConstants.API_ASK_PASSWORD_MEMBER_ENDPOINT, headers: {'Content-Type': 'application/json'}, body: jsonString);
 
     // handle server response code
-    if (response.statusCode == 201) {
-      return;
-    } else if (response.statusCode == 503) {
-      throw Exception('Failed to create the member');
+    if (response.statusCode == 200) {
+      // if the call to the server was successful, parse the JSON and return content
+      dynamic responseJson = json.decode(response.body);
+      return _fromJson(responseJson);
+    } else if (response.statusCode == 403) {
+      throw Exception('Account is not activated');
+    } else if (response.statusCode == 404) {
+      throw Exception('No member found with the specified e-mail address');
     } else if (response.statusCode == 400) {
-      throw Exception('Bad request, member has not been created');
+      throw Exception('Bad request, missing email attribute');
     } else {
-      throw Exception('Unexpected server response, member has not been created');
+      throw Exception('Unexpected server response');
     }
   }
 

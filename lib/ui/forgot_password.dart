@@ -19,12 +19,13 @@
 
 import 'dart:ui';
 
-import 'package:chachatte_team/services/members_service.dart';
+import 'package:chachatte_team/providers/member_provider.dart';
 import 'package:chachatte_team/utils/string_utils.dart';
 import 'package:chachatte_team/utils/strings.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:logging/logging.dart';
+import 'package:provider/provider.dart';
 
 class ForgotPassword extends StatefulWidget {
   @override
@@ -36,40 +37,34 @@ class ForgotPassword extends StatefulWidget {
 class _ForgotPassword extends State<ForgotPassword> {
   final GlobalKey<FormState> _forgotPasswordFormKey = new GlobalKey<FormState>();
   final GlobalKey<ScaffoldState> _forgotPasswordScaffoldKey = new GlobalKey<ScaffoldState>();
+  final Logger _log = new Logger('ForgotPassword');
 
   String _email;
 
-  /// Allow to dismiss the keyboard when clicking outside
-  _dismissKeyboard(BuildContext context) {
-    FocusScope.of(context).requestFocus(new FocusNode());
-  }
-
   /// Method that validates the form then process the login in a loading screen and awaits the result from Navigator.pop
   _doResetPassword() async {
-    final FormState form = _forgotPasswordFormKey.currentState;
-    final Logger log = new Logger('ForgotPassword');
+    final FormState _form = _forgotPasswordFormKey.currentState;
 
-    if (!form.validate()) {
-      _forgotPasswordScaffoldKey.currentState.showSnackBar(new SnackBar(backgroundColor: Colors.red, content: new Text(AppString.formNotValid)));
+    // validate the form
+    if (!_form.validate()) {
+      _forgotPasswordScaffoldKey.currentState.showSnackBar(SnackBar(backgroundColor: Colors.red, content: Text(AppString.formNotValid)));
     } else {
       // this invokes each onSaved event
-      form.save();
-
-      final MembersService membersService = new MembersService();
+      _form.save();
 
       // submit data to backend then display a message
-      membersService.askPassword(_email).then((value) {
-        log.fine("Forgot password requested for e-mail : $_email");
+      Provider.of<MemberProvider>(context, listen: false).askPassword(_email).then((value) {
         Navigator.pop(context, AppString.memberCreated);
       }, onError: (error) {
-        log.fine("Failed to request forgot password", error);
         Navigator.pop(context, AppString.memberCreationFailed);
       });
     }
   }
 
   Widget build(BuildContext context) {
-    final logo = Container(
+    _log.info("Building ForgotPassword");
+
+    final _logo = Container(
       padding: EdgeInsets.only(top: 36),
       child: Column(
         children: <Widget>[
@@ -95,7 +90,7 @@ class _ForgotPassword extends State<ForgotPassword> {
       ),
     );
 
-    final forgotPasswordInfo = Padding(
+    final _forgotPasswordInfo = Padding(
       padding: EdgeInsets.only(left: 16.0, right: 16.0),
       child: Text(
         AppString.forgotPasswordInfo,
@@ -103,7 +98,7 @@ class _ForgotPassword extends State<ForgotPassword> {
       ),
     );
 
-    final email = Padding(
+    final _emailField = Padding(
       padding: EdgeInsets.only(left: 16.0, right: 16.0),
       child: TextFormField(
         keyboardType: TextInputType.emailAddress,
@@ -119,16 +114,31 @@ class _ForgotPassword extends State<ForgotPassword> {
           contentPadding: EdgeInsets.fromLTRB(16.0, 12.0, 16.0, 12.0),
         ),
         maxLines: 1,
-        inputFormatters: [new LengthLimitingTextInputFormatter(128)],
+        inputFormatters: [LengthLimitingTextInputFormatter(128)],
         validator: (val) => val.isEmpty ? AppString.memberEmailMandatory : (StringUtils.isValidEmail(val) ? null : AppString.memberEmailNotValid),
         onSaved: (val) => _email = val,
         initialValue: _email,
       ),
     );
 
-    final sendButton = Row(
+    final _sendButton = Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: <Widget>[
+        RaisedButton(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(8),
+          ),
+          onPressed: () {
+            Navigator.pop(context);
+          },
+          padding: EdgeInsets.fromLTRB(16.0, 12.0, 16.0, 12.0),
+          color: Colors.grey[700],
+          child: Text(
+            AppString.cancel,
+            style: TextStyle(color: Colors.white),
+          ),
+        ),
+        SizedBox(width: 8.0),
         RaisedButton(
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(8),
@@ -146,14 +156,15 @@ class _ForgotPassword extends State<ForgotPassword> {
       ],
     );
 
-    return new GestureDetector(
+    return GestureDetector(
       onTap: () {
-        this._dismissKeyboard(context);
+        // allow to dismiss the keyboard when clicking outside
+        FocusScope.of(context).requestFocus(FocusNode());
       },
       child: Container(
-        decoration: new BoxDecoration(
-          image: new DecorationImage(
-            image: new AssetImage("images/motos.jpg"),
+        decoration: BoxDecoration(
+          image: DecorationImage(
+            image: AssetImage("images/motos.jpg"),
             fit: BoxFit.cover,
             colorFilter: ColorFilter.mode(
               Color.fromRGBO(255, 255, 255, 0.4),
@@ -175,25 +186,25 @@ class _ForgotPassword extends State<ForgotPassword> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: <Widget>[
-                        logo,
+                        _logo,
                         SizedBox(height: 44.0),
-                        forgotPasswordInfo,
+                        _forgotPasswordInfo,
                         SizedBox(height: 32.0),
-                        email,
+                        _emailField,
                         SizedBox(height: 24.0),
-                        sendButton,
+                        _sendButton,
                       ],
                     ),
                   ),
                 ),
               ),
-              new Positioned(
+              Positioned(
                 //Place it at the top, and not use the entire screen
                 top: 0.0,
                 left: 0.0,
                 right: 0.0,
                 child: AppBar(
-                  backgroundColor: Colors.transparent, //No more green
+                  backgroundColor: Colors.transparent,
                   elevation: 0.0, //Shadow gone
                 ),
               ),
