@@ -19,7 +19,7 @@
 
 import 'dart:ui';
 
-import 'package:chachatte_team/providers/member_provider.dart';
+import 'package:chachatte_team/providers/login_provider.dart';
 import 'package:chachatte_team/utils/string_utils.dart';
 import 'package:chachatte_team/utils/strings.dart';
 import 'package:flutter/material.dart';
@@ -53,7 +53,7 @@ class _ForgotPassword extends State<ForgotPassword> {
       _form.save();
 
       // submit data to backend then display a message
-      Provider.of<MemberProvider>(context, listen: false).askPassword(_email).then((value) {
+      Provider.of<LoginProvider>(context, listen: false).askPassword(_email).then((value) {
         Navigator.pop(context, AppString.memberCreated);
       }, onError: (error) {
         Navigator.pop(context, AppString.memberCreationFailed);

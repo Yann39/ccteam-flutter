@@ -17,12 +17,12 @@
  * along with Chachatte Team. If not, see <http://www.gnu.org/licenses/>.
  */
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:chachatte_team/models/member.dart';
-import 'package:chachatte_team/services/members_service.dart';
-import 'package:chachatte_team/ui/members/add_member.dart';
+import 'package:chachatte_team/providers/member_provider.dart';
 import 'package:chachatte_team/utils/strings.dart';
 import 'package:flutter/material.dart';
-import 'package:cached_network_image/cached_network_image.dart';
+import 'package:provider/provider.dart';
 
 class MemberDetail extends StatefulWidget {
   final Member member;
@@ -45,7 +45,6 @@ class _MemberDetailState extends State<MemberDetail> {
   @override
   void initState() {
     super.initState();
-
     _scrollController = ScrollController()..addListener(() => setState(() {}));
   }
 
@@ -56,35 +55,35 @@ class _MemberDetailState extends State<MemberDetail> {
   /// Method that launches the Edit Member screen and awaits the result from Navigator.pop
   _navigateToEditMemberScreen(BuildContext context, Member member) async {
     // Navigator.push returns a Future that will complete after we call Navigator.pop on the target screen
-    final result = await Navigator.push(context, MaterialPageRoute(builder: (context) => AddMember(member: member)));
+    final _result = await Navigator.pushNamed(context, '/addEditMember', arguments: member);
 
-    // after the target screen returns a result, hide any previous snack bars and show the new result
-    if (result != null) {
+    // after the target screen returns a result, hide any previous snack bars and show the result
+    if (_result != null) {
       Scaffold.of(context)
         ..removeCurrentSnackBar()
-        ..showSnackBar(SnackBar(content: Text("$result")));
+        ..showSnackBar(SnackBar(content: Text("$_result")));
     }
   }
 
   /// Display a confirmation popup when trying to delete a member
-  void _showConfirmation(BuildContext context, String value) {
+  _showConfirmation(BuildContext context, String value) {
     showDialog(
       context: context,
-      builder: (_) => new AlertDialog(
-        title: new Text(AppString.confirmation),
-        content: new Text(value),
+      builder: (_) => AlertDialog(
+        title: Text(AppString.confirmation),
+        content: Text(value),
         actions: <Widget>[
-          new FlatButton(
+          FlatButton(
             onPressed: () {
               _dialogueResult(context, ConfirmDialogAction.yes);
             },
-            child: new Text(AppString.confirm),
+            child: Text(AppString.confirm),
           ),
-          new FlatButton(
+          FlatButton(
             onPressed: () {
               _dialogueResult(context, ConfirmDialogAction.no);
             },
-            child: new Text(AppString.cancel),
+            child: Text(AppString.cancel),
           ),
         ],
       ),
@@ -92,11 +91,10 @@ class _MemberDetailState extends State<MemberDetail> {
   }
 
   /// Handle result of the member deletion confirmation dialog
-  void _dialogueResult(BuildContext context, ConfirmDialogAction value) {
+  _dialogueResult(BuildContext context, ConfirmDialogAction value) {
     if (value == ConfirmDialogAction.yes) {
-      final MembersService membersService = new MembersService();
       // delete member
-      membersService.deleteMember(widget.member).then((value) {
+      Provider.of<MemberProvider>(context, listen: false).deleteMember(widget.member).then((value) {
         Scaffold.of(context)
           ..removeCurrentSnackBar()
           ..showSnackBar(SnackBar(content: Text(AppString.memberDeleted)));
@@ -138,7 +136,7 @@ class _MemberDetailState extends State<MemberDetail> {
               flexibleSpace: _showTitle
                   ? null
                   : FlexibleSpaceBar(
-                      title: new Column(
+                      title: Column(
                         mainAxisAlignment: MainAxisAlignment.end,
                         children: <Widget>[
                           Text(widget.member.firstName + ' ' + widget.member.lastName),
@@ -256,8 +254,8 @@ class _MemberDetailState extends State<MemberDetail> {
             ),
           ],
         ),
-        decoration: new BoxDecoration(
-          gradient: new LinearGradient(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
             colors: [Colors.blue[100], Colors.blue[300]],
             begin: const FractionalOffset(0.0, 0.0),
             end: const FractionalOffset(0.0, 1.0),

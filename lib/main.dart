@@ -17,9 +17,17 @@
  * along with Chachatte Team. If not, see <http://www.gnu.org/licenses/>.
  */
 
+import 'package:chachatte_team/providers/login_provider.dart';
 import 'package:chachatte_team/providers/member_provider.dart';
+import 'package:chachatte_team/providers/news_provider.dart';
+import 'package:chachatte_team/ui/forgot_password.dart';
 import 'package:chachatte_team/ui/home.dart';
 import 'package:chachatte_team/ui/login.dart';
+import 'package:chachatte_team/ui/members/add_edit_member.dart';
+import 'package:chachatte_team/ui/members/member_detail.dart';
+import 'package:chachatte_team/ui/news/add_edit_news.dart';
+import 'package:chachatte_team/ui/news/news.dart';
+import 'package:chachatte_team/ui/news/news_detail.dart';
 import 'package:chachatte_team/ui/register.dart';
 import 'package:chachatte_team/utils/strings.dart';
 import 'package:flutter/material.dart';
@@ -35,8 +43,12 @@ void main() {
   });
 
   runApp(
-    ChangeNotifierProvider<MemberProvider>(
-      builder: (context) => MemberProvider(),
+    // global provider so we keep access to the logged member in the whole widget tree
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(builder: (_) => LoginProvider()),
+        ChangeNotifierProvider(builder: (_) => NewsProvider()),
+    ],
       child: ChachatteTeamApp(),
     ),
   );
@@ -53,9 +65,15 @@ class ChachatteTeamApp extends StatelessWidget {
       initialRoute: '/',
       routes: {
         '/register': (context) => Register(),
+        '/forgotPassword': (context) => ForgotPassword(),
+        '/newsList': (context) => NewsList(),
+        '/addEditNews': (context) => AddEditNews(news: ModalRoute.of(context).settings.arguments),
+        '/addEditMember': (context) => ChangeNotifierProvider<MemberProvider>(builder: (context) => MemberProvider(), child: AddEditMember(member: ModalRoute.of(context).settings.arguments)),
+        '/newsDetail': (context) => NewsDetail(news: ModalRoute.of(context).settings.arguments),
+        '/memberDetail': (context) => MemberDetail(member: ModalRoute.of(context).settings.arguments),
       },
-      home: Consumer<MemberProvider>(builder: (context, memberModel, child) {
-        if (memberModel.status == Status.Authenticated) {
+      home: Consumer<LoginProvider>(builder: (context, loginProvider, child) {
+        if (loginProvider.status == AuthStatus.Authenticated) {
           _log.info("Going to home page");
           return Home();
         } else {

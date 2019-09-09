@@ -18,23 +18,26 @@
  */
 
 import 'package:chachatte_team/models/member.dart';
+import 'package:chachatte_team/providers/member_provider.dart';
 import 'package:chachatte_team/services/members_service.dart';
 import 'package:chachatte_team/utils/constants.dart';
 import 'package:chachatte_team/utils/date_utils.dart';
 import 'package:chachatte_team/utils/string_utils.dart';
 import 'package:chachatte_team/utils/strings.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 
-class AddMember extends StatefulWidget {
+class AddEditMember extends StatefulWidget {
   final Member member;
 
-  const AddMember({Key key, this.member}) : super(key: key);
+  const AddEditMember({Key key, this.member}) : super(key: key);
 
   @override
   State<StatefulWidget> createState() {
-    return _AddMemberState();
+    return _AddEditMemberState();
   }
 }
 
@@ -42,36 +45,36 @@ class AddMember extends StatefulWidget {
 class NumberTextInputFormatter extends TextInputFormatter {
   @override
   TextEditingValue formatEditUpdate(TextEditingValue oldValue, TextEditingValue newValue) {
-    final int newTextLength = newValue.text.length;
-    int selectionIndex = newValue.selection.end;
-    int usedSubstringIndex = 0;
-    final StringBuffer newText = new StringBuffer();
+    final int _newTextLength = newValue.text.length;
+    int _selectionIndex = newValue.selection.end;
+    int _usedSubstringIndex = 0;
+    final StringBuffer _newText = new StringBuffer();
     // add a "+" in front of the text
-    if (newTextLength >= 1) {
-      newText.write('+');
-      if (newValue.selection.end >= 1) selectionIndex++;
+    if (_newTextLength >= 1) {
+      _newText.write('+');
+      if (newValue.selection.end >= 1) _selectionIndex++;
     }
     // add a space after the 3rd character
-    if (newTextLength >= 3) {
-      newText.write(newValue.text.substring(0, usedSubstringIndex = 2) + ' ');
-      if (newValue.selection.end >= 2) selectionIndex += 1;
+    if (_newTextLength >= 3) {
+      _newText.write(newValue.text.substring(0, _usedSubstringIndex = 2) + ' ');
+      if (newValue.selection.end >= 2) _selectionIndex += 1;
     }
     // then write following characters
-    if (newTextLength >= usedSubstringIndex) newText.write(newValue.text.substring(usedSubstringIndex));
-    return new TextEditingValue(
-      text: newText.toString(),
-      selection: new TextSelection.collapsed(offset: selectionIndex),
+    if (_newTextLength >= _usedSubstringIndex) _newText.write(newValue.text.substring(_usedSubstringIndex));
+    return TextEditingValue(
+      text: _newText.toString(),
+      selection: TextSelection.collapsed(offset: _selectionIndex),
     );
   }
 }
 
-class _AddMemberState extends State<AddMember> {
+class _AddEditMemberState extends State<AddEditMember> {
   final GlobalKey<FormState> _formKey = new GlobalKey<FormState>();
   final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
   final TextEditingController _datePickerController = new TextEditingController();
 
-  // the member to be created
-  final Member _newMember = new Member();
+  // the member to be created with default password 1234
+  final Member _newMember = new Member(active: false, admin: false, password: '\$2y\$10\$MuLwPiQkTlcKEbGX6ztzAOxGlqK7ddglgDXcYBRBFDwkM.AQy63EK');
 
   initState() {
     // set date picker text if set
@@ -113,24 +116,22 @@ class _AddMemberState extends State<AddMember> {
     final FormState form = _formKey.currentState;
 
     if (!form.validate()) {
-      _scaffoldKey.currentState.showSnackBar(new SnackBar(backgroundColor: Colors.red, content: new Text(AppString.formNotValid)));
+      _scaffoldKey.currentState.showSnackBar(SnackBar(backgroundColor: Colors.red, content: Text(AppString.formNotValid)));
     } else {
       // this invokes each onSaved event
       form.save();
 
-      var membersService = new MembersService();
-
       // submit data to backend, if id is set this is an update, else a creation
       if (member.id != null) {
         // update the news go back with a message, the result is awaited in caller
-        membersService.updateMember(member).then((value) {
+        Provider.of<MemberProvider>(context, listen: false).updateMember(member).then((value) {
           Navigator.pop(context, AppString.memberUpdated);
         }, onError: (error) {
           Navigator.pop(context, AppString.memberUpdateFailed);
         });
       } else {
         // create the news go back with a message, the result is awaited in caller
-        membersService.createMember(member).then((value) {
+        Provider.of<MemberProvider>(context, listen: false).createMember(member).then((value) {
           Navigator.pop(context, AppString.memberCreated);
         }, onError: (error) {
           Navigator.pop(context, AppString.memberCreationFailed);
@@ -151,97 +152,103 @@ class _AddMemberState extends State<AddMember> {
           child: Container(
             child: Row(
               children: <Widget>[
-                new Expanded(
-                  child: new FlatButton(
-                    child: Text(AppString.cancel.toUpperCase()),
+                Expanded(
+                  child: FlatButton(
+                    child: Text(
+                      AppString.cancel.toUpperCase(),
+                      style: TextStyle(color: Colors.white),
+                    ),
                     onPressed: () => Navigator.pop(context),
                   ),
                 ),
-                new Expanded(
-                  child: new FlatButton(
-                    child: Text(AppString.save.toUpperCase()),
+                Expanded(
+                  child: FlatButton(
+                    child: Text(
+                      AppString.save.toUpperCase(),
+                      style: TextStyle(color: Colors.white),
+                    ),
                     onPressed: () => submitForm(_currMember),
                   ),
                 ),
               ],
             ),
-            decoration: new BoxDecoration(color: Colors.blue[200]),
+            decoration: BoxDecoration(color: Colors.red[700]),
             height: 50.0,
           ),
           preferredSize: Size.fromHeight(50.0),
         ),
       ),
       body: Container(
-        child: new SafeArea(
+        child: SafeArea(
           top: false,
           bottom: false,
-          child: new Form(
+          child: Form(
             key: _formKey,
             autovalidate: false,
-            child: new ListView(
+            child: ListView(
               padding: const EdgeInsets.symmetric(horizontal: 16.0),
               children: <Widget>[
-                new TextFormField(
+                TextFormField(
                   decoration: const InputDecoration(
                     icon: const Icon(Icons.person),
                     hintText: AppString.memberFirstNameHint,
                     labelText: AppString.memberFirstName,
                   ),
                   maxLines: 1,
-                  inputFormatters: [new LengthLimitingTextInputFormatter(64)],
+                  inputFormatters: [LengthLimitingTextInputFormatter(64)],
                   validator: (val) => val.isEmpty ? AppString.memberFirstNameMandatory : null,
                   onSaved: (val) => _currMember.firstName = val,
                   initialValue: _currMember.firstName,
                 ),
-                new TextFormField(
+                TextFormField(
                   decoration: const InputDecoration(
                     icon: const Icon(Icons.person),
                     hintText: AppString.memberLastNameHint,
                     labelText: AppString.memberLastName,
                   ),
                   maxLines: 1,
-                  inputFormatters: [new LengthLimitingTextInputFormatter(64)],
+                  inputFormatters: [LengthLimitingTextInputFormatter(64)],
                   validator: (val) => val.isEmpty ? AppString.memberLastNameMandatory : null,
                   onSaved: (val) => _currMember.lastName = val,
                   initialValue: _currMember.lastName,
                 ),
-                new TextFormField(
+                TextFormField(
                   decoration: const InputDecoration(
                     icon: const Icon(Icons.mail),
                     hintText: AppString.memberEmailHint,
                     labelText: AppString.memberEmail,
                   ),
                   maxLines: 1,
-                  inputFormatters: [new LengthLimitingTextInputFormatter(128)],
+                  inputFormatters: [LengthLimitingTextInputFormatter(128)],
                   validator: (val) => val.isEmpty ? AppString.memberEmailMandatory : (StringUtils.isValidEmail(val) ? null : AppString.memberEmailNotValid),
                   onSaved: (val) => _currMember.email = val,
                   initialValue: _currMember.email,
                 ),
-                new TextFormField(
+                TextFormField(
                   decoration: const InputDecoration(
                     icon: const Icon(Icons.phone),
                     hintText: AppString.memberPhoneHint,
                     labelText: AppString.memberPhone,
                   ),
                   maxLines: 1,
-                  inputFormatters: <TextInputFormatter>[new LengthLimitingTextInputFormatter(13), WhitelistingTextInputFormatter.digitsOnly, NumberTextInputFormatter()],
+                  inputFormatters: <TextInputFormatter>[LengthLimitingTextInputFormatter(13), WhitelistingTextInputFormatter.digitsOnly, NumberTextInputFormatter()],
                   validator: (val) => val.isEmpty ? AppString.memberPhoneMandatory : (StringUtils.isValidPhoneNumber(val) ? null : AppString.memberPhoneNotValid),
                   onSaved: (val) => _currMember.phone = val,
                   initialValue: _currMember.phone,
                 ),
-                new TextFormField(
+                TextFormField(
                   decoration: const InputDecoration(icon: const Icon(Icons.motorcycle), hintText: AppString.memberBikeHint, labelText: AppString.memberBike),
                   maxLines: 1,
-                  inputFormatters: [new LengthLimitingTextInputFormatter(64)],
+                  inputFormatters: [LengthLimitingTextInputFormatter(64)],
                   validator: (val) => val.isEmpty ? AppString.memberBikeMandatory : null,
                   onSaved: (val) => _currMember.bike = val,
                   initialValue: _currMember.bike,
                 ),
-                new GestureDetector(
+                GestureDetector(
                   onTap: () => _chooseDate(context, _datePickerController, _currMember.registrationDate),
                   child: AbsorbPointer(
-                    child: new TextFormField(
-                      decoration: new InputDecoration(
+                    child: TextFormField(
+                      decoration: InputDecoration(
                         icon: const Icon(Icons.calendar_today),
                         hintText: AppString.memberRegistrationDateHint,
                         labelText: AppString.memberRegistrationDate,
@@ -251,26 +258,46 @@ class _AddMemberState extends State<AddMember> {
                       validator: (val) => DateUtils.isBeforeNow(val, AppConstants.DATE_FORMAT)
                           ? (val.isEmpty ? AppString.memberRegistrationDateMandatory : null)
                           : AppString.memberRegistrationDateNotValid,
-                      onSaved: (val) => _currMember.registrationDate = new DateFormat(AppConstants.DATE_FORMAT).parseStrict(val),
+                      onSaved: (val) => _currMember.registrationDate = DateFormat(AppConstants.DATE_FORMAT).parseStrict(val),
                     ),
                   ),
                 ),
-                Container(
-                  margin: EdgeInsets.only(left: 12.0),
-                  child: new CheckboxListTile(
+                Column(
+                    children: <Widget>[
+                      new DropdownButtonFormField<bool>(
+                        value: _currMember.active,
+                        decoration: const InputDecoration(
+                          icon: const Icon(Icons.enhanced_encryption),
+                          hintText: AppString.memberActive,
+                          labelText: AppString.memberActive,
+                        ),
+                        items: <bool>[true, false].map((bool val) {
+                          return DropdownMenuItem<bool>(value: val, child: Text(val.toString()));
+                        }).toList(),
+                        onChanged: (bool val) {
+                          setState(() {
+                            _currMember.active = val;
+                          });
+                        },
+                        onSaved: (val) => _currMember.active = val,
+                        validator: (val) => val == null ? AppString.memberActiveMandatory : null,
+                      )
+                    ],
+                  ) /*CheckboxListTile(
                     title: Text(AppString.memberActive),
                     value: _currMember.active,
                     selected: _currMember.active,
-                    onChanged: (val) => setState(() { _currMember.active = val; }),
+                    onChanged: (val) => setState(() {
+                          _currMember.active = val;
+                        }),
                     controlAffinity: ListTileControlAffinity.leading,
-                  ),
-                ),
+                  ),*/
               ],
             ),
           ),
         ),
-        decoration: new BoxDecoration(
-          gradient: new LinearGradient(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
             colors: [Colors.blue[100], Colors.blue[300]],
             begin: const FractionalOffset(0.0, 0.0),
             end: const FractionalOffset(0.0, 1.0),

@@ -115,6 +115,7 @@ class AppString {
   static const String memberRegistrationDateMandatory = 'La date d\'inscription est obligatoire';
   static const String memberRegistrationDateNotValid = 'La date indiquée n\'est pas valide';
   static const String memberActive = 'Actif ?';
+  static const String memberActiveMandatory = 'Le statut du membre (actif ou non) est obligatoire';
   static const String memberPasswordMandatory = 'Le mot de passe est obligatoire';
   static const String memberLoginFailed = 'Connexion impossible, vérifiez vos informations et assurez-vous que votre compte est actif';
 

@@ -20,8 +20,7 @@
 import 'dart:ui';
 
 import 'package:chachatte_team/models/member.dart';
-import 'package:chachatte_team/providers/member_provider.dart';
-import 'package:chachatte_team/ui/forgot_password.dart';
+import 'package:chachatte_team/providers/login_provider.dart';
 import 'package:chachatte_team/utils/string_utils.dart';
 import 'package:chachatte_team/utils/strings.dart';
 import 'package:flutter/material.dart';
@@ -35,11 +34,11 @@ class Login extends StatefulWidget {
 }
 
 class _LoginState extends State<Login> {
+  final Logger _log = new Logger('Login');
   final GlobalKey<FormState> _loginFormKey = new GlobalKey<FormState>();
   final GlobalKey<ScaffoldState> _loginScaffoldKey = new GlobalKey<ScaffoldState>();
-  final Logger _log = new Logger('Login');
 
-  // the member to be logged
+  // the member to be logged (will simply hold email and password)
   final Member _newMember = new Member();
 
   /// Method that navigates to the Register screen and awaits the result from Navigator.pop
@@ -113,7 +112,7 @@ class _LoginState extends State<Login> {
       _form.save();
 
       // do the login
-      Provider.of<MemberProvider>(context, listen: false).loginMember(_newMember).then((value) {}, onError: (error) {
+      Provider.of<LoginProvider>(context, listen: false).loginMember(_newMember).then((value) {}, onError: (error) {
         _loginScaffoldKey.currentState
           ..removeCurrentSnackBar()
           ..showSnackBar(SnackBar(backgroundColor: Colors.red, content: Text(AppString.loginFailed)));
@@ -122,6 +121,8 @@ class _LoginState extends State<Login> {
   }
 
   Widget build(BuildContext context) {
+    final LoginProvider _loginProvider = Provider.of<LoginProvider>(context, listen: false);
+
     _log.info("Building Login");
 
     final _logo = Container(
@@ -236,7 +237,7 @@ class _LoginState extends State<Login> {
         style: TextStyle(color: Colors.white),
       ),
       onPressed: () {
-        Navigator.push(context, MaterialPageRoute(builder: (context) => ForgotPassword()));
+        Navigator.pushNamed(context, '/forgotPassword');
       },
     );
 
@@ -268,7 +269,8 @@ class _LoginState extends State<Login> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: <Widget>[
-                    Provider.of<MemberProvider>(context).status == Status.Authenticating ? CircularProgressIndicator() : _logo,
+                    Text(_loginProvider.status.toString()),
+                    _loginProvider.status == AuthStatus.Authenticating ? CircularProgressIndicator() : _logo,
                     SizedBox(height: 32.0),
                     _emailField,
                     SizedBox(height: 8.0),

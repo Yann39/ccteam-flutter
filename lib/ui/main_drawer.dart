@@ -20,18 +20,13 @@
 import 'dart:io';
 
 import 'package:chachatte_team/models/member.dart';
-import 'package:chachatte_team/models/news.dart';
+import 'package:chachatte_team/providers/login_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-
-import 'login.dart';
-import 'members/add_member.dart';
+import 'package:provider/provider.dart';
 
 class MainDrawer extends StatefulWidget {
-  final Member member;
-
-  const MainDrawer({Key key, this.member}) : super(key: key);
+  const MainDrawer({Key key}) : super(key: key);
 
   @override
   State<StatefulWidget> createState() {
@@ -43,16 +38,15 @@ class _MainDrawerState extends State<MainDrawer> {
   File _image;
   int _imageSize;
 
-  void _logout() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    prefs.remove('email');
-    Navigator.push(context, MaterialPageRoute(builder: (context) => Login()));
+  /// Log out the current user
+  void _logout(BuildContext context) async {
+    Provider.of<LoginProvider>(context, listen: false).logoutMember();
   }
 
   /// Method that launches the Edit Member screen and awaits the result from Navigator.pop
   _navigateToEditMemberScreen(BuildContext context, Member member) async {
     // Navigator.push returns a Future that will complete after we call Navigator.pop on the target screen
-    final result = await Navigator.push(context, MaterialPageRoute(builder: (context) => AddMember(member: member)));
+    final result = await Navigator.pushNamed(context, '/addEditMember', arguments: member);
 
     // after the target screen returns a result, hide any previous snack bars and show the new result
     if (result != null) {
@@ -62,6 +56,7 @@ class _MainDrawerState extends State<MainDrawer> {
     }
   }
 
+  /// Allow user to select an image from the gallery
   Future _selectImage() async {
     File image = await ImagePicker.pickImage(source: ImageSource.gallery);
 
@@ -83,6 +78,8 @@ class _MainDrawerState extends State<MainDrawer> {
 
   @override
   Widget build(BuildContext context) {
+    final LoginProvider _loginProvider = Provider.of<LoginProvider>(context, listen: false);
+
     return Drawer(
       child: Container(
         decoration: new BoxDecoration(
@@ -101,8 +98,8 @@ class _MainDrawerState extends State<MainDrawer> {
             InkWell(
               onTap: () => _selectImage(),
               child: UserAccountsDrawerHeader(
-                accountName: Text("${widget.member.firstName} ${widget.member.lastName}"),
-                accountEmail: Text(widget.member.email),
+                accountName: Text("${_loginProvider.loggedMember.firstName} ${_loginProvider.loggedMember.lastName}"),
+                accountEmail: Text(_loginProvider.loggedMember.email),
                 currentAccountPicture: new CircleAvatar(
                   backgroundColor: Colors.blue[300],
                   backgroundImage: new AssetImage("images/helmet-face.png"),
@@ -123,7 +120,7 @@ class _MainDrawerState extends State<MainDrawer> {
                   trailing: Icon(Icons.arrow_right),
                   title: Text('Profile'),
                   onTap: () {
-                    _navigateToEditMemberScreen(context, widget.member);
+                    _navigateToEditMemberScreen(context, _loginProvider.loggedMember);
                   },
                 ),
                 ListTile(
@@ -156,7 +153,7 @@ class _MainDrawerState extends State<MainDrawer> {
                   trailing: Icon(Icons.arrow_right),
                   title: Text('Déconnexion'),
                   onTap: () {
-                    _logout();
+                    _logout(context);
                   },
                 ),
               ],

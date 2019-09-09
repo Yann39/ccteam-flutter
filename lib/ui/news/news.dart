@@ -19,23 +19,18 @@
 
 import 'dart:math';
 
-import 'package:chachatte_team/models/member.dart';
 import 'package:chachatte_team/models/news.dart';
-import 'package:chachatte_team/services/news_service.dart';
-import 'package:chachatte_team/ui/login.dart';
-import 'package:chachatte_team/ui/news/add_news.dart';
+import 'package:chachatte_team/providers/news_provider.dart';
+import 'package:chachatte_team/ui/main_action_menu.dart';
+import 'package:chachatte_team/ui/main_drawer.dart';
 import 'package:chachatte_team/ui/news/news_card.dart';
-import 'package:chachatte_team/ui/news/news_detail.dart';
 import 'package:chachatte_team/utils/strings.dart';
 import 'package:flutter/material.dart';
 import 'package:logging/logging.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:url_launcher/url_launcher.dart';
+import 'package:provider/provider.dart';
 
 class NewsList extends StatefulWidget {
-  final Member member;
-
-  const NewsList({Key key, this.member}) : super(key: key);
+  const NewsList({Key key}) : super(key: key);
 
   @override
   State<StatefulWidget> createState() {
@@ -43,97 +38,57 @@ class NewsList extends StatefulWidget {
   }
 }
 
-enum QuickActions { about, contact, logout }
-
 class _NewsListState extends State<NewsList> {
-  static final NewsService newsService = new NewsService();
-  final Logger log = new Logger('NewsList');
+  final Logger _log = new Logger('NewsList');
+  final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
 
-  List helmets = ["images/helmet-blue.png", "images/helmet-green.png", "images/helmet-red.png", "images/helmet-purple.png", "images/helmet-yellow.png"];
-  List bgColors = [
-    Color.fromRGBO(0, 100, 200, 0.4),
-    //Color.fromRGBO(255, 255, 255, 0.3),
-    Color.fromRGBO(25, 120, 25, 0.5),
-    Color.fromRGBO(180, 0, 25, 0.5),
-    Color.fromRGBO(200, 0, 100, 0.5),
-    Color.fromRGBO(200, 200, 100, 1)
-  ];
-  Random random = new Random();
+  final List _helmets = ["images/helmet-blue.png", "images/helmet-green.png", "images/helmet-red.png", "images/helmet-purple.png", "images/helmet-yellow.png"];
+  Random _random = new Random();
 
-  /// Method that launches the Add News screen and awaits the result from Navigator.pop
+  /// Navigates to the Add News screen and awaits the result from Navigator.pop
   _navigateToAddNewsScreen(BuildContext context) async {
     // Navigator.push returns a Future that will complete after we call Navigator.pop on the target screen
-    final result = await Navigator.push(context, MaterialPageRoute(builder: (context) => AddNews()));
+    final _result = await Navigator.pushNamed(context, '/addEditNews');
 
     // after the target screen returns a result, hide any previous snack bars and show the new result
-    if (result != null) {
+    if (_result != null) {
       Scaffold.of(context)
         ..removeCurrentSnackBar()
-        ..showSnackBar(SnackBar(content: Text("$result")));
+        ..showSnackBar(SnackBar(content: Text("$_result")));
     }
   }
 
-  /// Method that launches the News detail screen and awaits the result from Navigator.pop
+  /// Navigates to the News detail screen and awaits the result from Navigator.pop
   _navigateToNewsDetailScreen(BuildContext context, News news) async {
     // Navigator.push returns a Future that will complete after we call Navigator.pop on the target screen
-    final result = await Navigator.push(context, MaterialPageRoute(builder: (context) => NewsDetail(news: news)));
+    final _result = await Navigator.pushNamed(context, '/newsDetail', arguments: news);
 
     // after the target screen returns a result, hide any previous snack bars and show the new result
-    if (result != null) {
+    if (_result != null) {
       Scaffold.of(context)
         ..removeCurrentSnackBar()
-        ..showSnackBar(SnackBar(content: Text("$result")));
-    }
-  }
-
-  _launchURL() async {
-    const url = 'mailto:rockyracer@mailfence.com';
-    if (await canLaunch(url)) {
-      await launch(url);
-    } else {
-      throw 'Could not launch $url';
-    }
-  }
-
-  void _select(QuickActions choice) async {
-    if (choice == QuickActions.contact) {
-      _launchURL();
-    } else if (choice == QuickActions.logout) {
-      SharedPreferences prefs = await SharedPreferences.getInstance();
-      prefs.remove('email');
-      Navigator.push(context, MaterialPageRoute(builder: (context) => Login()));
+        ..showSnackBar(SnackBar(content: Text("$_result")));
     }
   }
 
   Widget build(BuildContext context) {
-    log.fine("Init News List scaffold for member ${widget.member}");
-    return new Scaffold(
+    _log.info("Building News list");
+    final _newsProvider = Provider.of<NewsProvider>(context, listen: true);
+
+    return Scaffold(
+      key: _scaffoldKey,
       appBar: AppBar(
-        title: Text(AppString.applicationTitle),
-        leading: new Icon(Icons.home),
-        actions: <Widget>[
-          PopupMenuButton<QuickActions>(
-            itemBuilder: (BuildContext context) {
-              return [
-                PopupMenuItem<QuickActions>(
-                  child: Text(AppString.about),
-                  value: QuickActions.about,
-                ),
-                PopupMenuItem<QuickActions>(
-                  child: Text(AppString.contact),
-                  value: QuickActions.contact,
-                ),
-                PopupMenuItem<QuickActions>(
-                  child: Text(AppString.logout),
-                  value: QuickActions.logout,
-                ),
-              ];
-            },
-            onSelected: _select,
-          )
-        ],
+        title: Text(AppString.tabHome),
+        leading: IconButton(
+          icon: Icon(Icons.menu),
+          onPressed: () {
+            _scaffoldKey.currentState.openDrawer();
+          },
+        ),
+        actions: <Widget>[MainActionMenu()],
       ),
-      body: new NestedScrollView(
+      drawer: MainDrawer(),
+      body: NestedScrollView(
         headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
           final double width = MediaQuery.of(context).size.width;
           return <Widget>[
@@ -167,34 +122,43 @@ class _NewsListState extends State<NewsList> {
           ];
         },
         body: Container(
-          child: Center(
-            child: FutureBuilder<List<News>>(
-              future: newsService.fetchNews(),
-              builder: (context, snapshot) {
-                if (snapshot.hasData) {
-                  return new Column(
-                    children: <Widget>[
-                      new Expanded(
-                        child: new ListView.builder(
-                          itemCount: snapshot.data.length,
-                          itemBuilder: (context, index) {
-                            final int randomIndex = random.nextInt(3);
-                            return new InkWell(
-                              child: NewsCard(snapshot.data[index], new AssetImage(helmets[0]), bgColors[0], Colors.purple[200]),
-                              onTap: () => _navigateToNewsDetailScreen(context, snapshot.data[index]),
-                            );
-                          },
+          child: Column(
+            children: <Widget>[
+              Container(
+                padding: EdgeInsets.all(8),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: <Widget>[
+                    //Icon(Icons.arrow_forward, color: Colors.red[700], size: 18),
+                    /*Text("ACTU", style: TextStyle(color: Colors.red[700], fontSize: 15)),*/
+                    //Text("Actualités", style: TextStyle(color: Colors.black87, fontSize: 15, fontWeight: FontWeight.bold))
+                    SizedBox(width: 3),
+                    Text("Actualités", style: TextStyle(color: Colors.black87, fontSize: 16, fontFamily: 'Barbatrick', letterSpacing: 2))
+                  ],
+                ),
+              ),
+              Expanded(
+                child: _newsProvider.news != null && _newsProvider.news.length > 0
+                    ? ListView.builder(
+                        itemCount: _newsProvider.news.length,
+                        itemBuilder: (context, index) {
+                          final int _randomIndex = _random.nextInt(3);
+                          return InkWell(
+                            child: NewsCard(_newsProvider.news[index], new AssetImage(_helmets[_randomIndex])),
+                            onTap: () => _navigateToNewsDetailScreen(context, _newsProvider.news[index]),
+                          );
+                        },
+                      )
+                    : Center(
+                        child: SizedBox(
+                          child: CircularProgressIndicator(),
+                          height: 20.0,
+                          width: 20.0,
                         ),
                       ),
-                    ],
-                  );
-                } else if (snapshot.hasError) {
-                  return Text("${snapshot.error}");
-                }
-                // By default, show a loading spinner
-                return CircularProgressIndicator();
-              },
-            ),
+              ),
+            ],
           ),
           decoration: new BoxDecoration(
             gradient: new LinearGradient(

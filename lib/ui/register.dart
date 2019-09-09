@@ -20,7 +20,7 @@
 import 'dart:ui';
 
 import 'package:chachatte_team/models/member.dart';
-import 'package:chachatte_team/providers/member_provider.dart';
+import 'package:chachatte_team/providers/login_provider.dart';
 import 'package:chachatte_team/utils/string_utils.dart';
 import 'package:chachatte_team/utils/strings.dart';
 import 'package:flutter/material.dart';
@@ -40,7 +40,7 @@ class _RegisterState extends State<Register> {
   final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
   final Logger _log = new Logger('Register');
 
-  // the member to be created
+  // the member to be created (will hold form data)
   final Member _newMember = new Member();
 
   /// Validate the form then submit data to backend
@@ -56,7 +56,7 @@ class _RegisterState extends State<Register> {
       _form.save();
 
       // submit data to backend then display a message
-      Provider.of<MemberProvider>(context, listen: false).createMember(member).then((value) {
+      Provider.of<LoginProvider>(context, listen: false).registerMember(member).then((value) {
         Navigator.pop(context, AppString.memberCreated);
       }, onError: (error) {
         Navigator.pop(context, AppString.memberCreationFailed);

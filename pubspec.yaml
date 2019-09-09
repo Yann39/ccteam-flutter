@@ -5,9 +5,6 @@ dependencies:
   flutter:
     sdk: flutter
 
-  #flutter_web: any
-  #flutter_web_ui: any
-
   # for dates localization
   flutter_localizations:
     sdk: flutter
@@ -113,3 +110,7 @@ flutter:
   #
   # For details regarding fonts from package dependencies, 
   # see https://flutter.io/custom-fonts/#from-packages
+  fonts:
+    - family: Barbatrick
+      fonts:
+        - asset: fonts/barbatrick.regular.ttf

@@ -18,12 +18,12 @@
  */
 
 import 'package:chachatte_team/models/news.dart';
-import 'package:chachatte_team/services/news_service.dart';
-import 'package:chachatte_team/ui/news/add_news.dart';
+import 'package:chachatte_team/providers/news_provider.dart';
 import 'package:chachatte_team/utils/constants.dart';
 import 'package:chachatte_team/utils/date_utils.dart';
 import 'package:chachatte_team/utils/strings.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class NewsDetail extends StatefulWidget {
   final News news;
@@ -36,28 +36,17 @@ class NewsDetail extends StatefulWidget {
   }
 }
 
-enum ConfirmDialogAction { yes, no }
-
 class _NewsDetailState extends State<NewsDetail> {
-  ScrollController _scrollController;
-
-  @override
-  void initState() {
-    super.initState();
-
-    _scrollController = ScrollController()..addListener(() => setState(() {}));
-  }
-
   /// Method that launches the Edit New screen and awaits the result from Navigator.pop
   _navigateToEditNewsScreen(BuildContext context, News news) async {
-    // Navigator.push returns a Future that will complete after we call Navigator.pop on the Add News Screen
-    final result = await Navigator.push(context, MaterialPageRoute(builder: (context) => AddNews(news: news)));
+    // Navigator.push returns a Future that will complete after we call Navigator.pop on the Add News screen
+    final _result = await Navigator.pushNamed(context, '/addEditNews', arguments: news);
 
     // after the Edit New Screen returns a result, hide any previous snack bars and show the new result
-    if (result != null) {
+    if (_result != null) {
       Scaffold.of(context)
         ..removeCurrentSnackBar()
-        ..showSnackBar(SnackBar(content: Text("$result")));
+        ..showSnackBar(SnackBar(content: Text("$_result")));
     }
   }
 
@@ -65,59 +54,58 @@ class _NewsDetailState extends State<NewsDetail> {
   void _showConfirmation(BuildContext context, String value) {
     showDialog(
       context: context,
-      builder: (_) => new AlertDialog(
-            title: new Text(AppString.confirmation),
-            content: new Text(value),
-            actions: <Widget>[
-              new FlatButton(
-                onPressed: () {
-                  _dialogueResult(context, ConfirmDialogAction.yes);
-                },
-                child: new Text(AppString.confirm),
-              ),
-              new FlatButton(
-                onPressed: () {
-                  _dialogueResult(context, ConfirmDialogAction.no);
-                },
-                child: new Text(AppString.cancel),
-              ),
-            ],
+      builder: (_) => AlertDialog(
+        title: Text(AppString.confirmation),
+        content: Text(value),
+        actions: <Widget>[
+          FlatButton(
+            onPressed: () {
+              // delete news
+              Provider.of<NewsProvider>(context, listen: false).deleteNews(widget.news).then((value) {
+                Navigator.pop(context);
+                Scaffold.of(context)
+                  ..removeCurrentSnackBar()
+                  ..showSnackBar(SnackBar(content: Text(AppString.newsDeleted)));
+              }, onError: (error) {
+                Navigator.pop(context);
+                Scaffold.of(context)
+                  ..removeCurrentSnackBar()
+                  ..showSnackBar(SnackBar(content: Text(AppString.newsDeletionFailed)));
+              });
+              Navigator.pop(context);
+              // TODO : maybe display a loading icon here while deleting ?
+            },
+            child: Text(AppString.confirm),
           ),
+          FlatButton(
+            onPressed: () {
+              Navigator.pop(context);
+            },
+            child: Text(AppString.cancel),
+          ),
+        ],
+      ),
     );
-  }
-
-  /// Handle result of the news deletion confirmation dialog
-  void _dialogueResult(BuildContext context, ConfirmDialogAction value) {
-    if (value == ConfirmDialogAction.yes) {
-      final NewsService newsService = new NewsService();
-      // delete news
-      newsService.deleteNews(widget.news).then((value) {
-        Scaffold.of(context)
-          ..removeCurrentSnackBar()
-          ..showSnackBar(SnackBar(content: Text(AppString.newsDeleted)));
-      }, onError: (error) {
-        Scaffold.of(context)
-          ..removeCurrentSnackBar()
-          ..showSnackBar(SnackBar(content: Text(AppString.newsDeletionFailed)));
-      });
-    }
-    Navigator.pop(context);
   }
 
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         actions: <Widget>[
-          IconButton(
-            icon: const Icon(Icons.edit),
-            tooltip: 'Edit',
-            onPressed: () => _navigateToEditNewsScreen(context, widget.news),
+          Builder(
+            builder: (context) => IconButton(
+              icon: const Icon(Icons.edit),
+              tooltip: 'Edit',
+              onPressed: () => _navigateToEditNewsScreen(context, widget.news),
+            ),
           ),
-          IconButton(
-            icon: const Icon(Icons.delete_forever),
-            tooltip: 'Delete',
-            onPressed: () => _showConfirmation(context, AppString.newsDeletionAreYouSure),
-          )
+          Builder(
+            builder: (context) => IconButton(
+              icon: const Icon(Icons.delete_forever),
+              tooltip: 'Delete',
+              onPressed: () => _showConfirmation(context, AppString.newsDeletionAreYouSure),
+            ),
+          ),
         ],
         title: Text('News detail'),
         leading: IconButton(
@@ -126,7 +114,7 @@ class _NewsDetailState extends State<NewsDetail> {
         ),
       ),
       body: Container(
-        padding: new EdgeInsets.all(8.0),
+        padding: EdgeInsets.all(8.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: <Widget>[
@@ -138,8 +126,8 @@ class _NewsDetailState extends State<NewsDetail> {
             Text(widget.news.content),
           ],
         ),
-        decoration: new BoxDecoration(
-          gradient: new LinearGradient(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
             colors: [Colors.blue[100], Colors.blue[400]],
             begin: const FractionalOffset(0.0, 0.0),
             end: const FractionalOffset(0.0, 1.0),

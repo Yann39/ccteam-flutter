@@ -19,6 +19,8 @@
 
 import 'package:chachatte_team/models/photo.dart';
 import 'package:chachatte_team/services/photos_service.dart';
+import 'package:chachatte_team/ui/main_action_menu.dart';
+import 'package:chachatte_team/ui/main_drawer.dart';
 import 'package:chachatte_team/ui/photos/add_photo.dart';
 import 'package:chachatte_team/ui/photos/photo_card.dart';
 import 'package:chachatte_team/utils/strings.dart';
@@ -32,6 +34,7 @@ class Gallery extends StatefulWidget {
 }
 
 class _GalleryState extends State<Gallery> {
+  final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
   static final PhotosService photosService = new PhotosService();
 
   /// Method that launches the Add Photo screen and awaits the result from Navigator.pop
@@ -50,17 +53,18 @@ class _GalleryState extends State<Gallery> {
   Widget build(BuildContext context) {
     final Orientation orientation = MediaQuery.of(context).orientation;
     return Scaffold(
+      key: _scaffoldKey,
       appBar: AppBar(
-        title: Text(AppString.photoScreenTitle),
-        leading: new Icon(Icons.collections),
-        actions: <Widget>[
-          PopupMenuButton(
-            itemBuilder: (BuildContext context) {
-              return [PopupMenuItem(child: Text(AppString.about)), PopupMenuItem(child: Text(AppString.contact))];
-            },
-          )
-        ],
+        title: Text(AppString.tabGallery),
+        leading: IconButton(
+          icon: Icon(Icons.menu),
+          onPressed: () {
+            _scaffoldKey.currentState.openDrawer();
+          },
+        ),
+        actions: <Widget>[MainActionMenu()],
       ),
+      drawer: MainDrawer(),
       body: Container(
         padding: const EdgeInsets.all(8.0),
         child: FutureBuilder<List<Photo>>(
@@ -78,25 +82,33 @@ class _GalleryState extends State<Gallery> {
               return Text("${snapshot.error}");
             }
             // By default, show a loading spinner
-            return CircularProgressIndicator();
+            return Center(
+              child: SizedBox(
+                child: CircularProgressIndicator(),
+                height: 20.0,
+                width: 20.0,
+              ),
+            );
           },
         ),
         decoration: new BoxDecoration(
           gradient: new LinearGradient(
-              colors: [Colors.blue[100], Colors.blue[300]],
-              begin: const FractionalOffset(0.0, 0.0),
-              end: const FractionalOffset(0.0, 1.0),
-              stops: [0.0, 1.0],
-              tileMode: TileMode.clamp,),
+            colors: [Colors.blue[100], Colors.blue[300]],
+            begin: const FractionalOffset(0.0, 0.0),
+            end: const FractionalOffset(0.0, 1.0),
+            stops: [0.0, 1.0],
+            tileMode: TileMode.clamp,
+          ),
         ),
       ),
       floatingActionButton: FloatingActionButton(
-          elevation: 0.0,
-          child: new Icon(Icons.add),
-          backgroundColor: Colors.red[700],
-          onPressed: () {
-            _navigateAndDisplaySelection(context);
-          },),
+        elevation: 0.0,
+        child: new Icon(Icons.add),
+        backgroundColor: Colors.red[700],
+        onPressed: () {
+          _navigateAndDisplaySelection(context);
+        },
+      ),
     );
   }
 }

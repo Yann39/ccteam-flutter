@@ -18,11 +18,12 @@
  */
 
 import 'package:chachatte_team/models/member.dart';
-import 'package:chachatte_team/services/members_service.dart';
-import 'package:chachatte_team/ui/members/add_member.dart';
-import 'package:chachatte_team/ui/members/member_detail.dart';
+import 'package:chachatte_team/providers/member_provider.dart';
+import 'package:chachatte_team/ui/main_action_menu.dart';
+import 'package:chachatte_team/ui/main_drawer.dart';
 import 'package:chachatte_team/utils/strings.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class Team extends StatefulWidget {
   @override
@@ -31,99 +32,98 @@ class Team extends StatefulWidget {
   }
 }
 
-/// Class representing a list item
-class _MemberListItem extends ListTile {
-  _MemberListItem(Member member)
-      : super(title: new Text(member.firstName + " " + member.lastName), subtitle: new Text(member.bike), leading: new CircleAvatar(child: new Text(member.firstName[0])));
-}
-
 class _TeamState extends State<Team> {
-  static final MembersService membersService = new MembersService();
+  final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
 
   /// Method that launches the Add Member screen and awaits the result from Navigator.pop
   _navigateToAddMemberScreen(BuildContext context) async {
     // Navigator.push returns a Future that will complete after we call Navigator.pop on the target screen
-    final result = await Navigator.push(context, MaterialPageRoute(builder: (context) => AddMember()));
+    final _result = await Navigator.pushNamed(context, '/addEditMember');
 
-    // after the target screen returns a result, hide any previous snack bars and show the new result
-    if (result != null) {
+    // after the target screen returns a result, hide any previous snack bars and show the result
+    if (_result != null) {
       Scaffold.of(context)
         ..removeCurrentSnackBar()
-        ..showSnackBar(SnackBar(content: Text("$result")));
+        ..showSnackBar(SnackBar(content: Text("$_result")));
     }
   }
 
   /// Method that launches the Member detail screen and awaits the result from Navigator.pop
   _navigateToMemberDetailScreen(BuildContext context, Member member) async {
     // Navigator.push returns a Future that will complete after we call Navigator.pop on the target screen
-    final result = await Navigator.push(context, MaterialPageRoute(builder: (context) => MemberDetail(member: member)));
+    final _result = await Navigator.pushNamed(context, '/memberDetail', arguments: member);
 
-    // after the target screen returns a result, hide any previous snack bars and show the new result
-    if (result != null) {
+    // after the target screen returns a result, hide any previous snack bars and show the result
+    if (_result != null) {
       Scaffold.of(context)
         ..removeCurrentSnackBar()
-        ..showSnackBar(SnackBar(content: Text("$result")));
+        ..showSnackBar(SnackBar(content: Text("$_result")));
     }
   }
 
   Widget build(BuildContext context) {
+    final _memberProvider = Provider.of<MemberProvider>(context, listen: true);
+
     return Scaffold(
+      key: _scaffoldKey,
       appBar: AppBar(
-        title: Text(AppString.memberScreenTitle),
-        leading: new Icon(Icons.group),
-        actions: <Widget>[
-          PopupMenuButton(
-            itemBuilder: (BuildContext context) {
-              return [PopupMenuItem(child: Text(AppString.about)), PopupMenuItem(child: Text(AppString.contact))];
-            },
+        title: Text(AppString.tabTeam),
+        leading: IconButton(
+          icon: Icon(Icons.menu),
+          onPressed: () {
+            _scaffoldKey.currentState.openDrawer();
+          },
+        ),
+        actions: <Widget>[MainActionMenu()],
+      ),
+      drawer: MainDrawer(),
+      body: Column(
+        children: <Widget>[
+          Expanded(
+            child: Container(
+              child: _memberProvider.members != null && _memberProvider.members.length > 0
+                  ? ListView.builder(
+                      itemCount: _memberProvider.members.length,
+                      itemBuilder: (context, index) {
+                        return Material(
+                          child: InkWell(
+                            child: ListTile(
+                                title: Text(_memberProvider.members[index].firstName + " " + _memberProvider.members[index].lastName),
+                                subtitle: Text(_memberProvider.members[index].bike),
+                                leading: CircleAvatar(child: Text(_memberProvider.members[index].firstName[0]))),
+                            onTap: () => _navigateToMemberDetailScreen(context, _memberProvider.members[index]),
+                          ),
+                          color: Colors.transparent,
+                        );
+                      })
+                  : Center(
+                      child: SizedBox(
+                        child: CircularProgressIndicator(),
+                        height: 20.0,
+                        width: 20.0,
+                      ),
+                    ),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [Colors.blue[100], Colors.blue[300]],
+                  begin: const FractionalOffset(0.0, 0.0),
+                  end: const FractionalOffset(0.0, 1.0),
+                  stops: [0.0, 1.0],
+                  tileMode: TileMode.clamp,
+                ),
+              ),
+            ),
           )
         ],
       ),
-      body: FutureBuilder<List<Member>>(
-        future: membersService.fetchMembers(),
-        builder: (context, snapshot) {
-          if (snapshot.hasData) {
-            return new Column(
-              children: <Widget>[
-                new Expanded(
-                  child: new Container(
-                    child: new ListView.builder(
-                        itemCount: snapshot.data.length,
-                        itemBuilder: (context, index) {
-                          return new Material(
-                            child: InkWell(
-                              child: new _MemberListItem(snapshot.data[index]),
-                              onTap: () => _navigateToMemberDetailScreen(context, snapshot.data[index]),
-                            ),
-                            color: Colors.transparent,
-                          );
-                        }),
-                    decoration: new BoxDecoration(
-                      gradient: new LinearGradient(
-                          colors: [Colors.blue[100], Colors.blue[300]],
-                          begin: const FractionalOffset(0.0, 0.0),
-                          end: const FractionalOffset(0.0, 1.0),
-                          stops: [0.0, 1.0],
-                          tileMode: TileMode.clamp),
-                    ),
-                  ),
-                )
-              ],
-            );
-          } else if (snapshot.hasError) {
-            return Text("${snapshot.error}");
-          }
-          // By default, show a loading spinner
-          return CircularProgressIndicator();
+      floatingActionButton: FloatingActionButton(
+        elevation: 0.0,
+        child: Icon(Icons.add),
+        backgroundColor: Colors.red[700],
+        onPressed: () {
+          _navigateToAddMemberScreen(context);
         },
       ),
-      floatingActionButton: FloatingActionButton(
-          elevation: 0.0,
-          child: new Icon(Icons.add),
-          backgroundColor: Colors.red[700],
-          onPressed: () {
-            _navigateToAddMemberScreen(context);
-          }),
     );
   }
 }

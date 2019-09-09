@@ -18,7 +18,6 @@
  */
 
 import 'package:chachatte_team/models/event.dart';
-import 'package:chachatte_team/services/events_service.dart';
 import 'package:chachatte_team/ui/events/event_detail.dart';
 import 'package:chachatte_team/utils/date_utils.dart';
 import 'package:chachatte_team/utils/strings.dart';
@@ -28,10 +27,9 @@ enum ConfirmDialogAction { yes, no }
 
 class EventCard extends StatelessWidget {
   final Event event;
-  final EventsService eventsService;
   final int nbCol;
 
-  EventCard(this.event, this.eventsService, this.nbCol);
+  EventCard(this.event, this.nbCol);
 
   /// Method that launches the Event detail screen and awaits the result from Navigator.pop
   _navigateToEventDetailScreen(BuildContext context, Event event) async {

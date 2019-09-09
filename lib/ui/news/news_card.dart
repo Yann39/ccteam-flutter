@@ -19,19 +19,18 @@
 
 import 'package:chachatte_team/models/member.dart';
 import 'package:chachatte_team/models/news.dart';
+import 'package:chachatte_team/providers/login_provider.dart';
 import 'package:chachatte_team/services/news_service.dart';
 import 'package:chachatte_team/utils/constants.dart';
 import 'package:chachatte_team/utils/date_utils.dart';
-import 'package:chachatte_team/utils/strings.dart';
 import 'package:flutter/material.dart';
 import 'package:logging/logging.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:provider/provider.dart';
 
 class LikeButton extends StatefulWidget {
   final News news;
-  final Member member;
 
-  const LikeButton({Key key, this.news, this.member}) : super(key: key);
+  const LikeButton({Key key, this.news}) : super(key: key);
 
   @override
   State<StatefulWidget> createState() {
@@ -40,56 +39,34 @@ class LikeButton extends StatefulWidget {
 }
 
 class _LikeButtonState extends State<LikeButton> {
-  Future<String> getCurrentUserEmail() async {
-    // read shared preference
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    // if email is set, we will consider user is already logged in
-    return prefs.getString('email');
-  }
-
   /// Method to like a news
   _likeNews(BuildContext context, News news) async {
-    final Logger log = new Logger('NewsCard');
-    var newsService = new NewsService();
-    newsService.likeNews(news.id, widget.member.id).then((value) {
-      log.fine("News ${news.title} liked by user ${widget.member.email}");
+    final Logger _log = new Logger('NewsCard');
+    NewsService _newsService = new NewsService();
+    Member _member = Provider.of<LoginProvider>(context, listen: false).loggedMember;
+    _newsService.likeNews(news.id, _member.id).then((value) {
+      _log.fine("News ${news.title} liked by user ${_member.email}");
     }, onError: (error) {
-      Navigator.pop(context, AppString.newsLikeFailed);
+      _log.severe("Error when liking news ${news.title} by user ${_member.email} : $error");
     });
   }
-
-  String loggedUserEmail;
 
   @override
   Widget build(BuildContext context) {
-    getCurrentUserEmail().then((value) {
-      setState(() {
-        loggedUserEmail = value;
-      });
-    });
-
     return Stack(
       alignment: AlignmentDirectional.bottomCenter,
       children: <Widget>[
         IconButton(
-          icon: widget.news.members.any((member) => member.email == loggedUserEmail)
-              ? Icon(
-                  Icons.favorite,
-                  color: Colors.red[700],
-                  size: 20,
-                )
-              : Icon(
-                  Icons.favorite_border,
-                  color: Colors.white,
-                  size: 20,
-                ),
+          icon: widget.news.members.any((member) => member.email == Provider.of<LoginProvider>(context, listen: false).loggedMember.email)
+              ? Icon(Icons.favorite, color: Colors.red[700], size: 18)
+              : Icon(Icons.favorite_border, color: Colors.white, size: 18),
           onPressed: () {
             _likeNews(context, widget.news);
           },
         ),
         Text(
           "${widget.news.members.length}",
-          textScaleFactor: 0.6,
+          textScaleFactor: 0.7,
           style: TextStyle(color: Colors.white),
         ),
       ],
@@ -99,66 +76,83 @@ class _LikeButtonState extends State<LikeButton> {
 
 class NewsCard extends StatelessWidget {
   final News news;
-  final Member member;
   final AssetImage image;
-  final Color primaryColor;
-  final Color shadowColor;
 
-  NewsCard(this.news, this.member, this.image, this.primaryColor, this.shadowColor);
+  NewsCard(this.news, this.image);
 
   @override
   Widget build(BuildContext context) {
-    final LikeButton likeButton = LikeButton(news: news, member: member,);
+    final LikeButton _likeButton = LikeButton(news: news);
 
-    return new Container(
+    return Container(
       color: Colors.transparent,
       height: 60.0,
       margin: const EdgeInsets.symmetric(
         vertical: 6.0, // vertical space between cards
         horizontal: 10.0,
       ),
-      child: new Stack(
+      child: Stack(
         children: <Widget>[
-          new Container(
+          Container(
             height: 60.0,
-            margin: new EdgeInsets.only(left: 20.0),
-            padding: new EdgeInsets.fromLTRB(0, 8.0, 0.0, 8.0),
-            decoration: new BoxDecoration(color: primaryColor, shape: BoxShape.rectangle, borderRadius: new BorderRadius.circular(8.0)),
-            child: new Row(
+            margin: EdgeInsets.only(left: 20.0),
+            padding: EdgeInsets.fromLTRB(0, 8.0, 0.0, 8.0),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [Color.fromRGBO(0, 100, 200, 0.3), Color.fromRGBO(0, 100, 200, 0.5)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                stops: [0.0, 1.0],
+                tileMode: TileMode.clamp,
+              ),
+              //color: primaryColor,
+              shape: BoxShape.rectangle,
+              borderRadius: BorderRadius.circular(8.0),
+            ),
+            child: Row(
               children: <Widget>[
-                new Container(width: 38.0), // fake horizontal space between image and text
+                Container(width: 38.0), // fake horizontal space between image and text
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      new Flexible(
-                        child: new Row(
+                      Flexible(
+                        child: Row(
                           children: <Widget>[
                             Icon(
-                              Icons.date_range,
+                              Icons.access_time,
                               color: Colors.white,
                               size: 12.0,
                             ),
-                            new SizedBox(width: 4.0), // fake horizontal space between the 2 lines of text
-                            new Text(DateUtils.convertToString(news.newsDate, AppConstants.DATE_FORMAT),
-                                softWrap: false, textScaleFactor: 0.9, style: new TextStyle(color: Colors.white), maxLines: 1, overflow: TextOverflow.ellipsis)
+                            SizedBox(width: 4.0), // fake horizontal space between icon and text
+                            Text(DateUtils.convertToString(news.newsDate, AppConstants.DATE_FORMAT),
+                                softWrap: false, textScaleFactor: 0.8, style: TextStyle(color: Colors.white), maxLines: 1, overflow: TextOverflow.fade)
                           ],
                         ),
                       ),
-                      new SizedBox(height: 4.0), // vertical space between the 2 lines of text
-                      new Flexible(
-                        child: new Text(news.title, softWrap: false, textScaleFactor: 1.2, style: new TextStyle(color: Colors.white), maxLines: 1, overflow: TextOverflow.ellipsis),
+                      SizedBox(height: 4.0), // vertical space between the 2 lines of text
+                      Flexible(
+                        child: Text(news.title, softWrap: false, textScaleFactor: 1.1, style: TextStyle(color: Colors.white), maxLines: 1, overflow: TextOverflow.fade),
                       )
                     ],
                   ),
                 ),
-                likeButton
+                /*Padding(
+                  padding: const EdgeInsets.only(left: 8.0),
+                  child: Icon(
+                    Icons.chevron_right,
+                    color: Colors.white,
+                    size: 20,
+                  ),
+                ),*/
+                _likeButton,
               ],
             ),
           ),
-          new Container(
-            margin: new EdgeInsets.only(top: 14.0),
-            child: new Image(
+          Container(
+            margin: EdgeInsets.only(top: 14.0),
+            child: Image(
               image: image,
               width: 44.0,
             ),
