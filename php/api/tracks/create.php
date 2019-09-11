@@ -47,9 +47,15 @@ if (!empty($data->name) && !empty($data->description)) {
     $track->description = $data->description;
 
     // create the track
-    if ($track->create()) {
+    $createdId = $track->create();
+
+    // if created successfully we should get the ID
+    if ($createdId > -1) {
         // set response code - 201 Created
         http_response_code(201);
+
+        // add URI of the new created item to location header
+        header("Location: /tracks/read_one.php?id=" . $createdId);
     }
     // tell the user we were unable to create the track
     else {

@@ -52,9 +52,15 @@ if (!empty($data->title) && !empty($data->description) && !empty($data->event_da
     $event->created = date('Y-m-d H:i:s');
 
     // create the event
-    if ($event->create()) {
+    $createdId = $event->create();
+
+    // if created successfully we should get the ID
+    if ($createdId > -1) {
         // set response code - 201 Created
         http_response_code(201);
+
+        // add URI of the new created item to location header
+        header("Location: /events/read_one.php?id=" . $createdId);
     }
     // tell the user we were unable to create the event
     else {

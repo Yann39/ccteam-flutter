@@ -49,9 +49,15 @@ if (!empty($data->title) && !empty($data->content) && !empty($data->news_date)) 
     $news->created = date('Y-m-d H:i:s');
 
     // create the news
-    if ($news->create()) {
+    $createdId = $news->create();
+
+    // if created successfully we should get the ID
+    if ($createdId > -1) {
         // set response code - 201 Created
         http_response_code(201);
+
+        // add URI of the new created item to location header
+        header("Location: /news/read_one.php?id=" . $createdId);
     }
     // tell the user we were unable to create the news
     else {

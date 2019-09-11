@@ -101,10 +101,10 @@ class Photo {
 
         // execute query
         if ($stmt->execute()) {
-            return true;
+            return $this->conn->lastInsertId();
         }
 
-        return false;
+        return -1;
     }
 
     // update photo

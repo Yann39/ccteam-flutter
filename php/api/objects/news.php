@@ -102,10 +102,10 @@ class News {
 
         // execute query
         if ($stmt->execute()) {
-            return true;
+            return $this->conn->lastInsertId();
         }
 
-        return false;
+        return -1;
     }
 
     // update news
@@ -118,10 +118,10 @@ class News {
         $stmt = $this->conn->prepare($query);
 
         // sanitize
-        $this->title=htmlspecialchars(strip_tags($this->title));
-        $this->content=htmlspecialchars(strip_tags($this->content));
-        $this->news_date=htmlspecialchars(strip_tags($this->news_date));
-        $this->id=htmlspecialchars(strip_tags($this->id));
+        $this->title = htmlspecialchars(strip_tags($this->title));
+        $this->content = htmlspecialchars(strip_tags($this->content));
+        $this->news_date = htmlspecialchars(strip_tags($this->news_date));
+        $this->id = htmlspecialchars(strip_tags($this->id));
 
         // bind new values
         $stmt->bindParam(':title', $this->title);
