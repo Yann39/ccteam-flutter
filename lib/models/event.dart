@@ -31,4 +31,9 @@ class Event {
   List<Member> members;
 
   Event({this.id, this.title, this.description, this.eventDate, this.trackId, this.organizer, this.price, this.members});
+
+  @override
+  String toString() {
+    return "${this.id}, ${this.title}, ${this.description}, ${this.eventDate}, ${this.trackId}, ${this.organizer}, ${this.price}, ${this.members}";
+  }
 }

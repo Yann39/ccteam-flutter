@@ -68,12 +68,6 @@ class _TeamState extends State<Team> {
       key: _scaffoldKey,
       appBar: AppBar(
         title: Text(AppString.tabTeam),
-        leading: IconButton(
-          icon: Icon(Icons.menu),
-          onPressed: () {
-            _scaffoldKey.currentState.openDrawer();
-          },
-        ),
         actions: <Widget>[MainActionMenu()],
       ),
       drawer: MainDrawer(),

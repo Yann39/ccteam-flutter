@@ -60,25 +60,20 @@ class _NewsDetailState extends State<NewsDetail> {
         actions: <Widget>[
           FlatButton(
             onPressed: () {
+              // close this dialog
+              Navigator.pop(context);
               // delete news
               Provider.of<NewsProvider>(context, listen: false).deleteNews(widget.news).then((value) {
-                Navigator.pop(context);
-                Scaffold.of(context)
-                  ..removeCurrentSnackBar()
-                  ..showSnackBar(SnackBar(content: Text(AppString.newsDeleted)));
+                Navigator.pop(context, AppString.newsDeleted);
               }, onError: (error) {
-                Navigator.pop(context);
-                Scaffold.of(context)
-                  ..removeCurrentSnackBar()
-                  ..showSnackBar(SnackBar(content: Text(AppString.newsDeletionFailed)));
+                Navigator.pop(context, AppString.newsDeletionFailed);
               });
-              Navigator.pop(context);
-              // TODO : maybe display a loading icon here while deleting ?
             },
             child: Text(AppString.confirm),
           ),
           FlatButton(
             onPressed: () {
+              // close this dialog
               Navigator.pop(context);
             },
             child: Text(AppString.cancel),
@@ -118,6 +113,7 @@ class _NewsDetailState extends State<NewsDetail> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: <Widget>[
+            Text(widget.news.toString()),
             Text(DateUtils.convertToString(widget.news.newsDate, AppConstants.DATE_FORMAT), textAlign: TextAlign.left),
             Text(widget.news.title, textScaleFactor: 2, textAlign: TextAlign.center),
             SizedBox(

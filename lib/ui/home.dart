@@ -17,8 +17,6 @@
  * along with Chachatte Team. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import 'package:chachatte_team/providers/member_provider.dart';
-import 'package:chachatte_team/providers/news_provider.dart';
 import 'package:chachatte_team/ui/events/calendar.dart';
 import 'package:chachatte_team/ui/members/team.dart';
 import 'package:chachatte_team/ui/news/news.dart';
@@ -27,7 +25,6 @@ import 'package:chachatte_team/utils/strings.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:logging/logging.dart';
-import 'package:provider/provider.dart';
 
 class Home extends StatefulWidget {
   const Home({Key key}) : super(key: key);
@@ -42,12 +39,7 @@ class _HomeState extends State<Home> {
   final Logger _log = new Logger('Home');
 
   // list of pages of the bottom navigation bar
-  final List<Widget> _children = [
-    NewsList(),
-    Calendar(),
-    ChangeNotifierProvider<MemberProvider>(builder: (context) => MemberProvider(), child: Team()),
-    Gallery(),
-  ];
+  final List<Widget> _children = [NewsList(), Calendar(), Team(), Gallery()];
 
   // current page index of the bottom navigation bar
   int _currentIndex = 0;
@@ -62,6 +54,7 @@ class _HomeState extends State<Home> {
   @override
   void initState() {
     super.initState();
+    // this should be called for at least one locale before any date formatting methods are called
     initializeDateFormatting();
   }
 

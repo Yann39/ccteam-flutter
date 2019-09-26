@@ -24,7 +24,7 @@ import 'package:flutter/widgets.dart';
 import 'package:logging/logging.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-enum AuthStatus { Unauthenticated, Authenticating, Authenticated }
+enum AuthStatus { Initializing, Unauthenticated, Authenticating, Authenticated }
 
 class LoginProvider extends ChangeNotifier {
   final Logger _log = new Logger('LoginProvider');
@@ -50,7 +50,7 @@ class LoginProvider extends ChangeNotifier {
   /// If email is found in shared preferences and exists in the database, user will be consider as logged in
   Future<void> checkUser() async {
     _log.info("Checking user...");
-    _setStatus(AuthStatus.Authenticating);
+    _setStatus(AuthStatus.Initializing);
 
     // read shared preference
     final SharedPreferences _prefs = await SharedPreferences.getInstance();
@@ -117,6 +117,7 @@ class LoginProvider extends ChangeNotifier {
     });
   }
 
+  /// ask for forgot password
   Future<void> askPassword(String email) async {
     await _membersService.askPassword(email).then((value) {
       _log.fine("Forgot password requested for e-mail : $email");

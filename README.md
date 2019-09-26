@@ -37,11 +37,13 @@ The application offers the following features :
 
 # Technical details
 
+PHP API, uses PDO
+
 The application is connected to an external MariaDB database via REST web services.
 
 Passwords are hashed using PHP default hashing algorithm (which uses bcrypt as I'm using PHP 7).
 
-Login is kept in shared preferences
+Only user e-mail is kept in shared preferences
 
 # License
 

@@ -53,8 +53,8 @@ class NewsProvider extends ChangeNotifier {
   /// Create the specified news
   Future<void> createNews(News news) async {
     await _newsService.createNews(news).then((value) {
-      _log.fine("New news created : ${news.title}");
-      _news.add(news);
+      _log.fine("New news created : ${value.title} (id=${value.id})");
+      _news.add(value);
       notifyListeners();
     }, onError: (error) {
       _log.severe("Failed to create new news ($error)");
@@ -64,7 +64,7 @@ class NewsProvider extends ChangeNotifier {
 
   /// Update the specified news
   Future<void> updateNews(News news) async {
-    await _newsService.createNews(news).then((value) {
+    await _newsService.updateNews(news).then((value) {
       _log.fine("News successfully updated : ${news.title}");
       _news[_news.indexWhere((m) => m.id == news.id)] = news;
       notifyListeners();

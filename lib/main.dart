@@ -17,11 +17,14 @@
  * along with Chachatte Team. If not, see <http://www.gnu.org/licenses/>.
  */
 
+import 'package:chachatte_team/providers/event_provider.dart';
 import 'package:chachatte_team/providers/login_provider.dart';
 import 'package:chachatte_team/providers/member_provider.dart';
 import 'package:chachatte_team/providers/news_provider.dart';
+import 'package:chachatte_team/ui/events/add_edit_event.dart';
 import 'package:chachatte_team/ui/forgot_password.dart';
 import 'package:chachatte_team/ui/home.dart';
+import 'package:chachatte_team/ui/loading.dart';
 import 'package:chachatte_team/ui/login.dart';
 import 'package:chachatte_team/ui/members/add_edit_member.dart';
 import 'package:chachatte_team/ui/members/member_detail.dart';
@@ -48,7 +51,9 @@ void main() {
       providers: [
         ChangeNotifierProvider(builder: (_) => LoginProvider()),
         ChangeNotifierProvider(builder: (_) => NewsProvider()),
-    ],
+        ChangeNotifierProvider(builder: (_) => EventProvider()),
+        ChangeNotifierProvider(builder: (_) => MemberProvider()),
+      ],
       child: ChachatteTeamApp(),
     ),
   );
@@ -68,7 +73,8 @@ class ChachatteTeamApp extends StatelessWidget {
         '/forgotPassword': (context) => ForgotPassword(),
         '/newsList': (context) => NewsList(),
         '/addEditNews': (context) => AddEditNews(news: ModalRoute.of(context).settings.arguments),
-        '/addEditMember': (context) => ChangeNotifierProvider<MemberProvider>(builder: (context) => MemberProvider(), child: AddEditMember(member: ModalRoute.of(context).settings.arguments)),
+        '/addEditEvent': (context) => AddEditEvent(event: ModalRoute.of(context).settings.arguments),
+        '/addEditMember': (context) => AddEditMember(member: ModalRoute.of(context).settings.arguments),
         '/newsDetail': (context) => NewsDetail(news: ModalRoute.of(context).settings.arguments),
         '/memberDetail': (context) => MemberDetail(member: ModalRoute.of(context).settings.arguments),
       },
@@ -76,6 +82,9 @@ class ChachatteTeamApp extends StatelessWidget {
         if (loginProvider.status == AuthStatus.Authenticated) {
           _log.info("Going to home page");
           return Home();
+        } else if (loginProvider.status == AuthStatus.Initializing) {
+          _log.info("Going to loading page");
+          return Loading();
         } else {
           _log.info("Going to login page");
           return Login();

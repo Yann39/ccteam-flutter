@@ -17,14 +17,18 @@
  * along with Chachatte Team. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import 'package:chachatte_team/models/event.dart';
-import 'package:chachatte_team/services/events_service.dart';
-import 'package:chachatte_team/ui/events/add_event.dart';
+import 'package:chachatte_team/providers/event_provider.dart';
 import 'package:chachatte_team/ui/events/event_card.dart';
+import 'package:chachatte_team/ui/main_action_menu.dart';
+import 'package:chachatte_team/ui/main_drawer.dart';
 import 'package:chachatte_team/utils/strings.dart';
 import 'package:flutter/material.dart';
+import 'package:logging/logging.dart';
+import 'package:provider/provider.dart';
 
 class Calendar extends StatefulWidget {
+  const Calendar({Key key}) : super(key: key);
+
   @override
   State<StatefulWidget> createState() {
     return _CalendarState();
@@ -32,79 +36,113 @@ class Calendar extends StatefulWidget {
 }
 
 class _CalendarState extends State<Calendar> {
-  static final EventsService eventsService = new EventsService();
-
-  // if user wants to display more event per line
-  bool more = false;
+  final Logger _log = new Logger('EventsList');
 
   /// Method that launches the Add Event screen and awaits the result from Navigator.pop
   _navigateToAddEventScreen(BuildContext context) async {
     // Navigator.push returns a Future that will complete after we call Navigator.pop on the target screen
-    final result = await Navigator.push(context, MaterialPageRoute(builder: (context) => AddEvent()));
+    final _result = await Navigator.pushNamed(context, '/addEditEvent');
 
     // after the target screen returns a result, hide any previous snack bars and show the new result
-    if (result != null) {
+    if (_result != null) {
       Scaffold.of(context)
         ..removeCurrentSnackBar()
-        ..showSnackBar(SnackBar(content: Text("$result")));
+        ..showSnackBar(SnackBar(content: Text("$_result")));
     }
   }
 
   Widget build(BuildContext context) {
+    _log.info("Building News list");
+    final _eventProvider = Provider.of<EventProvider>(context, listen: true);
+
     // get screen orientation
-    final Orientation orientation = MediaQuery.of(context).orientation;
+    final Orientation _orientation = MediaQuery.of(context).orientation;
+
+    // if user wants to display more event per line
+    final _more = _eventProvider.more;
 
     // number of events per line
-    final int nbCol = orientation == Orientation.portrait ? (more ? 3 : 2) : (more ? 6 : 4);
+    final int nbCol = _orientation == Orientation.portrait ? (_more ? 3 : 2) : (_more ? 6 : 4);
 
     // icon to display for the number of event per line option
-    final Icon nbColIcon = orientation == Orientation.portrait ? (more ? Icon(Icons.filter_2) : Icon(Icons.filter_3)) : (more ? Icon(Icons.filter_4) : Icon(Icons.filter_6));
-    final String nbColIconTooltip = orientation == Orientation.portrait
-        ? (more ? AppString.eventDisplay2ItemsTooltip : AppString.eventDisplay3ItemsTooltip)
-        : (more ? AppString.eventDisplay4ItemsTooltip : AppString.eventDisplay6ItemsTooltip);
+    final Icon nbColIcon = _orientation == Orientation.portrait ? (_more ? Icon(Icons.filter_2) : Icon(Icons.filter_3)) : (_more ? Icon(Icons.filter_4) : Icon(Icons.filter_6));
+    final String nbColIconTooltip = _orientation == Orientation.portrait
+        ? (_more ? AppString.eventDisplay2ItemsTooltip : AppString.eventDisplay3ItemsTooltip)
+        : (_more ? AppString.eventDisplay4ItemsTooltip : AppString.eventDisplay6ItemsTooltip);
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(AppString.eventScreenTitle),
-        leading: new Icon(Icons.event),
+        title: Text(AppString.tabCalendar),
         actions: <Widget>[
           IconButton(
             icon: nbColIcon,
             tooltip: nbColIconTooltip,
             onPressed: () {
-              setState(() {
-                more = !more;
-              });
+              _eventProvider.toggleMore();
             },
           ),
-          PopupMenuButton(
-            itemBuilder: (BuildContext context) {
-              return [PopupMenuItem(child: Text(AppString.about)), PopupMenuItem(child: Text(AppString.contact))];
-            },
-          ),
+          MainActionMenu()
         ],
       ),
+      drawer: MainDrawer(),
       body: Container(
         padding: const EdgeInsets.all(8.0),
-        child: FutureBuilder<List<Event>>(
-          future: eventsService.fetchEvents(),
-          builder: (context, snapshot) {
-            if (snapshot.hasData) {
-              return GridView.count(
+        child: _eventProvider.events != null && _eventProvider.events.length > 0
+            ? GridView.count(
                 crossAxisCount: nbCol,
-                children: List.generate(snapshot.data.length, (index) {
-                  return new EventCard(snapshot.data[index], eventsService, nbCol);
+                children: List.generate(_eventProvider.events.length, (index) {
+                  return EventCard(_eventProvider.events[index], nbCol);
                 }),
-              );
-            } else if (snapshot.hasError) {
-              return Text("${snapshot.error}");
-            }
-            // By default, show a loading spinner
-            return CircularProgressIndicator();
-          },
-        ),
-        decoration: new BoxDecoration(
-          gradient: new LinearGradient(
+              )
+            : Center(
+                child: SizedBox(
+                  child: CircularProgressIndicator(),
+                  height: 20.0,
+                  width: 20.0,
+                ),
+              ),
+        /*Consumer<EventProvider>(
+          builder: (context, eventModel, child) {
+            return FutureBuilder<List<Event>>(
+              future: eventModel.fetchEvents(),
+              builder: (context, snapshot) {
+                if (snapshot.hasData) {
+                  return GridView.count(
+                    crossAxisCount: nbCol,
+                    children: List.generate(snapshot.data.length, (index) {
+                      return EventCard(snapshot.data[index], nbCol);
+                    }),
+                  );
+                } else if (snapshot.hasError) {
+                  return Text("${snapshot.error}");
+                }
+                // By default, show a loading spinner
+                return Center(
+                  child: SizedBox(
+                    child: CircularProgressIndicator(),
+                    height: 20.0,
+                    width: 20.0,
+                  ),
+                );
+              },
+            );*/
+        /*return FutureProvider<List<Event>>.value(
+                value: eventModel.fetchEvents(),
+                child: Consumer<List<Event>>(
+                  builder: (context, events, widget) {
+                    return GridView.count(
+                      crossAxisCount: nbCol,
+                      children: List.generate(events.length, (index) {
+                        return EventCard(events[index], eventsService, nbCol);
+                      }),
+                    );
+                  },
+                ),
+              );*/
+        //},
+        //),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
             colors: [Colors.blue[200], Colors.blue[300]],
             begin: const FractionalOffset(0.0, 0.0),
             end: const FractionalOffset(0.0, 1.0),
@@ -115,7 +153,7 @@ class _CalendarState extends State<Calendar> {
       ),
       floatingActionButton: FloatingActionButton(
         elevation: 0.0,
-        child: new Icon(Icons.add),
+        child: Icon(Icons.add),
         backgroundColor: Colors.red[700],
         onPressed: () {
           _navigateToAddEventScreen(context);

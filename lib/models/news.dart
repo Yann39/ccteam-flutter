@@ -28,4 +28,9 @@ class News {
   List<Member> members;
 
   News({this.id, this.title, this.content, this.newsDate, this.members});
+
+  @override
+  String toString() {
+    return "${this.id}, ${this.title}, ${this.content}, ${this.newsDate}, ${this.members}";
+  }
 }

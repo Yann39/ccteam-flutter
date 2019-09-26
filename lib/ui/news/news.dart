@@ -40,7 +40,6 @@ class NewsList extends StatefulWidget {
 
 class _NewsListState extends State<NewsList> {
   final Logger _log = new Logger('NewsList');
-  final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
 
   final List _helmets = ["images/helmet-blue.png", "images/helmet-green.png", "images/helmet-red.png", "images/helmet-purple.png", "images/helmet-yellow.png"];
   Random _random = new Random();
@@ -76,40 +75,31 @@ class _NewsListState extends State<NewsList> {
     final _newsProvider = Provider.of<NewsProvider>(context, listen: true);
 
     return Scaffold(
-      key: _scaffoldKey,
       appBar: AppBar(
         title: Text(AppString.tabHome),
-        leading: IconButton(
-          icon: Icon(Icons.menu),
-          onPressed: () {
-            _scaffoldKey.currentState.openDrawer();
-          },
-        ),
         actions: <Widget>[MainActionMenu()],
       ),
       drawer: MainDrawer(),
       body: NestedScrollView(
         headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
-          final double width = MediaQuery.of(context).size.width;
           return <Widget>[
             SliverAppBar(
               expandedHeight: 150.0,
               floating: true,
               backgroundColor: Colors.transparent,
               pinned: false,
-              flexibleSpace: new Container(
+              flexibleSpace: Container(
                 child: FlexibleSpaceBar(
                   centerTitle: true,
                   background: Opacity(
                       child: Image.asset(
                         'images/chachatte-team-banner.png',
-                        width: width,
                         fit: BoxFit.fitWidth,
                       ),
                       opacity: 1.0),
                 ),
-                decoration: new BoxDecoration(
-                  gradient: new LinearGradient(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
                     colors: [Colors.white, Colors.blue[100]],
                     begin: const FractionalOffset(0.0, 0.0),
                     end: const FractionalOffset(0.0, 1.0),
@@ -131,7 +121,6 @@ class _NewsListState extends State<NewsList> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: <Widget>[
                     //Icon(Icons.arrow_forward, color: Colors.red[700], size: 18),
-                    /*Text("ACTU", style: TextStyle(color: Colors.red[700], fontSize: 15)),*/
                     //Text("Actualités", style: TextStyle(color: Colors.black87, fontSize: 15, fontWeight: FontWeight.bold))
                     SizedBox(width: 3),
                     Text("Actualités", style: TextStyle(color: Colors.black87, fontSize: 16, fontFamily: 'Barbatrick', letterSpacing: 2))
@@ -145,7 +134,7 @@ class _NewsListState extends State<NewsList> {
                         itemBuilder: (context, index) {
                           final int _randomIndex = _random.nextInt(3);
                           return InkWell(
-                            child: NewsCard(_newsProvider.news[index], new AssetImage(_helmets[_randomIndex])),
+                            child: NewsCard(_newsProvider.news[index], AssetImage(_helmets[_randomIndex])),
                             onTap: () => _navigateToNewsDetailScreen(context, _newsProvider.news[index]),
                           );
                         },
@@ -160,8 +149,8 @@ class _NewsListState extends State<NewsList> {
               ),
             ],
           ),
-          decoration: new BoxDecoration(
-            gradient: new LinearGradient(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
               colors: [Colors.blue[100], Colors.blue[300]],
               begin: const FractionalOffset(0.0, 0.0),
               end: const FractionalOffset(0.0, 1.0),
@@ -173,7 +162,7 @@ class _NewsListState extends State<NewsList> {
       ),
       floatingActionButton: FloatingActionButton(
         elevation: 0.0,
-        child: new Icon(Icons.add),
+        child: Icon(Icons.add),
         backgroundColor: Colors.red[700],
         onPressed: () {
           _navigateToAddNewsScreen(context);

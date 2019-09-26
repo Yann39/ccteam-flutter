@@ -56,12 +56,6 @@ class _GalleryState extends State<Gallery> {
       key: _scaffoldKey,
       appBar: AppBar(
         title: Text(AppString.tabGallery),
-        leading: IconButton(
-          icon: Icon(Icons.menu),
-          onPressed: () {
-            _scaffoldKey.currentState.openDrawer();
-          },
-        ),
         actions: <Widget>[MainActionMenu()],
       ),
       drawer: MainDrawer(),

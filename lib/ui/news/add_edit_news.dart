@@ -91,8 +91,6 @@ class _AddEditNewsState extends State<AddEditNews> {
       // this invokes each onSaved event
       _form.save();
 
-      print(" News ID : ${news.id}");
-
       // submit data to backend, if id is set this is an update, else a creation
       if (news.id != null) {
         // update the news then go back with a message, the result is awaited in caller

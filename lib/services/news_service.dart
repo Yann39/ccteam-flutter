@@ -46,19 +46,53 @@ class NewsService {
     }
   }
 
+  /// Get a news from the database given it [id]
+  /// Send a GET request to the Restful API
+  /// Throw an exception if response status code is different from 200
+  Future<News> getNewsById(int id) async {
+    // call to API
+    final response = await http.get(AppConstants.API_ROOT_URL + AppConstants.API_GET_ALL_NEWS_ENDPOINT);
+
+    if (response.statusCode == 200) {
+      // if the call to the server was successful, parse the JSON and return content
+      dynamic responseJson = json.decode(response.body);
+      return _fromJson(responseJson);
+    } else if (response.statusCode == 404) {
+      throw Exception('No news found with the specified id');
+    } else {
+      throw Exception('Unexpected server response');
+    }
+  }
+
   /// Create the specified [news] into the database
   /// Send a POST request to the Restful API
   /// Throw an exception if response status code is different from 201
-  Future<void> createNews(News news) async {
+  Future<News> createNews(News news) async {
     // convert News object to JSON string
     final String jsonString = _toJson(news);
 
     // call to API
     final response = await http.post(AppConstants.API_ROOT_URL + AppConstants.API_CREATE_NEWS_ENDPOINT, headers: {'Content-Type': 'application/json'}, body: jsonString);
 
+    final headers = response.headers;
+    print(headers.toString());
+    print("Status code : ${response.statusCode}");
+    print("Body : ${response.body}");
+
     // handle server response code
     if (response.statusCode == 201) {
-      return;
+      // get the URI of the new created object from the location header
+      String uri = headers["location"];
+      final response = await http.get(AppConstants.API_ROOT_URL + uri);
+      if (response.statusCode == 200) {
+        // if the call to the server was successful, parse the JSON and return content
+        dynamic responseJson = json.decode(response.body);
+        return _fromJson(responseJson);
+      } else if (response.statusCode == 404) {
+        throw Exception('No news found with the specified id');
+      } else {
+        throw Exception('Unexpected server response');
+      }
     } else if (response.statusCode == 503) {
       throw Exception('Failed to create the news');
     } else if (response.statusCode == 400) {

@@ -19,7 +19,7 @@
 
 import 'package:chachatte_team/models/event.dart';
 import 'package:chachatte_team/services/events_service.dart';
-import 'package:chachatte_team/ui/events/add_event.dart';
+import 'package:chachatte_team/ui/events/add_edit_event.dart';
 import 'package:chachatte_team/utils/constants.dart';
 import 'package:chachatte_team/utils/date_utils.dart';
 import 'package:chachatte_team/utils/strings.dart';
@@ -42,7 +42,7 @@ class _EventDetailState extends State<EventDetail> {
   /// Method that launches the Edit event screen and awaits the result from Navigator.pop
   _navigateToEditEventScreen(BuildContext context, Event event) async {
     // Navigator.push returns a Future that will complete after we call Navigator.pop on the target screen
-    final result = await Navigator.push(context, MaterialPageRoute(builder: (context) => AddEvent(event: event)));
+    final result = await Navigator.push(context, MaterialPageRoute(builder: (context) => AddEditEvent(event: event)));
 
     // after the target screen returns a result, hide any previous snack bars and show the new result
     if (result != null) {

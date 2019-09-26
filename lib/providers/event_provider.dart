@@ -22,28 +22,39 @@ import 'dart:collection';
 import 'package:chachatte_team/models/event.dart';
 import 'package:chachatte_team/services/events_service.dart';
 import 'package:flutter/foundation.dart';
+import 'package:logging/logging.dart';
 
 class EventProvider extends ChangeNotifier {
-  final List<Event> _events = [];
+  final Logger _log = new Logger('EventProvider');
   final EventsService _eventsService = new EventsService();
+  List<Event> _events = [];
+  bool _more = false;
 
-  /// An unmodifiable view of events.
+  EventProvider() {
+    fetchEvents();
+  }
+
   UnmodifiableListView<Event> get events => UnmodifiableListView(_events);
+  bool get more => _more;
 
-  /// Add an event
-  void add(Event event) {
-    _eventsService.createEvent(event);
-    _events.add(event);
-    // This call tells the widgets that are listening to this model to rebuild.
+  /// Get the list of all news
+  Future<void> fetchEvents() async {
+    await _eventsService.fetchEvents().then((value) async {
+      _log.fine("Events list retrieved successfully");
+      _events = value;
+      notifyListeners();
+    }, onError: (error) {
+      _log.warning("Error when retrieving events list ($error)");
+      _events = [];
+      notifyListeners();
+      throw (error);
+    });
+    return _events;
+  }
+
+  toggleMore() {
+    _more = !_more;
     notifyListeners();
   }
 
-  /// Get the list of all events
-  Future<List<Event>> fetchEvents() async {
-    List<Event> evs = await _eventsService.fetchEvents();
-    _events.clear();
-    _events.addAll(evs);
-    return evs;
-    return _eventsService.fetchEvents();
-  }
 }

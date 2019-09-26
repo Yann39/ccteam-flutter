@@ -29,18 +29,18 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 
-class AddEvent extends StatefulWidget {
+class AddEditEvent extends StatefulWidget {
   final Event event;
 
-  const AddEvent({Key key, this.event}) : super(key: key);
+  const AddEditEvent({Key key, this.event}) : super(key: key);
 
   @override
   State<StatefulWidget> createState() {
-    return _AddEventState();
+    return _AddEditEventState();
   }
 }
 
-class _AddEventState extends State<AddEvent> {
+class _AddEditEventState extends State<AddEditEvent> {
   final GlobalKey<FormState> _formKey = new GlobalKey<FormState>();
   final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
   final TextEditingController _datePickerController = new TextEditingController();
