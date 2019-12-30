@@ -24,6 +24,8 @@ The following packages have been used :
 - cached_network_image: to load and cache network images
 - url_launcher: to open URLs (used for the mailto action)
 - shared_preferences: to be able to use shared preferences
+- provider : state management pattern
+- logging : for logging
 
 # Features
 

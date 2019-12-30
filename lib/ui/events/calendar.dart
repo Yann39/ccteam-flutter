@@ -18,9 +18,9 @@
  */
 
 import 'package:chachatte_team/providers/event_provider.dart';
-import 'package:chachatte_team/ui/events/event_card.dart';
-import 'package:chachatte_team/ui/main_action_menu.dart';
-import 'package:chachatte_team/ui/main_drawer.dart';
+import 'package:chachatte_team/ui/events/calendar_selector.dart';
+import 'package:chachatte_team/ui/main/main_action_menu.dart';
+import 'package:chachatte_team/ui/main/main_drawer.dart';
 import 'package:chachatte_team/utils/strings.dart';
 import 'package:flutter/material.dart';
 import 'package:logging/logging.dart';
@@ -70,6 +70,10 @@ class _CalendarState extends State<Calendar> {
         ? (_more ? AppString.eventDisplay2ItemsTooltip : AppString.eventDisplay3ItemsTooltip)
         : (_more ? AppString.eventDisplay4ItemsTooltip : AppString.eventDisplay6ItemsTooltip);
 
+    onSelect(data) {
+      print("Selected Date -> $data");
+    }
+
     return Scaffold(
       appBar: AppBar(
         title: Text(AppString.tabCalendar),
@@ -88,12 +92,18 @@ class _CalendarState extends State<Calendar> {
       body: Container(
         padding: const EdgeInsets.all(8.0),
         child: _eventProvider.events != null && _eventProvider.events.length > 0
-            ? GridView.count(
+            ? /*GridView.count(
                 crossAxisCount: nbCol,
                 children: List.generate(_eventProvider.events.length, (index) {
                   return EventCard(_eventProvider.events[index], nbCol);
                 }),
-              )
+              )*/
+                  Column(
+                    children: <Widget>[
+                      CalendarSelector(centerDate: DateTime(2019, 10, 03), onDateSelected: onSelect, eventsDates: { "event1" : DateTime(2019, 10, 03), "event2" : DateTime(2019, 10, 05), "event3" : DateTime(2019, 10, 05) },),
+                      Text("Event x")
+                    ],
+                  )
             : Center(
                 child: SizedBox(
                   child: CircularProgressIndicator(),
@@ -143,7 +153,7 @@ class _CalendarState extends State<Calendar> {
         //),
         decoration: BoxDecoration(
           gradient: LinearGradient(
-            colors: [Colors.blue[200], Colors.blue[300]],
+            colors: [Colors.blue[100], Colors.blue[300]],
             begin: const FractionalOffset(0.0, 0.0),
             end: const FractionalOffset(0.0, 1.0),
             stops: [0.0, 1.0],
