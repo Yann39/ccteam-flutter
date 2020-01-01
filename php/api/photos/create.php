@@ -46,7 +46,7 @@ if (!empty($data->title) && !empty($data->description) && !empty($data->link)) {
     $photo->title = $data->title;
     $photo->description = $data->description;
     $photo->link = $data->link;
-    $photo->created = date('Y-m-d H:i:s');
+    $photo->created_on = date('Y-m-d H:i:s');
 
     // create the photo
     $createdId = $photo->create();

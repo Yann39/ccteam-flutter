@@ -44,6 +44,8 @@ $news->id = $data->id;
 $news->title = $data->title;
 $news->content = $data->content;
 $news->news_date = $data->news_date;
+$news->modified_on = $data->modified_on;
+$news->modified_by = $data->modified_by;
 
 // update the news
 if ($news->update()) {

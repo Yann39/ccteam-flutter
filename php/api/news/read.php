@@ -88,8 +88,10 @@ if ($num > 0) {
             "content" => $content,
             "news_date" => $news_date,
             "members" => $member_arr,
-            "created" => $created,
-            "modified" => $modified
+            "created_on" => $created_on,
+            "created_by" => $created_by,
+            "modified_on" => $modified_on,
+            "modified_by" => $modified_by
         );
 
         // add it to the news array

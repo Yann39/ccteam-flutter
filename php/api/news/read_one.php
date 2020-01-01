@@ -49,7 +49,11 @@ if ($news->title != null) {
         "id" =>  $news->id,
         "title" => $news->title,
         "content" => $news->content,
-        "news_date" => $news->news_date
+        "news_date" => $news->news_date,
+        "created_on" => $news->created_on,
+        "created_by" => $news->created_by,
+        "modified_on" => $news->modified_on,
+        "modified_by" => $news->modified_by
     );
 
     // set response code - 200 OK

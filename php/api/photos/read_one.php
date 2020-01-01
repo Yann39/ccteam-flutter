@@ -50,6 +50,8 @@ if ($photo->title != null) {
         "title" =>  $photo->title,
         "description" => $photo->description,
         "link" => $photo->link
+        "created_on" => $photo->created_on,
+        "modified_on" => $photo->modified_on
     );
 
     // set response code - 200 OK

@@ -30,8 +30,10 @@ class News {
     public $title;
     public $content;
     public $news_date;
-    public $created;
-    public $modified;
+    public $created_on;
+    public $created_by;
+    public $modified_on;
+    public $modified_by;
 
     // constructor with $db as database connection
     public function __construct($db){
@@ -42,7 +44,7 @@ class News {
     function read() {
 
         // query to get all records
-        $query = "SELECT n.id, n.title, n.content, n.news_date, n.created, n.modified FROM " . $this->table_name . " n ORDER BY n.news_date DESC";
+        $query = "SELECT n.id, n.title, n.content, n.news_date, n.created_on, n.created_by, n.modified_on, n.modified_by FROM " . $this->table_name . " n ORDER BY n.news_date DESC";
 
         // prepare query statement
         $stmt = $this->conn->prepare($query);
@@ -57,7 +59,7 @@ class News {
     function readOne() {
 
         // query to get record corresponding to specified id
-        $query = "SELECT n.title, n.content, n.news_date, n.created, n.modified FROM " . $this->table_name . " n WHERE n.id = ? LIMIT 0,1";
+        $query = "SELECT n.title, n.content, n.news_date, n.created_on, n.created_by, n.modified_on, n.modified_by FROM " . $this->table_name . " n WHERE n.id = ? LIMIT 0,1";
 
         // prepare query statement
         $stmt = $this->conn->prepare($query);
@@ -75,15 +77,17 @@ class News {
         $this->title = $row['title'];
         $this->content = $row['content'];
         $this->news_date = $row['news_date'];
-        $this->created = $row['created'];
-        $this->modified = $row['modified'];
+        $this->created_on = $row['created_on'];
+        $this->created_by = $row['created_by'];
+        $this->modified_on = $row['modified_on'];
+        $this->modified_by = $row['modified_by'];
     }
 
     // create news
     function create() {
 
         // query to insert record
-        $query = "INSERT INTO " . $this->table_name . " SET title = :title, content = :content, news_date = :news_date, created = :created";
+        $query = "INSERT INTO " . $this->table_name . " SET title = :title, content = :content, news_date = :news_date, created_on = :created_on, created_by = :created_by";
 
         // prepare query
         $stmt = $this->conn->prepare($query);
@@ -92,13 +96,15 @@ class News {
         $this->title = htmlspecialchars(strip_tags($this->title));
         $this->content = htmlspecialchars(strip_tags($this->content));
         $this->news_date = htmlspecialchars(strip_tags($this->news_date));
-        $this->created = htmlspecialchars(strip_tags($this->created));
+        $this->created_on = htmlspecialchars(strip_tags($this->created_on));
+        $this->created_by = htmlspecialchars(strip_tags($this->created_by));
 
         // bind values
         $stmt->bindParam(":title", $this->title);
         $stmt->bindParam(":content", $this->content);
         $stmt->bindParam(":news_date", $this->news_date);
-        $stmt->bindParam(":created", $this->created);
+        $stmt->bindParam(":created_on", $this->created_on);
+        $stmt->bindParam(":created_by", $this->created_by);
 
         // execute query
         if ($stmt->execute()) {
@@ -112,7 +118,7 @@ class News {
     function update() {
 
         // query to update record
-        $query = "UPDATE " . $this->table_name . " SET title = :title, content = :content, news_date = :news_date WHERE id = :id";
+        $query = "UPDATE " . $this->table_name . " SET title = :title, content = :content, news_date = :news_date, modified_on = :modified_on, modified_by = :modified_by WHERE id = :id";
 
         // prepare query statement
         $stmt = $this->conn->prepare($query);
@@ -122,12 +128,16 @@ class News {
         $this->content = htmlspecialchars(strip_tags($this->content));
         $this->news_date = htmlspecialchars(strip_tags($this->news_date));
         $this->id = htmlspecialchars(strip_tags($this->id));
+        $this->modified_on = htmlspecialchars(strip_tags($this->modified_on));
+        $this->modified_by = htmlspecialchars(strip_tags($this->modified_by));
 
         // bind new values
         $stmt->bindParam(':title', $this->title);
         $stmt->bindParam(':content', $this->content);
         $stmt->bindParam(':news_date', $this->news_date);
         $stmt->bindParam(':id', $this->id);
+        $stmt->bindParam(":modified_on", $this->modified_on);
+        $stmt->bindParam(":modified_by", $this->modified_by);
 
         // execute the query
         if ($stmt->execute()) {
@@ -164,7 +174,7 @@ class News {
     function search($keywords){
 
         // query to search across all records
-        $query = "SELECT n.title, n.content, n.news_date, n.created FROM " . $this->table_name . " n WHERE n.title LIKE ? OR n.content LIKE ? ORDER BY n.created DESC";
+        $query = "SELECT n.title, n.content, n.news_date, n.created_on, n.created_by, n.modified_on, n.modified_by FROM " . $this->table_name . " n WHERE n.title LIKE ? OR n.content LIKE ? ORDER BY n.created_on DESC";
 
         // prepare query statement
         $stmt = $this->conn->prepare($query);
@@ -188,7 +198,7 @@ class News {
     function like($news_id, $member_id) {
 
         // query to get all records containing the specified event
-        $query = "INSERT INTO " . $this->$news_members_table_name . " SET news_id = :news_id, member_id = :member_id, created = :created";
+        $query = "INSERT INTO " . $this->$news_members_table_name . " SET news_id = :news_id, member_id = :member_id, created_on = :created_on";
 
         // prepare query statement
         $stmt = $this->conn->prepare($query);
@@ -196,7 +206,7 @@ class News {
         // bind data
         $stmt->bindParam(':news_id', $news_id);
         $stmt->bindParam(':member_id', $member_id);
-        $stmt->bindParam(':created', date('Y-m-d H:i:s'));
+        $stmt->bindParam(':created_on', date('Y-m-d H:i:s'));
 
         // execute query
         if ($stmt->execute()) {

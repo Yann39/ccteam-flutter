@@ -70,7 +70,7 @@ if (!empty($data->first_name) && !empty($data->last_name) && !empty($data->email
     if ($data->admin != null) {
         $member->admin = $data->admin;
     }
-    $member->created = date('Y-m-d H:i:s');
+    $member->created_on = date('Y-m-d H:i:s');
 
     // create the member
     $createdId = $member->create();

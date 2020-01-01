@@ -91,8 +91,10 @@ if ($num > 0) {
             "organizer" => $organizer,
             "price" => $price,
             "members" => $member_arr,
-            "created" => $created,
-            "modified" => $modified
+            "created_on" => $created_on,
+            "created_by" => $created_by,
+            "modified_on" => $modified_on,
+            "modified_by" => $modified_by
         );
 
         // add it to the events array

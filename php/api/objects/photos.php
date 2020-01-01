@@ -29,8 +29,8 @@ class Photo {
     public $title;
     public $description;
     public $link;
-    public $created;
-    public $modified;
+    public $created_on;
+    public $modified_on;
 
     // constructor with $db as database connection
     public function __construct($db){
@@ -41,7 +41,7 @@ class Photo {
     function read() {
 
         // query to get all records
-        $query = "SELECT n.id, n.title, n.description, n.link, n.created, n.modified FROM " . $this->table_name . " n ORDER BY n.created DESC";
+        $query = "SELECT n.id, n.title, n.description, n.link, n.created_on, n.modified_on FROM " . $this->table_name . " n ORDER BY n.created_on DESC";
 
         // prepare query statement
         $stmt = $this->conn->prepare($query);
@@ -56,7 +56,7 @@ class Photo {
     function readOne() {
 
         // query to get record corresponding to specified id
-        $query = "SELECT n.title, n.description, n.link, n.created, n.modified FROM " . $this->table_name . " n WHERE n.id = ? LIMIT 0,1";
+        $query = "SELECT n.title, n.description, n.link, n.created_on, n.modified_on FROM " . $this->table_name . " n WHERE n.id = ? LIMIT 0,1";
 
         // prepare query statement
         $stmt = $this->conn->prepare($query);
@@ -74,15 +74,15 @@ class Photo {
         $this->title = $row['title'];
         $this->description = $row['description'];
         $this->link = $row['link'];
-        $this->created = $row['created'];
-        $this->modified = $row['modified'];
+        $this->created_on = $row['created_on'];
+        $this->modified_on = $row['modified_on'];
     }
 
     // create photo
     function create() {
 
         // query to insert record
-        $query = "INSERT INTO " . $this->table_name . " SET title = :title, description = :description, link = :link, created = :created";
+        $query = "INSERT INTO " . $this->table_name . " SET title = :title, description = :description, link = :link, created_on = :created_on";
 
         // prepare query
         $stmt = $this->conn->prepare($query);
@@ -91,13 +91,13 @@ class Photo {
         $this->title=htmlspecialchars(strip_tags($this->title));
         $this->description=htmlspecialchars(strip_tags($this->description));
         $this->link=htmlspecialchars(strip_tags($this->link));
-        $this->created=htmlspecialchars(strip_tags($this->created));
+        $this->created_on=htmlspecialchars(strip_tags($this->created_on));
 
         // bind values
         $stmt->bindParam(":title", $this->title);
         $stmt->bindParam(":description", $this->description);
         $stmt->bindParam(":link", $this->link);
-        $stmt->bindParam(":created", $this->created);
+        $stmt->bindParam(":created_on", $this->created_on);
 
         // execute query
         if ($stmt->execute()) {
@@ -111,7 +111,7 @@ class Photo {
     function update() {
 
         // query to update record
-        $query = "UPDATE " . $this->table_name . " SET title = :title, description = :description, link = :link WHERE id = :id";
+        $query = "UPDATE " . $this->table_name . " SET title = :title, description = :description, link = :link, modified_on = :modified_on WHERE id = :id";
 
         // prepare query statement
         $stmt = $this->conn->prepare($query);
@@ -121,12 +121,14 @@ class Photo {
         $this->description=htmlspecialchars(strip_tags($this->description));
         $this->link=htmlspecialchars(strip_tags($this->link));
         $this->id=htmlspecialchars(strip_tags($this->id));
+        $this->modified_on=htmlspecialchars(strip_tags($this->modified_on));
 
         // bind new values
         $stmt->bindParam(":title", $this->title);
         $stmt->bindParam(":description", $this->description);
         $stmt->bindParam(":link", $this->link);
         $stmt->bindParam(':id', $this->id);
+        $stmt->bindParam(':modified_on', $this->modified_on);
 
         // execute the query
         if ($stmt->execute()) {
@@ -163,7 +165,7 @@ class Photo {
     function search($keywords){
 
         // query to search across all records
-        $query = "SELECT n.title, n.description, n.link, n.created FROM " . $this->table_name . " n WHERE n.title LIKE ? OR n.description LIKE ? ORDER BY n.created DESC";
+        $query = "SELECT n.title, n.description, n.link, n.created_on, n.modified_on FROM " . $this->table_name . " n WHERE n.title LIKE ? OR n.description LIKE ? ORDER BY n.created_on DESC";
 
         // prepare query statement
         $stmt = $this->conn->prepare($query);

@@ -59,7 +59,9 @@ if ($num > 0) {
             "id" => $id,
             "title" => $title,
             "description" => $description,
-            "link" => $link
+            "link" => $link,
+            "created_on" => $created_on,
+            "modified_on" => $modified_on
         );
 
         // add it to the photos array

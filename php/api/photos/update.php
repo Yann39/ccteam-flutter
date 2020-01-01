@@ -44,6 +44,7 @@ $photo->id = $data->id;
 $photo->title = $data->title;
 $photo->description = $data->description;
 $photo->link = $data->link;
+$photo->modified_on = $data->modified_on;
 
 // update the photo
 if ($photo->update()) {

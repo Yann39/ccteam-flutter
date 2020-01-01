@@ -47,6 +47,8 @@ $event->event_date = $data->event_date;
 $event->track_id = $data->track_id;
 $event->organizer = $data->organizer;
 $event->price = $data->price;
+$event->modified_on = $data->modified_on;
+$event->modified_by = $data->modified_by;
 
 // update the event
 if ($event->update()) {

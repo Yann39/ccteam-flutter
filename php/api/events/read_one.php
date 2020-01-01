@@ -53,7 +53,11 @@ if ($event->title != null) {
         "event_date" => $event->event_date,
         "track_id" => $event->track_id,
         "organizer" => $event->organizer,
-        "price" => $event->price
+        "price" => $event->price,
+        "created_on" => $event->created_on,
+        "created_by" => $event->created_by,
+        "modified_on" => $event->modified_on,
+        "modified_by" => $event->modified_by
     );
 
     // set response code - 200 OK

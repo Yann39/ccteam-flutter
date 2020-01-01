@@ -65,6 +65,8 @@ if ($num > 0) {
             "phone" => $phone,
             "bike" => $bike,
             "registration_date" => $registration_date
+            "created_on" => $created_on,
+            "modified_on" => $modified_on
         );
 
         // add it to the members array

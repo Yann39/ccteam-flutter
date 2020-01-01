@@ -61,7 +61,9 @@ if (!empty($data->email)) {
                 "admin" => $member->admin,
                 "phone" => $member->phone,
                 "bike" => $member->bike,
-                "registration_date" => $member->registration_date
+                "registration_date" => $member->registration_date,
+                "created_on" => $member->created_on,
+                "modified_on" => $member->modified_on
             );
 
             // set response code - 200 OK

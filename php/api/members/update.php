@@ -49,6 +49,7 @@ $member->admin = $data->admin;
 $member->phone = $data->phone;
 $member->bike = $data->bike;
 $member->registration_date = $data->registration_date;
+$member->modified_on = $data->modified_on;
 
 // update the member
 if ($member->update()) {
