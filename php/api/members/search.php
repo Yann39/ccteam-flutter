@@ -64,7 +64,7 @@ if ($num > 0) {
             "admin" => $admin,
             "phone" => $phone,
             "bike" => $bike,
-            "registration_date" => $registration_date
+            "registration_date" => $registration_date,
             "created_on" => $created_on,
             "modified_on" => $modified_on
         );

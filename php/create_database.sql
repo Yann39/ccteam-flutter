@@ -115,7 +115,7 @@ INSERT INTO `members` (`id`, `first_name`, `last_name`, `email`, `password`, `ac
 (7, 'Gilles', 'Arpin', 'gillearpin@test.ch', '', 0, 0, '+02 883773736', 'Honda 1000 CBR 2012', '2019-02-11 22:13:00', '2019-02-11 21:13:47', NULL),
 (8, 'Frédéric', 'Dupond', 'Fred.dupond@test.fr', '', 0, 0, '+03 383747278', 'Ducati 848 2012', '2019-02-11 22:15:00', '2019-02-11 21:15:59', NULL),
 (9, 'John', 'Doe', 'john.doe@mail.fr', '', 0, 0, '+33608080808', 'Honda CBR 600 RR 2010', '2018-01-30 00:00:00', '2018-07-01 09:30:54', NULL),
-(10, 'Jenna', 'Jonhnson', 'jenna.jonhnson@mail.com', '', 0, 0, NULL, 'Kawasaki ZX6R 636 2013', '2018-02-30 00:00:00', '2018-07-01 09:37:12', NULL);
+(10, 'Jenna', 'Jonhnson', 'jenna.jonhnson@mail.com', '', 0, 0, NULL, 'Kawasaki ZX6R 636 2013', '2018-02-19 13:56:42', '2018-07-01 09:37:12', NULL);
 
 INSERT INTO `news` (`id`, `title`, `content`, `news_date`, `created_on`, `created_by`, `modified_on`, `modified_by`) VALUES
 (1, 'Repas du club', 'Repas de club avec tartiflettre géante', '2018-05-30 23:17:12', '2018-06-01 11:50:41', 1, NULL, NULL),
