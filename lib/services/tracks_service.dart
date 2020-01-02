@@ -35,7 +35,7 @@ class TracksService {
     if (response.statusCode == 200) {
       // if the call to the server was successful, parse the JSON and return content
       dynamic responseJson = json.decode(response.body);
-      return (responseJson['records'] as List).map((p) => _fromJson(p)).toList();
+      return (responseJson['records'] as List).map((p) => Track.fromJson(p)).toList();
     } else if (response.statusCode == 404) {
       // no data found, return empty array
       return new List<Track>();
@@ -48,11 +48,8 @@ class TracksService {
   /// Send a POST request to the Restful API
   /// Throw an exception if response status code is different from 201
   Future<void> createTrack(Track track) async {
-    // convert Track object to JSON string
-    final String jsonString = _toJson(track);
-
     // call to API
-    final response = await http.post(AppConstants.API_ROOT_URL + AppConstants.API_CREATE_TRACK_ENDPOINT, headers: {'Content-Type': 'application/json'}, body: jsonString);
+    final response = await http.post(AppConstants.API_ROOT_URL + AppConstants.API_CREATE_TRACK_ENDPOINT, headers: {'Content-Type': 'application/json'}, body: track.toJson());
 
     // handle server response code
     if (response.statusCode == 201) {
@@ -70,11 +67,8 @@ class TracksService {
   /// Send a POST request to the Restful API
   /// Throw an exception if response status code is different from 200
   Future<void> updateTrack(Track track) async {
-    // convert Track object to JSON string
-    final String jsonString = _toJson(track);
-
     // call to API
-    final response = await http.post(AppConstants.API_ROOT_URL + AppConstants.API_UPDATE_TRACK_ENDPOINT, headers: {'Content-Type': 'application/json'}, body: jsonString);
+    final response = await http.post(AppConstants.API_ROOT_URL + AppConstants.API_UPDATE_TRACK_ENDPOINT, headers: {'Content-Type': 'application/json'}, body: track.toJson());
 
     // handle server response code
     if (response.statusCode == 200) {
@@ -90,28 +84,11 @@ class TracksService {
   /// Send a POST request to the Restful API
   /// Throw an exception if response status code is different from 204
   Future<void> deleteMember(Track track) async {
-    // convert Track object to JSON string
-    final String jsonString = _toJson(track);
-
     // call to API
-    final response = await http.post(AppConstants.API_ROOT_URL + AppConstants.API_DELETE_NEWS_ENDPOINT, headers: {'Content-Type': 'application/json'}, body: jsonString);
+    final response = await http.post(AppConstants.API_ROOT_URL + AppConstants.API_DELETE_NEWS_ENDPOINT, headers: {'Content-Type': 'application/json'}, body: track.toJson());
 
     if (response.statusCode != 204) {
       throw Exception('Unexpected server response');
     }
-  }
-
-  /// Convert specified [track] object to the corresponding JSON string
-  String _toJson(Track track) {
-    final Map map = new Map();
-    map["id"] = track.id;
-    map["name"] = track.name;
-    map["description"] = track.description;
-    return json.encode(map);
-  }
-
-  /// Convert specified [json] map to the corresponding Track object
-  Track _fromJson(Map<String, dynamic> json) {
-    return Track(id: int.parse(json['id']), name: json['name'], description: json['description']);
   }
 }

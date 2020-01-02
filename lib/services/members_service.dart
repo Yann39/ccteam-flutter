@@ -36,7 +36,7 @@ class MembersService {
     if (response.statusCode == 200) {
       // if the call to the server was successful, parse the JSON and return content
       dynamic responseJson = json.decode(response.body);
-      return (responseJson['records'] as List).map((p) => _fromJson(p)).toList();
+      return (responseJson['records'] as List).map((p) => Member.fromJson(p)).toList();
     } else if (response.statusCode == 404) {
       // no data found, return empty array
       return new List<Member>();
@@ -49,11 +49,8 @@ class MembersService {
   /// Send a POST request to the Restful API
   /// Throw an exception if response status code is different from 200
   Future<void> loginMember(Member member) async {
-    // convert Member object to JSON string
-    final String jsonString = _toJson(member);
-
     // call to API
-    final response = await http.post(AppConstants.API_ROOT_URL + AppConstants.API_LOGIN_MEMBER_ENDPOINT, headers: {'Content-Type': 'application/json'}, body: jsonString);
+    final response = await http.post(AppConstants.API_ROOT_URL + AppConstants.API_LOGIN_MEMBER_ENDPOINT, headers: {'Content-Type': 'application/json'}, body: member.toJson());
 
     // handle server response code
     if (response.statusCode == 200) {
@@ -85,7 +82,7 @@ class MembersService {
     if (response.statusCode == 200) {
       // if the call to the server was successful, parse the JSON and return content
       dynamic responseJson = json.decode(response.body);
-      return _fromJson(responseJson);
+      return Member.fromJson(responseJson);
     } else if (response.statusCode == 403) {
       throw Exception('Account is not activated');
     } else if (response.statusCode == 404) {
@@ -101,11 +98,8 @@ class MembersService {
   /// Send a POST request to the Restful API
   /// Throw an exception if response status code is different from 201
   Future<void> createMember(Member member) async {
-    // convert Member object to JSON string
-    final String jsonString = _toJson(member);
-
     // call to API
-    final response = await http.post(AppConstants.API_ROOT_URL + AppConstants.API_CREATE_MEMBER_ENDPOINT, headers: {'Content-Type': 'application/json'}, body: jsonString);
+    final response = await http.post(AppConstants.API_ROOT_URL + AppConstants.API_CREATE_MEMBER_ENDPOINT, headers: {'Content-Type': 'application/json'}, body: member.toJson());
 
     // handle server response code
     if (response.statusCode == 201) {
@@ -123,11 +117,8 @@ class MembersService {
   /// Send a POST request to the Restful API
   /// Throw an exception if response status code is different from 200
   Future<void> updateMember(Member member) async {
-    // convert Member object to JSON string
-    final String jsonString = _toJson(member);
-
     // call to API
-    final response = await http.post(AppConstants.API_ROOT_URL + AppConstants.API_UPDATE_MEMBER_ENDPOINT, headers: {'Content-Type': 'application/json'}, body: jsonString);
+    final response = await http.post(AppConstants.API_ROOT_URL + AppConstants.API_UPDATE_MEMBER_ENDPOINT, headers: {'Content-Type': 'application/json'}, body: member.toJson());
 
     // handle server response code
     if (response.statusCode == 200) {
@@ -143,11 +134,8 @@ class MembersService {
   /// Send a POST request to the Restful API
   /// Throw an exception if response status code is different from 204
   Future<void> deleteMember(Member member) async {
-    // convert Member object to JSON string
-    final String jsonString = _toJson(member);
-
     // call to API
-    final response = await http.post(AppConstants.API_ROOT_URL + AppConstants.API_DELETE_MEMBER_ENDPOINT, headers: {'Content-Type': 'application/json'}, body: jsonString);
+    final response = await http.post(AppConstants.API_ROOT_URL + AppConstants.API_DELETE_MEMBER_ENDPOINT, headers: {'Content-Type': 'application/json'}, body: member.toJson());
 
     if (response.statusCode != 204) {
       throw Exception('Unexpected server response');
@@ -168,7 +156,7 @@ class MembersService {
     if (response.statusCode == 200) {
       // if the call to the server was successful, parse the JSON and return content
       dynamic responseJson = json.decode(response.body);
-      return _fromJson(responseJson);
+      return Member.fromJson(responseJson);
     } else if (response.statusCode == 403) {
       throw Exception('Account is not activated');
     } else if (response.statusCode == 404) {
@@ -180,34 +168,4 @@ class MembersService {
     }
   }
 
-  /// Convert specified [member] object to the corresponding JSON string
-  String _toJson(Member member) {
-    final Map map = new Map();
-    map["id"] = member.id;
-    map["first_name"] = member.firstName;
-    map["last_name"] = member.lastName;
-    map["email"] = member.email;
-    map["password"] = member.password;
-    map["active"] = member.active;
-    map["admin"] = member.admin;
-    map["phone"] = member.phone;
-    map["bike"] = member.bike;
-    map["registration_date"] = member.registrationDate != null ? new DateFormat("yyyy-MM-dd HH:mm:ss").format(member.registrationDate) : null;
-    return json.encode(map);
-  }
-
-  /// Convert specified [json] map to the corresponding Member object
-  Member _fromJson(Map<String, dynamic> json) {
-    return Member(
-        id: json['id'] != null ? int.parse(json['id']) : -1,
-        firstName: json['first_name'],
-        lastName: json['last_name'],
-        email: json['email'],
-        password: json['password'],
-        active: json['active'] == '1',
-        admin: json['admin'] == '1',
-        phone: json['phone'],
-        bike: json['bike'],
-        registrationDate: json['registration_date'] != null ? new DateFormat("yyyy-MM-dd HH:mm:ss").parseStrict(json['registration_date']) : null);
-  }
 }

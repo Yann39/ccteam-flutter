@@ -19,11 +19,9 @@
 
 import 'dart:convert';
 
-import 'package:chachatte_team/models/member.dart';
 import 'package:chachatte_team/models/news.dart';
 import 'package:chachatte_team/utils/constants.dart';
 import 'package:http/http.dart' as http;
-import 'package:intl/intl.dart';
 
 class NewsService {
   /// Fetch all news from the database
@@ -37,7 +35,8 @@ class NewsService {
     if (response.statusCode == 200) {
       // if the call to the server was successful, parse the JSON and return content
       dynamic responseJson = json.decode(response.body);
-      return (responseJson['records'] as List).map((p) => _fromJson(p)).toList();
+      print(responseJson);
+      return (responseJson['records'] as List).map((p) => News.fromJson(p)).toList();
     } else if (response.statusCode == 404) {
       // no data found, return empty array
       return new List<News>();
@@ -56,7 +55,7 @@ class NewsService {
     if (response.statusCode == 200) {
       // if the call to the server was successful, parse the JSON and return content
       dynamic responseJson = json.decode(response.body);
-      return _fromJson(responseJson);
+      return News.fromJson(responseJson);
     } else if (response.statusCode == 404) {
       throw Exception('No news found with the specified id');
     } else {
@@ -68,11 +67,8 @@ class NewsService {
   /// Send a POST request to the Restful API
   /// Throw an exception if response status code is different from 201
   Future<News> createNews(News news) async {
-    // convert News object to JSON string
-    final String jsonString = _toJson(news);
-
     // call to API
-    final response = await http.post(AppConstants.API_ROOT_URL + AppConstants.API_CREATE_NEWS_ENDPOINT, headers: {'Content-Type': 'application/json'}, body: jsonString);
+    final response = await http.post(AppConstants.API_ROOT_URL + AppConstants.API_CREATE_NEWS_ENDPOINT, headers: {'Content-Type': 'application/json'}, body: news.toJson());
 
     final headers = response.headers;
     print(headers.toString());
@@ -87,7 +83,7 @@ class NewsService {
       if (response.statusCode == 200) {
         // if the call to the server was successful, parse the JSON and return content
         dynamic responseJson = json.decode(response.body);
-        return _fromJson(responseJson);
+        return News.fromJson(responseJson);
       } else if (response.statusCode == 404) {
         throw Exception('No news found with the specified id');
       } else {
@@ -106,11 +102,8 @@ class NewsService {
   /// Send a POST request to the Restful API
   /// Throw an exception if response status code is different from 200
   Future<void> updateNews(News news) async {
-    // convert News object to JSON string
-    final String jsonString = _toJson(news);
-
     // call to API
-    final response = await http.post(AppConstants.API_ROOT_URL + AppConstants.API_UPDATE_NEWS_ENDPOINT, headers: {'Content-Type': 'application/json'}, body: jsonString);
+    final response = await http.post(AppConstants.API_ROOT_URL + AppConstants.API_UPDATE_NEWS_ENDPOINT, headers: {'Content-Type': 'application/json'}, body: news.toJson());
 
     // handle server response code
     if (response.statusCode == 200) {
@@ -126,11 +119,8 @@ class NewsService {
   /// Send a POST request to the Restful API
   /// Throw an exception if response status code is different from 204
   Future<void> deleteNews(News news) async {
-    // convert News object to JSON string
-    final String jsonString = _toJson(news);
-
     // call to API
-    final response = await http.post(AppConstants.API_ROOT_URL + AppConstants.API_DELETE_NEWS_ENDPOINT, headers: {'Content-Type': 'application/json'}, body: jsonString);
+    final response = await http.post(AppConstants.API_ROOT_URL + AppConstants.API_DELETE_NEWS_ENDPOINT, headers: {'Content-Type': 'application/json'}, body: news.toJson());
 
     if (response.statusCode != 204) {
       throw Exception('Unexpected server response');
@@ -148,62 +138,9 @@ class NewsService {
     final response = await http.post(AppConstants.API_ROOT_URL + AppConstants.API_LIKE_NEWS_ENDPOINT, headers: {'Content-Type': 'application/json'}, body: jsonString);
 
     if (response.statusCode != 200) {
+      dynamic responseJson = json.decode(response.body);
+      print("regarde : $responseJson");
       throw Exception('Unexpected server response');
     }
-  }
-
-  /// Convert specified [news] object to the corresponding JSON string
-  String _toJson(News news) {
-    final Map map = new Map();
-    map["id"] = news.id;
-    map["title"] = news.title;
-    map["content"] = news.content;
-    map["news_date"] = new DateFormat("y-M-d H:m:s.S").format(news.newsDate);
-
-    if (news.members != null) {
-      List<Map> maps = <Map>[];
-      for (Member m in news.members) {
-        final Map map2 = new Map();
-        map2["id"] = m.id;
-        map2["first_name"] = m.firstName;
-        map2["last_name"] = m.lastName;
-        map2["email"] = m.email;
-        map2["phone"] = m.phone;
-        map2["bike"] = m.bike;
-        map2["registration_date"] = new DateFormat("y-M-d H:m:s.S").format(m.registrationDate);
-        maps.add(map2);
-      }
-      map["members"] = maps;
-    }
-
-    return json.encode(map);
-  }
-
-  /// Convert specified [json] map to the corresponding News object
-  News _fromJson(Map<String, dynamic> json) {
-    List<dynamic> jsonMembers = json['members'];
-    List<Member> members = new List();
-
-    if (jsonMembers != null) {
-      for (dynamic jsonMember in jsonMembers) {
-        members.add(new Member(
-          id: int.parse(jsonMember['id']),
-          firstName: jsonMember['first_name'],
-          lastName: jsonMember['last_name'],
-          email: jsonMember['email'],
-          phone: jsonMember['phone'],
-          bike: jsonMember['bike'],
-          registrationDate: new DateFormat("y-M-d H:m:s").parseStrict(jsonMember['registration_date']),
-        ));
-      }
-    }
-
-    return News(
-      id: int.parse(json['id']),
-      title: json['title'],
-      content: json['content'],
-      newsDate: new DateFormat("y-M-d H:m:s").parseStrict(json['news_date']),
-      members: members,
-    );
   }
 }

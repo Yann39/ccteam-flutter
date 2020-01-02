@@ -23,5 +23,27 @@ class Track {
   String name;
   String description;
 
-  Track({this.id, this.name, this.description});
+  Track({this.id, this.name, this.description,});
+
+  @override
+  String toString() {
+    return """{
+      id: ${this.id},
+      name: ${this.name},
+      description: ${this.description},
+    }""";
+  }
+
+  /// Convert [json] map to the corresponding object
+  Track.fromJson(Map<String, dynamic> json)
+      : id = json['id'] != null ? int.parse(json['id']) : -1,
+        name = json['name'],
+        description = json['description'];
+
+  /// Convert [member] object to the corresponding JSON map
+  Map<String, dynamic> toJson() => {
+    "id": id,
+    "name": name,
+    "description": description,
+  };
 }

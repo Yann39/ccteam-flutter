@@ -35,7 +35,7 @@ class PhotosService {
     if (response.statusCode == 200) {
       // if the call to the server was successful, parse the JSON and return content
       dynamic responseJson = json.decode(response.body);
-      return (responseJson['records'] as List).map((p) => _fromJson(p)).toList();
+      return (responseJson['records'] as List).map((p) => Photo.fromJson(p)).toList();
     } else if (response.statusCode == 404) {
       // no data found, return empty array
       return new List<Photo>();
@@ -48,11 +48,8 @@ class PhotosService {
   /// Send a POST request to the Restful API
   /// Throw an exception if response status code is different from 201
   Future<void> createPhoto(Photo photo) async {
-    // convert Photo object to JSON string
-    final String jsonString = _toJson(photo);
-
     // call to API
-    final response = await http.post(AppConstants.API_ROOT_URL + AppConstants.API_CREATE_PHOTO_ENDPOINT, headers: {'Content-Type': 'application/json'}, body: jsonString);
+    final response = await http.post(AppConstants.API_ROOT_URL + AppConstants.API_CREATE_PHOTO_ENDPOINT, headers: {'Content-Type': 'application/json'}, body: photo.toJson());
 
     // handle server response code
     if (response.statusCode == 201) {
@@ -70,11 +67,8 @@ class PhotosService {
   /// Send a POST request to the Restful API
   /// Throw an exception if response status code is different from 200
   Future<void> updatePhoto(Photo photo) async {
-    // convert Photo object to JSON string
-    final String jsonString = _toJson(photo);
-
     // call to API
-    final response = await http.post(AppConstants.API_ROOT_URL + AppConstants.API_UPDATE_PHOTO_ENDPOINT, headers: {'Content-Type': 'application/json'}, body: jsonString);
+    final response = await http.post(AppConstants.API_ROOT_URL + AppConstants.API_UPDATE_PHOTO_ENDPOINT, headers: {'Content-Type': 'application/json'}, body: photo.toJson());
 
     // handle server response code
     if (response.statusCode == 200) {
@@ -90,29 +84,11 @@ class PhotosService {
   /// Send a POST request to the Restful API
   /// Throw an exception if response status code is different from 204
   Future<void> deletePhoto(Photo photo) async {
-    // convert Photo object to JSON string
-    final String jsonString = _toJson(photo);
-
     // call to API
-    final response = await http.post(AppConstants.API_ROOT_URL + AppConstants.API_DELETE_PHOTO_ENDPOINT, headers: {'Content-Type': 'application/json'}, body: jsonString);
+    final response = await http.post(AppConstants.API_ROOT_URL + AppConstants.API_DELETE_PHOTO_ENDPOINT, headers: {'Content-Type': 'application/json'}, body: photo.toJson());
 
     if (response.statusCode != 204) {
       throw Exception('Unexpected server response');
     }
-  }
-
-  /// Convert specified [photo] object to the corresponding JSON string
-  String _toJson(Photo photo) {
-    final Map map = new Map();
-    map["id"] = photo.id;
-    map["title"] = photo.title;
-    map["description"] = photo.description;
-    map["link"] = photo.link;
-    return json.encode(map);
-  }
-
-  /// Convert specified [json] map to the corresponding Photo object
-  Photo _fromJson(Map<String, dynamic> json) {
-    return Photo(id: int.parse(json['id']), title: json['title'], description: json['description'], link: json['link']);
   }
 }

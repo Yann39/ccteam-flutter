@@ -81,6 +81,22 @@ if ($num > 0) {
             }
         }
 
+        // get created by member
+        $memberCreated = null;
+        if ($created_by != null) {
+            $memberCreated = new Member($db);
+            $memberCreated->id = $created_by;
+            $memberCreated->readOne();
+        }
+
+        // get created by member
+        $memberModified = null;
+        if ($modified_by != null) {
+            $memberModified = new Member($db);
+            $memberModified->id = $created_by;
+            $memberModified->readOne();
+        }
+
         // array representing the event
         $event_item = array(
             "id" => $id,
@@ -92,9 +108,9 @@ if ($num > 0) {
             "price" => $price,
             "members" => $member_arr,
             "created_on" => $created_on,
-            "created_by" => $created_by,
+            "created_by" => $memberCreated,
             "modified_on" => $modified_on,
-            "modified_by" => $modified_by
+            "modified_by" => $memberModified
         );
 
         // add it to the events array
