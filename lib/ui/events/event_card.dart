@@ -47,86 +47,78 @@ class EventCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // there can be 2 or 4 events per line in portrait mode, 4 or 6 in landscape, so scale content
-    final double totalHeight = (nbCol == 2 || nbCol == 4) ? 30 : 20;
-    final double radius = (nbCol == 2 || nbCol == 4) ? 8 : 6;
-    final String dateFormat = (nbCol == 2 || nbCol == 4) ? "MMMM yyyy" : "MMM yyyy";
-    final double dateScaleFactor = (nbCol == 2 || nbCol == 4) ? 1.1 : 0.8;
-    final double dateIconSize = (nbCol == 2 || nbCol == 4) ? 18 : 12;
-    final double dayScaleFactor = (nbCol == 2 || nbCol == 4) ? 3.5 : 2;
-    final double placeIconSize = (nbCol == 2 || nbCol == 4) ? 15 : 10;
-    final double eventTitleScaleFactor = (nbCol == 2 || nbCol == 4) ? 1.2 : 0.8;
-    final double participantsScaleFactor = (nbCol == 2 || nbCol == 4) ? 1 : 0.8;
-    final double dayPadding = (nbCol == 2 || nbCol == 4) ? 8 : 4;
+    final double radius = (nbCol == 1 || nbCol == 2) ? 8 : 6;
+    final String dateFormat = (nbCol == 1 || nbCol == 2) ? "MMMM yyyy" : "MMM yyyy";
+    final double dateScaleFactor = (nbCol == 1 || nbCol == 2) ? 1.1 : 0.8;
+    final double dateIconSize = (nbCol == 1 || nbCol == 2) ? 18 : 12;
+    final double dayScaleFactor = (nbCol == 1 || nbCol == 2) ? 3.5 : 2;
+    final double placeIconSize = (nbCol == 1 || nbCol == 2) ? 15 : 10;
+    final double eventTitleScaleFactor = (nbCol == 1 || nbCol == 2) ? 1.2 : 0.8;
+    final double participantsScaleFactor = (nbCol == 1 || nbCol == 2) ? 1 : 0.8;
+    final double dayPadding = (nbCol == 1 || nbCol == 2) ? 8 : 4;
 
-    return new Container(
-      color: Colors.transparent,
-      height: 60.0,
-      margin: const EdgeInsets.symmetric(
-        vertical: 8.0,
-        horizontal: 8.0,
-      ),
-      child: InkWell(
-        onTap: () => _navigateToEventDetailScreen(context, event),
-        child: new Container(
-          height: 60.0,
-          decoration: new BoxDecoration(
-            color: new Color.fromRGBO(255, 255, 255, 0.4),
-            shape: BoxShape.rectangle,
-            borderRadius: new BorderRadius.circular(radius),
-          ),
-          child: Column(
-            children: [
-              Stack(
-                alignment: Alignment.centerLeft,
-                children: <Widget>[
-                  Container(
-                    alignment: Alignment.center,
-                    height: totalHeight,
-                    decoration: new BoxDecoration(
-                      color: Colors.red[900],
-                      shape: BoxShape.rectangle,
-                      borderRadius: new BorderRadius.only(
-                        topLeft: Radius.circular(radius),
-                        topRight: Radius.circular(radius),
-                      ),
-                    ),
-                    child: Text(
-                      DateUtils.convertToString(event.eventDate, dateFormat),
-                      textAlign: TextAlign.center,
-                      maxLines: 1,
-                      textScaleFactor: dateScaleFactor,
-                      style: TextStyle(color: Colors.white),
+    return InkWell(
+      onTap: () => _navigateToEventDetailScreen(context, event),
+      child: new Container(
+        margin: EdgeInsets.all(8.0),
+        decoration: new BoxDecoration(
+          color: new Color.fromRGBO(255, 255, 255, 0.4),
+          shape: BoxShape.rectangle,
+          borderRadius: new BorderRadius.circular(radius),
+        ),
+        child: Column(
+          children: [
+            Stack(
+              alignment: Alignment.centerLeft,
+              children: <Widget>[
+                Container(
+                  alignment: Alignment.center,
+                  decoration: new BoxDecoration(
+                    color: Colors.red[700],
+                    shape: BoxShape.rectangle,
+                    borderRadius: new BorderRadius.only(
+                      topLeft: Radius.circular(radius),
+                      topRight: Radius.circular(radius),
                     ),
                   ),
-                  Padding(
-                    padding: EdgeInsets.only(left: 6.0),
-                    child: Icon(
-                      Icons.date_range,
-                      color: Colors.white,
-                      size: dateIconSize,
-                    ),
+                  child: Text(
+                    DateUtils.convertToString(event.eventDate, dateFormat),
+                    textAlign: TextAlign.center,
+                    maxLines: 1,
+                    textScaleFactor: dateScaleFactor,
+                    style: TextStyle(color: Colors.white),
                   ),
-                ],
-              ),
-              SizedBox(height: dayPadding),
-              Text(
-                DateUtils.convertToString(event.eventDate, "dd"),
-                softWrap: false,
-                textScaleFactor: dayScaleFactor,
-                style: new TextStyle(color: Colors.white),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                textAlign: TextAlign.center,
-              ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: <Widget>[
-                  Icon(
-                    Icons.place,
+                ),
+                Padding(
+                  padding: EdgeInsets.only(left: 6.0),
+                  child: Icon(
+                    Icons.date_range,
                     color: Colors.white,
-                    size: placeIconSize,
+                    size: dateIconSize,
                   ),
-                  Text(
+                ),
+              ],
+            ),
+            SizedBox(height: dayPadding),
+            Text(
+              DateUtils.convertToString(event.eventDate, "dd"),
+              softWrap: false,
+              textScaleFactor: dayScaleFactor,
+              style: new TextStyle(color: Colors.white),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              textAlign: TextAlign.center,
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+                Icon(
+                  Icons.place,
+                  color: Colors.white,
+                  size: placeIconSize,
+                ),
+                Flexible(
+                  child: Text(
                     event.title,
                     softWrap: true,
                     textScaleFactor: eventTitleScaleFactor,
@@ -135,39 +127,39 @@ class EventCard extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                     textAlign: TextAlign.center,
                   ),
-                ],
-              ),
-              SizedBox(height: dayPadding),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: <Widget>[
-                  new Container(
-                    child: Text(
-                      event.members.length.toString(),
-                      textScaleFactor: participantsScaleFactor,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-                    ),
-                    padding: EdgeInsets.all(2.0),
-                    decoration: new BoxDecoration(
-                      color: Colors.blue,
-                      borderRadius: BorderRadius.all(
-                        Radius.circular(3.0),
-                      ),
-                    ),
-                  ),
-                  Text(
-                    " " + (event.members.length > 1 ? AppString.participants : AppString.participant),
-                    style: TextStyle(color: Colors.white),
+                ),
+              ],
+            ),
+            SizedBox(height: dayPadding),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+                new Container(
+                  child: Text(
+                    event.members.length.toString(),
                     textScaleFactor: participantsScaleFactor,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
+                    style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
                   ),
-                ],
-              ),
-            ],
-          ),
+                  padding: EdgeInsets.all(2.0),
+                  decoration: new BoxDecoration(
+                    color: Colors.blue,
+                    borderRadius: BorderRadius.all(
+                      Radius.circular(3.0),
+                    ),
+                  ),
+                ),
+                Text(
+                  " " + (event.members.length > 1 ? AppString.participants : AppString.participant),
+                  style: TextStyle(color: Colors.white),
+                  textScaleFactor: participantsScaleFactor,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
+          ],
         ),
       ),
     );

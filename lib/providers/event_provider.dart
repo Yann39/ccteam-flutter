@@ -22,20 +22,38 @@ import 'dart:collection';
 import 'package:chachatte_team/models/event.dart';
 import 'package:chachatte_team/services/events_service.dart';
 import 'package:flutter/foundation.dart';
+import 'package:intl/intl.dart';
 import 'package:logging/logging.dart';
 
 class EventProvider extends ChangeNotifier {
   final Logger _log = new Logger('EventProvider');
   final EventsService _eventsService = new EventsService();
   List<Event> _events = [];
-  bool _more = false;
+  List<Event> _displayEvents = [];
+  int _eventsPerLine = 1;
 
   EventProvider() {
     fetchEvents();
   }
 
   UnmodifiableListView<Event> get events => UnmodifiableListView(_events);
-  bool get more => _more;
+  UnmodifiableListView<Event> get displayEvents => UnmodifiableListView(_displayEvents);
+  int get eventsPerLine => _eventsPerLine;
+
+  setDisplayEvents(DateTime date, String calendarMode) {
+    String format = calendarMode == 'year' ? 'My' : 'dMy';
+    if (date != null) {
+      _displayEvents = _events.where((event) => DateFormat(format).format(event.eventDate) == DateFormat(format).format(date)).toList();
+    } else {
+      _displayEvents = [];
+    }
+    notifyListeners();
+  }
+
+  changeEventsPerLine() {
+    _eventsPerLine = _eventsPerLine < 3 ? _eventsPerLine+1 : 1;
+    notifyListeners();
+  }
 
   /// Get the list of all news
   Future<void> fetchEvents() async {
@@ -50,11 +68,6 @@ class EventProvider extends ChangeNotifier {
       throw (error);
     });
     return _events;
-  }
-
-  toggleMore() {
-    _more = !_more;
-    notifyListeners();
   }
 
 }

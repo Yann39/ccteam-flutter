@@ -19,6 +19,7 @@
 
 import 'package:chachatte_team/providers/event_provider.dart';
 import 'package:chachatte_team/ui/events/calendar_selector.dart';
+import 'package:chachatte_team/ui/events/event_card.dart';
 import 'package:chachatte_team/ui/main/main_action_menu.dart';
 import 'package:chachatte_team/ui/main/main_drawer.dart';
 import 'package:chachatte_team/utils/strings.dart';
@@ -26,16 +27,7 @@ import 'package:flutter/material.dart';
 import 'package:logging/logging.dart';
 import 'package:provider/provider.dart';
 
-class Calendar extends StatefulWidget {
-  const Calendar({Key key}) : super(key: key);
-
-  @override
-  State<StatefulWidget> createState() {
-    return _CalendarState();
-  }
-}
-
-class _CalendarState extends State<Calendar> {
+class Calendar extends StatelessWidget {
   final Logger _log = new Logger('EventsList');
 
   /// Method that launches the Add Event screen and awaits the result from Navigator.pop
@@ -52,26 +44,19 @@ class _CalendarState extends State<Calendar> {
   }
 
   Widget build(BuildContext context) {
-    _log.info("Building News list");
+    _log.info("Building Event list");
     final _eventProvider = Provider.of<EventProvider>(context, listen: true);
 
-    // get screen orientation
-    final Orientation _orientation = MediaQuery.of(context).orientation;
-
-    // if user wants to display more event per line
-    final _more = _eventProvider.more;
-
-    // number of events per line
-    final int nbCol = _orientation == Orientation.portrait ? (_more ? 3 : 2) : (_more ? 6 : 4);
+    // if user wants to display more events per line
+    final _eventsPerLine = _eventProvider.eventsPerLine;
 
     // icon to display for the number of event per line option
-    final Icon nbColIcon = _orientation == Orientation.portrait ? (_more ? Icon(Icons.filter_2) : Icon(Icons.filter_3)) : (_more ? Icon(Icons.filter_4) : Icon(Icons.filter_6));
-    final String nbColIconTooltip = _orientation == Orientation.portrait
-        ? (_more ? AppString.eventDisplay2ItemsTooltip : AppString.eventDisplay3ItemsTooltip)
-        : (_more ? AppString.eventDisplay4ItemsTooltip : AppString.eventDisplay6ItemsTooltip);
+    final Icon nbColIcon = _eventsPerLine == 1 ? Icon(Icons.filter_1) : (_eventsPerLine == 2 ? Icon(Icons.filter_2) : Icon(Icons.filter_3));
 
-    onSelect(data) {
-      print("Selected Date -> $data");
+    final String nbColIconTooltip = _eventsPerLine == 1 ? AppString.eventDisplay1ItemTooltip : (_eventsPerLine == 2 ? AppString.eventDisplay2ItemsTooltip : AppString.eventDisplay3ItemsTooltip);
+
+    onSelect(date, calendarMode) {
+      _eventProvider.setDisplayEvents(date, calendarMode == CalendarMode.year ? "year" : "month");
     }
 
     return Scaffold(
@@ -82,7 +67,7 @@ class _CalendarState extends State<Calendar> {
             icon: nbColIcon,
             tooltip: nbColIconTooltip,
             onPressed: () {
-              _eventProvider.toggleMore();
+              _eventProvider.changeEventsPerLine();
             },
           ),
           MainActionMenu()
@@ -92,18 +77,35 @@ class _CalendarState extends State<Calendar> {
       body: Container(
         padding: const EdgeInsets.all(8.0),
         child: _eventProvider.events != null && _eventProvider.events.length > 0
-            ? /*GridView.count(
-                crossAxisCount: nbCol,
-                children: List.generate(_eventProvider.events.length, (index) {
-                  return EventCard(_eventProvider.events[index], nbCol);
-                }),
-              )*/
-                  Column(
-                    children: <Widget>[
-                      CalendarSelector(centerDate: DateTime(2019, 10, 03), onDateSelected: onSelect, eventsDates: { "event1" : DateTime(2019, 10, 03), "event2" : DateTime(2019, 10, 05), "event3" : DateTime(2019, 10, 05) },),
-                      Text("Event x")
-                    ],
-                  )
+            ? Column(
+                children: <Widget>[
+                  CalendarSelector(
+                    onDateSelected: onSelect,
+                    eventsDates: Map.fromIterable(_eventProvider.events, key: (v) => v.title, value: (v) => v.eventDate),
+                  ),
+                  Expanded(
+                    child: GridView.count(
+                      crossAxisCount: _eventsPerLine,
+                      childAspectRatio: _eventsPerLine == 1 ? 2 : 1,
+                      children: List.generate(_eventProvider.displayEvents.length, (index) {
+                        return EventCard(_eventProvider.displayEvents[index], _eventsPerLine);
+                      }),
+                    ) /*ListView.builder(
+                      itemCount: _eventProvider.displayEvents.length,
+                      itemBuilder: (context, i) {
+                        return EventCard(_eventProvider.events[i], nbCol);
+                        return Card(
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(15.0),
+                          ),
+                          color: Colors.pink,
+                          child: ListTile(title: Text(_eventProvider.displayEvents[i].title),),
+                        );
+                      },
+                    ),*/
+                  ),
+                ],
+              )
             : Center(
                 child: SizedBox(
                   child: CircularProgressIndicator(),
@@ -111,46 +113,6 @@ class _CalendarState extends State<Calendar> {
                   width: 20.0,
                 ),
               ),
-        /*Consumer<EventProvider>(
-          builder: (context, eventModel, child) {
-            return FutureBuilder<List<Event>>(
-              future: eventModel.fetchEvents(),
-              builder: (context, snapshot) {
-                if (snapshot.hasData) {
-                  return GridView.count(
-                    crossAxisCount: nbCol,
-                    children: List.generate(snapshot.data.length, (index) {
-                      return EventCard(snapshot.data[index], nbCol);
-                    }),
-                  );
-                } else if (snapshot.hasError) {
-                  return Text("${snapshot.error}");
-                }
-                // By default, show a loading spinner
-                return Center(
-                  child: SizedBox(
-                    child: CircularProgressIndicator(),
-                    height: 20.0,
-                    width: 20.0,
-                  ),
-                );
-              },
-            );*/
-        /*return FutureProvider<List<Event>>.value(
-                value: eventModel.fetchEvents(),
-                child: Consumer<List<Event>>(
-                  builder: (context, events, widget) {
-                    return GridView.count(
-                      crossAxisCount: nbCol,
-                      children: List.generate(events.length, (index) {
-                        return EventCard(events[index], eventsService, nbCol);
-                      }),
-                    );
-                  },
-                ),
-              );*/
-        //},
-        //),
         decoration: BoxDecoration(
           gradient: LinearGradient(
             colors: [Colors.blue[100], Colors.blue[300]],
