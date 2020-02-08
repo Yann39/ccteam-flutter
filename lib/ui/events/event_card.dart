@@ -19,17 +19,20 @@
 
 import 'package:chachatte_team/models/event.dart';
 import 'package:chachatte_team/ui/events/event_detail.dart';
-import 'package:chachatte_team/utils/date_utils.dart';
-import 'package:chachatte_team/utils/strings.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 enum ConfirmDialogAction { yes, no }
 
 class EventCard extends StatelessWidget {
   final Event event;
-  final int nbCol;
 
-  EventCard(this.event, this.nbCol);
+  //final int nbCol;
+
+  EventCard(
+    this.event,
+    /*this.nbCol*/
+  );
 
   /// Method that launches the Event detail screen and awaits the result from Navigator.pop
   _navigateToEventDetailScreen(BuildContext context, Event event) async {
@@ -47,7 +50,7 @@ class EventCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // there can be 2 or 4 events per line in portrait mode, 4 or 6 in landscape, so scale content
-    final double radius = (nbCol == 1 || nbCol == 2) ? 8 : 6;
+    /*final double radius = (nbCol == 1 || nbCol == 2) ? 8 : 6;
     final String dateFormat = (nbCol == 1 || nbCol == 2) ? "MMMM yyyy" : "MMM yyyy";
     final double dateScaleFactor = (nbCol == 1 || nbCol == 2) ? 1.1 : 0.8;
     final double dateIconSize = (nbCol == 1 || nbCol == 2) ? 18 : 12;
@@ -55,9 +58,46 @@ class EventCard extends StatelessWidget {
     final double placeIconSize = (nbCol == 1 || nbCol == 2) ? 15 : 10;
     final double eventTitleScaleFactor = (nbCol == 1 || nbCol == 2) ? 1.2 : 0.8;
     final double participantsScaleFactor = (nbCol == 1 || nbCol == 2) ? 1 : 0.8;
-    final double dayPadding = (nbCol == 1 || nbCol == 2) ? 8 : 4;
+    final double dayPadding = (nbCol == 1 || nbCol == 2) ? 8 : 4;*/
 
     return InkWell(
+      onTap: () => _navigateToEventDetailScreen(context, event),
+      child: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            //colors: [Color.fromRGBO(0, 100, 200, 0.3), Color.fromRGBO(0, 100, 200, 0.5)],
+            colors: [Colors.blue[300], Colors.blue[500]],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            stops: [0.0, 1.0],
+          ),
+          shape: BoxShape.rectangle,
+          borderRadius: BorderRadius.circular(6.0),
+        ),
+        child: ListTile(
+          title: Text(event.title, style: TextStyle(color: Colors.white)),
+          subtitle: Text(
+            event.description,
+            style: TextStyle(color: Colors.white),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+          leading: Container(
+            padding: EdgeInsets.only(right: 16.0),
+            child: Column(
+              children: <Widget>[
+                Text("${DateFormat('EEEE', 'fr').format(event.eventDate).substring(0, 3)}", textScaleFactor: 0.8, style: TextStyle(color: Colors.white)),
+                Text("${DateFormat('dd', 'fr').format(event.eventDate)}", textScaleFactor: 1.7, style: TextStyle(color: Colors.white)),
+                Text("${DateFormat('MMM', 'fr').format(event.eventDate)}", textScaleFactor: 0.9, style: TextStyle(color: Colors.white)),
+              ],
+            ),
+            decoration: BoxDecoration(border: Border(right: BorderSide(width: 1.0, color: Colors.grey[300]))),
+          ),
+        ),
+      ),
+    );
+
+    /*return InkWell(
       onTap: () => _navigateToEventDetailScreen(context, event),
       child: new Container(
         margin: EdgeInsets.all(8.0),
@@ -162,6 +202,6 @@ class EventCard extends StatelessWidget {
           ],
         ),
       ),
-    );
+    );*/
   }
 }

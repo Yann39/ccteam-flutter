@@ -270,7 +270,7 @@ class _AddEditEventState extends State<AddEditEvent> {
                       ),
                       controller: _datePickerController,
                       keyboardType: TextInputType.datetime,
-                      validator: (val) => !DateUtils.isBeforeNow(val, AppConstants.DATE_FORMAT) ? (val.isEmpty ? AppString.eventDateMandatory : null) : AppString.eventDateNotValid,
+                      validator: (val) => val.isEmpty ? AppString.eventDateMandatory : null,
                       onSaved: (val) => currEvent.eventDate = new DateFormat(AppConstants.DATE_FORMAT).parseStrict(val),
                     ),
                   ),

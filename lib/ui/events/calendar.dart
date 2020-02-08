@@ -23,6 +23,7 @@ import 'package:chachatte_team/ui/events/event_card.dart';
 import 'package:chachatte_team/ui/main/main_action_menu.dart';
 import 'package:chachatte_team/ui/main/main_drawer.dart';
 import 'package:chachatte_team/utils/strings.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:logging/logging.dart';
 import 'package:provider/provider.dart';
@@ -53,7 +54,8 @@ class Calendar extends StatelessWidget {
     // icon to display for the number of event per line option
     final Icon nbColIcon = _eventsPerLine == 1 ? Icon(Icons.filter_1) : (_eventsPerLine == 2 ? Icon(Icons.filter_2) : Icon(Icons.filter_3));
 
-    final String nbColIconTooltip = _eventsPerLine == 1 ? AppString.eventDisplay1ItemTooltip : (_eventsPerLine == 2 ? AppString.eventDisplay2ItemsTooltip : AppString.eventDisplay3ItemsTooltip);
+    final String nbColIconTooltip =
+        _eventsPerLine == 1 ? AppString.eventDisplay1ItemTooltip : (_eventsPerLine == 2 ? AppString.eventDisplay2ItemsTooltip : AppString.eventDisplay3ItemsTooltip);
 
     onSelect(date, calendarMode) {
       _eventProvider.setDisplayEvents(date, calendarMode == CalendarMode.year ? "year" : "month");
@@ -79,30 +81,93 @@ class Calendar extends StatelessWidget {
         child: _eventProvider.events != null && _eventProvider.events.length > 0
             ? Column(
                 children: <Widget>[
-                  CalendarSelector(
-                    onDateSelected: onSelect,
-                    eventsDates: Map.fromIterable(_eventProvider.events, key: (v) => v.title, value: (v) => v.eventDate),
+                  Container(
+                    padding: EdgeInsets.all(8),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: <Widget>[
+                        Icon(Icons.event, color: Colors.red[700], size: 18),
+                        SizedBox(width: 3),
+                        Text("EVENEMENTS", style: TextStyle(color: Colors.black87, fontSize: 15, fontWeight: FontWeight.bold)),
+                        //Text("Actualités", style: TextStyle(color: Colors.black87, fontSize: 16, fontFamily: 'Barbatrick', letterSpacing: 2)),
+                      ],
+                    ),
                   ),
-                  Expanded(
-                    child: GridView.count(
-                      crossAxisCount: _eventsPerLine,
-                      childAspectRatio: _eventsPerLine == 1 ? 2 : 1,
-                      children: List.generate(_eventProvider.displayEvents.length, (index) {
-                        return EventCard(_eventProvider.displayEvents[index], _eventsPerLine);
-                      }),
-                    ) /*ListView.builder(
-                      itemCount: _eventProvider.displayEvents.length,
-                      itemBuilder: (context, i) {
-                        return EventCard(_eventProvider.events[i], nbCol);
-                        return Card(
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(15.0),
+                  Row(
+                    children: <Widget>[
+                      Expanded(
+                        child: GestureDetector(
+                          onTap: () {
+                            _eventProvider.changeEventModeSelectorIndex(0);
+                          },
+                          child: Container(
+                            padding: EdgeInsets.symmetric(horizontal: 6.0, vertical: 6.0),
+                            decoration: BoxDecoration(
+                              color: _eventProvider.eventModeSelectorIndex == 0 ? Colors.red[700] : Colors.white70,
+                            ),
+                            child: Row(
+                              children: [
+                                Icon(Icons.event_note, color: _eventProvider.eventModeSelectorIndex == 0 ? Colors.white : Colors.black54),
+                                SizedBox(width: 3.0),
+                                Flexible(
+                                  child: Text("Année courante", style: TextStyle(color: _eventProvider.eventModeSelectorIndex == 0 ? Colors.white : Colors.black54)),
+                                )
+                              ],
+                            ),
                           ),
-                          color: Colors.pink,
-                          child: ListTile(title: Text(_eventProvider.displayEvents[i].title),),
-                        );
+                        ),
+                      ),
+                      Expanded(
+                        child: GestureDetector(
+                          onTap: () {
+                            _eventProvider.changeEventModeSelectorIndex(1);
+                          },
+                          child: Container(
+                            padding: EdgeInsets.symmetric(horizontal: 6.0, vertical: 6.0),
+                            decoration: BoxDecoration(
+                              color: _eventProvider.eventModeSelectorIndex == 1 ? Colors.red[700] : Colors.white70,
+                            ),
+                            child: Row(
+                              children: [
+                                Icon(Icons.event, color: _eventProvider.eventModeSelectorIndex == 1 ? Colors.white : Colors.black54),
+                                SizedBox(width: 3.0),
+                                Flexible(
+                                  child: Text("Par date", style: TextStyle(color: _eventProvider.eventModeSelectorIndex == 1 ? Colors.white : Colors.black54)),
+                                )
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  _eventProvider.eventModeSelectorIndex == 1
+                      ? Column(
+                          children: <Widget>[
+                            SizedBox(height: 8.0),
+                            CalendarSelector(
+                              onDateSelected: onSelect,
+                              eventsDates: Map.fromIterable(_eventProvider.events, key: (v) => v.title, value: (v) => v.eventDate),
+                              onlyMonthDays: false,
+                              locale: "fr",
+                              weekEndDayColor: Colors.blue[700],
+                              mode: CalendarMode.week,
+                              expandable: true,
+                              firstWeekDay: DateTime.monday,
+                            ),
+                          ],
+                        )
+                      : SizedBox(),
+                  SizedBox(height: 8.0),
+                  Expanded(
+                    child: ListView.separated(
+                      separatorBuilder: (context, index) => SizedBox(height: 8.0),
+                      itemCount: _eventProvider.eventModeSelectorIndex == 1 ? _eventProvider.displayEvents.length : _eventProvider.events.length,
+                      itemBuilder: (context, index) {
+                        return EventCard(_eventProvider.events[index]);
                       },
-                    ),*/
+                    ),
                   ),
                 ],
               )

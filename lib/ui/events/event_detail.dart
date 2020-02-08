@@ -56,21 +56,21 @@ class _EventDetailState extends State<EventDetail> {
   void _showConfirmation(BuildContext context, String value) {
     showDialog(
       context: context,
-      builder: (_) => new AlertDialog(
-            title: new Text(AppString.confirmation),
-            content: new Text(value),
+      builder: (_) => AlertDialog(
+            title: Text(AppString.confirmation),
+            content: Text(value),
             actions: <Widget>[
-              new FlatButton(
+              FlatButton(
                 onPressed: () {
                   _dialogueResult(context, ConfirmDialogAction.yes);
                 },
-                child: new Text(AppString.confirm),
+                child: Text(AppString.confirm),
               ),
-              new FlatButton(
+              FlatButton(
                 onPressed: () {
                   _dialogueResult(context, ConfirmDialogAction.no);
                 },
-                child: new Text(AppString.cancel),
+                child: Text(AppString.cancel),
               ),
             ],
           ),
@@ -101,12 +101,12 @@ class _EventDetailState extends State<EventDetail> {
         actions: <Widget>[
           Builder(
             builder: (context) => IconButton(
-                  icon: const Icon(Icons.edit),
+                  icon: Icon(Icons.edit),
                   onPressed: () => _navigateToEditEventScreen(context, widget.event),
                 ),
           ),
           IconButton(
-            icon: const Icon(Icons.delete_forever),
+            icon: Icon(Icons.delete_forever),
             onPressed: () => _showConfirmation(context, AppString.eventDeletionAreYouSure),
           )
         ],
@@ -117,7 +117,7 @@ class _EventDetailState extends State<EventDetail> {
         ),
       ),
       body: Container(
-        padding: new EdgeInsets.all(8.0),
+        padding: EdgeInsets.all(8.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: <Widget>[
@@ -129,11 +129,11 @@ class _EventDetailState extends State<EventDetail> {
             Text(widget.event.description),
           ],
         ),
-        decoration: new BoxDecoration(
-          gradient: new LinearGradient(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
             colors: [Colors.blue[100], Colors.blue[300]],
-            begin: const FractionalOffset(0.0, 0.0),
-            end: const FractionalOffset(0.0, 1.0),
+            begin: FractionalOffset(0.0, 0.0),
+            end: FractionalOffset(0.0, 1.0),
             stops: [0.0, 1.0],
             tileMode: TileMode.clamp,
           ),
