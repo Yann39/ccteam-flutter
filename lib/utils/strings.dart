@@ -31,6 +31,7 @@ class AppString {
   static const String connect = 'Se connecter';
   static const String register = 'S\'inscrire';
   static const String send = 'Envoyer';
+  static const String valid = 'Valider';
 
   static const String confirmation = 'Confirmation';
   static const String identification = 'Identification';

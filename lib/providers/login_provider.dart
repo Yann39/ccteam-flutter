@@ -17,6 +17,9 @@
  * along with Chachatte Team. If not, see <http://www.gnu.org/licenses/>.
  */
 
+import 'dart:convert';
+import 'dart:io';
+
 import 'package:chachatte_team/models/member.dart';
 import 'package:chachatte_team/services/members_service.dart';
 import 'package:flutter/foundation.dart';
@@ -29,6 +32,7 @@ enum AuthStatus { Initializing, Unauthenticated, Authenticating, Authenticated }
 class LoginProvider extends ChangeNotifier {
   final Logger _log = new Logger('LoginProvider');
   final MembersService _membersService = new MembersService();
+
   AuthStatus _authStatus = AuthStatus.Unauthenticated;
   Member _loggedMember;
 
@@ -40,8 +44,10 @@ class LoginProvider extends ChangeNotifier {
 
   AuthStatus get status => _authStatus;
 
+  /// change the current authentication [status]
   void _setStatus(AuthStatus status) {
     _authStatus = status;
+    _log.info("Notifying listeners of LoginProvider");
     notifyListeners();
   }
 
@@ -59,15 +65,19 @@ class LoginProvider extends ChangeNotifier {
     // if email is set, we will consider user is already logged in
     if (_email != null) {
       _log.fine("Email $_email found in shared preferences, let's get member from database");
-      Member _mb = await _membersService.getMemberByEmail(_email);
-      if (_mb == null || _mb.id < 0) {
+      await _membersService.getMemberByEmail(_email).then((value) {
+        if (value == null || value.id < 0) {
+          _log.severe("Email found in shared preferences but member not found in the database !");
+          _setStatus(AuthStatus.Unauthenticated);
+        } else {
+          _log.fine("User $_email found in database, consider as logged in");
+          _loggedMember = value;
+          _setStatus(AuthStatus.Authenticated);
+        }
+      }, onError: (error) {
         _log.severe("Email found in shared preferences but member not found in the database !");
         _setStatus(AuthStatus.Unauthenticated);
-      } else {
-        _log.fine("User $_email found in database, consider as logged in");
-        _loggedMember = _mb;
-        _setStatus(AuthStatus.Authenticated);
-      }
+      });
     } else {
       _log.fine("No email found in shared preferences");
       _authStatus = AuthStatus.Unauthenticated;
@@ -126,4 +136,35 @@ class LoginProvider extends ChangeNotifier {
       throw (error);
     });
   }
+
+  /// Upload the specified [avatar] file
+  Future<void> uploadAvatar(File avatar) async {
+    await _membersService.uploadAvatar(avatar).then((value) async {
+      _log.fine("Avatar uploaded successfully");
+
+      dynamic responseJson = json.decode(value);
+      final String path = responseJson['path'];
+
+      _log.fine("Avatar path is : $path");
+
+      final Member tmpMember = _loggedMember;
+      tmpMember.avatar = path;
+      tmpMember.modifiedOn = DateTime.now();
+
+      await _membersService.updateMember(tmpMember).then((value) {
+        _log.fine("Avatar updated for member : ${tmpMember.email}");
+        _loggedMember.avatar = tmpMember.avatar;
+        _loggedMember.modifiedOn = tmpMember.modifiedOn;
+        notifyListeners();
+      }, onError: (error) {
+        _log.severe("Failed to update avatar for member ${tmpMember.email} ($error)");
+        throw (error);
+      });
+
+    }, onError: (error) {
+      _log.severe("Failed to upload avatar ($error)");
+      throw (error);
+    });
+  }
+
 }

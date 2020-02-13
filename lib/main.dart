@@ -17,21 +17,24 @@
  * along with Chachatte Team. If not, see <http://www.gnu.org/licenses/>.
  */
 
+import 'package:chachatte_team/providers/drawer_provider.dart';
 import 'package:chachatte_team/providers/event_provider.dart';
+import 'package:chachatte_team/providers/home_provider.dart';
 import 'package:chachatte_team/providers/login_provider.dart';
 import 'package:chachatte_team/providers/member_provider.dart';
 import 'package:chachatte_team/providers/news_provider.dart';
 import 'package:chachatte_team/ui/events/add_edit_event.dart';
-import 'package:chachatte_team/ui/forgot_password.dart';
-import 'package:chachatte_team/ui/home.dart';
-import 'package:chachatte_team/ui/loading.dart';
-import 'package:chachatte_team/ui/login.dart';
+import 'package:chachatte_team/ui/main/image_crop.dart';
+import 'package:chachatte_team/ui/unauthenticated/forgot_password.dart';
+import 'package:chachatte_team/ui/main/home.dart';
+import 'package:chachatte_team/ui/unauthenticated/loading.dart';
+import 'package:chachatte_team/ui/unauthenticated/login.dart';
 import 'package:chachatte_team/ui/members/add_edit_member.dart';
 import 'package:chachatte_team/ui/members/member_detail.dart';
 import 'package:chachatte_team/ui/news/add_edit_news.dart';
 import 'package:chachatte_team/ui/news/news.dart';
 import 'package:chachatte_team/ui/news/news_detail.dart';
-import 'package:chachatte_team/ui/register.dart';
+import 'package:chachatte_team/ui/unauthenticated/register.dart';
 import 'package:chachatte_team/utils/strings.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -46,13 +49,14 @@ void main() {
   });
 
   runApp(
-    // global provider so we keep access to the logged member in the whole widget tree
     MultiProvider(
       providers: [
-        ChangeNotifierProvider(builder: (_) => LoginProvider()),
-        ChangeNotifierProvider(builder: (_) => NewsProvider()),
-        ChangeNotifierProvider(builder: (_) => EventProvider()),
-        ChangeNotifierProvider(builder: (_) => MemberProvider()),
+        ChangeNotifierProvider(create: (_) => LoginProvider()),
+        ChangeNotifierProvider(create: (_) => HomeProvider()),
+        ChangeNotifierProvider(create: (_) => DrawerProvider()),
+        ChangeNotifierProvider(create: (_) => NewsProvider()),
+        ChangeNotifierProvider(create: (_) => EventProvider()),
+        ChangeNotifierProvider(create: (_) => MemberProvider()),
       ],
       child: ChachatteTeamApp(),
     ),
@@ -64,7 +68,7 @@ class ChachatteTeamApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    _log.info("Building MaterialApp");
+    _log.info("Building ChachatteTeamApp...");
     return MaterialApp(
       title: AppString.applicationTitle,
       initialRoute: '/',
@@ -72,6 +76,7 @@ class ChachatteTeamApp extends StatelessWidget {
         '/register': (context) => Register(),
         '/forgotPassword': (context) => ForgotPassword(),
         '/newsList': (context) => NewsList(),
+        '/imageCrop': (context) => ImageCrop(),
         '/addEditNews': (context) => AddEditNews(news: ModalRoute.of(context).settings.arguments),
         '/addEditEvent': (context) => AddEditEvent(event: ModalRoute.of(context).settings.arguments),
         '/addEditMember': (context) => AddEditMember(member: ModalRoute.of(context).settings.arguments),

@@ -56,6 +56,7 @@ if ($num > 0) {
             "first_name" => $first_name,
             "last_name" => $last_name,
             "email" => $email,
+            "avatar" => $avatar,
             "phone" => $phone,
             "active" => $active,
             "admin" => $admin,

@@ -57,6 +57,7 @@ if (!empty($data->email)) {
                 "first_name" => $member->first_name,
                 "last_name" => $member->last_name,
                 "email" => $member->email,
+                "avatar" => $member->avatar,
                 "active" => $member->active,
                 "admin" => $member->admin,
                 "phone" => $member->phone,

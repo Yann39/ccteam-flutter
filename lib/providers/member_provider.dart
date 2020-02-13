@@ -50,7 +50,7 @@ class MemberProvider extends ChangeNotifier {
     });
   }
 
-  /// Create the specified member
+  /// Create the specified [member]
   Future<void> createMember(Member member) async {
     await _membersService.createMember(member).then((value) {
       _log.fine("New user created : ${member.email}");
@@ -62,7 +62,7 @@ class MemberProvider extends ChangeNotifier {
     });
   }
 
-  /// Update the specified member
+  /// Update the specified [member]
   Future<void> updateMember(Member member) async {
     await _membersService.createMember(member).then((value) {
       _log.fine("User successfully updated : ${member.email}");
@@ -74,7 +74,7 @@ class MemberProvider extends ChangeNotifier {
     });
   }
 
-  /// Delete the specified member
+  /// Delete the specified [member]
   Future<void> deleteMember(Member member) async {
     await _membersService.deleteMember(member).then((value) {
       _log.fine("Member deleted successfully : ${member.email}");
@@ -85,5 +85,4 @@ class MemberProvider extends ChangeNotifier {
       throw (error);
     });
   }
-
 }

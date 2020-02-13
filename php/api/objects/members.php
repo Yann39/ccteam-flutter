@@ -31,6 +31,7 @@ class Member {
     public $first_name;
     public $last_name;
     public $email;
+    public $avatar;
     public $phone;
     public $active;
     public $admin;
@@ -48,7 +49,7 @@ class Member {
     function read() {
 
         // query to get all records
-        $query = "SELECT n.id, n.first_name, n.last_name, n.email, n.active, n.admin, n.phone, n.bike, n.registration_date, n.created_on, n.modified_on FROM " . $this->table_name . " n ORDER BY n.registration_date DESC";
+        $query = "SELECT n.id, n.first_name, n.last_name, n.email, n.avatar, n.active, n.admin, n.phone, n.bike, n.registration_date, n.created_on, n.modified_on FROM " . $this->table_name . " n ORDER BY n.registration_date DESC";
 
         // prepare query statement
         $stmt = $this->conn->prepare($query);
@@ -63,7 +64,7 @@ class Member {
     function readOne() {
 
         // query to get record corresponding to specified id
-        $query = "SELECT n.first_name, n.last_name, n.email, n.active, n.admin, n.phone, n.bike, n.registration_date, n.created_on, n.modified_on FROM " . $this->table_name . " n WHERE n.id = ? LIMIT 0,1";
+        $query = "SELECT n.first_name, n.last_name, n.email, n.avatar, n.active, n.admin, n.phone, n.bike, n.registration_date, n.created_on, n.modified_on FROM " . $this->table_name . " n WHERE n.id = ? LIMIT 0,1";
 
         // prepare query statement
         $stmt = $this->conn->prepare($query);
@@ -81,6 +82,7 @@ class Member {
         $this->first_name = $row['first_name'];
         $this->last_name = $row['last_name'];
         $this->email = $row['email'];
+        $this->avatar = $row['avatar'];
         $this->active = $row['active'];
         $this->admin = $row['admin'];
         $this->phone = $row['phone'];
@@ -94,7 +96,7 @@ class Member {
     function readByEvent($event_id) {
 
         // query to get all records containing the specified event
-        $query = "SELECT n.id, n.first_name, n.last_name, n.email, n.active, n.admin, n.phone, n.bike, n.registration_date, n.created_on, n.modified_on FROM " . $this->table_name . " n INNER JOIN " . $this->events_members_table_name . " em ON n.id = em.member_id WHERE em.event_id = ? ORDER BY n.registration_date DESC";
+        $query = "SELECT n.id, n.first_name, n.last_name, n.email, n.avatar, n.active, n.admin, n.phone, n.bike, n.registration_date, n.created_on, n.modified_on FROM " . $this->table_name . " n INNER JOIN " . $this->events_members_table_name . " em ON n.id = em.member_id WHERE em.event_id = ? ORDER BY n.registration_date DESC";
 
         // prepare query statement
         $stmt = $this->conn->prepare($query);
@@ -112,7 +114,7 @@ class Member {
     function readByNews($news_id) {
 
         // query to get all records containing the specified event
-        $query = "SELECT n.id, n.first_name, n.last_name, n.email, n.active, n.admin, n.phone, n.bike, n.registration_date, n.created_on, n.modified_on FROM " . $this->table_name . " n INNER JOIN " . $this->news_members_table_name . " nm ON n.id = nm.member_id WHERE nm.news_id = ? ORDER BY n.registration_date DESC";
+        $query = "SELECT n.id, n.first_name, n.last_name, n.email, n.avatar, n.active, n.admin, n.phone, n.bike, n.registration_date, n.created_on, n.modified_on FROM " . $this->table_name . " n INNER JOIN " . $this->news_members_table_name . " nm ON n.id = nm.member_id WHERE nm.news_id = ? ORDER BY n.registration_date DESC";
 
         // prepare query statement
         $stmt = $this->conn->prepare($query);
@@ -130,7 +132,7 @@ class Member {
     function readByEmail($email) {
 
         // query to get all records corresponding to the specified e-mail address
-        $query = "SELECT n.id, n.first_name, n.last_name, n.email, n.password, n.active, n.admin, n.phone, n.bike, n.registration_date, n.created_on, n.modified_on FROM " . $this->table_name . " n WHERE n.email = ?";
+        $query = "SELECT n.id, n.first_name, n.last_name, n.email, n.password, n.avatar, n.active, n.admin, n.phone, n.bike, n.registration_date, n.created_on, n.modified_on FROM " . $this->table_name . " n WHERE n.email = ?";
 
         // prepare query statement
         $stmt = $this->conn->prepare($query);
@@ -150,6 +152,7 @@ class Member {
         $this->last_name = $row['last_name'];
         $this->email = $row['email'];
         $this->password = $row['password'];
+        $this->avatar = $row['avatar'];
         $this->active = $row['active'];
         $this->admin = $row['admin'];
         $this->phone = $row['phone'];
@@ -163,7 +166,7 @@ class Member {
     function create() {
 
         // query to insert record
-        $query = "INSERT INTO " . $this->table_name . " SET first_name = :first_name, last_name = :last_name, email = :email, password = :password, active = :active, admin = :admin, phone = :phone, bike = :bike, registration_date = :registration_date, created_on = :created_on";
+        $query = "INSERT INTO " . $this->table_name . " SET first_name = :first_name, last_name = :last_name, email = :email, password = :password, avatar = :avatar, active = :active, admin = :admin, phone = :phone, bike = :bike, registration_date = :registration_date, created_on = :created_on";
 
         // prepare query
         $stmt = $this->conn->prepare($query);
@@ -172,6 +175,7 @@ class Member {
         $this->first_name = htmlspecialchars(strip_tags($this->first_name));
         $this->last_name = htmlspecialchars(strip_tags($this->last_name));
         $this->email = htmlspecialchars(strip_tags($this->email));
+        $this->avatar = htmlspecialchars(strip_tags($this->avatar));
         $this->active = htmlspecialchars(strip_tags($this->active));
         $this->admin = htmlspecialchars(strip_tags($this->admin));
         $this->phone = htmlspecialchars(strip_tags($this->phone));
@@ -184,6 +188,7 @@ class Member {
         $stmt->bindParam(":last_name", $this->last_name);
         $stmt->bindParam(":email", $this->email);
         $stmt->bindParam(":password", $this->password);
+        $stmt->bindParam(":avatar", $this->avatar);
         $stmt->bindParam(":active", $this->active);
         $stmt->bindParam(":admin", $this->admin);
         $stmt->bindParam(":phone", $this->phone);
@@ -203,7 +208,7 @@ class Member {
     function update() {
 
         // query to update record
-        $query = "UPDATE " . $this->table_name . " SET first_name = :first_name, last_name = :last_name, email = :email, active = :active, admin = :admin, phone = :phone, bike = :bike, registration_date = :registration_date, modified_on = :modified_on WHERE id = :id";
+        $query = "UPDATE " . $this->table_name . " SET first_name = :first_name, last_name = :last_name, email = :email, avatar = :avatar, active = :active, admin = :admin, phone = :phone, bike = :bike, registration_date = :registration_date, modified_on = :modified_on WHERE id = :id";
 
         // prepare query statement
         $stmt = $this->conn->prepare($query);
@@ -212,6 +217,7 @@ class Member {
         $this->first_name = htmlspecialchars(strip_tags($this->first_name));
         $this->last_name = htmlspecialchars(strip_tags($this->last_name));
         $this->email = htmlspecialchars(strip_tags($this->email));
+        $this->avatar = htmlspecialchars(strip_tags($this->avatar));
         $this->active = htmlspecialchars(strip_tags($this->active));
         $this->admin = htmlspecialchars(strip_tags($this->admin));
         $this->phone = htmlspecialchars(strip_tags($this->phone));
@@ -224,6 +230,7 @@ class Member {
         $stmt->bindParam(":first_name", $this->first_name);
         $stmt->bindParam(":last_name", $this->last_name);
         $stmt->bindParam(":email", $this->email);
+        $stmt->bindParam(":avatar", $this->avatar);
         $stmt->bindParam(":active", $this->active);
         $stmt->bindParam(":admin", $this->admin);
         $stmt->bindParam(":phone", $this->phone);
@@ -267,7 +274,7 @@ class Member {
     function search($keywords){
 
         // query to search across all records
-        $query = "SELECT n.first_name, n.last_name, n.email, n.active, n.admin, n.phone, n.bike, n.registration_date, n.created_on, n.modified_on FROM " . $this->table_name . " n WHERE n.first_name LIKE ? OR n.last_name LIKE ? ORDER BY n.registration_date DESC";
+        $query = "SELECT n.first_name, n.last_name, n.email, n.avatar, n.active, n.admin, n.phone, n.bike, n.registration_date, n.created_on, n.modified_on FROM " . $this->table_name . " n WHERE n.first_name LIKE ? OR n.last_name LIKE ? ORDER BY n.registration_date DESC";
 
         // prepare query statement
         $stmt = $this->conn->prepare($query);

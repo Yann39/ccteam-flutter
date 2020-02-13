@@ -34,7 +34,8 @@ class AppConstants {
   static const String API_UPDATE_MEMBER_ENDPOINT = '/members/update.php';
   static const String API_DELETE_MEMBER_ENDPOINT = '/members/delete.php';
   static const String API_LOGIN_MEMBER_ENDPOINT = '/members/login.php';
-  static const String API_ASK_PASSWORD_MEMBER_ENDPOINT = '/members/askPassword.php';
+  static const String API_ASK_PASSWORD_MEMBER_ENDPOINT = '/members/ask_password.php';
+  static const String API_UPLOAD_MEMBER_AVATAR_ENDPOINT = '/members/upload_avatar.php';
 
   static const String API_GET_ALL_EVENTS_ENDPOINT = '/events/read.php';
   static const String API_CREATE_EVENT_ENDPOINT = '/events/create.php';
@@ -52,6 +53,7 @@ class AppConstants {
   static const String API_DELETE_PHOTO_ENDPOINT = '/photos/delete.php';
 
   static const String DATE_FORMAT = 'dd/MM/yyyy HH:mm';
+  static const String DATE_FORMAT_TXT = 'dd MMM yyyy HH:mm';
   static const String PRICE_FORMAT = '####.##';
 
 }

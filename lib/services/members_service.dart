@@ -18,11 +18,13 @@
  */
 
 import 'dart:convert';
+import 'dart:io';
 
+import 'package:async/async.dart';
 import 'package:chachatte_team/models/member.dart';
 import 'package:chachatte_team/utils/constants.dart';
 import 'package:http/http.dart' as http;
-import 'package:intl/intl.dart';
+import 'package:path/path.dart';
 
 class MembersService {
   /// Fetch all members from the database
@@ -50,7 +52,8 @@ class MembersService {
   /// Throw an exception if response status code is different from 200
   Future<void> loginMember(Member member) async {
     // call to API
-    final response = await http.post(AppConstants.API_ROOT_URL + AppConstants.API_LOGIN_MEMBER_ENDPOINT, headers: {'Content-Type': 'application/json'}, body: member.toJson());
+    final response =
+        await http.post(AppConstants.API_ROOT_URL + AppConstants.API_LOGIN_MEMBER_ENDPOINT, headers: {'Content-Type': 'application/json'}, body: json.encode(member.toJson()));
 
     // handle server response code
     if (response.statusCode == 200) {
@@ -118,7 +121,7 @@ class MembersService {
   /// Throw an exception if response status code is different from 200
   Future<void> updateMember(Member member) async {
     // call to API
-    final response = await http.post(AppConstants.API_ROOT_URL + AppConstants.API_UPDATE_MEMBER_ENDPOINT, headers: {'Content-Type': 'application/json'}, body: member.toJson());
+    final response = await http.post(AppConstants.API_ROOT_URL + AppConstants.API_UPDATE_MEMBER_ENDPOINT, headers: {'Content-Type': 'application/json'}, body: json.encode(member.toJson()));
 
     // handle server response code
     if (response.statusCode == 200) {
@@ -135,14 +138,14 @@ class MembersService {
   /// Throw an exception if response status code is different from 204
   Future<void> deleteMember(Member member) async {
     // call to API
-    final response = await http.post(AppConstants.API_ROOT_URL + AppConstants.API_DELETE_MEMBER_ENDPOINT, headers: {'Content-Type': 'application/json'}, body: member.toJson());
+    final response = await http.post(AppConstants.API_ROOT_URL + AppConstants.API_DELETE_MEMBER_ENDPOINT, headers: {'Content-Type': 'application/json'}, body: json.encode(member.toJson()));
 
     if (response.statusCode != 204) {
       throw Exception('Unexpected server response');
     }
   }
 
-  /// Ask for a password reset for the account erlated to the specified [email]
+  /// Ask for a password reset for the account related to the specified [email]
   /// Send a POST request to the Restful API
   /// Throw an exception if response status code is different from 201
   Future<void> askPassword(String email) async {
@@ -168,4 +171,33 @@ class MembersService {
     }
   }
 
+  /// Upload the specified avatar [file]
+  /// Send a POST request to the Restful API
+  /// Throw an exception if response status code is different from 200
+  /// Return the uploaded avatar relative path
+  Future<String> uploadAvatar(File file) async {
+    final http.ByteStream stream = new http.ByteStream(DelegatingStream.typed(file.openRead()));
+    final int length = await file.length();
+    final Uri uri = Uri.parse(AppConstants.API_ROOT_URL + AppConstants.API_UPLOAD_MEMBER_AVATAR_ENDPOINT);
+    final http.MultipartRequest request = new http.MultipartRequest("POST", uri);
+    final http.MultipartFile multipartFile = new http.MultipartFile('avatar', stream, length, filename: basename(file.path));
+    request.files.add(multipartFile);
+
+    // call to API
+    final response = await request.send();
+
+    // handle server response code
+    if (response.statusCode == 200) {
+      String path;
+      await for (String value in response.stream.transform(utf8.decoder)) {
+        path = value;
+      }
+      return path;
+    } else if (response.statusCode == 400) {
+      throw Exception('File too big or wrong type');
+    } else {
+      throw Exception('Unexpected server response');
+    }
+
+  }
 }

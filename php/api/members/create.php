@@ -52,6 +52,9 @@ if (!empty($data->first_name) && !empty($data->last_name) && !empty($data->email
     $member->password = $hashed_password;
 
     // set non mandatory properties if they are set
+    if ($data->avatar != null) {
+        $member->avatar = $data->avatar;
+    }
     if ($data->phone != null) {
         $member->phone = $data->phone;
     }

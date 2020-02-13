@@ -44,6 +44,7 @@ $member->id = $data->id;
 $member->first_name = $data->first_name;
 $member->last_name = $data->last_name;
 $member->email = $data->email;
+$member->avatar = $data->avatar;
 $member->active = $data->active;
 $member->admin = $data->admin;
 $member->phone = $data->phone;

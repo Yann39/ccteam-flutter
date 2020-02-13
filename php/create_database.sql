@@ -23,6 +23,7 @@ CREATE TABLE IF NOT EXISTS `members` (
   `last_name` varchar(64) NOT NULL,
   `email` varchar(128) NOT NULL,
   `password` varchar(255) NOT NULL,
+  `avatar` varchar(255) NOT NULL,
   `active` boolean NOT NULL DEFAULT FALSE,
   `admin` boolean NOT NULL DEFAULT FALSE,
   `phone` varchar(13) NULL,

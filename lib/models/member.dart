@@ -26,6 +26,7 @@ class Member {
   String lastName;
   String email;
   String password;
+  String avatar;
   bool active;
   bool admin;
   String phone;
@@ -40,6 +41,7 @@ class Member {
     this.lastName,
     this.email,
     this.password,
+    this.avatar,
     this.active,
     this.admin,
     this.phone,
@@ -57,6 +59,7 @@ class Member {
       lastName: ${this.lastName},
       email: ${this.email},
       password: ${this.password},
+      avatar: ${this.avatar},
       active: ${this.active},
       admin: ${this.admin},
       phone: ${this.phone},
@@ -74,6 +77,7 @@ class Member {
         lastName = json['last_name'],
         email = json['email'],
         password = json['password'],
+        avatar = json['avatar'],
         active = json['active'] != null && json['active'] == '1',
         admin = json['admin'] != null && json['admin'] == '1',
         phone = json['phone'],
@@ -89,12 +93,13 @@ class Member {
         "last_name": lastName,
         "email": email,
         "password": password,
+        "avatar": avatar,
         "active": active,
         "admin": admin,
         "phone": phone,
         "bike": bike,
-        "registration_date": registrationDate,
-        "created_on": createdOn,
-        "modified_on": modifiedOn,
+        "registration_date": registrationDate != null ? registrationDate.toIso8601String() : null,
+        "created_on": createdOn != null ? createdOn.toIso8601String() : null,
+        "modified_on": modifiedOn != null ? modifiedOn.toIso8601String() : null,
       };
 }

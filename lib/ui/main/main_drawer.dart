@@ -20,24 +20,14 @@
 import 'dart:io';
 
 import 'package:chachatte_team/models/member.dart';
+import 'package:chachatte_team/providers/drawer_provider.dart';
 import 'package:chachatte_team/providers/login_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 
-class MainDrawer extends StatefulWidget {
-  const MainDrawer({Key key}) : super(key: key);
-
-  @override
-  State<StatefulWidget> createState() {
-    return _MainDrawerState();
-  }
-}
-
-class _MainDrawerState extends State<MainDrawer> {
-  File _image;
-  int _imageSize;
-
+class MainDrawer extends StatelessWidget {
   /// Log out the current user
   void _logout(BuildContext context) async {
     Provider.of<LoginProvider>(context, listen: false).logoutMember();
@@ -57,23 +47,10 @@ class _MainDrawerState extends State<MainDrawer> {
   }
 
   /// Allow user to select an image from the gallery
-  Future _selectImage() async {
+  Future _selectImage(BuildContext context) async {
     File image = await ImagePicker.pickImage(source: ImageSource.gallery);
-
-    /*File croppedFile = await ImageCropper.cropImage(
-      sourcePath: image.path,
-      ratioX: 1.0,
-      ratioY: 1.0,
-      maxWidth: 512,
-      maxHeight: 512,
-    );*/
-
-    FileStat fs = image.statSync();
-
-    setState(() {
-      _image = image;
-      _imageSize = fs.size;
-    });
+    Provider.of<DrawerProvider>(context, listen: false).loadImage(image);
+    Navigator.of(context).pushNamed('/imageCrop');
   }
 
   @override
@@ -82,9 +59,9 @@ class _MainDrawerState extends State<MainDrawer> {
 
     return Drawer(
       child: Container(
-        decoration: new BoxDecoration(
-          gradient: new LinearGradient(
-            colors: [Colors.blue[100], Colors.blue[300]],
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Colors.white, Colors.blue[500]],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             stops: [0.0, 1.0],
@@ -92,26 +69,38 @@ class _MainDrawerState extends State<MainDrawer> {
           ),
         ),
         child: ListView(
-          // Important: Remove any padding from the ListView.
           padding: EdgeInsets.zero,
           children: <Widget>[
-            InkWell(
-              onTap: () => _selectImage(),
-              child: UserAccountsDrawerHeader(
-                accountName: Text("${_loginProvider.loggedMember.firstName} ${_loginProvider.loggedMember.lastName}"),
-                accountEmail: Text(_loginProvider.loggedMember.email),
-                currentAccountPicture: new CircleAvatar(
-                  backgroundColor: Colors.blue[300],
-                  backgroundImage: new AssetImage("images/helmet-face.png"),
+            Stack(
+              alignment: Alignment.centerRight,
+              children: <Widget>[
+                UserAccountsDrawerHeader(
+                  accountName: Text("${_loginProvider.loggedMember.firstName} ${_loginProvider.loggedMember.lastName}"),
+                  accountEmail: Text(_loginProvider.loggedMember.email),
+                  arrowColor: Colors.green,
+                  currentAccountPicture: InkWell(
+                    onTap: () => _selectImage(context),
+                    child: CircleAvatar(
+                      backgroundColor: Colors.blue[200],
+                      backgroundImage: _loginProvider.loggedMember.avatar != null ? NetworkImage("http://example.com/${_loginProvider.loggedMember.avatar}") : AssetImage("images/helmet-face.png"),
+                    ),
+                  ),
                 ),
-              ),
+                Container(
+                  width: 210,
+                  height: 110,
+                  alignment: Alignment.topCenter,
+                  child: Image.asset(
+                    'images/chachatte-team-banner-drawer.png',
+                    fit: BoxFit.fitWidth,
+                    width: 160,
+                    alignment: Alignment.center,
+                  ),
+                ),
+              ],
             ),
             Column(
               children: <Widget>[
-                Text("Image size : $_imageSize"),
-                Center(
-                  child: _image == null ? Text('No image selected.') : Image.file(_image),
-                ),
                 ListTile(
                   leading: Icon(
                     Icons.person,
