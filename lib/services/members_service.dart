@@ -171,17 +171,21 @@ class MembersService {
     }
   }
 
-  /// Upload the specified avatar [file]
+  /// Upload the specified avatar [file] for the specified [memberId]
   /// Send a POST request to the Restful API
   /// Throw an exception if response status code is different from 200
   /// Return the uploaded avatar relative path
-  Future<String> uploadAvatar(File file) async {
+  Future<String> uploadAvatar(File file, int memberId) async {
     final http.ByteStream stream = new http.ByteStream(DelegatingStream.typed(file.openRead()));
     final int length = await file.length();
     final Uri uri = Uri.parse(AppConstants.API_ROOT_URL + AppConstants.API_UPLOAD_MEMBER_AVATAR_ENDPOINT);
     final http.MultipartRequest request = new http.MultipartRequest("POST", uri);
     final http.MultipartFile multipartFile = new http.MultipartFile('avatar', stream, length, filename: basename(file.path));
     request.files.add(multipartFile);
+
+    Map<String, String> params = new Map();
+    params.putIfAbsent("memberId", () => "$memberId");
+    request.fields.addAll(params);
 
     // call to API
     final response = await request.send();
@@ -194,7 +198,7 @@ class MembersService {
       }
       return path;
     } else if (response.statusCode == 400) {
-      throw Exception('File too big or wrong type');
+      throw Exception('File too big ($length) or wrong type');
     } else {
       throw Exception('Unexpected server response');
     }

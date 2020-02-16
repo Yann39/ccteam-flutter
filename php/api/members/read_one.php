@@ -46,7 +46,7 @@ if (!empty($data->email)) {
     // query members
     $member->readByEmail($data->email);
 
-    // check if at least one record has been found
+    // check if record has been found
     if ($member->email != null) {
         // if member is active
         if ($member->active == true) {

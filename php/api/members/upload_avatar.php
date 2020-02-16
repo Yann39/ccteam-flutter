@@ -27,17 +27,19 @@ header("Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers
 
 // include needed classes
 include_once '../config/database.php';
-//include_once '../objects/members.php';
+include_once '../objects/members.php';
 
 // get database connection
 $database = new Database();
 $db = $database->getConnection();
 
-// prepare Member object
-//$member = new Member($db);
-
 // get uploaded avatar file
 if (isset($_FILES['avatar']) && $_FILES['avatar']['error'] === UPLOAD_ERR_OK) {
+
+    // load Member object from member id
+    $member = new Member($db);
+    $member->id = isset($_POST['memberId']) ? $_POST['memberId'] : die();;
+    $member->readOne();
 
     // get details of the uploaded file
     $fileTmpPath = $_FILES['avatar']['tmp_name'];
@@ -49,7 +51,7 @@ if (isset($_FILES['avatar']) && $_FILES['avatar']['error'] === UPLOAD_ERR_OK) {
 
     // allowed extensions / mime types
     $allowed = array("jpg" => "image/jpg", "jpeg" => "image/jpeg", "gif" => "image/gif", "png" => "image/png");
-    $maxSize = 0.2 * 1024 * 1024;
+    $maxSize = 0.5 * 1024 * 1024;
 
     // check file extension
     if (array_key_exists($ext, $allowed)) {
@@ -60,25 +62,22 @@ if (isset($_FILES['avatar']) && $_FILES['avatar']['error'] === UPLOAD_ERR_OK) {
             // check file size (maximum 200 KB)
             if ($fileSize <= $maxSize) {
 
-                // check if file already exists
-                //if (!file_exists("../../upload/avatars/" . $fileName)) {
+                    // generate file name
+                    $newFileName = $member->id . '_' . md5(time() . $fileName) . '.' . $ext;
 
-                    $newFileName = md5(time() . $fileName) . '.' . $ext;
-
+                    // create file
                     move_uploaded_file($fileTmpPath, "../../upload/avatars/" . $newFileName);
+
+                    // remove old avatar file if it exists
+                    if (file_exists("../../upload/avatars/" . $member->avatar)) {
+                        unlink('../../upload/avatars/' . $member->avatar);
+                    }
 
                     // set response code - 200 OK
                     http_response_code(200);
 
                     // display response in json format
-                    echo '{"path":"upload/avatars/' . $newFileName . '"}';
-
-                //}
-                //else {
-                    // set response code - 400 Bad Request
-                    //http_response_code(400);
-                    //exit('File already exists');
-                //}
+                    echo '{"file":"' . $newFileName . '"}';
 
             }
             else {

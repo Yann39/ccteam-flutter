@@ -17,14 +17,11 @@
  * along with Chachatte Team. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import 'dart:io';
-
 import 'package:chachatte_team/models/member.dart';
 import 'package:chachatte_team/providers/drawer_provider.dart';
 import 'package:chachatte_team/providers/login_provider.dart';
+import 'package:chachatte_team/utils/constants.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 
 class MainDrawer extends StatelessWidget {
@@ -46,16 +43,10 @@ class MainDrawer extends StatelessWidget {
     }
   }
 
-  /// Allow user to select an image from the gallery
-  Future _selectImage(BuildContext context) async {
-    File image = await ImagePicker.pickImage(source: ImageSource.gallery);
-    Provider.of<DrawerProvider>(context, listen: false).loadImage(image);
-    Navigator.of(context).pushNamed('/imageCrop');
-  }
-
   @override
   Widget build(BuildContext context) {
     final LoginProvider _loginProvider = Provider.of<LoginProvider>(context, listen: false);
+    final DrawerProvider _drawerProvider = Provider.of<DrawerProvider>(context, listen: false);
 
     return Drawer(
       child: Container(
@@ -79,10 +70,15 @@ class MainDrawer extends StatelessWidget {
                   accountEmail: Text(_loginProvider.loggedMember.email),
                   arrowColor: Colors.green,
                   currentAccountPicture: InkWell(
-                    onTap: () => _selectImage(context),
+                    onTap: () {
+                      _drawerProvider.loadImage(null);
+                      Navigator.of(context).pushNamed('/editAvatar');
+                    },
                     child: CircleAvatar(
                       backgroundColor: Colors.blue[200],
-                      backgroundImage: _loginProvider.loggedMember.avatar != null ? NetworkImage("http://example.com/${_loginProvider.loggedMember.avatar}") : AssetImage("images/helmet-face.png"),
+                      backgroundImage: _loginProvider.loggedMember.avatar != null
+                          ? NetworkImage("${AppConstants.SERVER_ROOT_PATH}${AppConstants.SERVER_AVATAR_FOLDER}${_loginProvider.loggedMember.avatar}")
+                          : AssetImage("images/helmet-face.png"),
                     ),
                   ),
                 ),

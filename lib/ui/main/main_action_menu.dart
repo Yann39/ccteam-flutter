@@ -54,10 +54,6 @@ class MainActionMenu extends StatelessWidget {
             child: Text(AppString.contact),
             value: QuickActions.contact,
           ),
-          PopupMenuItem<QuickActions>(
-            child: Text(AppString.logout),
-            value: QuickActions.logout,
-          ),
         ];
       },
       onSelected: _select,

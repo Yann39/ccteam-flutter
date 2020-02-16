@@ -27,18 +27,12 @@ class DrawerProvider extends ChangeNotifier {
   final Logger _log = new Logger('DrawerProvider');
 
   File _image;
-  int _imageSize;
 
   File get image => _image;
 
-  int get imageSize => _imageSize;
-
   /// Check if the user needs to authenticate
   Future<void> loadImage(File imageFile) async {
-    _log.info("Loading image");
     _image = imageFile;
-    FileStat fs = imageFile.statSync();
-    _imageSize = fs.size;
     notifyListeners();
   }
 }

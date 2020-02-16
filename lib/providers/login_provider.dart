@@ -137,19 +137,21 @@ class LoginProvider extends ChangeNotifier {
     });
   }
 
-  /// Upload the specified [avatar] file
-  Future<void> uploadAvatar(File avatar) async {
-    await _membersService.uploadAvatar(avatar).then((value) async {
+  /// Upload the specified [avatar] file for the specified [memberId]
+  Future<void> uploadAvatar(File avatar, int memberId) async {
+    await _membersService.uploadAvatar(avatar, memberId).then((value) async {
       _log.fine("Avatar uploaded successfully");
 
       dynamic responseJson = json.decode(value);
-      final String path = responseJson['path'];
+      final String uploadedFileName = responseJson['file'];
 
-      _log.fine("Avatar path is : $path");
+      _log.fine("Avatar uploaded file name is : $uploadedFileName");
 
       final Member tmpMember = _loggedMember;
-      tmpMember.avatar = path;
+      tmpMember.avatar = uploadedFileName;
       tmpMember.modifiedOn = DateTime.now();
+
+      _log.info("Sending user with new avatar : ${tmpMember.toString()}");
 
       await _membersService.updateMember(tmpMember).then((value) {
         _log.fine("Avatar updated for member : ${tmpMember.email}");

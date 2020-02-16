@@ -119,6 +119,7 @@ class AppString {
   static const String memberActiveMandatory = 'Le statut du membre (actif ou non) est obligatoire';
   static const String memberPasswordMandatory = 'Le mot de passe est obligatoire';
   static const String memberLoginFailed = 'Connexion impossible, vérifiez vos informations et assurez-vous que votre compte est actif';
+  static const String avatarUploadFailed = 'Échec, la taille du fichier ne doit pas dépasser 500Ko';
 
   static const String eventScreenTitle = 'Calendrier';
   static const String eventCreate = 'Ajouter un événement';
