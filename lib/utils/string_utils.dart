@@ -26,9 +26,9 @@ class StringUtils {
   }
 
   /// Check if the specified [input] string is a valid e-mail address
+  /// It uses standard HTML5 validation spec, see https://stackoverflow.com/a/16888554/1274485
   static bool isValidEmail(String input) {
-    final RegExp regex = new RegExp(r"^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,253}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,253}[a-zA-Z0-9])?)*$");
-    return regex.hasMatch(input);
+    return RegExp(r"^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,253}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,253}[a-zA-Z0-9])?)*$").hasMatch(input);
   }
 
   /// Check if the specified [input] string is a valid price
@@ -38,5 +38,10 @@ class StringUtils {
     final RegExp regex = new RegExp(r'^\d{0,4}(\.\d{1,2})?$');
     return regex.hasMatch(input);
   }
+
+  /// Capitalize the given [text]
+  static String capitalize(String text) => (text != null && text.length > 1)
+      ? text[0].toUpperCase() + text.substring(1)
+      : text != null ? text.toUpperCase() : null;
 
 }
