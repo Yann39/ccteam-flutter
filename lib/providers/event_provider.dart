@@ -31,6 +31,7 @@ class EventProvider extends ChangeNotifier {
   List<Event> _events = [];
   List<Event> _displayEvents = [];
   int _eventsPerLine = 1;
+  int _eventModeSelectorIndex = 0;
 
   EventProvider() {
     fetchEvents();
@@ -39,6 +40,7 @@ class EventProvider extends ChangeNotifier {
   UnmodifiableListView<Event> get events => UnmodifiableListView(_events);
   UnmodifiableListView<Event> get displayEvents => UnmodifiableListView(_displayEvents);
   int get eventsPerLine => _eventsPerLine;
+  int get eventModeSelectorIndex => _eventModeSelectorIndex;
 
   setDisplayEvents(DateTime date, String calendarMode) {
     String format = calendarMode == 'year' ? 'My' : 'dMy';
@@ -52,6 +54,11 @@ class EventProvider extends ChangeNotifier {
 
   changeEventsPerLine() {
     _eventsPerLine = _eventsPerLine < 3 ? _eventsPerLine+1 : 1;
+    notifyListeners();
+  }
+
+  changeEventModeSelectorIndex(int index) {
+    _eventModeSelectorIndex = index ?? 0;
     notifyListeners();
   }
 

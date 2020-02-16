@@ -151,6 +151,7 @@ class AppString {
   static const String eventDateHint = 'Date de l\'événement';
   static const String eventDateMandatory = 'La date est obligatoire';
   static const String eventDateNotValid = 'La date indiquée n\'est pas valide';
+  static const String eventDisplay1ItemTooltip = 'Afficher 1 seul événement par ligne';
   static const String eventDisplay2ItemsTooltip = 'Afficher 2 événements par ligne';
   static const String eventDisplay3ItemsTooltip = 'Afficher 3 événements par ligne';
   static const String eventDisplay4ItemsTooltip = 'Afficher 4 événements par ligne';
