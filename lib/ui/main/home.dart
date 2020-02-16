@@ -17,56 +17,40 @@
  * along with Chachatte Team. If not, see <http://www.gnu.org/licenses/>.
  */
 
+import 'package:chachatte_team/providers/home_provider.dart';
 import 'package:chachatte_team/ui/events/calendar.dart';
 import 'package:chachatte_team/ui/members/team.dart';
 import 'package:chachatte_team/ui/news/news.dart';
 import 'package:chachatte_team/ui/photos/gallery.dart';
 import 'package:chachatte_team/utils/strings.dart';
 import 'package:flutter/material.dart';
-import 'package:intl/date_symbol_data_local.dart';
 import 'package:logging/logging.dart';
+import 'package:provider/provider.dart';
 
-class Home extends StatefulWidget {
-  const Home({Key key}) : super(key: key);
-
-  @override
-  State<StatefulWidget> createState() {
-    return _HomeState();
-  }
-}
-
-class _HomeState extends State<Home> {
+class Home extends StatelessWidget {
   final Logger _log = new Logger('Home');
 
   // list of pages of the bottom navigation bar
   final List<Widget> _children = [NewsList(), Calendar(), Team(), Gallery()];
 
-  // current page index of the bottom navigation bar
-  int _currentIndex = 0;
+  // this should be called for at least one locale before any date formatting methods are called
+  //initializeDateFormatting();
 
   /// handle tabs clicks
-  void onTabTapped(int index) {
-    setState(() {
-      _currentIndex = index;
-    });
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    // this should be called for at least one locale before any date formatting methods are called
-    initializeDateFormatting();
+  void onTabTapped(int index, BuildContext context) {
+    Provider.of<HomeProvider>(context, listen: false).setCurrentIndex(index);
   }
 
   Widget build(BuildContext context) {
-    _log.info("Build home");
+    _log.info("Building home page...");
+    final HomeProvider _homeProvider = Provider.of<HomeProvider>(context, listen: true);
 
     return Scaffold(
       backgroundColor: Colors.transparent,
-      body: _children[_currentIndex],
+      body: _children[_homeProvider.currentIndex],
       bottomNavigationBar: BottomNavigationBar(
-        onTap: onTabTapped,
-        currentIndex: _currentIndex,
+        onTap: (int index) => _homeProvider.setCurrentIndex(index),
+        currentIndex: _homeProvider.currentIndex,
         fixedColor: Colors.red[700],
         type: BottomNavigationBarType.shifting,
         items: [
