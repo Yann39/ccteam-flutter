@@ -19,8 +19,8 @@
 
 import 'package:chachatte_team/models/news.dart';
 import 'package:chachatte_team/providers/news_provider.dart';
-import 'package:chachatte_team/ui/main_action_menu.dart';
-import 'package:chachatte_team/ui/main_drawer.dart';
+import 'package:chachatte_team/ui/main/main_action_menu.dart';
+import 'package:chachatte_team/ui/main/main_drawer.dart';
 import 'package:chachatte_team/ui/news/news_card.dart';
 import 'package:chachatte_team/utils/strings.dart';
 import 'package:flutter/material.dart';

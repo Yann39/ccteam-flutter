@@ -19,8 +19,8 @@
 
 import 'package:chachatte_team/models/photo.dart';
 import 'package:chachatte_team/services/photos_service.dart';
-import 'package:chachatte_team/ui/main_action_menu.dart';
-import 'package:chachatte_team/ui/main_drawer.dart';
+import 'package:chachatte_team/ui/main/main_action_menu.dart';
+import 'package:chachatte_team/ui/main/main_drawer.dart';
 import 'package:chachatte_team/ui/photos/add_photo.dart';
 import 'package:chachatte_team/ui/photos/photo_card.dart';
 import 'package:chachatte_team/utils/strings.dart';

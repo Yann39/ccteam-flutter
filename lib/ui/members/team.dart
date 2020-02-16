@@ -19,8 +19,8 @@
 
 import 'package:chachatte_team/models/member.dart';
 import 'package:chachatte_team/providers/member_provider.dart';
-import 'package:chachatte_team/ui/main_action_menu.dart';
-import 'package:chachatte_team/ui/main_drawer.dart';
+import 'package:chachatte_team/ui/main/main_action_menu.dart';
+import 'package:chachatte_team/ui/main/main_drawer.dart';
 import 'package:chachatte_team/utils/strings.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
