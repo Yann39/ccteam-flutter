@@ -37,20 +37,19 @@ class Register extends StatefulWidget {
 
 class _RegisterState extends State<Register> {
   final GlobalKey<FormState> _formKey = new GlobalKey<FormState>();
-  final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
   final Logger _log = new Logger('Register');
 
   // the member to be created (will hold form data)
   final Member _newMember = new Member();
 
   /// Validate the form then submit data to backend
-  void submitForm(Member member) {
+  void submitForm(Member member, BuildContext context) {
     final FormState _form = _formKey.currentState;
 
     // validate the form
     if (!_form.validate()) {
       _log.warning("Register form is not valid");
-      _scaffoldKey.currentState.showSnackBar(SnackBar(backgroundColor: Colors.red, content: Text(AppString.formNotValid)));
+      Scaffold.of(context).showSnackBar(SnackBar(backgroundColor: Colors.red, content: Text(AppString.formNotValid)));
     } else {
       // this invokes each onSaved event
       _form.save();
@@ -65,7 +64,7 @@ class _RegisterState extends State<Register> {
   }
 
   Widget build(BuildContext context) {
-    _log.info("Building Register");
+    _log.info("Building Register...");
 
     final _logo = Container(
       padding: EdgeInsets.only(top: 36),
@@ -195,37 +194,36 @@ class _RegisterState extends State<Register> {
       initialValue: _newMember.password,
     );
 
-    final _registerButton = Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: <Widget>[
-        RaisedButton(
+    final _backButton = RaisedButton(
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(8),
+      ),
+      onPressed: () {
+        Navigator.pop(context);
+      },
+      padding: EdgeInsets.fromLTRB(16.0, 12.0, 16.0, 12.0),
+      color: Colors.grey[700],
+      child: Text(
+        AppString.back,
+        style: TextStyle(color: Colors.white),
+      ),
+    );
+
+    final _registerButton = Builder(
+      builder: (BuildContext context) {
+        return RaisedButton(
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(8),
           ),
-          onPressed: () {
-            Navigator.pop(context);
-          },
-          padding: EdgeInsets.fromLTRB(16.0, 12.0, 16.0, 12.0),
-          color: Colors.grey[700],
-          child: Text(
-            AppString.back,
-            style: TextStyle(color: Colors.white),
-          ),
-        ),
-        SizedBox(width: 8.0),
-        RaisedButton(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8),
-          ),
-          onPressed: () => submitForm(_newMember),
+          onPressed: () => submitForm(_newMember, context),
           padding: EdgeInsets.fromLTRB(16.0, 12.0, 16.0, 12.0),
           color: Colors.red[700],
           child: Text(
             AppString.register,
             style: TextStyle(color: Colors.white),
           ),
-        ),
-      ],
+        );
+      },
     );
 
     final _haveAccountLabel = FlatButton(
@@ -249,13 +247,12 @@ class _RegisterState extends State<Register> {
             image: AssetImage("images/motos.jpg"),
             fit: BoxFit.cover,
             colorFilter: ColorFilter.mode(
-              Color.fromRGBO(255, 255, 255, 0.4),
+              Color.fromRGBO(255, 255, 255, 0.3),
               BlendMode.modulate,
             ),
           ),
         ),
         child: Scaffold(
-          key: _scaffoldKey,
           backgroundColor: Colors.transparent,
           body: Stack(
             children: <Widget>[
@@ -282,7 +279,14 @@ class _RegisterState extends State<Register> {
                           SizedBox(height: 8.0),
                           _passwordBisField,
                           SizedBox(height: 24.0),
-                          _registerButton,
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: <Widget>[
+                              _backButton,
+                              SizedBox(width: 8.0),
+                              _registerButton,
+                            ],
+                          ),
                           _haveAccountLabel
                         ],
                       ),

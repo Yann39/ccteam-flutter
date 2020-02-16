@@ -86,16 +86,19 @@ class ChachatteTeamApp extends StatelessWidget {
         '/memberDetail': (context) => MemberDetail(member: ModalRoute.of(context).settings.arguments),
       },
       home: Consumer<LoginProvider>(builder: (context, loginProvider, child) {
-        if (loginProvider.status == AuthStatus.Authenticated) {
-          _log.info("Going to home page");
-          return Home();
-        } else if (loginProvider.status == AuthStatus.Initializing) {
-          _log.info("Going to loading page");
-          return Loading();
-        } else {
-          _log.info("Going to login page");
-          return Login();
+        switch (loginProvider.status) {
+          case AuthStatus.Initializing:
+            _log.info("Going to init page...");
+            return Loading();
+          case AuthStatus.Unauthenticated:
+          case AuthStatus.Authenticating:
+            _log.info("Going to login page...");
+            return Login();
+          case AuthStatus.Authenticated:
+            _log.info("Going to home page...");
+            return Home();
         }
+        return Text("Unknown authentication status");
       }),
       theme: ThemeData(
         primarySwatch: Colors.blue,

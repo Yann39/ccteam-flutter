@@ -36,20 +36,19 @@ class Login extends StatefulWidget {
 class _LoginState extends State<Login> {
   final Logger _log = new Logger('Login');
   final GlobalKey<FormState> _loginFormKey = new GlobalKey<FormState>();
-  final GlobalKey<ScaffoldState> _loginScaffoldKey = new GlobalKey<ScaffoldState>();
 
   // the member to be logged (will simply hold email and password)
   final Member _newMember = new Member();
 
   /// Method that navigates to the Register screen and awaits the result from Navigator.pop
   _navigateToRegisterScreen(BuildContext context) async {
-    _log.info("Going to Register page");
+    _log.info("Going to Register page...");
     // Navigator.push returns a Future that will complete after we call Navigator.pop on the target screen
     final _result = await Navigator.pushNamed(context, '/register');
 
     // after the target screen returns a result, show a bottom sheet to display the result
     if (_result != null) {
-      _loginScaffoldKey.currentState.showBottomSheet<String>(
+      Scaffold.of(context).showBottomSheet<String>(
         (BuildContext context) {
           return Container(
             decoration: BoxDecoration(
@@ -76,20 +75,19 @@ class _LoginState extends State<Login> {
                     style: TextStyle(color: Colors.white),
                   ),
                 ),
-                ButtonTheme.bar(
-                  child: ButtonBar(
-                    children: <Widget>[
-                      FlatButton(
-                        child: const Text(
-                          AppString.understood,
-                          style: TextStyle(color: Colors.white),
-                        ),
-                        onPressed: () {
-                          Navigator.pop(context);
-                        },
-                      )
-                    ],
-                  ),
+                ButtonBar(
+                  buttonTextTheme: ButtonTextTheme.accent,
+                  children: <Widget>[
+                    FlatButton(
+                      child: const Text(
+                        AppString.understood,
+                        style: TextStyle(color: Colors.white),
+                      ),
+                      onPressed: () {
+                        Navigator.pop(context);
+                      },
+                    )
+                  ],
                 )
               ],
             ),
@@ -106,14 +104,14 @@ class _LoginState extends State<Login> {
     // validate the form
     if (!_form.validate()) {
       _log.warning("Login form is not valid");
-      _loginScaffoldKey.currentState.showSnackBar(SnackBar(backgroundColor: Colors.red, content: Text(AppString.formNotValid)));
+      Scaffold.of(context).showSnackBar(SnackBar(backgroundColor: Colors.red, content: Text(AppString.formNotValid)));
     } else {
       // this invokes each onSaved event
       _form.save();
 
       // do the login
       Provider.of<LoginProvider>(context, listen: false).loginMember(_newMember).then((value) {}, onError: (error) {
-        _loginScaffoldKey.currentState
+        Scaffold.of(context)
           ..removeCurrentSnackBar()
           ..showSnackBar(SnackBar(backgroundColor: Colors.red, content: Text(AppString.loginFailed)));
       });
@@ -123,7 +121,7 @@ class _LoginState extends State<Login> {
   Widget build(BuildContext context) {
     final LoginProvider _loginProvider = Provider.of<LoginProvider>(context, listen: false);
 
-    _log.info("Building Login");
+    _log.info("Building Login...");
 
     final _logo = Container(
       padding: EdgeInsets.only(top: 36),
@@ -196,10 +194,9 @@ class _LoginState extends State<Login> {
       ),
     );
 
-    final _loginButton = Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: <Widget>[
-        RaisedButton(
+    final _loginButton = Builder(
+      builder: (BuildContext context) {
+        return RaisedButton(
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(8),
           ),
@@ -212,9 +209,13 @@ class _LoginState extends State<Login> {
             AppString.connect,
             style: TextStyle(color: Colors.white),
           ),
-        ),
-        SizedBox(width: 8.0),
-        RaisedButton(
+        );
+      },
+    );
+
+    final _registerButton = Builder(
+      builder: (BuildContext context) {
+        return RaisedButton(
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(8),
           ),
@@ -227,8 +228,8 @@ class _LoginState extends State<Login> {
             AppString.register,
             style: TextStyle(color: Colors.white),
           ),
-        ),
-      ],
+        );
+      },
     );
 
     final _forgotLabel = FlatButton(
@@ -252,13 +253,12 @@ class _LoginState extends State<Login> {
             image: AssetImage("images/motos.jpg"),
             fit: BoxFit.cover,
             colorFilter: ColorFilter.mode(
-              Color.fromRGBO(255, 255, 255, 0.4),
+              Color.fromRGBO(255, 255, 255, 0.3),
               BlendMode.modulate,
             ),
           ),
         ),
         child: Scaffold(
-          key: _loginScaffoldKey,
           backgroundColor: Colors.transparent,
           body: Center(
             child: SingleChildScrollView(
@@ -269,14 +269,20 @@ class _LoginState extends State<Login> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: <Widget>[
-                    Text(_loginProvider.status.toString()),
                     _loginProvider.status == AuthStatus.Authenticating ? CircularProgressIndicator() : _logo,
                     SizedBox(height: 32.0),
                     _emailField,
                     SizedBox(height: 8.0),
                     _passwordField,
                     SizedBox(height: 24.0),
-                    _loginButton,
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: <Widget>[
+                        _loginButton,
+                        SizedBox(width: 8.0),
+                        _registerButton,
+                      ],
+                    ),
                     _forgotLabel,
                   ],
                 ),

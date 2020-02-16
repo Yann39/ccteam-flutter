@@ -36,18 +36,17 @@ class ForgotPassword extends StatefulWidget {
 
 class _ForgotPassword extends State<ForgotPassword> {
   final GlobalKey<FormState> _forgotPasswordFormKey = new GlobalKey<FormState>();
-  final GlobalKey<ScaffoldState> _forgotPasswordScaffoldKey = new GlobalKey<ScaffoldState>();
   final Logger _log = new Logger('ForgotPassword');
 
   String _email;
 
   /// Method that validates the form then process the login in a loading screen and awaits the result from Navigator.pop
-  _doResetPassword() async {
+  _doResetPassword(BuildContext context) async {
     final FormState _form = _forgotPasswordFormKey.currentState;
 
     // validate the form
     if (!_form.validate()) {
-      _forgotPasswordScaffoldKey.currentState.showSnackBar(SnackBar(backgroundColor: Colors.red, content: Text(AppString.formNotValid)));
+      Scaffold.of(context).showSnackBar(SnackBar(backgroundColor: Colors.red, content: Text(AppString.formNotValid)));
     } else {
       // this invokes each onSaved event
       _form.save();
@@ -121,30 +120,29 @@ class _ForgotPassword extends State<ForgotPassword> {
       ),
     );
 
-    final _sendButton = Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: <Widget>[
-        RaisedButton(
+    final _cancelButton = RaisedButton(
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(8),
+      ),
+      onPressed: () {
+        Navigator.pop(context);
+      },
+      padding: EdgeInsets.fromLTRB(16.0, 12.0, 16.0, 12.0),
+      color: Colors.grey[700],
+      child: Text(
+        AppString.cancel,
+        style: TextStyle(color: Colors.white),
+      ),
+    );
+
+    final _sendButton = Builder(
+      builder: (BuildContext context) {
+        return RaisedButton(
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(8),
           ),
           onPressed: () {
-            Navigator.pop(context);
-          },
-          padding: EdgeInsets.fromLTRB(16.0, 12.0, 16.0, 12.0),
-          color: Colors.grey[700],
-          child: Text(
-            AppString.cancel,
-            style: TextStyle(color: Colors.white),
-          ),
-        ),
-        SizedBox(width: 8.0),
-        RaisedButton(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8),
-          ),
-          onPressed: () {
-            _doResetPassword();
+            _doResetPassword(context);
           },
           padding: EdgeInsets.fromLTRB(16.0, 12.0, 16.0, 12.0),
           color: Colors.red[700],
@@ -152,8 +150,8 @@ class _ForgotPassword extends State<ForgotPassword> {
             AppString.send,
             style: TextStyle(color: Colors.white),
           ),
-        ),
-      ],
+        );
+      },
     );
 
     return GestureDetector(
@@ -167,13 +165,12 @@ class _ForgotPassword extends State<ForgotPassword> {
             image: AssetImage("images/motos.jpg"),
             fit: BoxFit.cover,
             colorFilter: ColorFilter.mode(
-              Color.fromRGBO(255, 255, 255, 0.4),
+              Color.fromRGBO(255, 255, 255, 0.3),
               BlendMode.modulate,
             ),
           ),
         ),
         child: Scaffold(
-          key: _forgotPasswordScaffoldKey,
           backgroundColor: Colors.transparent,
           body: Stack(
             children: <Widget>[
@@ -192,14 +189,20 @@ class _ForgotPassword extends State<ForgotPassword> {
                         SizedBox(height: 32.0),
                         _emailField,
                         SizedBox(height: 24.0),
-                        _sendButton,
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: <Widget>[
+                            _cancelButton,
+                            SizedBox(width: 24.0),
+                            _sendButton,
+                          ],
+                        ),
                       ],
                     ),
                   ),
                 ),
               ),
               Positioned(
-                //Place it at the top, and not use the entire screen
                 top: 0.0,
                 left: 0.0,
                 right: 0.0,
