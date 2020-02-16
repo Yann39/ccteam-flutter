@@ -25,18 +25,11 @@ import 'package:chachatte_team/utils/strings.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-class NewsDetail extends StatefulWidget {
+class NewsDetail extends StatelessWidget {
   final News news;
 
   const NewsDetail({Key key, this.news}) : super(key: key);
 
-  @override
-  State<StatefulWidget> createState() {
-    return _NewsDetailState();
-  }
-}
-
-class _NewsDetailState extends State<NewsDetail> {
   /// Method that launches the Edit New screen and awaits the result from Navigator.pop
   _navigateToEditNewsScreen(BuildContext context, News news) async {
     // Navigator.push returns a Future that will complete after we call Navigator.pop on the Add News screen
@@ -51,7 +44,7 @@ class _NewsDetailState extends State<NewsDetail> {
   }
 
   /// Display a confirmation popup when trying to delete a news
-  void _showConfirmation(BuildContext context, String value) {
+  _showConfirmation(BuildContext context, String value) {
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
@@ -63,7 +56,7 @@ class _NewsDetailState extends State<NewsDetail> {
               // close this dialog
               Navigator.pop(context);
               // delete news
-              Provider.of<NewsProvider>(context, listen: false).deleteNews(widget.news).then((value) {
+              Provider.of<NewsProvider>(context, listen: false).deleteNews(news).then((value) {
                 Navigator.pop(context, AppString.newsDeleted);
               }, onError: (error) {
                 Navigator.pop(context, AppString.newsDeletionFailed);
@@ -89,14 +82,14 @@ class _NewsDetailState extends State<NewsDetail> {
         actions: <Widget>[
           Builder(
             builder: (context) => IconButton(
-              icon: const Icon(Icons.edit),
+              icon: Icon(Icons.edit),
               tooltip: 'Edit',
-              onPressed: () => _navigateToEditNewsScreen(context, widget.news),
+              onPressed: () => _navigateToEditNewsScreen(context, news),
             ),
           ),
           Builder(
             builder: (context) => IconButton(
-              icon: const Icon(Icons.delete_forever),
+              icon: Icon(Icons.delete_forever),
               tooltip: 'Delete',
               onPressed: () => _showConfirmation(context, AppString.newsDeletionAreYouSure),
             ),
@@ -109,24 +102,40 @@ class _NewsDetailState extends State<NewsDetail> {
         ),
       ),
       body: Container(
-        padding: EdgeInsets.all(8.0),
+        padding: EdgeInsets.symmetric(vertical: 32.0, horizontal: 16),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.start,
           children: <Widget>[
-            Text(widget.news.toString()),
-            Text(DateUtils.convertToString(widget.news.newsDate, AppConstants.DATE_FORMAT), textAlign: TextAlign.left),
-            Text(widget.news.title, textScaleFactor: 2, textAlign: TextAlign.center),
-            SizedBox(
-              height: 10,
+            Text(news.title, textScaleFactor: 2.4, textAlign: TextAlign.left, style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+            SizedBox(height: 10),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: <Widget>[
+                Icon(Icons.person, color: Colors.lime, size: 12.0),
+                SizedBox(width: 2.0),
+                Text("Par ${news.createdBy.firstName} ${news.createdBy.lastName}", textAlign: TextAlign.left, style: TextStyle(color: Colors.white)),
+              ],
             ),
-            Text(widget.news.content),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: <Widget>[
+                Icon(Icons.access_time, color: Colors.lime, size: 12.0),
+                SizedBox(width: 2.0),
+                Text("Le ${DateUtils.convertToString(news.newsDate, AppConstants.DATE_FORMAT_TXT)}", textAlign: TextAlign.left, style: TextStyle(color: Colors.white)),
+              ],
+            ),
+            Divider(height: 36, color: Colors.white),
+            Text(news.content, textScaleFactor: 1.3, style: TextStyle(color: Colors.white)),
           ],
         ),
         decoration: BoxDecoration(
           gradient: LinearGradient(
-            colors: [Colors.blue[100], Colors.blue[400]],
-            begin: const FractionalOffset(0.0, 0.0),
-            end: const FractionalOffset(0.0, 1.0),
+            colors: [Colors.blue[500], Colors.blue[100]],
+            begin: FractionalOffset(0.0, 0.0),
+            end: FractionalOffset(0.0, 1.0),
             stops: [0.0, 1.0],
             tileMode: TileMode.clamp,
           ),

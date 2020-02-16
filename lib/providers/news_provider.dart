@@ -24,26 +24,32 @@ import 'package:chachatte_team/services/news_service.dart';
 import 'package:flutter/foundation.dart';
 import 'package:logging/logging.dart';
 
+enum NewsStatus { Fetching, Fetched }
+
 class NewsProvider extends ChangeNotifier {
   final Logger _log = new Logger('NewsProvider');
   final NewsService _newsService = new NewsService();
   List<News> _news = [];
+  NewsStatus _newsStatus = NewsStatus.Fetching;
 
   NewsProvider() {
     fetchNews();
   }
 
   UnmodifiableListView<News> get news => UnmodifiableListView(_news);
+  NewsStatus get newsStatus => _newsStatus;
 
   /// Get the list of all news
   Future<void> fetchNews() async {
     await _newsService.fetchNews().then((value) async {
       _log.fine("News list retrieved successfully");
       _news = value;
+      _newsStatus = NewsStatus.Fetched;
       notifyListeners();
     }, onError: (error) {
       _log.warning("Error when retrieving news list ($error)");
       _news = [];
+      _newsStatus = NewsStatus.Fetched;
       notifyListeners();
       throw (error);
     });

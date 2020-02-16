@@ -17,8 +17,6 @@
  * along with Chachatte Team. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import 'dart:math';
-
 import 'package:chachatte_team/models/news.dart';
 import 'package:chachatte_team/providers/news_provider.dart';
 import 'package:chachatte_team/ui/main_action_menu.dart';
@@ -29,20 +27,9 @@ import 'package:flutter/material.dart';
 import 'package:logging/logging.dart';
 import 'package:provider/provider.dart';
 
-class NewsList extends StatefulWidget {
-  const NewsList({Key key}) : super(key: key);
-
-  @override
-  State<StatefulWidget> createState() {
-    return _NewsListState();
-  }
-}
-
-class _NewsListState extends State<NewsList> {
+class NewsList extends StatelessWidget {
   final Logger _log = new Logger('NewsList');
-
   final List _helmets = ["images/helmet-blue.png", "images/helmet-green.png", "images/helmet-red.png", "images/helmet-purple.png", "images/helmet-yellow.png"];
-  Random _random = new Random();
 
   /// Navigates to the Add News screen and awaits the result from Navigator.pop
   _navigateToAddNewsScreen(BuildContext context) async {
@@ -71,7 +58,7 @@ class _NewsListState extends State<NewsList> {
   }
 
   Widget build(BuildContext context) {
-    _log.info("Building News list");
+    _log.info("Building News list...");
     final _newsProvider = Provider.of<NewsProvider>(context, listen: true);
 
     return Scaffold(
@@ -80,82 +67,84 @@ class _NewsListState extends State<NewsList> {
         actions: <Widget>[MainActionMenu()],
       ),
       drawer: MainDrawer(),
-      body: NestedScrollView(
-        headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
-          return <Widget>[
-            SliverAppBar(
-              expandedHeight: 150.0,
-              floating: true,
-              backgroundColor: Colors.transparent,
-              pinned: false,
-              flexibleSpace: Container(
-                child: FlexibleSpaceBar(
-                  centerTitle: true,
-                  background: Opacity(
+      body: Scaffold(
+        body: NestedScrollView(
+          headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
+            return <Widget>[
+              SliverAppBar(
+                expandedHeight: 150.0,
+                floating: true,
+                backgroundColor: Colors.transparent,
+                pinned: false,
+                flexibleSpace: Container(
+                  child: FlexibleSpaceBar(
+                    centerTitle: true,
+                    background: Opacity(
                       child: Image.asset(
                         'images/chachatte-team-banner.png',
                         fit: BoxFit.fitWidth,
                       ),
-                      opacity: 1.0),
-                ),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [Colors.white, Colors.blue[100]],
-                    begin: const FractionalOffset(0.0, 0.0),
-                    end: const FractionalOffset(0.0, 1.0),
-                    stops: [0.0, 1.0],
-                    tileMode: TileMode.clamp,
+                      opacity: 1.0,
+                    ),
+                  ),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [Colors.white, Colors.blue[100]],
+                      begin: FractionalOffset(0.0, 0.0),
+                      end: FractionalOffset(0.0, 1.0),
+                      stops: [0.0, 1.0],
+                    ),
                   ),
                 ),
               ),
-            ),
-          ];
-        },
-        body: Container(
-          child: Column(
-            children: <Widget>[
-              Container(
-                padding: EdgeInsets.all(8),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: <Widget>[
-                    //Icon(Icons.arrow_forward, color: Colors.red[700], size: 18),
-                    //Text("Actualités", style: TextStyle(color: Colors.black87, fontSize: 15, fontWeight: FontWeight.bold))
-                    SizedBox(width: 3),
-                    Text("Actualités", style: TextStyle(color: Colors.black87, fontSize: 16, fontFamily: 'Barbatrick', letterSpacing: 2))
-                  ],
+            ];
+          },
+          body: Container(
+            child: Column(
+              children: <Widget>[
+                Container(
+                  padding: EdgeInsets.all(8),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: <Widget>[
+                      Icon(Icons.event_note, color: Colors.red[700], size: 18),
+                      SizedBox(width: 3),
+                      Text("ACTUALITES", style: TextStyle(color: Colors.black87, fontSize: 15, fontWeight: FontWeight.bold)),
+                      //Text("Actualités", style: TextStyle(color: Colors.black87, fontSize: 16, fontFamily: 'Barbatrick', letterSpacing: 2)),
+                    ],
+                  ),
                 ),
-              ),
-              Expanded(
-                child: _newsProvider.news != null && _newsProvider.news.length > 0
-                    ? ListView.builder(
-                        itemCount: _newsProvider.news.length,
-                        itemBuilder: (context, index) {
-                          final int _randomIndex = _random.nextInt(3);
-                          return InkWell(
-                            child: NewsCard(_newsProvider.news[index], AssetImage(_helmets[_randomIndex])),
-                            onTap: () => _navigateToNewsDetailScreen(context, _newsProvider.news[index]),
-                          );
-                        },
-                      )
-                    : Center(
-                        child: SizedBox(
-                          child: CircularProgressIndicator(),
-                          height: 20.0,
-                          width: 20.0,
+                Expanded(
+                  child: _newsProvider.newsStatus == NewsStatus.Fetched
+                      ? (_newsProvider.news.length > 0
+                          ? ListView.builder(
+                              itemCount: _newsProvider.news.length,
+                              itemBuilder: (context, index) {
+                                return InkWell(
+                                  child: NewsCard(_newsProvider.news[index], AssetImage(_helmets[index % 3])),
+                                  onTap: () => _navigateToNewsDetailScreen(context, _newsProvider.news[index]),
+                                );
+                              },
+                            )
+                          : Text(AppString.newsEmpty))
+                      : Center(
+                          child: SizedBox(
+                            child: CircularProgressIndicator(),
+                            height: 20.0,
+                            width: 20.0,
+                          ),
                         ),
-                      ),
+                ),
+              ],
+            ),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [Colors.blue[100], Colors.blue[300]],
+                begin: FractionalOffset(0.0, 0.0),
+                end: FractionalOffset(0.0, 1.0),
+                stops: [0.0, 1.0],
               ),
-            ],
-          ),
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [Colors.blue[100], Colors.blue[300]],
-              begin: const FractionalOffset(0.0, 0.0),
-              end: const FractionalOffset(0.0, 1.0),
-              stops: [0.0, 1.0],
-              tileMode: TileMode.clamp,
             ),
           ),
         ),
