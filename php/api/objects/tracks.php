@@ -27,6 +27,8 @@ class Track {
     // object properties
     public $id;
     public $name;
+    public $distance;
+    public $lap_record;
 
     // constructor with $db as database connection
     public function __construct($db){
@@ -37,7 +39,7 @@ class Track {
     function read() {
 
         // query to get all records
-        $query = "SELECT n.id, n.name, n.description FROM " . $this->table_name . " n ORDER BY n.name";
+        $query = "SELECT n.id, n.name, n.distance, n.lap_record FROM " . $this->table_name . " n ORDER BY n.name";
 
         // prepare query statement
         $stmt = $this->conn->prepare($query);
@@ -52,7 +54,7 @@ class Track {
     function readOne() {
 
         // query to get record corresponding to specified id
-        $query = "SELECT n.name, n.description FROM " . $this->table_name . " n WHERE n.id = ? LIMIT 0,1";
+        $query = "SELECT n.id, n.name, n.distance, n.lap_record FROM " . $this->table_name . " n WHERE n.id = ? LIMIT 0,1";
 
         // prepare query statement
         $stmt = $this->conn->prepare($query);
@@ -68,25 +70,28 @@ class Track {
 
         // set values to object properties
         $this->name = $row['name'];
-        $this->description = $row['description'];
+        $this->distance = $row['distance'];
+        $this->lap_record = $row['lap_record'];
     }
 
     // create track
     function create() {
 
         // query to insert record
-        $query = "INSERT INTO " . $this->table_name . " SET name = :name, description = :description";
+        $query = "INSERT INTO " . $this->table_name . " SET name = :name, distance = :distance, lap_record = :lap_record";
 
         // prepare query
         $stmt = $this->conn->prepare($query);
 
         // sanitize
         $this->name=htmlspecialchars(strip_tags($this->name));
-        $this->description=htmlspecialchars(strip_tags($this->description));
+        $this->distance=htmlspecialchars(strip_tags($this->distance));
+        $this->lap_record=htmlspecialchars(strip_tags($this->lap_record));
 
         // bind values
         $stmt->bindParam(":name", $this->name);
-        $stmt->bindParam(":description", $this->description);
+        $stmt->bindParam(":distance", $this->distance);
+        $stmt->bindParam(":lap_record", $this->lap_record);
 
         // execute query
         if ($stmt->execute()) {
@@ -100,19 +105,21 @@ class Track {
     function update() {
 
         // query to update record
-        $query = "UPDATE " . $this->table_name . " SET name = :name, description = :description WHERE id = :id";
+        $query = "UPDATE " . $this->table_name . " SET name = :name, distance = :distance, lap_record = :lap_record WHERE id = :id";
 
         // prepare query statement
         $stmt = $this->conn->prepare($query);
 
         // sanitize
         $this->name=htmlspecialchars(strip_tags($this->name));
-        $this->description=htmlspecialchars(strip_tags($this->description));
+        $this->distance=htmlspecialchars(strip_tags($this->distance));
+        $this->lap_record=htmlspecialchars(strip_tags($this->lap_record));
         $this->id=htmlspecialchars(strip_tags($this->id));
 
         // bind new values
         $stmt->bindParam(":name", $this->name);
-        $stmt->bindParam(":description", $this->description);
+        $stmt->bindParam(":distance", $this->distance);
+        $stmt->bindParam(":lap_record", $this->lap_record);
         $stmt->bindParam(':id', $this->id);
 
         // execute the query
@@ -150,7 +157,7 @@ class Track {
     function search($keywords){
 
         // query to search across all records
-        $query = "SELECT n.name, n.description FROM " . $this->table_name . " n WHERE n.name LIKE ? OR n.description LIKE ? ORDER BY n.name DESC";
+        $query = "SELECT n.name, n.distance, n.lap_record FROM " . $this->table_name . " n WHERE n.name LIKE ? ORDER BY n.name DESC";
 
         // prepare query statement
         $stmt = $this->conn->prepare($query);
@@ -161,8 +168,6 @@ class Track {
 
         // bind values
         $stmt->bindParam(1, $keywords);
-        $stmt->bindParam(2, $keywords);
-        $stmt->bindParam(3, $keywords);
 
         // execute query
         $stmt->execute();

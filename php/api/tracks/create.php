@@ -40,11 +40,12 @@ $track = new Track($db);
 $data = json_decode(file_get_contents("php://input"));
 
 // make sure required data is not empty
-if (!empty($data->name) && !empty($data->description)) {
+if (!empty($data->name) && !empty($data->distance) && !empty($data->lap_record)) {
 
     // set track property values
     $track->name = $data->name;
-    $track->description = $data->description;
+    $track->distance = $data->distance;
+    $track->lap_record = $data->lap_record;
 
     // create the track
     $createdId = $track->create();

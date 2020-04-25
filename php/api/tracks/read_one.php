@@ -47,7 +47,9 @@ if ($track->title!=null) {
     // track array which will be the returned response content
     $track_arr = array(
         "id" =>  $track->id,
-        "name" =>  $track->name
+        "name" =>  $track->name,
+        "distance" =>  $track->distance,
+        "lap_record" =>  $track->lap_record
     );
 
     // set response code - 200 OK

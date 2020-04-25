@@ -42,7 +42,8 @@ $data = json_decode(file_get_contents("php://input"));
 // set track property values
 $track->id = $data->id;
 $track->name = $data->name;
-$track->description = $data->description;
+$track->distance = $data->distance;
+$track->lap_record = $data->lap_record;
 
 // update the track
 if ($track->update()) {
@@ -52,7 +53,7 @@ if ($track->update()) {
 }
 
 // if unable to update the track, tell the user
-else{
+else {
 
     // set response code - 503 service unavailable
     http_response_code(503);

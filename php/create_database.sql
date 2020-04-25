@@ -38,7 +38,8 @@ CREATE TABLE IF NOT EXISTS `members` (
 CREATE TABLE IF NOT EXISTS `tracks` (
   `id` int NOT NULL AUTO_INCREMENT,
   `name` varchar(128) NOT NULL,
-  `description` text NULL,
+  `distance` int NULL,
+  `lap_record` int NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1;
 
@@ -126,17 +127,6 @@ INSERT INTO `news` (`id`, `title`, `content`, `news_date`, `created_on`, `create
 (5, 'Essai de la nouvelle R1 à Barcelone', 'Essai de la nouvelle R1 à Barcelone sous la pluie', '2019-11-22 16:08:00', '2019-06-01 16:08:00', 1, NULL, NULL),
 (6, 'Soirée mousse chez Fred', 'Soirée mousse chez Fred avec DJ Fred et Arnold T', '2019-12-02 19:24:16', '2019-06-01 16:08:00', 1, NULL, NULL);
 
-INSERT INTO `tracks` (`id`, `name`, `description`) VALUES
-(1, 'Bresse', ''),
-(2, 'Dijon-Prenois', ''),
-(3, 'Magny-Cours', ''),
-(4, 'Bourbonnais', ''),
-(5, 'Vaison', ''),
-(6, 'Lédenon', ''),
-(7, 'Le Mans', ''),
-(8, 'Carole', ''),
-(9, 'La Ferté-Gaucher', '');
-
 INSERT INTO `events` (`id`, `title`, `description`, `event_date`, `track_id`, `organizer`, `price`, `created_on`, `created_by`, `modified_on`, `modified_by`) VALUES
 (1, 'Roulage Dijon', '', '2018-07-12 00:00:00', 2, 'ActivBike', 189, '2018-06-01 09:35:07', 1, NULL, NULL),
 (2, 'Roulage Vaison piste', '', '2018-08-02 00:00:00', 5, 'ActivBike', 90, '2018-02-08 14:30:29', 1, NULL, NULL),
@@ -154,14 +144,17 @@ INSERT INTO `photos` (`id`, `title`, `description`, `link`, `created`, `modified
 (9, 'Départ MotoGP', 'Départ MotoGP', 'http://photos.example.com/wp-content/uploads/2018/06/IMG_1441', '2019-01-16 21:49:31', NULL),
 (10, 'Cal Crutchlow', 'Cal', 'http://photos.example.com/wp-content/uploads/2018/06/IMG_1400.jpg', '2019-02-11 21:05:16', NULL);
 
-INSERT INTO `events_members` (`id`, `event_id`, `member_id`, `created`) VALUES
+INSERT INTO `events_members` (`id`, `event_id`, `member_id`, `created_on`) VALUES
 (1, 3, 2, '2018-06-01 09:35:07'),
 (2, 1, 1, '2018-02-08 14:30:29'),
 (3, 3, 1, '2018-04-20 17:14:27'),
 (4, 2, 1, '2017-11-18 10:42:55');
 
-INSERT INTO `news_members` (`id`, `news_id`, `member_id`, `created`) VALUES
+INSERT INTO `news_members` (`id`, `news_id`, `member_id`, `created_on`) VALUES
 (1, 1, 2, '2018-06-01 09:35:07'),
 (2, 1, 1, '2018-02-08 14:30:29'),
 (3, 3, 1, '2018-04-20 17:14:27'),
 (4, 4, 8, '2017-11-18 10:42:55');
+
+INSERT INTO `news_members` (`id`, `track_id`, `member_id`, `lap_time`, `record_date`, `conditions`, `comments`, `created_on`) VALUES
+(1, 1, 1, 134480, '2017-06-10', 'dry', null, '2020-04-18 21:37:17')

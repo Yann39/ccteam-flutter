@@ -83,9 +83,9 @@ class TracksService {
   /// Delete specified [track] from the database
   /// Send a POST request to the Restful API
   /// Throw an exception if response status code is different from 204
-  Future<void> deleteMember(Track track) async {
+  Future<void> deleteTrack(Track track) async {
     // call to API
-    final response = await http.post(AppConstants.API_ROOT_URL + AppConstants.API_DELETE_NEWS_ENDPOINT, headers: {'Content-Type': 'application/json'}, body: track.toJson());
+    final response = await http.post(AppConstants.API_ROOT_URL + AppConstants.API_DELETE_TRACK_ENDPOINT, headers: {'Content-Type': 'application/json'}, body: track.toJson());
 
     if (response.statusCode != 204) {
       throw Exception('Unexpected server response');

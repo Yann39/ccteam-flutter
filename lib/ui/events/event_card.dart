@@ -22,8 +22,6 @@ import 'package:chachatte_team/ui/events/event_detail.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
-enum ConfirmDialogAction { yes, no }
-
 class EventCard extends StatelessWidget {
   final Event event;
 
@@ -92,6 +90,14 @@ class EventCard extends StatelessWidget {
               ],
             ),
             decoration: BoxDecoration(border: Border(right: BorderSide(width: 1.0, color: Colors.grey[300]))),
+          ),
+          trailing: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              Icon(event.members.length > 1 ? Icons.group : Icons.person, color: Colors.white, size: 18),
+              Text("${event.members.length}", textScaleFactor: 0.8, style: TextStyle(color: Colors.white))
+            ],
           ),
         ),
       ),

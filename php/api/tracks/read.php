@@ -54,7 +54,8 @@ if ($num > 0) {
         $track_item = array(
             "id" => $id,
             "name" => $name,
-            "description" => $description,
+            "distance" => $distance,
+            "lap_record" => $lap_record
         );
 
         // add it to the tracks array
