@@ -22,6 +22,8 @@ import 'package:chachatte_team/ui/events/calendar.dart';
 import 'package:chachatte_team/ui/members/team.dart';
 import 'package:chachatte_team/ui/news/news.dart';
 import 'package:chachatte_team/ui/photos/gallery.dart';
+import 'package:chachatte_team/ui/tracks/tracks.dart';
+import 'package:chachatte_team/utils/custom_icons_icons.dart';
 import 'package:chachatte_team/utils/strings.dart';
 import 'package:flutter/material.dart';
 import 'package:logging/logging.dart';
@@ -31,7 +33,7 @@ class Home extends StatelessWidget {
   final Logger _log = new Logger('Home');
 
   // list of pages of the bottom navigation bar
-  final List<Widget> _children = [NewsList(), Calendar(), Team(), Gallery()];
+  final List<Widget> _children = [NewsList(), Calendar(), Team(), Tracks(), Gallery()];
 
   // this should be called for at least one locale before any date formatting methods are called
   //initializeDateFormatting();
@@ -65,8 +67,13 @@ class Home extends StatelessWidget {
             backgroundColor: Colors.red[700],
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.group, color: Colors.white),
+            icon: Icon(CustomIcons.group_helmet, color: Colors.white),
             title: Text(AppString.tabTeam, style: TextStyle(color: Colors.white)),
+            backgroundColor: Colors.red[700],
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(CustomIcons.track_sample, color: Colors.white, size: 20,),
+            title: Text(AppString.tabTracks, style: TextStyle(color: Colors.white)),
             backgroundColor: Colors.red[700],
           ),
           BottomNavigationBarItem(

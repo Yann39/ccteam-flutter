@@ -114,3 +114,6 @@ flutter:
     - family: Barbatrick
       fonts:
         - asset: fonts/barbatrick.regular.ttf
+    - family: CustomIcons
+      fonts:
+        - asset: fonts/CustomIcons.ttf

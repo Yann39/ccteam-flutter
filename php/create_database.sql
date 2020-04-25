@@ -132,7 +132,19 @@ INSERT INTO `events` (`id`, `title`, `description`, `event_date`, `track_id`, `o
 (2, 'Roulage Vaison piste', '', '2018-08-02 00:00:00', 5, 'ActivBike', 90, '2018-02-08 14:30:29', 1, NULL, NULL),
 (3, 'Journée du club à Bresse', '', '2018-08-28 00:00:00', 1, 'Team Blatz', 125, '2018-04-20 17:14:27', 1, NULL, NULL);
 
-INSERT INTO `photos` (`id`, `title`, `description`, `link`, `created`, `modified`) VALUES
+INSERT INTO `tracks` (`id`, `name`, `distance`, `lap_record`) VALUES
+(1, 'Bresse', 3000, null),
+(2, 'Dijon-Prenois', 3800, null),
+(3, 'Magny-Cours', 4410, null),
+(4, 'Bourbonnais', 2300, null),
+(5, 'Vaison', 2000, null),
+(6, 'Lédenon', 3150, null),
+(7, 'Le Mans', 4190, null),
+(8, 'Carole', 2055, null),
+(9, 'La Ferté-Gaucher', 3600, null);
+(10, 'Alès', 2500, null);
+
+INSERT INTO `photos` (`id`, `title`, `description`, `link`, `created_on`, `modified_on`) VALUES
 (1, 'Lorenzo', 'Lorenzo qui célèbre sa victoire', 'http://photos.example.com/wp-content/uploads/2018/06/IMG_1575.jpg', '2018-09-12 08:33:19', NULL),
 (2, 'Marc Màrquez', 'Marc Màrquez dans le 1er virage', 'http://photos.example.com/wp-content/uploads/2018/06/IMG_1548.jpg', '2018-02-08 13:30:29', NULL),
 (3, 'Johann Zarco', 'Johann Zarco', 'http://photos.example.com/wp-content/uploads/2018/06/IMG_1464.jpg', '2018-04-20 15:14:27', NULL),

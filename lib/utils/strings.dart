@@ -52,6 +52,7 @@ class AppString {
   static const String tabHome = 'Accueil';
   static const String tabCalendar = 'Calendrier';
   static const String tabTeam = 'Équipe';
+  static const String tabTracks = 'Circuits';
   static const String tabGallery = 'Gallerie';
 
 

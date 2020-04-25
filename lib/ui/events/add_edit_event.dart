@@ -22,6 +22,7 @@ import 'package:chachatte_team/models/track.dart';
 import 'package:chachatte_team/services/events_service.dart';
 import 'package:chachatte_team/services/tracks_service.dart';
 import 'package:chachatte_team/utils/constants.dart';
+import 'package:chachatte_team/utils/custom_icons_icons.dart';
 import 'package:chachatte_team/utils/date_utils.dart';
 import 'package:chachatte_team/utils/string_utils.dart';
 import 'package:chachatte_team/utils/strings.dart';
@@ -223,7 +224,7 @@ class _AddEditEventState extends State<AddEditEvent> {
                           new DropdownButtonFormField<Track>(
                             value: _selectedTrack != null ? _selectedTrack : widget.event != null ? snapshot.data.firstWhere((Track t) => t.id == widget.event.trackId) : null,
                             decoration: const InputDecoration(
-                              icon: const Icon(Icons.gesture),
+                              icon: const Icon(CustomIcons.track_sample),
                               hintText: AppString.eventTrackIdHint,
                               labelText: AppString.eventTrackId,
                             ),
