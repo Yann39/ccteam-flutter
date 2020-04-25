@@ -19,24 +19,23 @@
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:chachatte_team/models/photo.dart';
-import 'package:chachatte_team/services/photos_service.dart';
-import 'package:chachatte_team/ui/photos/add_photo.dart';
-import 'package:chachatte_team/ui/photos/photo_detail.dart';
+import 'package:chachatte_team/providers/photo_provider.dart';
+import 'package:chachatte_team/ui/photos/add_edit_photo.dart';
 import 'package:chachatte_team/utils/strings.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 enum ConfirmDialogAction { yes, no }
 
 class PhotoCard extends StatelessWidget {
   final Photo photo;
-  final PhotosService photosService;
 
-  PhotoCard(this.photo, this.photosService);
+  PhotoCard(this.photo);
 
   /// Method that launches the photo form screen and awaits the result from Navigator.pop
   void _navigateAndDisplaySelection(BuildContext context, Photo photo) async {
     // Navigator.push returns a Future that will complete after we call Navigator.pop on the photo form Screen
-    final result = await Navigator.push(context, MaterialPageRoute(builder: (context) => AddPhoto(photo: photo)));
+    final result = await Navigator.push(context, MaterialPageRoute(builder: (context) => AddEditPhoto(photo: photo)));
 
     // after the photo form Screen returns a result, hide any previous snack bars and show the new result
     if (result != null) {
@@ -49,7 +48,7 @@ class PhotoCard extends StatelessWidget {
   /// Method that launches the Photo detail screen and awaits the result from Navigator.pop
   _navigateToPhotoDetailScreen(BuildContext context, Photo photo) async {
     // Navigator.push returns a Future that will complete after we call Navigator.pop on the target screen
-    final result = await Navigator.push(context, MaterialPageRoute(builder: (context) => PhotoDetail(photo: photo)));
+    final result = await Navigator.pushNamed(context, "/photoDetail", arguments: photo);
 
     // after the target screen returns a result, hide any previous snack bars and show the new result
     if (result != null) {
@@ -59,7 +58,7 @@ class PhotoCard extends StatelessWidget {
     }
   }
 
-  void showPhoto(BuildContext context) {
+  /*void showPhoto(BuildContext context) {
     Navigator.push(
       context,
       MaterialPageRoute<void>(builder: (BuildContext context) {
@@ -74,27 +73,27 @@ class PhotoCard extends StatelessWidget {
         );
       }),
     );
-  }
+  }*/
 
   /// Display a confirmation popup when trying to delete an photo
   void _showConfirmation(BuildContext context, String value) {
     showDialog(
       context: context,
-      builder: (_) => new AlertDialog(
-            title: new Text(AppString.confirmation),
-            content: new Text(value),
+      builder: (_) => AlertDialog(
+            title: Text(AppString.confirmation),
+            content: Text(value),
             actions: <Widget>[
-              new FlatButton(
+              FlatButton(
                 onPressed: () {
                   _dialogueResult(context, ConfirmDialogAction.yes);
                 },
-                child: new Text(AppString.confirm),
+                child: Text(AppString.confirm),
               ),
-              new FlatButton(
+              FlatButton(
                 onPressed: () {
                   _dialogueResult(context, ConfirmDialogAction.no);
                 },
-                child: new Text(AppString.cancel),
+                child: Text(AppString.cancel),
               ),
             ],
           ),
@@ -105,7 +104,7 @@ class PhotoCard extends StatelessWidget {
   void _dialogueResult(BuildContext context, ConfirmDialogAction value) {
     if (value == ConfirmDialogAction.yes) {
       // delete photo
-      photosService.deletePhoto(photo).then((value) {
+      Provider.of<PhotoProvider>(context, listen: false).deletePhoto(photo).then((value) {
         Scaffold.of(context)
           ..removeCurrentSnackBar()
           ..showSnackBar(SnackBar(content: Text(AppString.photoDeleted)));
@@ -120,7 +119,7 @@ class PhotoCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return new Container(
+    return Container(
       color: Colors.transparent,
       margin: const EdgeInsets.symmetric(
         vertical: 4.0,
@@ -151,7 +150,7 @@ class PhotoCard extends StatelessWidget {
                 imageUrl: photo.link,
                 fit: BoxFit.fitWidth,
               ),
-              new Align(
+              Align(
                 alignment: FractionalOffset.bottomCenter,
                 child: Container(
                   height: 20.0,
@@ -160,7 +159,7 @@ class PhotoCard extends StatelessWidget {
                   child: Text(
                     photo.title,
                     softWrap: false,
-                    style: new TextStyle(color: Colors.white),
+                    style: TextStyle(color: Colors.white),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     textAlign: TextAlign.center,

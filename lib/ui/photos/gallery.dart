@@ -17,30 +17,20 @@
  * along with Chachatte Team. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import 'package:chachatte_team/models/photo.dart';
-import 'package:chachatte_team/services/photos_service.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:chachatte_team/providers/photo_provider.dart';
 import 'package:chachatte_team/ui/main/main_action_menu.dart';
 import 'package:chachatte_team/ui/main/main_drawer.dart';
-import 'package:chachatte_team/ui/photos/add_photo.dart';
-import 'package:chachatte_team/ui/photos/photo_card.dart';
+import 'package:chachatte_team/ui/photos/add_edit_photo.dart';
 import 'package:chachatte_team/utils/strings.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
-class Gallery extends StatefulWidget {
-  @override
-  State<StatefulWidget> createState() {
-    return _GalleryState();
-  }
-}
-
-class _GalleryState extends State<Gallery> {
-  final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
-  static final PhotosService photosService = new PhotosService();
-
+class Gallery extends StatelessWidget {
   /// Method that launches the Add Photo screen and awaits the result from Navigator.pop
   _navigateAndDisplaySelection(BuildContext context) async {
     // Navigator.push returns a Future that will complete after we call Navigator.pop on the Add News Screen
-    final result = await Navigator.push(context, MaterialPageRoute(builder: (context) => AddPhoto()));
+    final result = await Navigator.push(context, MaterialPageRoute(builder: (context) => AddEditPhoto()));
 
     // after the Add Photo Screen returns a result, hide any previous snack bars and show the new result
     if (result != null) {
@@ -51,53 +41,70 @@ class _GalleryState extends State<Gallery> {
   }
 
   Widget build(BuildContext context) {
-    final Orientation orientation = MediaQuery.of(context).orientation;
+    final _photoProvider = Provider.of<PhotoProvider>(context, listen: true);
+
     return Scaffold(
-      key: _scaffoldKey,
       appBar: AppBar(
         title: Text(AppString.tabGallery),
         actions: <Widget>[MainActionMenu()],
       ),
       drawer: MainDrawer(),
       body: Container(
-        padding: const EdgeInsets.all(8.0),
-        child: FutureBuilder<List<Photo>>(
-          future: photosService.fetchPhotos(),
-          builder: (context, snapshot) {
-            if (snapshot.hasData) {
-              return GridView.count(
-                childAspectRatio: 1.5,
-                crossAxisCount: (orientation == Orientation.portrait) ? 2 : 3,
-                children: List.generate(snapshot.data.length, (index) {
-                  return new PhotoCard(snapshot.data[index], photosService);
-                }),
-              );
-            } else if (snapshot.hasError) {
-              return Text("${snapshot.error}");
-            }
-            // By default, show a loading spinner
-            return Center(
-              child: SizedBox(
-                child: CircularProgressIndicator(),
-                height: 20.0,
-                width: 20.0,
-              ),
-            );
-          },
-        ),
-        decoration: new BoxDecoration(
-          gradient: new LinearGradient(
-            colors: [Colors.blue[100], Colors.blue[300]],
-            begin: const FractionalOffset(0.0, 0.0),
-            end: const FractionalOffset(0.0, 1.0),
-            stops: [0.0, 1.0],
-            tileMode: TileMode.clamp,
-          ),
-        ),
+        color: Colors.blue[200],
+        padding: EdgeInsets.all(4.0),
+        child: _photoProvider.photos != null && _photoProvider.photos.length > 0
+            ? GridView.builder(
+                padding: EdgeInsets.all(4.0),
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: MediaQuery.of(context).orientation == Orientation.portrait ? 2 : 3,
+                  crossAxisSpacing: 4,
+                  mainAxisSpacing: 4,
+                  childAspectRatio: 1.3,
+                ),
+                itemCount: _photoProvider.photos.length,
+                itemBuilder: (BuildContext context, int index) => InkWell(
+                  onTap: () => Navigator.pushNamed(context, "/photoDetail", arguments: _photoProvider.photos[index]),
+                  child: Stack(
+                    alignment: Alignment.bottomCenter,
+                    children: [
+                      Container(
+                        decoration: new BoxDecoration(
+                          image: new DecorationImage(
+                            image: CachedNetworkImageProvider(_photoProvider.photos[index].link
+                                /*placeholder: (context, url) => CircularProgressIndicator(),
+                              imageUrl: _photoProvider.photos[index].link,
+                              fit: BoxFit.fitWidth,*/
+                                ),
+                            fit: BoxFit.cover,
+                          ),
+                        ),
+                        /*child: CachedNetworkImage(
+                          placeholder: (context, url) => CircularProgressIndicator(),
+                          imageUrl: _photoProvider.photos[index].link,
+                        ),*/
+                      ),
+                      Container(
+                        height: 20.0,
+                        alignment: Alignment.center,
+                        decoration: BoxDecoration(shape: BoxShape.rectangle, color: Colors.black.withOpacity(0.5)),
+                        child: Text(
+                          _photoProvider.photos[index].title,
+                          softWrap: false,
+                          style: TextStyle(color: Colors.white),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              )
+            : Text("Aucune photo à afficher"),
       ),
       floatingActionButton: FloatingActionButton(
         elevation: 0.0,
-        child: new Icon(Icons.add),
+        child: Icon(Icons.add),
         backgroundColor: Colors.red[700],
         onPressed: () {
           _navigateAndDisplaySelection(context);

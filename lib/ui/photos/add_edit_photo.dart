@@ -23,18 +23,18 @@ import 'package:chachatte_team/utils/strings.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-class AddPhoto extends StatefulWidget {
+class AddEditPhoto extends StatefulWidget {
   final Photo photo;
 
-  const AddPhoto({Key key, this.photo}) : super(key: key);
+  const AddEditPhoto({Key key, this.photo}) : super(key: key);
 
   @override
   State<StatefulWidget> createState() {
-    return _AddPhotoState();
+    return _AddEditPhotoState();
   }
 }
 
-class _AddPhotoState extends State<AddPhoto> {
+class _AddEditPhotoState extends State<AddEditPhoto> {
   final GlobalKey<FormState> _formKey = new GlobalKey<FormState>();
   final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
 

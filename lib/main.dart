@@ -23,11 +23,14 @@ import 'package:chachatte_team/providers/home_provider.dart';
 import 'package:chachatte_team/providers/login_provider.dart';
 import 'package:chachatte_team/providers/member_provider.dart';
 import 'package:chachatte_team/providers/news_provider.dart';
+import 'package:chachatte_team/providers/photo_provider.dart';
 import 'package:chachatte_team/providers/record_provider.dart';
 import 'package:chachatte_team/providers/track_provider.dart';
 import 'package:chachatte_team/ui/events/add_edit_event.dart';
 import 'package:chachatte_team/ui/main/edit_avatar.dart';
 import 'package:chachatte_team/ui/main/image_crop.dart';
+import 'package:chachatte_team/ui/photos/add_edit_photo.dart';
+import 'package:chachatte_team/ui/photos/photo_detail.dart';
 import 'package:chachatte_team/ui/unauthenticated/forgot_password.dart';
 import 'package:chachatte_team/ui/main/home.dart';
 import 'package:chachatte_team/ui/unauthenticated/loading.dart';
@@ -60,6 +63,7 @@ void main() {
         ChangeNotifierProvider(create: (_) => NewsProvider()),
         ChangeNotifierProvider(create: (_) => EventProvider()),
         ChangeNotifierProvider(create: (_) => MemberProvider()),
+        ChangeNotifierProvider(create: (_) => PhotoProvider()),
         ChangeNotifierProvider(create: (_) => TrackProvider()),
         ChangeNotifierProvider(create: (_) => RecordProvider()),
       ],
@@ -86,8 +90,10 @@ class ChachatteTeamApp extends StatelessWidget {
         '/addEditNews': (context) => AddEditNews(news: ModalRoute.of(context).settings.arguments),
         '/addEditEvent': (context) => AddEditEvent(event: ModalRoute.of(context).settings.arguments),
         '/addEditMember': (context) => AddEditMember(member: ModalRoute.of(context).settings.arguments),
+        '/addEditPhoto': (context) => AddEditPhoto(photo: ModalRoute.of(context).settings.arguments),
         '/newsDetail': (context) => NewsDetail(news: ModalRoute.of(context).settings.arguments),
         '/memberDetail': (context) => MemberDetail(member: ModalRoute.of(context).settings.arguments),
+        '/photoDetail': (context) => PhotoDetail(photo: ModalRoute.of(context).settings.arguments),
       },
       home: Consumer<LoginProvider>(builder: (context, loginProvider, child) {
         switch (loginProvider.status) {
