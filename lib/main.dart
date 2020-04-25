@@ -23,6 +23,7 @@ import 'package:chachatte_team/providers/home_provider.dart';
 import 'package:chachatte_team/providers/login_provider.dart';
 import 'package:chachatte_team/providers/member_provider.dart';
 import 'package:chachatte_team/providers/news_provider.dart';
+import 'package:chachatte_team/providers/record_provider.dart';
 import 'package:chachatte_team/providers/track_provider.dart';
 import 'package:chachatte_team/ui/events/add_edit_event.dart';
 import 'package:chachatte_team/ui/main/edit_avatar.dart';
@@ -60,6 +61,7 @@ void main() {
         ChangeNotifierProvider(create: (_) => EventProvider()),
         ChangeNotifierProvider(create: (_) => MemberProvider()),
         ChangeNotifierProvider(create: (_) => TrackProvider()),
+        ChangeNotifierProvider(create: (_) => RecordProvider()),
       ],
       child: ChachatteTeamApp(),
     ),

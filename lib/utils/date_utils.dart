@@ -60,4 +60,10 @@ class DateUtils {
     return d != null && d.isAfter(new DateTime.now());
   }
 
+  /// format the specified [duration] (integer representing a number of milliseconds) as string
+  static String toLapTime(int duration) {
+    if (duration == null) return null;
+    return "${Duration(milliseconds: duration).inMinutes.remainder(60).toString().padLeft(2, '0')}'${Duration(milliseconds: duration).inSeconds.remainder(60).toString().padLeft(2, '0')}\"${Duration(milliseconds: duration).inMilliseconds.remainder(1000)}";
+  }
+
 }

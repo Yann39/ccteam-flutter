@@ -55,6 +55,13 @@ class AppConstants {
   static const String API_UPDATE_PHOTO_ENDPOINT = '/photos/update.php';
   static const String API_DELETE_PHOTO_ENDPOINT = '/photos/delete.php';
 
+  static const String API_GET_ALL_RECORDS_ENDPOINT = '/records/read.php';
+  static const String API_GET_TRACK_RECORDS_ENDPOINT = '/records/read_by_track.php';
+  static const String API_GET_MEMBER_RECORDS_ENDPOINT = '/records/read_by_member.php';
+  static const String API_CREATE_RECORD_ENDPOINT = '/records/create.php';
+  static const String API_UPDATE_RECORD_ENDPOINT = '/records/update.php';
+  static const String API_DELETE_RECORD_ENDPOINT = '/records/delete.php';
+
   static const String DATE_FORMAT = 'dd/MM/yyyy HH:mm';
   static const String DATE_FORMAT_TXT = 'dd MMM yyyy HH:mm';
   static const String PRICE_FORMAT = '####.##';

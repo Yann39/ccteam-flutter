@@ -107,7 +107,22 @@ CREATE TABLE IF NOT EXISTS `news_members` (
   UNIQUE(news_id, member_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1;
 
-INSERT INTO `members` (`id`, `first_name`, `last_name`, `email`, `password`, `active`, `admin`, `phone`, `bike`, `registration_date`, `created`, `modified`) VALUES
+CREATE TABLE IF NOT EXISTS `records` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `track_id` int NOT NULL,
+  `member_id` int NOT NULL,
+  `lap_time` int NOT NULL,
+  `record_date` date NOT NULL,
+  `conditions` varchar(32) NOT NULL,
+  `comments` text NULL,
+  `created_on` timestamp NOT NULL,
+  PRIMARY KEY (`id`),
+  CONSTRAINT fk_records_track FOREIGN KEY (track_id) REFERENCES tracks(id),
+  CONSTRAINT fk_records_member FOREIGN KEY (member_id) REFERENCES members(id),
+  UNIQUE(track_id, member_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1;
+
+INSERT INTO `members` (`id`, `first_name`, `last_name`, `email`, `password`, `active`, `admin`, `phone`, `bike`, `registration_date`, `created_on`, `modified_on`) VALUES
 (1, 'Bob', 'Admin', 'bob.admin@wanadoo.fr', '$2y$10$MuLwPiQkTlcKEbGX6ztzAOxGlqK7ddglgDXcYBRBFDwkM.AQy63EK', 1, 0, '+33 123456789', 'Honda CBR 600 RR 2007', '2016-07-11 00:00:00', '2019-06-10 13:44:26', '2018-07-01 07:30:54'),
 (2, 'Stéphane', 'Verger', 'steph.verger@orange.fr', '', 0, 0, '+72 777992834', 'Kawasaki ZX6R 636 2015', '2016-06-30 00:00:00', '2019-02-11 21:11:24', NULL),
 (3, 'Coralie', 'Archambault', 'coralie.ar@free.fr', '', 0, 0, '+56 856755465', 'Suzuki GSXR 750 2007', '2019-01-11 21:44:00', '2019-02-11 21:07:37', NULL),
