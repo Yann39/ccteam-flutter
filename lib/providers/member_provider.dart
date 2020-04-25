@@ -53,11 +53,11 @@ class MemberProvider extends ChangeNotifier {
   /// Create the specified [member]
   Future<void> createMember(Member member) async {
     await _membersService.createMember(member).then((value) {
-      _log.fine("New user created : ${member.email}");
+      _log.fine("Member user created : ${member.email}");
       _members.add(member);
       notifyListeners();
     }, onError: (error) {
-      _log.severe("Failed to create new user ($error)");
+      _log.severe("Failed to create new member ($error)");
       throw (error);
     });
   }
@@ -65,11 +65,11 @@ class MemberProvider extends ChangeNotifier {
   /// Update the specified [member]
   Future<void> updateMember(Member member) async {
     await _membersService.createMember(member).then((value) {
-      _log.fine("User successfully updated : ${member.email}");
+      _log.fine("Member successfully updated : ${member.email}");
       _members[_members.indexWhere((m) => m.id == member.id)] = member;
       notifyListeners();
     }, onError: (error) {
-      _log.severe("Failed to update user ($error)");
+      _log.severe("Failed to update member ($error)");
       throw (error);
     });
   }

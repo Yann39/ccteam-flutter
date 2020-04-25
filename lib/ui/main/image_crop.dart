@@ -17,7 +17,7 @@
  * along with Chachatte Team. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import 'package:chachatte_team/providers/drawer_provider.dart';
+import 'package:chachatte_team/providers/avatar_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:simple_image_crop/simple_image_crop.dart';
@@ -27,7 +27,7 @@ class ImageCrop extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final _drawerProvider = Provider.of<DrawerProvider>(context, listen: false);
+    final _drawerProvider = Provider.of<AvatarProvider>(context, listen: false);
 
     return Scaffold(
       appBar: AppBar(

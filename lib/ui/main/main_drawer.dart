@@ -18,7 +18,6 @@
  */
 
 import 'package:chachatte_team/models/member.dart';
-import 'package:chachatte_team/providers/drawer_provider.dart';
 import 'package:chachatte_team/providers/login_provider.dart';
 import 'package:chachatte_team/utils/constants.dart';
 import 'package:flutter/material.dart';
@@ -46,7 +45,6 @@ class MainDrawer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final LoginProvider _loginProvider = Provider.of<LoginProvider>(context, listen: false);
-    final DrawerProvider _drawerProvider = Provider.of<DrawerProvider>(context, listen: false);
 
     return Drawer(
       child: Container(
@@ -66,14 +64,24 @@ class MainDrawer extends StatelessWidget {
               alignment: Alignment.centerRight,
               children: <Widget>[
                 UserAccountsDrawerHeader(
-                  accountName: Text("${_loginProvider.loggedMember.firstName} ${_loginProvider.loggedMember.lastName}"),
-                  accountEmail: Text(_loginProvider.loggedMember.email),
+                  accountName: Row(
+                    children: <Widget>[
+                      Icon(Icons.person_outline, color: Colors.white, size: 12),
+                      SizedBox(width: 5),
+                      Text("${_loginProvider.loggedMember.firstName} ${_loginProvider.loggedMember.lastName}"),
+                    ],
+                  ),
+                  accountEmail: Row(
+                    children: <Widget>[
+                      Icon(Icons.mail_outline, color: Colors.white, size: 12),
+                      SizedBox(width: 5),
+                      Text(_loginProvider.loggedMember.email),
+                    ],
+                  ),
                   arrowColor: Colors.green,
-                  currentAccountPicture: InkWell(
-                    onTap: () {
-                      _drawerProvider.loadImage(null);
-                      Navigator.of(context).pushNamed('/editAvatar');
-                    },
+                  currentAccountPicture: Container(
+                    decoration: ShapeDecoration(shape: CircleBorder(), color: Colors.blue[100]),
+                    padding: EdgeInsets.all(2.0),
                     child: CircleAvatar(
                       backgroundColor: Colors.blue[200],
                       backgroundImage: _loginProvider.loggedMember.avatar != null
@@ -86,11 +94,14 @@ class MainDrawer extends StatelessWidget {
                   width: 210,
                   height: 110,
                   alignment: Alignment.topCenter,
-                  child: Image.asset(
-                    'images/chachatte-team-banner-drawer.png',
-                    fit: BoxFit.fitWidth,
-                    width: 160,
-                    alignment: Alignment.center,
+                  child: Opacity(
+                    opacity: 0.5,
+                    child: Image.asset(
+                      'images/chachatte-team-banner-drawer.png',
+                      fit: BoxFit.fitWidth,
+                      width: 160,
+                      alignment: Alignment.center,
+                    ),
                   ),
                 ),
               ],

@@ -18,9 +18,10 @@
  */
 
 import 'package:chachatte_team/models/member.dart';
+import 'package:chachatte_team/providers/avatar_provider.dart';
 import 'package:chachatte_team/providers/member_provider.dart';
-import 'package:chachatte_team/services/members_service.dart';
 import 'package:chachatte_team/utils/constants.dart';
+import 'package:chachatte_team/utils/custom_icons_icons.dart';
 import 'package:chachatte_team/utils/date_utils.dart';
 import 'package:chachatte_team/utils/string_utils.dart';
 import 'package:chachatte_team/utils/strings.dart';
@@ -29,17 +30,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
-
-class AddEditMember extends StatefulWidget {
-  final Member member;
-
-  const AddEditMember({Key key, this.member}) : super(key: key);
-
-  @override
-  State<StatefulWidget> createState() {
-    return _AddEditMemberState();
-  }
-}
 
 /// Input formatter class for E.164 phone number
 class NumberTextInputFormatter extends TextInputFormatter {
@@ -65,6 +55,17 @@ class NumberTextInputFormatter extends TextInputFormatter {
       text: _newText.toString(),
       selection: TextSelection.collapsed(offset: _selectionIndex),
     );
+  }
+}
+
+class AddEditMember extends StatefulWidget {
+  final Member member;
+
+  const AddEditMember({Key key, this.member}) : super(key: key);
+
+  @override
+  State<StatefulWidget> createState() {
+    return _AddEditMemberState();
   }
 }
 
@@ -143,169 +144,274 @@ class _AddEditMemberState extends State<AddEditMember> {
   Widget build(BuildContext context) {
     // the current Member to be edited
     final Member _currMember = widget.member != null ? widget.member : _newMember;
+    final AvatarProvider _drawerProvider = Provider.of<AvatarProvider>(context, listen: false);
+
+    final bottomMenu = Container(
+      padding: EdgeInsets.symmetric(horizontal: 6.0),
+      decoration: BoxDecoration(color: Colors.red[700]),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          Expanded(
+            child: FlatButton(
+              child: Text(
+                AppString.cancel.toUpperCase(),
+                style: TextStyle(color: Colors.white),
+              ),
+              onPressed: () => Navigator.pop(context),
+            ),
+          ),
+          Expanded(
+            child: FlatButton(
+              child: Text(
+                AppString.save.toUpperCase(),
+                style: TextStyle(color: Colors.white),
+              ),
+              onPressed: () => submitForm(_currMember),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    final firstNameField = TextFormField(
+      decoration: const InputDecoration(
+        icon: const Icon(Icons.person),
+        hintText: AppString.memberFirstNameHint,
+        labelText: AppString.memberFirstName,
+      ),
+      maxLines: 1,
+      inputFormatters: [LengthLimitingTextInputFormatter(64)],
+      validator: (val) => val.isEmpty ? AppString.memberFirstNameMandatory : null,
+      onSaved: (val) => _currMember.firstName = val,
+      initialValue: _currMember.firstName,
+    );
+
+    final lastNameField = TextFormField(
+      decoration: const InputDecoration(
+        icon: const Icon(Icons.person),
+        hintText: AppString.memberLastNameHint,
+        labelText: AppString.memberLastName,
+      ),
+      maxLines: 1,
+      inputFormatters: [LengthLimitingTextInputFormatter(64)],
+      validator: (val) => val.isEmpty ? AppString.memberLastNameMandatory : null,
+      onSaved: (val) => _currMember.lastName = val,
+      initialValue: _currMember.lastName,
+    );
+
+    final emailField = TextFormField(
+      decoration: const InputDecoration(
+        icon: const Icon(Icons.mail),
+        hintText: AppString.memberEmailHint,
+        labelText: AppString.memberEmail,
+      ),
+      keyboardType: TextInputType.emailAddress,
+      maxLines: 1,
+      inputFormatters: [LengthLimitingTextInputFormatter(128)],
+      validator: (val) => val.isEmpty ? AppString.memberEmailMandatory : (StringUtils.isValidEmail(val) ? null : AppString.memberEmailNotValid),
+      onSaved: (val) => _currMember.email = val,
+      initialValue: _currMember.email,
+    );
+
+    final phoneField = TextFormField(
+      decoration: const InputDecoration(
+        icon: const Icon(Icons.phone),
+        hintText: AppString.memberPhoneHint,
+        labelText: AppString.memberPhone,
+      ),
+      keyboardType: TextInputType.phone,
+      maxLines: 1,
+      inputFormatters: <TextInputFormatter>[LengthLimitingTextInputFormatter(13), WhitelistingTextInputFormatter.digitsOnly, NumberTextInputFormatter()],
+      validator: (val) => val.isEmpty ? AppString.memberPhoneMandatory : (StringUtils.isValidPhoneNumber(val) ? null : AppString.memberPhoneNotValid),
+      onSaved: (val) => _currMember.phone = val,
+      initialValue: _currMember.phone,
+    );
+
+    final registrationDateField = GestureDetector(
+      onTap: () => _chooseDate(context, _datePickerController, _currMember.registrationDate),
+      child: AbsorbPointer(
+        child: TextFormField(
+          decoration: InputDecoration(
+            icon: const Icon(Icons.calendar_today),
+            hintText: AppString.memberRegistrationDateHint,
+            labelText: AppString.memberRegistrationDate,
+          ),
+          controller: _datePickerController,
+          keyboardType: TextInputType.datetime,
+          validator: (val) => DateUtils.isBeforeNow(val, AppConstants.DATE_FORMAT)
+              ? (val.isEmpty ? AppString.memberRegistrationDateMandatory : null)
+              : AppString.memberRegistrationDateNotValid,
+          onSaved: (val) => _currMember.registrationDate = DateFormat(AppConstants.DATE_FORMAT).parseStrict(val),
+        ),
+      ),
+    );
+
+    final activeField = new DropdownButtonFormField<bool>(
+      value: _currMember.active,
+      decoration: const InputDecoration(
+        icon: const Icon(Icons.enhanced_encryption),
+        hintText: AppString.memberActive,
+        labelText: AppString.memberActive,
+      ),
+      items: <bool>[true, false].map((bool val) {
+        return DropdownMenuItem<bool>(value: val, child: Text(val.toString()));
+      }).toList(),
+      onChanged: (bool val) {
+        setState(() {
+          _currMember.active = val;
+        });
+      },
+      onSaved: (val) => _currMember.active = val,
+      validator: (val) => val == null ? AppString.memberActiveMandatory : null,
+    );
+
+    /*final activeField = CheckboxListTile(
+      title: Text(AppString.memberActive),
+      value: _currMember.active,
+      selected: _currMember.active,
+      onChanged: (val) => setState(() {
+        _currMember.active = val;
+      }),
+      controlAffinity: ListTileControlAffinity.leading,
+    );*/
+
+    final bikeField = TextFormField(
+      decoration: const InputDecoration(icon: const Icon(CustomIcons.motorbike), hintText: AppString.memberBikeHint, labelText: AppString.memberBike),
+      maxLines: 1,
+      inputFormatters: [LengthLimitingTextInputFormatter(64)],
+      validator: (val) => val.isEmpty ? AppString.memberBikeMandatory : null,
+      onSaved: (val) => _currMember.bike = val,
+      initialValue: _currMember.bike,
+    );
+
+    final editableAvatar = Stack(
+      children: <Widget>[
+        InkWell(
+          onTap: () {
+            _drawerProvider.loadImage(null);
+            Navigator.of(context).pushNamed('/editAvatar', arguments: _currMember);
+          },
+          child: CircleAvatar(
+            radius: 60,
+            backgroundColor: Colors.blue[200],
+            backgroundImage: _currMember.avatar != null && _currMember.avatar.length > 0
+                ? NetworkImage("${AppConstants.SERVER_ROOT_PATH}${AppConstants.SERVER_AVATAR_FOLDER}${_currMember.avatar}")
+                : AssetImage("images/helmet-face.png"),
+          ),
+        ),
+        Positioned(
+          height: 30,
+          width: 30,
+          top: 75,
+          left: 75,
+          child: FloatingActionButton(
+            backgroundColor: Colors.red[700],
+            child: Icon(Icons.edit, size: 12),
+            onPressed: () {
+              _drawerProvider.loadImage(null);
+              Navigator.of(context).pushNamed('/editAvatar', arguments: _currMember);
+            },
+          ),
+        ),
+      ],
+    );
+
+    final listView = ListView(
+      children: <Widget>[
+        Stack(
+          alignment: Alignment.topCenter,
+          children: <Widget>[
+            Column(
+              children: <Widget>[
+                Container(
+                  height: 60,
+                  decoration: BoxDecoration(color: Colors.red[700], boxShadow: [
+                    BoxShadow(
+                      color: Colors.black26,
+                      spreadRadius: 0.5,
+                      blurRadius: 2,
+                    )
+                  ]),
+                ),
+                Container(
+                  height: 60,
+                  color: Colors.blue[100],
+                ),
+              ],
+            ),
+            Container(
+              height: 120,
+              width: 120,
+              decoration: ShapeDecoration(shape: CircleBorder(), color: Colors.blue[100]),
+              child: Padding(
+                padding: const EdgeInsets.all(6.0),
+                child: editableAvatar,
+              ),
+            ),
+          ],
+        ),
+        Container(
+          padding: const EdgeInsets.only(top: 0, left: 16.0, right: 16.0, bottom: 56.0),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [Colors.blue[100], Colors.blue[300]],
+              begin: const FractionalOffset(0.0, 0.0),
+              end: const FractionalOffset(0.0, 1.0),
+              stops: [0.0, 1.0],
+              tileMode: TileMode.clamp,
+            ),
+          ),
+          child: Form(
+            key: _formKey,
+            autovalidate: false,
+            child: Column(
+              children: <Widget>[
+                firstNameField,
+                lastNameField,
+                emailField,
+                phoneField,
+                bikeField,
+                registrationDateField,
+                activeField,
+              ],
+            ),),
+        ),
+      ],
+    );
+
+    final List<Widget> actionMenu = [
+      FlatButton(
+        child: Text(
+          AppString.cancel.toUpperCase(),
+          style: TextStyle(color: Colors.white),
+        ),
+        onPressed: () => Navigator.pop(context),
+      ),
+      FlatButton(
+        child: Text(
+          AppString.save.toUpperCase(),
+          style: TextStyle(color: Colors.white),
+        ),
+        onPressed: () => submitForm(_currMember),
+      ),
+    ];
 
     return Scaffold(
       key: _scaffoldKey,
       appBar: AppBar(
-        title: Text(AppString.memberCreate),
-        bottom: PreferredSize(
-          child: Container(
-            child: Row(
-              children: <Widget>[
-                Expanded(
-                  child: FlatButton(
-                    child: Text(
-                      AppString.cancel.toUpperCase(),
-                      style: TextStyle(color: Colors.white),
-                    ),
-                    onPressed: () => Navigator.pop(context),
-                  ),
-                ),
-                Expanded(
-                  child: FlatButton(
-                    child: Text(
-                      AppString.save.toUpperCase(),
-                      style: TextStyle(color: Colors.white),
-                    ),
-                    onPressed: () => submitForm(_currMember),
-                  ),
-                ),
-              ],
-            ),
-            decoration: BoxDecoration(color: Colors.red[700]),
-            height: 50.0,
-          ),
-          preferredSize: Size.fromHeight(50.0),
-        ),
+        elevation: 0.0,
+        title: Text(AppString.profileEdit),
+        actions: MediaQuery.of(context).orientation == Orientation.portrait ? null : actionMenu,
       ),
-      body: Container(
-        child: SafeArea(
-          top: false,
-          bottom: false,
-          child: Form(
-            key: _formKey,
-            autovalidate: false,
-            child: ListView(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              children: <Widget>[
-                TextFormField(
-                  decoration: const InputDecoration(
-                    icon: const Icon(Icons.person),
-                    hintText: AppString.memberFirstNameHint,
-                    labelText: AppString.memberFirstName,
-                  ),
-                  maxLines: 1,
-                  inputFormatters: [LengthLimitingTextInputFormatter(64)],
-                  validator: (val) => val.isEmpty ? AppString.memberFirstNameMandatory : null,
-                  onSaved: (val) => _currMember.firstName = val,
-                  initialValue: _currMember.firstName,
-                ),
-                TextFormField(
-                  decoration: const InputDecoration(
-                    icon: const Icon(Icons.person),
-                    hintText: AppString.memberLastNameHint,
-                    labelText: AppString.memberLastName,
-                  ),
-                  maxLines: 1,
-                  inputFormatters: [LengthLimitingTextInputFormatter(64)],
-                  validator: (val) => val.isEmpty ? AppString.memberLastNameMandatory : null,
-                  onSaved: (val) => _currMember.lastName = val,
-                  initialValue: _currMember.lastName,
-                ),
-                TextFormField(
-                  decoration: const InputDecoration(
-                    icon: const Icon(Icons.mail),
-                    hintText: AppString.memberEmailHint,
-                    labelText: AppString.memberEmail,
-                  ),
-                  maxLines: 1,
-                  inputFormatters: [LengthLimitingTextInputFormatter(128)],
-                  validator: (val) => val.isEmpty ? AppString.memberEmailMandatory : (StringUtils.isValidEmail(val) ? null : AppString.memberEmailNotValid),
-                  onSaved: (val) => _currMember.email = val,
-                  initialValue: _currMember.email,
-                ),
-                TextFormField(
-                  decoration: const InputDecoration(
-                    icon: const Icon(Icons.phone),
-                    hintText: AppString.memberPhoneHint,
-                    labelText: AppString.memberPhone,
-                  ),
-                  maxLines: 1,
-                  inputFormatters: <TextInputFormatter>[LengthLimitingTextInputFormatter(13), WhitelistingTextInputFormatter.digitsOnly, NumberTextInputFormatter()],
-                  validator: (val) => val.isEmpty ? AppString.memberPhoneMandatory : (StringUtils.isValidPhoneNumber(val) ? null : AppString.memberPhoneNotValid),
-                  onSaved: (val) => _currMember.phone = val,
-                  initialValue: _currMember.phone,
-                ),
-                TextFormField(
-                  decoration: const InputDecoration(icon: const Icon(Icons.motorcycle), hintText: AppString.memberBikeHint, labelText: AppString.memberBike),
-                  maxLines: 1,
-                  inputFormatters: [LengthLimitingTextInputFormatter(64)],
-                  validator: (val) => val.isEmpty ? AppString.memberBikeMandatory : null,
-                  onSaved: (val) => _currMember.bike = val,
-                  initialValue: _currMember.bike,
-                ),
-                GestureDetector(
-                  onTap: () => _chooseDate(context, _datePickerController, _currMember.registrationDate),
-                  child: AbsorbPointer(
-                    child: TextFormField(
-                      decoration: InputDecoration(
-                        icon: const Icon(Icons.calendar_today),
-                        hintText: AppString.memberRegistrationDateHint,
-                        labelText: AppString.memberRegistrationDate,
-                      ),
-                      controller: _datePickerController,
-                      keyboardType: TextInputType.datetime,
-                      validator: (val) => DateUtils.isBeforeNow(val, AppConstants.DATE_FORMAT)
-                          ? (val.isEmpty ? AppString.memberRegistrationDateMandatory : null)
-                          : AppString.memberRegistrationDateNotValid,
-                      onSaved: (val) => _currMember.registrationDate = DateFormat(AppConstants.DATE_FORMAT).parseStrict(val),
-                    ),
-                  ),
-                ),
-                Column(
-                    children: <Widget>[
-                      new DropdownButtonFormField<bool>(
-                        value: _currMember.active,
-                        decoration: const InputDecoration(
-                          icon: const Icon(Icons.enhanced_encryption),
-                          hintText: AppString.memberActive,
-                          labelText: AppString.memberActive,
-                        ),
-                        items: <bool>[true, false].map((bool val) {
-                          return DropdownMenuItem<bool>(value: val, child: Text(val.toString()));
-                        }).toList(),
-                        onChanged: (bool val) {
-                          setState(() {
-                            _currMember.active = val;
-                          });
-                        },
-                        onSaved: (val) => _currMember.active = val,
-                        validator: (val) => val == null ? AppString.memberActiveMandatory : null,
-                      )
-                    ],
-                  ) /*CheckboxListTile(
-                    title: Text(AppString.memberActive),
-                    value: _currMember.active,
-                    selected: _currMember.active,
-                    onChanged: (val) => setState(() {
-                          _currMember.active = val;
-                        }),
-                    controlAffinity: ListTileControlAffinity.leading,
-                  ),*/
-              ],
-            ),
-          ),
-        ),
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Colors.blue[100], Colors.blue[300]],
-            begin: const FractionalOffset(0.0, 0.0),
-            end: const FractionalOffset(0.0, 1.0),
-            stops: [0.0, 1.0],
-            tileMode: TileMode.clamp,
-          ),
-        ),
-      ),
+      body: MediaQuery.of(context).orientation == Orientation.portrait ? Stack(
+        alignment: Alignment.topCenter,
+        children: <Widget>[
+          listView,
+          Positioned(bottom: 0, left: 0, right: 0, child: bottomMenu),
+        ],
+      ) : listView,
     );
   }
 }

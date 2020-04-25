@@ -137,9 +137,17 @@ class LoginProvider extends ChangeNotifier {
     });
   }
 
-  /// Upload the specified [avatar] file for the specified [memberId]
-  Future<void> uploadAvatar(File avatar, int memberId) async {
-    await _membersService.uploadAvatar(avatar, memberId).then((value) async {
+  /// Upload the specified [avatar] file for the specified [member]
+  /// If the specified [member] is different from the current logged user, it means we are uploading an avatar as admin for a member
+  /// If the specified [member] is the same as the current logged user, it means the current logged user is uploading an avatar
+  Future<void> uploadAvatar(File avatar, Member member) async {
+    if (member.id != _loggedMember.id) {
+      _log.fine("Uploaded avatar as admin for user ${member.email}");
+    }
+
+    final Member tmpMember = member;
+
+    await _membersService.uploadAvatar(avatar, tmpMember.id).then((value) async {
       _log.fine("Avatar uploaded successfully");
 
       dynamic responseJson = json.decode(value);
@@ -147,7 +155,6 @@ class LoginProvider extends ChangeNotifier {
 
       _log.fine("Avatar uploaded file name is : $uploadedFileName");
 
-      final Member tmpMember = _loggedMember;
       tmpMember.avatar = uploadedFileName;
       tmpMember.modifiedOn = DateTime.now();
 
@@ -155,9 +162,11 @@ class LoginProvider extends ChangeNotifier {
 
       await _membersService.updateMember(tmpMember).then((value) {
         _log.fine("Avatar updated for member : ${tmpMember.email}");
-        _loggedMember.avatar = tmpMember.avatar;
-        _loggedMember.modifiedOn = tmpMember.modifiedOn;
-        notifyListeners();
+        if (member.id == _loggedMember.id) {
+          _loggedMember.avatar = tmpMember.avatar;
+          _loggedMember.modifiedOn = tmpMember.modifiedOn;
+          notifyListeners();
+        }
       }, onError: (error) {
         _log.severe("Failed to update avatar for member ${tmpMember.email} ($error)");
         throw (error);
@@ -165,6 +174,33 @@ class LoginProvider extends ChangeNotifier {
 
     }, onError: (error) {
       _log.severe("Failed to upload avatar ($error)");
+      throw (error);
+    });
+  }
+
+  /// Delete the avatar of the current logged member
+  Future<void> deleteAvatar(Member member) async {
+    await _membersService.deleteAvatar(member.id).then((value) async {
+      _log.fine("Avatar deleted successfully");
+
+      final Member tmpMember = _loggedMember;
+      tmpMember.avatar = null;
+      tmpMember.modifiedOn = DateTime.now();
+
+      _log.info("Sending user with removed avatar : ${tmpMember.toString()}");
+
+      await _membersService.updateMember(tmpMember).then((value) {
+        _log.fine("Avatar deleted for member : ${tmpMember.email}");
+        _loggedMember.avatar = null;
+        _loggedMember.modifiedOn = tmpMember.modifiedOn;
+        notifyListeners();
+      }, onError: (error) {
+        _log.severe("Failed to delete avatar for member ${tmpMember.email} ($error)");
+        throw (error);
+      });
+
+    }, onError: (error) {
+      _log.severe("Failed to delete avatar ($error)");
       throw (error);
     });
   }

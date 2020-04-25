@@ -19,33 +19,83 @@
 
 import 'dart:io';
 
-import 'package:chachatte_team/providers/drawer_provider.dart';
+import 'package:chachatte_team/models/member.dart';
+import 'package:chachatte_team/providers/avatar_provider.dart';
 import 'package:chachatte_team/providers/login_provider.dart';
 import 'package:chachatte_team/utils/constants.dart';
 import 'package:chachatte_team/utils/strings.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 
+enum ConfirmDialogAction { yes, no }
+
 class EditAvatar extends StatelessWidget {
+  final Member member;
+
+  const EditAvatar({Key key, this.member}) : super(key: key);
+
   /// Allow user to select an image from the gallery
-  Future _selectImage(BuildContext context) async {
+  Future _selectImageFromGallery(BuildContext context) async {
     File image = await ImagePicker.pickImage(source: ImageSource.gallery);
     if (image != null) {
-      Provider.of<DrawerProvider>(context, listen: false).loadImage(image);
+      Provider.of<AvatarProvider>(context, listen: false).loadImage(image);
       Navigator.of(context).pushNamed('/imageCrop');
     }
+  }
+
+  /// Allow user to select an image from the camera
+  Future _selectImageFromCamera(BuildContext context) async {
+    File image = await ImagePicker.pickImage(source: ImageSource.camera);
+    if (image != null) {
+      Provider.of<AvatarProvider>(context, listen: false).loadImage(image);
+      Navigator.of(context).pushNamed('/imageCrop');
+    }
+  }
+
+  /// Display a confirmation popup when trying to reset an avatar
+  void _showConfirmation(BuildContext context, String value) {
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: Text(AppString.confirmation),
+        content: Text(value),
+        actions: <Widget>[
+          FlatButton(
+            onPressed: () {
+              _dialogueResult(context, ConfirmDialogAction.yes);
+            },
+            child: Text(AppString.confirm),
+          ),
+          FlatButton(
+            onPressed: () {
+              _dialogueResult(context, ConfirmDialogAction.no);
+            },
+            child: Text(AppString.cancel),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Handle result of the avatar reset confirmation dialog
+  void _dialogueResult(BuildContext context, ConfirmDialogAction value) {
+    if (value == ConfirmDialogAction.yes) {
+      Provider.of<LoginProvider>(context, listen: false).deleteAvatar(member);
+    }
+    Navigator.pop(context);
   }
 
   @override
   Widget build(BuildContext context) {
     final _loginProvider = Provider.of<LoginProvider>(context, listen: false);
-    final _drawerProvider = Provider.of<DrawerProvider>(context, listen: true);
+    final _drawerProvider = Provider.of<AvatarProvider>(context, listen: true);
 
     return Scaffold(
       appBar: AppBar(
-        elevation: 0,
-        title: Text('Avatar'),
+        title: Text('Photo de profil'),
       ),
       body: Container(
         decoration: BoxDecoration(
@@ -56,54 +106,152 @@ class EditAvatar extends StatelessWidget {
             stops: [0.0, 1.0],
           ),
         ),
-        child: Center(
-          child: Column(
-            children: <Widget>[
-              SizedBox(height: 16.0),
-              Text("Votre avatar :", textAlign: TextAlign.left),
-              Container(
-                margin: EdgeInsets.symmetric(vertical: 16.0, horizontal: 24.0),
-                child: _drawerProvider.image != null
-                    ? Image.file(_drawerProvider.image, alignment: Alignment.topCenter, fit: BoxFit.contain)
-                    : Image(
-                        alignment: Alignment.topCenter,
-                        fit: BoxFit.contain,
-                        image: _loginProvider.loggedMember.avatar != null
-                            ? NetworkImage("${AppConstants.SERVER_ROOT_PATH}${AppConstants.SERVER_AVATAR_FOLDER}${_loginProvider.loggedMember.avatar}")
-                            : AssetImage("images/helmet-face.png"),
+        child: Align(
+          alignment: Alignment.topCenter,
+          child: SingleChildScrollView(
+            child: Column(
+              children: <Widget>[
+                Stack(
+                  children: <Widget>[
+                    AspectRatio(
+                      aspectRatio: 1,
+                      child: Container(
+                        margin: EdgeInsets.symmetric(vertical: 24.0, horizontal: 24.0),
+                        child: _drawerProvider.image != null
+                            ? Image.file(_drawerProvider.image, alignment: Alignment.topCenter, fit: BoxFit.contain)
+                            : Image(
+                                alignment: Alignment.topCenter,
+                                fit: BoxFit.contain,
+                                image: member.avatar != null && member.avatar.length > 0
+                                    ? NetworkImage("${AppConstants.SERVER_ROOT_PATH}${AppConstants.SERVER_AVATAR_FOLDER}${member.avatar}")
+                                    : AssetImage("images/helmet-face.png"),
+                              ),
                       ),
-              ),
-              _drawerProvider.image == null
-                  ? RaisedButton(
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                      onPressed: () => _selectImage(context),
-                      padding: EdgeInsets.fromLTRB(16.0, 12.0, 16.0, 12.0),
-                      color: Colors.red[700],
-                      child: Text("Changer...", style: TextStyle(color: Colors.white)),
-                    )
-                  : Builder(
-                      builder: (BuildContext context) {
-                        return RaisedButton(
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                          onPressed: () {
-                            _loginProvider.uploadAvatar(_drawerProvider.image, _loginProvider.loggedMember.id).then((value) {
-                              Navigator.pop(context);
-                            }, onError: (error) {
-                              Scaffold.of(context)
-                                ..removeCurrentSnackBar()
-                                ..showSnackBar(SnackBar(backgroundColor: Colors.red, content: Text(AppString.avatarUploadFailed)));
-                            });
-                          },
-                          padding: EdgeInsets.fromLTRB(16.0, 12.0, 16.0, 12.0),
-                          color: Colors.red[700],
-                          child: Text("Valider", style: TextStyle(color: Colors.white)),
-                        );
-                      },
                     ),
-            ],
+                    AspectRatio(
+                      aspectRatio: 1,
+                      child: CustomPaint(
+                        painter: HolePainter(),
+                      ),
+                    ),
+                  ],
+                ),
+                Text(
+                  "Sélectionnez une photo",
+                  textAlign: TextAlign.center,
+                  textScaleFactor: 1.3,
+                ),
+                Text("Max. 500 Ko", textAlign: TextAlign.center),
+                Text("Formats JPG, GIF, PNG", textAlign: TextAlign.center),
+                SizedBox(height: 16.0),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: <Widget>[
+                    RaisedButton(
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      onPressed: () {
+                        _selectImageFromGallery(context);
+                      },
+                      padding: EdgeInsets.fromLTRB(16.0, 12.0, 16.0, 12.0),
+                      color: Colors.blue[700],
+                      child: Row(
+                        children: <Widget>[
+                          Icon(Icons.photo_library, color: Colors.white, size: 15),
+                          SizedBox(width: 5),
+                          Text(
+                            "Gallerie",
+                            style: TextStyle(color: Colors.white),
+                          ),
+                        ],
+                      ),
+                    ),
+                    RaisedButton(
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      onPressed: () {
+                        _selectImageFromCamera(context);
+                      },
+                      padding: EdgeInsets.fromLTRB(16.0, 12.0, 16.0, 12.0),
+                      color: Colors.blue[700],
+                      child: Row(
+                        children: <Widget>[
+                          Icon(Icons.photo_camera, color: Colors.white, size: 15),
+                          SizedBox(width: 5),
+                          Text(
+                            "Appareil photo",
+                            style: TextStyle(color: Colors.white),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                FlatButton(
+                  child: Text("Réinitialiser la photo de profil"),
+                  onPressed: () => _showConfirmation(context, AppString.avatarResetAreYouSure),
+                ),
+                if (_drawerProvider.image != null)
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: <Widget>[
+                      RaisedButton(
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        onPressed: () {
+                          _loginProvider.uploadAvatar(_drawerProvider.image, member).then((value) {
+                            Navigator.pop(context);
+                          }, onError: (error) {
+                            Scaffold.of(context)
+                              ..removeCurrentSnackBar()
+                              ..showSnackBar(SnackBar(backgroundColor: Colors.red, content: Text(AppString.avatarUploadFailed)));
+                          });
+                        },
+                        padding: EdgeInsets.fromLTRB(16.0, 12.0, 16.0, 12.0),
+                        color: Colors.red[700],
+                        child: Row(
+                          children: <Widget>[
+                            Icon(Icons.check, color: Colors.white, size: 15),
+                            SizedBox(width: 5),
+                            Text("Confirmer le changement", style: TextStyle(color: Colors.white)),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+              ],
+            ),
           ),
         ),
       ),
     );
+  }
+}
+
+class HolePainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    print("${size.height} ${size.width}");
+    final paint = Paint();
+    paint.color = Colors.black38;
+    paint.blendMode = BlendMode.luminosity;
+    canvas.drawPath(
+      Path.combine(
+        PathOperation.difference,
+        Path()..addRect(Rect.fromLTWH(24, 24, size.width - 48, size.height - 48)),
+        Path()
+          ..addOval(Rect.fromCircle(center: Offset(size.width / 2, (size.height) / 2), radius: (size.width - 48) / 2))
+          ..close(),
+      ),
+      paint,
+    );
+  }
+
+  @override
+  bool shouldRepaint(CustomPainter oldDelegate) {
+    return false;
   }
 }

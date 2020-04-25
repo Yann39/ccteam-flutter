@@ -59,7 +59,7 @@ if (isset($_FILES['avatar']) && $_FILES['avatar']['error'] === UPLOAD_ERR_OK) {
         // check file mime type
         if (in_array($mime, $allowed)) {
 
-            // check file size (maximum 200 KB)
+            // check file size (maximum 500 KB)
             if ($fileSize <= $maxSize) {
 
                     // generate file name

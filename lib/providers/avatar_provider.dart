@@ -23,8 +23,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:logging/logging.dart';
 
-class DrawerProvider extends ChangeNotifier {
-  final Logger _log = new Logger('DrawerProvider');
+class AvatarProvider extends ChangeNotifier {
+  final Logger _log = new Logger('AvatarProvider');
 
   File _image;
 

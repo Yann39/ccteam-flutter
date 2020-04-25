@@ -66,6 +66,8 @@ class AppString {
   static const String registrationPasswordHint = 'Choisissez un mot de passe';
   static const String registrationPasswordConfirmHint = 'Confirmez votre mot de passe';
 
+  static const String profileEdit = 'Modification de profil';
+
   static const String newsCreate = 'Ajouter une actualité';
   static const String newsCreated = 'L\'actualité à été créée avec succès !';
   static const String newsCreationFailed = 'Echec lors de la création de l\'actualité';
@@ -121,7 +123,9 @@ class AppString {
   static const String memberActiveMandatory = 'Le statut du membre (actif ou non) est obligatoire';
   static const String memberPasswordMandatory = 'Le mot de passe est obligatoire';
   static const String memberLoginFailed = 'Connexion impossible, vérifiez vos informations et assurez-vous que votre compte est actif';
+
   static const String avatarUploadFailed = 'Échec, la taille du fichier ne doit pas dépasser 500Ko';
+  static const String avatarResetAreYouSure = 'Cette action va supprimer votre photo de profil et remettre celle par défaut, êtes-vous sûr de vouloir continuer ?';
 
   static const String eventScreenTitle = 'Calendrier';
   static const String eventCreate = 'Ajouter un événement';

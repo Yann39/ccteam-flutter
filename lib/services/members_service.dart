@@ -204,4 +204,25 @@ class MembersService {
     }
 
   }
+
+  /// Delete avatar for the specified [memberId]
+  /// Send a POST request to the Restful API
+  /// Throw an exception if response status code is different from 200
+  Future<void> deleteAvatar(int memberId) async {
+    // convert Member object to JSON string
+    final String jsonString = '{memberId:$memberId}';
+
+    // call to API
+    final response = await http.post(AppConstants.API_ROOT_URL + AppConstants.API_DELETE_MEMBER_AVATAR_ENDPOINT, headers: {'Content-Type': 'application/json'}, body: jsonString);
+
+    // handle server response code
+    if (response.statusCode == 200) {
+      return;
+    } else if (response.statusCode == 503) {
+      throw Exception('Failed to delete member avatar');
+    } else {
+      throw Exception('Unexpected server response, member avatar has not been deleted');
+    }
+
+  }
 }

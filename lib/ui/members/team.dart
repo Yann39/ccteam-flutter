@@ -21,18 +21,12 @@ import 'package:chachatte_team/models/member.dart';
 import 'package:chachatte_team/providers/member_provider.dart';
 import 'package:chachatte_team/ui/main/main_action_menu.dart';
 import 'package:chachatte_team/ui/main/main_drawer.dart';
+import 'package:chachatte_team/utils/constants.dart';
 import 'package:chachatte_team/utils/strings.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-class Team extends StatefulWidget {
-  @override
-  State<StatefulWidget> createState() {
-    return _TeamState();
-  }
-}
-
-class _TeamState extends State<Team> {
+class Team extends StatelessWidget {
   final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
 
   /// Method that launches the Add Member screen and awaits the result from Navigator.pop
@@ -82,9 +76,13 @@ class _TeamState extends State<Team> {
                         return Material(
                           child: InkWell(
                             child: ListTile(
-                                title: Text(_memberProvider.members[index].firstName + " " + _memberProvider.members[index].lastName),
-                                subtitle: Text(_memberProvider.members[index].bike),
-                                leading: CircleAvatar(child: Text(_memberProvider.members[index].firstName[0]))),
+                              title: Text(_memberProvider.members[index].firstName + " " + _memberProvider.members[index].lastName),
+                              subtitle: Text(_memberProvider.members[index].bike),
+                              leading: _memberProvider.members[index].avatar != null && _memberProvider.members[index].avatar.length > 0
+                                  ? CircleAvatar(
+                                      backgroundImage: NetworkImage("${AppConstants.SERVER_ROOT_PATH}${AppConstants.SERVER_AVATAR_FOLDER}${_memberProvider.members[index].avatar}"))
+                                  : CircleAvatar(child: Text(_memberProvider.members[index].firstName[0])),
+                            ),
                             onTap: () => _navigateToMemberDetailScreen(context, _memberProvider.members[index]),
                           ),
                           color: Colors.transparent,

@@ -17,7 +17,7 @@
  * along with Chachatte Team. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import 'package:chachatte_team/providers/drawer_provider.dart';
+import 'package:chachatte_team/providers/avatar_provider.dart';
 import 'package:chachatte_team/providers/event_provider.dart';
 import 'package:chachatte_team/providers/home_provider.dart';
 import 'package:chachatte_team/providers/login_provider.dart';
@@ -56,7 +56,7 @@ void main() {
       providers: [
         ChangeNotifierProvider(create: (_) => LoginProvider()),
         ChangeNotifierProvider(create: (_) => HomeProvider()),
-        ChangeNotifierProvider(create: (_) => DrawerProvider()),
+        ChangeNotifierProvider(create: (_) => AvatarProvider()),
         ChangeNotifierProvider(create: (_) => NewsProvider()),
         ChangeNotifierProvider(create: (_) => EventProvider()),
         ChangeNotifierProvider(create: (_) => MemberProvider()),
@@ -82,7 +82,7 @@ class ChachatteTeamApp extends StatelessWidget {
         '/forgotPassword': (context) => ForgotPassword(),
         '/newsList': (context) => NewsList(),
         '/imageCrop': (context) => ImageCrop(),
-        '/editAvatar': (context) => EditAvatar(),
+        '/editAvatar': (context) => EditAvatar(member: ModalRoute.of(context).settings.arguments),
         '/addEditNews': (context) => AddEditNews(news: ModalRoute.of(context).settings.arguments),
         '/addEditEvent': (context) => AddEditEvent(event: ModalRoute.of(context).settings.arguments),
         '/addEditMember': (context) => AddEditMember(member: ModalRoute.of(context).settings.arguments),
