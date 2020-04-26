@@ -47,6 +47,7 @@ class AppConstants {
   static const String API_DELETE_EVENT_ENDPOINT = '/events/delete.php';
 
   static const String API_GET_ALL_TRACKS_ENDPOINT = '/tracks/read.php';
+  static const String API_SEARCH_TRACKS_ENDPOINT = '/tracks/search.php';
   static const String API_CREATE_TRACK_ENDPOINT = '/tracks/create.php';
   static const String API_UPDATE_TRACK_ENDPOINT = '/tracks/update.php';
   static const String API_DELETE_TRACK_ENDPOINT = '/tracks/delete.php';

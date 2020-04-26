@@ -50,6 +50,20 @@ class TrackProvider extends ChangeNotifier {
     });
   }
 
+  /// Search for tracks according to the specified [text]
+  Future<void> searchTracks(String text) async {
+    await _tracksService.searchTracks(text).then((value) async {
+      _log.fine("Members search list retrieved successfully");
+      _tracks = value;
+      notifyListeners();
+    }, onError: (error) {
+      _log.warning("Error when searching tracks ($error)");
+      _tracks = [];
+      notifyListeners();
+      throw (error);
+    });
+  }
+
   /// Create the specified [track]
   Future<void> createTrack(Track track) async {
     await _tracksService.createTrack(track).then((value) {

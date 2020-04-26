@@ -55,7 +55,6 @@ class AppString {
   static const String tabTracks = 'Circuits';
   static const String tabGallery = 'Gallerie';
 
-
   static const String loginEmailHint = 'Adresse e-mail';
   static const String loginPasswordHint = 'Mot de passe';
   static const String loginFailed = 'L\'dentification a échouée, vérifiez vos informations et assurez-vous que votre compte soit actif';
@@ -123,6 +122,8 @@ class AppString {
   static const String memberActiveMandatory = 'Le statut du membre (actif ou non) est obligatoire';
   static const String memberPasswordMandatory = 'Le mot de passe est obligatoire';
   static const String memberLoginFailed = 'Connexion impossible, vérifiez vos informations et assurez-vous que votre compte est actif';
+
+  static const String tracksSearchHint = 'Nom du circuit';
 
   static const String avatarUploadFailed = 'Échec, la taille du fichier ne doit pas dépasser 500Ko';
   static const String avatarResetAreYouSure = 'Cette action va supprimer votre photo de profil et remettre celle par défaut, êtes-vous sûr de vouloir continuer ?';

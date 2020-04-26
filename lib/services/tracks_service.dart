@@ -44,6 +44,28 @@ class TracksService {
     }
   }
 
+  /// Search for tracks according to the specified [text]
+  /// Send a POST request to the Restful API
+  /// Throw an exception if response status code is different from 200
+  Future<List<Track>> searchTracks(String text) async {
+    // format text as URL parameter string
+    final String urlParameters = "?s=${Uri.encodeComponent(text)}";
+
+    // call to API
+    final response = await http.get(AppConstants.API_ROOT_URL + AppConstants.API_SEARCH_TRACKS_ENDPOINT + urlParameters, headers: {'Content-Type': 'application/json'});
+
+    if (response.statusCode == 200) {
+      // if the call to the server was successful, parse the JSON and return content
+      dynamic responseJson = json.decode(response.body);
+      return (responseJson['records'] as List).map((p) => Track.fromJson(p)).toList();
+    } else if (response.statusCode == 404) {
+      // no data found, return empty array
+      return new List<Track>();
+    } else {
+      throw Exception('Unexpected server response');
+    }
+  }
+
   /// Create the specified [track] into the database
   /// Send a POST request to the Restful API
   /// Throw an exception if response status code is different from 201
