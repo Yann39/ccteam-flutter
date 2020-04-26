@@ -52,6 +52,7 @@ class _MemberDetailState extends State<MemberDetail> {
     super.initState();
     _scrollController = ScrollController()..addListener(() => setState(() {}));
     Provider.of<RecordProvider>(context, listen: false).fetchMemberRecords(widget.member.id);
+    Provider.of<EventProvider>(context, listen: false).fetchMemberEvents(widget.member.id);
   }
 
   bool get _showTitle {
@@ -59,7 +60,7 @@ class _MemberDetailState extends State<MemberDetail> {
   }
 
   /// Method that launches the Edit Member screen and awaits the result from Navigator.pop
-  _navigateToEditMemberScreen(BuildContext context, Member member) async {
+  void _navigateToEditMemberScreen(BuildContext context, Member member) async {
     // Navigator.push returns a Future that will complete after we call Navigator.pop on the target screen
     final _result = await Navigator.pushNamed(context, '/addEditMember', arguments: member);
 
@@ -72,7 +73,7 @@ class _MemberDetailState extends State<MemberDetail> {
   }
 
   /// Display a confirmation popup when trying to delete a member
-  _showConfirmation(BuildContext context, String value) {
+  void _showConfirmation(BuildContext context, String value) {
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
@@ -97,7 +98,7 @@ class _MemberDetailState extends State<MemberDetail> {
   }
 
   /// Handle result of the member deletion confirmation dialog
-  _dialogueResult(BuildContext context, ConfirmDialogAction value) {
+  void _dialogueResult(BuildContext context, ConfirmDialogAction value) {
     if (value == ConfirmDialogAction.yes) {
       // delete member
       Provider.of<MemberProvider>(context, listen: false).deleteMember(widget.member).then((value) {
@@ -142,6 +143,7 @@ class _MemberDetailState extends State<MemberDetail> {
 
   Widget build(BuildContext context) {
     final RecordProvider _recordProvider = Provider.of<RecordProvider>(context, listen: true);
+    final EventProvider _eventProvider = Provider.of<EventProvider>(context, listen: true);
 
     final motoInfo = MergeSemantics(
       child: Padding(
@@ -297,26 +299,26 @@ class _MemberDetailState extends State<MemberDetail> {
               ],
             ),
             /*SliverPersistentHeader(
-              pinned: true,
-              floating: true,
-              delegate: CustomSliverDelegate(
-                expandedHeight: 216,
-                hideTitleWhenExpanded: true,
-                inkWell: InkWell(
-                  onTap: () {
-                    //_drawerProvider.loadImage(null);
-                    Navigator.of(context).pushNamed('/editAvatar', arguments: widget.member);
-                  },
-                  child: CircleAvatar(
-                    radius: 80,
-                    backgroundColor: Colors.blue[200],
-                    backgroundImage: widget.member.avatar != null && widget.member.avatar.length > 0
-                        ? NetworkImage("${AppConstants.SERVER_ROOT_PATH}${AppConstants.SERVER_AVATAR_FOLDER}${widget.member.avatar}")
-                        : AssetImage("images/helmet-face.png"),
+                pinned: true,
+                floating: true,
+                delegate: CustomSliverDelegate(
+                  expandedHeight: 216,
+                  hideTitleWhenExpanded: true,
+                  inkWell: InkWell(
+                    onTap: () {
+                      //_drawerProvider.loadImage(null);
+                      Navigator.of(context).pushNamed('/editAvatar', arguments: widget.member);
+                    },
+                    child: CircleAvatar(
+                      radius: 80,
+                      backgroundColor: Colors.blue[200],
+                      backgroundImage: widget.member.avatar != null && widget.member.avatar.length > 0
+                          ? NetworkImage("${AppConstants.SERVER_ROOT_PATH}${AppConstants.SERVER_AVATAR_FOLDER}${widget.member.avatar}")
+                          : AssetImage("images/helmet-face.png"),
+                    ),
                   ),
                 ),
-              ),
-            ),*/
+              ),*/
             SliverList(
               delegate: SliverChildListDelegate(
                 <Widget>[
@@ -355,7 +357,13 @@ class _MemberDetailState extends State<MemberDetail> {
                             borderRadius: BorderRadius.circular(6.0),
                           ),
                           padding: EdgeInsets.all(8.0),
-                          child: Text("Informations", style: TextStyle(color: Colors.white)),
+                          child: Row(
+                            children: <Widget>[
+                              Icon(Icons.person, color: Colors.white, size: 13),
+                              SizedBox(width: 5.0),
+                              Text("Informations", style: TextStyle(color: Colors.white)),
+                            ],
+                          ),
                         ),
                       ),
                     ],
@@ -374,74 +382,147 @@ class _MemberDetailState extends State<MemberDetail> {
                           shape: BoxShape.rectangle,
                           borderRadius: BorderRadius.circular(6.0),
                         ),
-                        child: _recordProvider.memberRecords != null && _recordProvider.memberRecords.length > 0 ? Table(
-                          columnWidths: {0: FlexColumnWidth(3), 1: FlexColumnWidth(2), 2: FlexColumnWidth(2), 3: FlexColumnWidth(1)},
-                          defaultVerticalAlignment: TableCellVerticalAlignment.middle,
-                          border: TableBorder(horizontalInside: BorderSide(color: Colors.white, width: 0.5)),
-                          children: [
-                            for (Record rec in _recordProvider.memberRecords)
-                              TableRow(children: [
-                                Padding(
-                                  padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 0),
-                                  child: Text(rec.track.name, style: TextStyle(color: Colors.white), overflow: TextOverflow.ellipsis),
+                        child: _recordProvider.memberRecords != null && _recordProvider.memberRecords.length > 0
+                            ? Table(
+                                columnWidths: {0: FlexColumnWidth(3), 1: FlexColumnWidth(2), 2: FlexColumnWidth(2), 3: FlexColumnWidth(1)},
+                                defaultVerticalAlignment: TableCellVerticalAlignment.middle,
+                                border: TableBorder(horizontalInside: BorderSide(color: Colors.white, width: 0.5)),
+                                children: [
+                                  for (Record rec in _recordProvider.memberRecords)
+                                    TableRow(children: [
+                                      Padding(
+                                        padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 0),
+                                        child: Text(rec.track.name, style: TextStyle(color: Colors.white), overflow: TextOverflow.ellipsis),
+                                      ),
+                                      Padding(
+                                        padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 0),
+                                        child: Text(DateUtils.toLapTime(rec.lapTime), style: TextStyle(color: Colors.white)),
+                                      ),
+                                      Padding(
+                                        padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 0),
+                                        child: Text(DateUtils.convertToString(rec.recordDate, "dd/MM/yyyy"), style: TextStyle(color: Colors.white)),
+                                      ),
+                                      Padding(
+                                        padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 0),
+                                        child: SizedBox(
+                                            width: 10,
+                                            child: rec.conditions == "dry"
+                                                ? Icon(Icons.wb_sunny, color: Colors.white, size: 15)
+                                                : Icon(CustomIcons.rain, color: Colors.white, size: 15)),
+                                      )
+                                    ])
+                                ],
+                              )
+                            : Align(
+                                child: Text(
+                                  "Aucun chronos enregistrés",
+                                  style: TextStyle(color: Colors.white),
                                 ),
-                                Padding(
-                                  padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 0),
-                                  child: Text(DateUtils.toLapTime(rec.lapTime), style: TextStyle(color: Colors.white)),
-                                ),
-                                Padding(
-                                  padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 0),
-                                  child: Text(DateUtils.convertToString(rec.recordDate, "dd/MM/yyyy"), style: TextStyle(color: Colors.white)),
-                                ),
-                                Padding(
-                                  padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 0),
-                                  child: SizedBox(
-                                      width: 10,
-                                      child: rec.conditions == "dry" ? Icon(Icons.wb_sunny, color: Colors.white, size: 15) : Icon(CustomIcons.rain, color: Colors.white, size: 15)),
-                                )
-                              ])
-                          ],
-                        ) : Align(child: Text("Aucun chronos enregistrés", style: TextStyle(color: Colors.white),), alignment: Alignment.centerLeft,heightFactor: 2,)
+                                alignment: Alignment.centerLeft,
+                                heightFactor: 2,
+                              )
                         /*DataTable(
-                        dataRowHeight: 30,
-                        columnSpacing: 16.0,
-                        columns: <DataColumn>[
-                          DataColumn(label: Text("Circuit")),
-                          DataColumn(label: Text("Chrono")),
-                          DataColumn(label: Text("Date")),
-                          DataColumn(label: Text("Conditions")),
-                        ],
-                        rows: <DataRow>[
-                          for (Record rec in _recordProvider.memberRecords)
-                            DataRow(cells: <DataCell>[
-                              DataCell(Text(rec.track.name, style: TextStyle(color: Colors.white))),
-                              DataCell(Text(DateUtils.toLapTime(rec.lapTime), style: TextStyle(color: Colors.white))),
-                              DataCell(Text(DateUtils.convertToString(rec.recordDate, "dd MMM yyyy"), style: TextStyle(color: Colors.white))),
-                              DataCell(SizedBox(width: 10,child: rec.conditions == "dry" ? Icon(Icons.wb_sunny, color: Colors.white, size: 15) : Icon(Icons.wb_cloudy, color: Colors.white, size: 15)))
-                            ])
-                        ],
-                      ),*/
+                            dataRowHeight: 30,
+                            columnSpacing: 16.0,
+                            columns: <DataColumn>[
+                              DataColumn(label: Text("Circuit")),
+                              DataColumn(label: Text("Chrono")),
+                              DataColumn(label: Text("Date")),
+                              DataColumn(label: Text("Conditions")),
+                            ],
+                            rows: <DataRow>[
+                              for (Record rec in _recordProvider.memberRecords)
+                                DataRow(cells: <DataCell>[
+                                  DataCell(Text(rec.track.name, style: TextStyle(color: Colors.white))),
+                                  DataCell(Text(DateUtils.toLapTime(rec.lapTime), style: TextStyle(color: Colors.white))),
+                                  DataCell(Text(DateUtils.convertToString(rec.recordDate, "dd MMM yyyy"), style: TextStyle(color: Colors.white))),
+                                  DataCell(SizedBox(width: 10,child: rec.conditions == "dry" ? Icon(Icons.wb_sunny, color: Colors.white, size: 15) : Icon(Icons.wb_cloudy, color: Colors.white, size: 15)))
+                                ])
+                            ],
+                          ),*/
                         ),
                     Positioned(
                       left: 75,
                       child: Container(
                         decoration: BoxDecoration(
-                          color: Colors.red[700],
+                          color: Colors.purple[700],
                           shape: BoxShape.rectangle,
                           borderRadius: BorderRadius.circular(6.0),
                         ),
                         padding: EdgeInsets.all(8.0),
-                        child: Text(
-                          "Chronos",
-                          style: TextStyle(color: Colors.white),
+                        child: Row(
+                          children: <Widget>[
+                            Icon(Icons.timer, color: Colors.white, size: 13),
+                            SizedBox(width: 5.0),
+                            Text("Chronos", style: TextStyle(color: Colors.white)),
+                          ],
                         ),
                       ),
                     )
                   ]),
-                  SizedBox(
-                    height: 300,
-                  ),
-                  Text("TEST")
+                  Stack(children: <Widget>[
+                    Container(
+                        margin: EdgeInsets.only(left: 8.0, right: 8.0, top: 16.0, bottom: 16.0),
+                        padding: EdgeInsets.all(16.0),
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [Colors.blue[300], Colors.blue[500]],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                            stops: [0.0, 1.0],
+                          ),
+                          shape: BoxShape.rectangle,
+                          borderRadius: BorderRadius.circular(6.0),
+                        ),
+                        child: _eventProvider.memberEvents != null && _eventProvider.memberEvents.length > 0
+                            ? Table(
+                                columnWidths: {0: FlexColumnWidth(1), 1: FlexColumnWidth(1)},
+                                defaultVerticalAlignment: TableCellVerticalAlignment.middle,
+                                border: TableBorder(horizontalInside: BorderSide(color: Colors.white, width: 0.5)),
+                                children: [
+                                  for (Event ev in _eventProvider.memberEvents)
+                                    TableRow(children: [
+                                      Padding(
+                                        padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 0),
+                                        child: Text(DateUtils.convertToString(ev.eventDate, "EEE dd/MM/yyyy"), style: TextStyle(color: Colors.white)),
+                                      ),
+                                      Padding(
+                                        padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 0),
+                                        child: Text(ev.track.name, style: TextStyle(color: Colors.white)),
+                                      ),
+                                    ])
+                                ],
+                              )
+                            : Align(
+                                child: Text(
+                                  "Aucun événement prévu",
+                                  style: TextStyle(color: Colors.white),
+                                ),
+                                alignment: Alignment.centerLeft,
+                                heightFactor: 2,
+                              )),
+                    Positioned(
+                      left: 75,
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: Colors.green[700],
+                          shape: BoxShape.rectangle,
+                          borderRadius: BorderRadius.circular(6.0),
+                        ),
+                        padding: EdgeInsets.all(8.0),
+                        child: Row(
+                          children: <Widget>[
+                            Icon(Icons.event, color: Colors.white, size: 13),
+                            SizedBox(width: 5.0),
+                            Text(
+                              "Evénements",
+                              style: TextStyle(color: Colors.white)
+                            ),
+                          ],
+                        ),
+                      ),
+                    )
+                  ]),
                 ],
               ),
             ),

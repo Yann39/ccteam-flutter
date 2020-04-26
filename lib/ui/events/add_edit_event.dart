@@ -222,7 +222,7 @@ class _AddEditEventState extends State<AddEditEvent> {
                       return new Column(
                         children: <Widget>[
                           new DropdownButtonFormField<Track>(
-                            value: _selectedTrack != null ? _selectedTrack : widget.event != null ? snapshot.data.firstWhere((Track t) => t.id == widget.event.trackId) : null,
+                            value: _selectedTrack != null ? _selectedTrack : widget.event != null ? snapshot.data.firstWhere((Track t) => t.id == widget.event.track.id) : null,
                             decoration: const InputDecoration(
                               icon: const Icon(CustomIcons.track_sample),
                               hintText: AppString.eventTrackIdHint,
@@ -236,7 +236,7 @@ class _AddEditEventState extends State<AddEditEvent> {
                                 _selectedTrack = val;
                               });
                             },
-                            onSaved: (val) => currEvent.trackId = val.id,
+                            onSaved: (val) => currEvent.track.id = val.id,
                             validator: (val) => val == null ? AppString.eventTrackIdMandatory : null,
                           )
                         ],

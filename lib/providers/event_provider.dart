@@ -30,6 +30,7 @@ class EventProvider extends ChangeNotifier {
   final EventsService _eventsService = new EventsService();
   List<Event> _events = [];
   List<Event> _displayEvents = [];
+  List<Event> _memberEvents = [];
   int _eventsPerLine = 1;
   int _eventModeSelectorIndex = 0;
 
@@ -39,11 +40,12 @@ class EventProvider extends ChangeNotifier {
 
   UnmodifiableListView<Event> get events => UnmodifiableListView(_events);
   UnmodifiableListView<Event> get displayEvents => UnmodifiableListView(_displayEvents);
+  UnmodifiableListView<Event> get memberEvents => UnmodifiableListView(_memberEvents);
   int get eventsPerLine => _eventsPerLine;
   int get eventModeSelectorIndex => _eventModeSelectorIndex;
 
   setDisplayEvents(DateTime date, String calendarMode) {
-    String format = calendarMode == 'year' ? 'My' : 'dMy';
+    final String format = calendarMode == 'year' ? 'My' : 'dMy';
     if (date != null) {
       _displayEvents = _events.where((event) => DateFormat(format).format(event.eventDate) == DateFormat(format).format(date)).toList();
     } else {
@@ -62,7 +64,7 @@ class EventProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Get the list of all news
+  /// Get the list of all events
   Future<void> fetchEvents() async {
     await _eventsService.fetchEvents().then((value) async {
       _log.fine("Events list retrieved successfully");
@@ -75,6 +77,21 @@ class EventProvider extends ChangeNotifier {
       throw (error);
     });
     return _events;
+  }
+
+  /// Get the list of all events for the specified [memberId]
+  Future<void> fetchMemberEvents(int memberId) async {
+    await _eventsService.fetchMemberEvents(memberId).then((value) async {
+      _log.fine("Member events list retrieved successfully");
+      _memberEvents = value;
+      notifyListeners();
+    }, onError: (error) {
+      _log.warning("Error when retrieving member events list ($error)");
+      _memberEvents = [];
+      notifyListeners();
+      throw (error);
+    });
+    return _memberEvents;
   }
 
 }

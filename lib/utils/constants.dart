@@ -43,6 +43,7 @@ class AppConstants {
   static const String API_DELETE_MEMBER_AVATAR_ENDPOINT = '/members/delete_avatar.php';
 
   static const String API_GET_ALL_EVENTS_ENDPOINT = '/events/read.php';
+  static const String API_GET_MEMBER_EVENTS_ENDPOINT = '/events/read_by_member.php';
   static const String API_CREATE_EVENT_ENDPOINT = '/events/create.php';
   static const String API_UPDATE_EVENT_ENDPOINT = '/events/update.php';
   static const String API_DELETE_EVENT_ENDPOINT = '/events/delete.php';

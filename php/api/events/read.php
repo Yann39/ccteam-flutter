@@ -25,6 +25,7 @@ header("Content-Type: application/json; charset=UTF-8");
 // include needed classes
 include_once '../config/database.php';
 include_once '../objects/events.php';
+include_once '../objects/tracks.php';
 include_once '../objects/members.php';
 
 // get database connection
@@ -81,6 +82,14 @@ if ($num > 0) {
             }
         }
 
+        // get full track object
+        $track = null;
+        if ($track_id != null) {
+            $track = new Track($db);
+            $track->id = $track_id;
+            $track->readOne();
+        }
+
         // get created by member
         $memberCreated = null;
         if ($created_by != null) {
@@ -103,7 +112,7 @@ if ($num > 0) {
             "title" => $title,
             "description" => $description,
             "event_date" => $event_date,
-            "track_id" => $track_id,
+            "track" => $track,
             "organizer" => $organizer,
             "price" => $price,
             "members" => $member_arr,

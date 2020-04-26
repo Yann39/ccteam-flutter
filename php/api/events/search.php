@@ -62,7 +62,7 @@ if ($num > 0) {
             "event_date" => $event_date,
             "track_id" => $track_id,
             "organizer" => $organizer,
-            "price" => $price
+            "price" => $price,
             "created_on" => $created_on,
             "created_by" => $created_by,
             "modified_on" => $modified_on,

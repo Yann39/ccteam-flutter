@@ -65,7 +65,7 @@ if (isset($_GET["trackId"]) && !empty($_GET["trackId"])) {
             $member->id = $row['member_id'];
             $member->readOne($id);
 
-            // array representing the news
+            // array representing the record
             $records_item = array(
                 "id" => $id,
                 "track" => $track,

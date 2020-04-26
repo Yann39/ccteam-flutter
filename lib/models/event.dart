@@ -18,6 +18,7 @@
  */
 
 import 'package:chachatte_team/models/member.dart';
+import 'package:chachatte_team/models/track.dart';
 import 'package:intl/intl.dart';
 
 /// class representing an event
@@ -26,7 +27,7 @@ class Event {
   String title;
   String description;
   DateTime eventDate;
-  int trackId;
+  Track track;
   String organizer;
   double price;
   List<Member> members;
@@ -40,7 +41,7 @@ class Event {
     this.title,
     this.description,
     this.eventDate,
-    this.trackId,
+    this.track,
     this.organizer,
     this.price,
     this.members,
@@ -57,7 +58,7 @@ class Event {
       title: ${this.title},
       description: ${this.description},
       eventDate: ${this.eventDate != null ? this.eventDate.toIso8601String() : ""},
-      trackId: ${this.trackId},
+      track: ${this.track != null ? this.track.toString() : ""},
       organizer: ${this.organizer},
       price: ${this.price},
       members: ${this.members != null ? this.members.map((i) => i.toString()) : ""},
@@ -74,7 +75,7 @@ class Event {
         title = json['title'],
         description = json['description'],
         eventDate = json['event_date'] != null ? new DateFormat("yyyy-MM-dd HH:mm:ss").parseStrict(json['event_date']) : null,
-        trackId = json['track_id'] != null ? int.parse(json['track_id']) : null,
+        track = json['track'] != null ? Track.fromJson(json['track']) : null,
         organizer = json['organizer'],
         price = json['price'] != null ? double.parse(json['price']) : null,
         members = json['members'] != null ? (json['members'] as List).map((i) => Member.fromJson(i)).toList() : null,
@@ -89,7 +90,7 @@ class Event {
         "title": title,
         "description": description,
         "event_date": eventDate,
-        "track_id": trackId,
+        "track": track != null ? track.toJson() : null,
         "organizer": organizer,
         "price": price,
         'members': members != null ? members.map((i) => i.toJson()) : null,
