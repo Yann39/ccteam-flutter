@@ -122,6 +122,7 @@ class AppString {
   static const String memberActiveMandatory = 'Le statut du membre (actif ou non) est obligatoire';
   static const String memberPasswordMandatory = 'Le mot de passe est obligatoire';
   static const String memberLoginFailed = 'Connexion impossible, vérifiez vos informations et assurez-vous que votre compte est actif';
+  static const String membersSearchHint = 'Nom / Prénom / E-mail';
 
   static const String tracksSearchHint = 'Nom du circuit';
 

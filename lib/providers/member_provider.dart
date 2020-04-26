@@ -29,22 +29,46 @@ class MemberProvider extends ChangeNotifier {
   final Logger _log = new Logger('MemberProvider');
   final MembersService _membersService = new MembersService();
   List<Member> _members = [];
+  bool _loading = true;
 
   MemberProvider() {
     fetchMembers();
   }
 
   UnmodifiableListView<Member> get members => UnmodifiableListView(_members);
+  bool get loading => _loading;
 
   /// Get the list of all members
   Future<void> fetchMembers() async {
+    _loading = true;
+    notifyListeners();
     await _membersService.fetchMembers().then((value) async {
       _log.fine("Members list retrieved successfully");
       _members = value;
+      _loading = false;
       notifyListeners();
     }, onError: (error) {
       _log.warning("Error when retrieving members list ($error)");
       _members = [];
+      _loading = false;
+      notifyListeners();
+      throw (error);
+    });
+  }
+
+  /// Search for members according to the specified [text]
+  Future<void> searchMembers(String text) async {
+    _loading = true;
+    notifyListeners();
+    await _membersService.searchMembers(text).then((value) async {
+      _log.fine("Members search list retrieved successfully");
+      _members = value;
+      _loading = false;
+      notifyListeners();
+    }, onError: (error) {
+      _log.warning("Error when searching members ($error)");
+      _members = [];
+      _loading = false;
       notifyListeners();
       throw (error);
     });

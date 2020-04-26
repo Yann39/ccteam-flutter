@@ -26,9 +26,14 @@ import 'package:chachatte_team/utils/strings.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-class Team extends StatelessWidget {
-  final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
+class Team extends StatefulWidget {
+  @override
+  State<StatefulWidget> createState() {
+    return _TeamState();
+  }
+}
 
+class _TeamState extends State<Team> {
   /// Method that launches the Add Member screen and awaits the result from Navigator.pop
   _navigateToAddMemberScreen(BuildContext context) async {
     // Navigator.push returns a Future that will complete after we call Navigator.pop on the target screen
@@ -59,7 +64,6 @@ class Team extends StatelessWidget {
     final _memberProvider = Provider.of<MemberProvider>(context, listen: true);
 
     return Scaffold(
-      key: _scaffoldKey,
       appBar: AppBar(
         title: Text(AppString.tabTeam),
         actions: <Widget>[MainActionMenu()],
@@ -67,9 +71,22 @@ class Team extends StatelessWidget {
       drawer: MainDrawer(),
       body: Column(
         children: <Widget>[
+          TextField(
+            decoration: InputDecoration(
+              filled: true,
+              fillColor: Colors.blue[100],
+              prefixIcon: Icon(Icons.search),
+              hintText: AppString.membersSearchHint,
+            ),
+            maxLines: 1,
+            onChanged: (String text) {
+              _memberProvider.searchMembers(text);
+            },
+          ),
           Expanded(
             child: Container(
-              child: _memberProvider.members != null && _memberProvider.members.length > 0
+              child: _memberProvider.loading ? Center(child: SizedBox(child: CircularProgressIndicator(), height: 20.0, width: 20.0)) :
+              _memberProvider.members != null && _memberProvider.members.length > 0
                   ? ListView.builder(
                       itemCount: _memberProvider.members.length,
                       itemBuilder: (context, index) {
@@ -88,13 +105,7 @@ class Team extends StatelessWidget {
                           color: Colors.transparent,
                         );
                       })
-                  : Center(
-                      child: SizedBox(
-                        child: CircularProgressIndicator(),
-                        height: 20.0,
-                        width: 20.0,
-                      ),
-                    ),
+                  : Center(child: SizedBox(child: Text("No member found"))),
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   colors: [Colors.blue[100], Colors.blue[300]],
