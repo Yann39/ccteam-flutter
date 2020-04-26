@@ -32,8 +32,10 @@ class CustomIcons {
   static const IconData track_bresse = IconData(0xe808, fontFamily: _kFontFam, fontPackage: _kFontPkg);
   static const IconData track_ales = IconData(0xe809, fontFamily: _kFontFam, fontPackage: _kFontPkg);
   static const IconData track_le_mans = IconData(0xe80a, fontFamily: _kFontFam, fontPackage: _kFontPkg);
+  static const IconData pilot = IconData(0xe80b, fontFamily: _kFontFam, fontPackage: _kFontPkg);
   static const IconData motorbike_outline = IconData(0xe80c, fontFamily: _kFontFam, fontPackage: _kFontPkg);
   static const IconData motorbike = IconData(0xe80d, fontFamily: _kFontFam, fontPackage: _kFontPkg);
   static const IconData helmet = IconData(0xe80e, fontFamily: _kFontFam, fontPackage: _kFontPkg);
+  static const IconData rain = IconData(0xe810, fontFamily: _kFontFam, fontPackage: _kFontPkg);
   static const IconData group_helmet = IconData(0xe811, fontFamily: _kFontFam, fontPackage: _kFontPkg);
 }

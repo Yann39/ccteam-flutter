@@ -22,6 +22,7 @@ import 'package:chachatte_team/models/member.dart';
 import 'package:chachatte_team/models/record.dart';
 import 'package:chachatte_team/providers/member_provider.dart';
 import 'package:chachatte_team/providers/record_provider.dart';
+import 'package:chachatte_team/utils/constants.dart';
 import 'package:chachatte_team/utils/custom_icons_icons.dart';
 import 'package:chachatte_team/utils/date_utils.dart';
 import 'package:chachatte_team/utils/strings.dart';
@@ -112,6 +113,7 @@ class _MemberDetailState extends State<MemberDetail> {
     Navigator.pop(context);
   }
 
+  /// get the right icon according to the specified [trackName]
   Icon getTrackIcon(String trackName) {
     if (trackName == 'Alès') {
       return Icon(CustomIcons.track_ales, color: Colors.red[700], size: 40);
@@ -141,12 +143,143 @@ class _MemberDetailState extends State<MemberDetail> {
   Widget build(BuildContext context) {
     final RecordProvider _recordProvider = Provider.of<RecordProvider>(context, listen: true);
 
+    final motoInfo = MergeSemantics(
+      child: Padding(
+        padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: <Widget>[
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  Text("Moto", style: TextStyle(color: Colors.black54)),
+                  Container(
+                    child: Text(
+                      widget.member.bike != null ? widget.member.bike : 'test',
+                      style: TextStyle(color: Colors.white),
+                      textScaleFactor: 1.2,
+                    ),
+                  )
+                ],
+              ),
+            ),
+            SizedBox(width: 72.0, child: IconButton(icon: Icon(CustomIcons.motorbike), color: Colors.white, onPressed: () {}))
+          ],
+        ),
+      ),
+    );
+
+    final mobileInfo = MergeSemantics(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: <Widget>[
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  Text("Mobile", style: TextStyle(color: Colors.black54)),
+                  Container(
+                    child: Text(
+                      widget.member.phone != null ? widget.member.phone : 'test',
+                      style: TextStyle(color: Colors.white),
+                      textScaleFactor: 1.2,
+                    ),
+                  )
+                ],
+              ),
+            ),
+            SizedBox(width: 72.0, child: IconButton(icon: Icon(Icons.phone), color: Colors.white, onPressed: () {})),
+            SizedBox(width: 72.0, child: IconButton(icon: Icon(Icons.sms), color: Colors.white, onPressed: () {}))
+          ],
+        ),
+      ),
+    );
+
+    final emailInfo = MergeSemantics(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: <Widget>[
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  Text("E-mail", style: TextStyle(color: Colors.black54)),
+                  Container(
+                    child: Text(
+                      widget.member.email != null ? widget.member.email : 'test',
+                      style: TextStyle(color: Colors.white),
+                      textScaleFactor: 1.2,
+                    ),
+                  )
+                ],
+              ),
+            ),
+            SizedBox(width: 72.0, child: IconButton(icon: Icon(Icons.mail), color: Colors.white, onPressed: () {}))
+          ],
+        ),
+      ),
+    );
+
     return Scaffold(
       body: Container(
         child: CustomScrollView(
           controller: _scrollController,
           slivers: <Widget>[
             SliverAppBar(
+              pinned: true,
+              expandedHeight: kExpandedHeight,
+              title: _showTitle
+                  ? Text(
+                      widget.member.firstName + ' ' + widget.member.lastName,
+                      overflow: TextOverflow.ellipsis,
+                    )
+                  : null,
+              flexibleSpace: _showTitle
+                  ? null
+                  : FlexibleSpaceBar(
+                      title: _Title(
+                        text: widget.member.firstName + ' ' + widget.member.lastName,
+                        padding: EdgeInsets.only(left: 84, bottom: 40),
+                      ),
+                      background: Stack(
+                        alignment: Alignment.bottomLeft,
+                        children: <Widget>[
+                          CachedNetworkImage(
+                            placeholder: (context, url) => CircularProgressIndicator(),
+                            imageUrl: 'https://images.freeimages.com/images/large-previews/e71/frog-1371919.jpg',
+                          ),
+                          Positioned(
+                            bottom: 15,
+                            left: 15,
+                            child: Container(
+                              decoration: ShapeDecoration(shape: CircleBorder(), color: Colors.white),
+                              padding: EdgeInsets.all(3.0),
+                              child: widget.member.avatar != null && widget.member.avatar.length > 0 ? CircleAvatar(
+                                radius: 50,
+                                backgroundImage: NetworkImage("${AppConstants.SERVER_ROOT_PATH}${AppConstants.SERVER_AVATAR_FOLDER}${widget.member.avatar}"),
+                              ) : CircleAvatar(
+                                  radius: 50,
+                                backgroundColor: Colors.blue[100],
+                                child: ShaderMask(
+                                  shaderCallback: (bounds) => LinearGradient(
+                                    begin: const FractionalOffset(0.0, 0.0),
+                                    end: const FractionalOffset(0.0, 1.0),
+                                    stops: [0.0, 1.0],
+                                    colors: [Colors.red[700], Colors.white],
+                                  ).createShader(bounds),
+                                  child: Icon(CustomIcons.pilot, size: 75),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
               actions: <Widget>[
                 IconButton(
                   icon: const Icon(Icons.edit),
@@ -159,61 +292,39 @@ class _MemberDetailState extends State<MemberDetail> {
                   onPressed: () => _showConfirmation(context, AppString.memberDeletionAreYouSure),
                 )
               ],
-              pinned: true,
-              leading: IconButton(
-                icon: Icon(Icons.arrow_back),
-                onPressed: () => Navigator.pop(context),
-              ),
-              expandedHeight: kExpandedHeight,
-              title: _showTitle ? Text(widget.member.firstName + ' ' + widget.member.lastName) : null,
-              flexibleSpace: _showTitle
-                  ? null
-                  : FlexibleSpaceBar(
-                      title: Column(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: <Widget>[
-                          Text(
-                            widget.member.firstName + ' ' + widget.member.lastName,
-                            style: TextStyle(backgroundColor: Color(0x60000000)),
-                          ),
-                        ],
-                      ),
-                      background: Stack(
-                        fit: StackFit.expand,
-                        children: <Widget>[
-                          Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: <Widget>[
-                              CachedNetworkImage(
-                                placeholder: (context, url) => CircularProgressIndicator(),
-                                imageUrl: 'https://images.freeimages.com/images/large-previews/e71/frog-1371919.jpg',
-                              ),
-                            ],
-                          ),
-                          const DecoratedBox(
-                            decoration: BoxDecoration(
-                              gradient: LinearGradient(
-                                begin: Alignment(0.0, -1.0),
-                                end: Alignment(0.0, -0.4),
-                                colors: <Color>[Color(0x60000000), Color(0x00000000)],
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
             ),
+            /*SliverPersistentHeader(
+              pinned: true,
+              floating: true,
+              delegate: CustomSliverDelegate(
+                expandedHeight: 216,
+                hideTitleWhenExpanded: true,
+                inkWell: InkWell(
+                  onTap: () {
+                    //_drawerProvider.loadImage(null);
+                    Navigator.of(context).pushNamed('/editAvatar', arguments: widget.member);
+                  },
+                  child: CircleAvatar(
+                    radius: 80,
+                    backgroundColor: Colors.blue[200],
+                    backgroundImage: widget.member.avatar != null && widget.member.avatar.length > 0
+                        ? NetworkImage("${AppConstants.SERVER_ROOT_PATH}${AppConstants.SERVER_AVATAR_FOLDER}${widget.member.avatar}")
+                        : AssetImage("images/helmet-face.png"),
+                  ),
+                ),
+              ),
+            ),*/
             SliverList(
               delegate: SliverChildListDelegate(
                 <Widget>[
                   SizedBox(height: 16.0),
                   Stack(
+                    alignment: Alignment.topCenter,
                     children: <Widget>[
                       Container(
                         margin: EdgeInsets.only(left: 8.0, right: 8.0, top: 16.0, bottom: 16.0),
                         decoration: BoxDecoration(
                           gradient: LinearGradient(
-                            //colors: [Color.fromRGBO(0, 100, 200, 0.3), Color.fromRGBO(0, 100, 200, 0.5)],
                             colors: [Colors.blue[300], Colors.blue[500]],
                             begin: Alignment.topLeft,
                             end: Alignment.bottomRight,
@@ -224,96 +335,16 @@ class _MemberDetailState extends State<MemberDetail> {
                         ),
                         child: Column(
                           children: <Widget>[
-                            MergeSemantics(
-                              child: Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                  children: <Widget>[
-                                    Expanded(
-                                      child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: <Widget>[
-                                          Text("Moto", style: TextStyle(color: Colors.black54)),
-                                          Container(
-                                            child: Text(
-                                              widget.member.bike != null ? widget.member.bike : 'test',
-                                              style: TextStyle(color: Colors.white),
-                                              textScaleFactor: 1.2,
-                                            ),
-                                          )
-                                        ],
-                                      ),
-                                    ),
-                                    SizedBox(width: 72.0, child: IconButton(icon: Icon(CustomIcons.motorbike), color: Colors.white, onPressed: () {}))
-                                  ],
-                                ),
-                              ),
-                            ),
-                            Divider(
-                              color: Colors.white,
-                            ),
-                            MergeSemantics(
-                              child: Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                  children: <Widget>[
-                                    Expanded(
-                                      child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: <Widget>[
-                                          Text("Mobile", style: TextStyle(color: Colors.black54)),
-                                          Container(
-                                            child: Text(
-                                              widget.member.phone != null ? widget.member.phone : 'test',
-                                              style: TextStyle(color: Colors.white),
-                                              textScaleFactor: 1.2,
-                                            ),
-                                          )
-                                        ],
-                                      ),
-                                    ),
-                                    SizedBox(width: 72.0, child: IconButton(icon: Icon(Icons.phone), color: Colors.white, onPressed: () {})),
-                                    SizedBox(width: 72.0, child: IconButton(icon: Icon(Icons.sms), color: Colors.white, onPressed: () {}))
-                                  ],
-                                ),
-                              ),
-                            ),
-                            Divider(
-                              color: Colors.white,
-                            ),
-                            MergeSemantics(
-                              child: Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                  children: <Widget>[
-                                    Expanded(
-                                      child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: <Widget>[
-                                          Text("E-mail", style: TextStyle(color: Colors.black54)),
-                                          Container(
-                                            child: Text(
-                                              widget.member.email != null ? widget.member.email : 'test',
-                                              style: TextStyle(color: Colors.white),
-                                              textScaleFactor: 1.2,
-                                            ),
-                                          )
-                                        ],
-                                      ),
-                                    ),
-                                    SizedBox(width: 72.0, child: IconButton(icon: Icon(Icons.mail), color: Colors.white, onPressed: () {}))
-                                  ],
-                                ),
-                              ),
-                            ),
+                            motoInfo,
+                            Divider(color: Colors.white, height: 5),
+                            mobileInfo,
+                            Divider(color: Colors.white, height: 5),
+                            emailInfo,
                           ],
                         ),
                       ),
                       Positioned(
-                        left: 50,
+                        left: 75,
                         child: Container(
                           decoration: BoxDecoration(
                             color: Colors.red[700],
@@ -321,12 +352,9 @@ class _MemberDetailState extends State<MemberDetail> {
                             borderRadius: BorderRadius.circular(6.0),
                           ),
                           padding: EdgeInsets.all(8.0),
-                          child: Text(
-                            "Informations",
-                            style: TextStyle(color: Colors.white),
-                          ),
+                          child: Text("Informations", style: TextStyle(color: Colors.white)),
                         ),
-                      )
+                      ),
                     ],
                   ),
                   Stack(children: <Widget>[
@@ -343,8 +371,7 @@ class _MemberDetailState extends State<MemberDetail> {
                           shape: BoxShape.rectangle,
                           borderRadius: BorderRadius.circular(6.0),
                         ),
-                        height: 200,
-                        child: Table(
+                        child: _recordProvider.memberRecords != null && _recordProvider.memberRecords.length > 0 ? Table(
                           columnWidths: {0: FlexColumnWidth(3), 1: FlexColumnWidth(2), 2: FlexColumnWidth(2), 3: FlexColumnWidth(1)},
                           defaultVerticalAlignment: TableCellVerticalAlignment.middle,
                           border: TableBorder(horizontalInside: BorderSide(color: Colors.white, width: 0.5)),
@@ -367,11 +394,11 @@ class _MemberDetailState extends State<MemberDetail> {
                                   padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 0),
                                   child: SizedBox(
                                       width: 10,
-                                      child: rec.conditions == "dry" ? Icon(Icons.wb_sunny, color: Colors.white, size: 15) : Icon(Icons.wb_cloudy, color: Colors.white, size: 15)),
+                                      child: rec.conditions == "dry" ? Icon(Icons.wb_sunny, color: Colors.white, size: 15) : Icon(CustomIcons.rain, color: Colors.white, size: 15)),
                                 )
                               ])
                           ],
-                        )
+                        ) : Align(child: Text("Aucun chronos enregistrés", style: TextStyle(color: Colors.white),), alignment: Alignment.centerLeft,heightFactor: 2,)
                         /*DataTable(
                         dataRowHeight: 30,
                         columnSpacing: 16.0,
@@ -393,7 +420,7 @@ class _MemberDetailState extends State<MemberDetail> {
                       ),*/
                         ),
                     Positioned(
-                      left: 50,
+                      left: 75,
                       child: Container(
                         decoration: BoxDecoration(
                           color: Colors.red[700],
@@ -409,7 +436,7 @@ class _MemberDetailState extends State<MemberDetail> {
                     )
                   ]),
                   SizedBox(
-                    height: 500,
+                    height: 300,
                   ),
                   Text("TEST")
                 ],
@@ -428,5 +455,128 @@ class _MemberDetailState extends State<MemberDetail> {
         ),
       ),
     );
+  }
+}
+
+class CustomSliverDelegate extends SliverPersistentHeaderDelegate {
+  final double expandedHeight;
+  final bool hideTitleWhenExpanded;
+  final InkWell inkWell;
+
+  CustomSliverDelegate({
+    @required this.expandedHeight,
+    this.hideTitleWhenExpanded = true,
+    this.inkWell,
+  });
+
+  @override
+  Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
+    print("SHRINKOFFSET : $shrinkOffset");
+    final appBarSize = expandedHeight - shrinkOffset;
+    final cardTopPosition = expandedHeight / 2 - shrinkOffset;
+    final proportion = 2 - (expandedHeight / appBarSize);
+    final percent = proportion < 0 || proportion > 1 ? 0.0 : proportion;
+    return SizedBox(
+      height: expandedHeight + expandedHeight / 2,
+      child: Stack(
+        alignment: Alignment.topCenter,
+        children: [
+          SizedBox(
+            height: appBarSize < kToolbarHeight ? kToolbarHeight : appBarSize,
+            child: NestedScrollView(
+                body: Text("fghjghj"),
+                headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
+                  return [
+                    SliverAppBar(
+                      actions: <Widget>[
+                        IconButton(
+                          icon: const Icon(Icons.edit),
+                          tooltip: 'Edit',
+                          onPressed: () => {} /*_navigateToEditMemberScreen(context, widget.member)*/,
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.delete_forever),
+                          tooltip: 'Delete',
+                          onPressed: () => {} /*_showConfirmation(context, AppString.memberDeletionAreYouSure)*/,
+                        )
+                      ],
+                      pinned: true,
+                      leading: IconButton(
+                        icon: Icon(Icons.arrow_back),
+                        onPressed: () => Navigator.pop(context),
+                      ),
+                      expandedHeight: 216,
+                      title: Text("Yann Bailly"),
+                      flexibleSpace: FlexibleSpaceBar(
+                        title: Text(
+                          "Yann Bailly",
+                          style: TextStyle(backgroundColor: Color(0x60000000)),
+                        ),
+                        background: CachedNetworkImage(
+                          placeholder: (context, url) => CircularProgressIndicator(),
+                          imageUrl: 'https://images.freeimages.com/images/small-previews/e71/frog-1371919.jpg',
+                        ),
+                      ),
+                    ),
+                  ];
+                }),
+          ),
+          Positioned(
+            top: cardTopPosition > 0 ? appBarSize - 80 : 0,
+            child: Opacity(
+              opacity: percent,
+              child: Padding(
+                padding: EdgeInsets.symmetric(horizontal: 30 * percent),
+                child: inkWell,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  @override
+  double get maxExtent => expandedHeight + expandedHeight / 2;
+
+  @override
+  double get minExtent => kToolbarHeight;
+
+  @override
+  bool shouldRebuild(SliverPersistentHeaderDelegate oldDelegate) {
+    return true;
+  }
+}
+
+class _Title extends StatelessWidget {
+  const _Title({
+    Key key,
+    this.text,
+    this.padding,
+  }) : super(key: key);
+
+  final String text;
+  final EdgeInsets padding;
+
+  @override
+  Widget build(BuildContext context) {
+    final settings = context.dependOnInheritedWidgetOfExactType<FlexibleSpaceBarSettings>();
+    final deltaExtent = settings.maxExtent - settings.minExtent;
+    final t = (1.0 - (settings.currentExtent - settings.minExtent) / deltaExtent).clamp(0.0, 1.0) as double;
+    final double scaleValue = Tween<double>(begin: 1.5, end: 1.0).transform(t);
+    return LayoutBuilder(builder: (context, constraints) {
+      return Container(
+        width: constraints.maxWidth / scaleValue,
+        child: Padding(
+          padding: EdgeInsets.only(left: (scaleValue - 1) * (padding.left * (8.5 - scaleValue * 5)), bottom: (scaleValue - 1) * (padding.bottom * (8.5 - scaleValue * 5))),
+          child: Text(
+            text,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(backgroundColor: Color.fromARGB(((scaleValue - 1) * 200).toInt(), 0, 0, 0)),
+          ),
+        ),
+      );
+    });
   }
 }
