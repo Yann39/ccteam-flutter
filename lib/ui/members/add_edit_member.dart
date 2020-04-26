@@ -293,12 +293,22 @@ class _AddEditMemberState extends State<AddEditMember> {
             _drawerProvider.loadImage(null);
             Navigator.of(context).pushNamed('/editAvatar', arguments: _currMember);
           },
-          child: CircleAvatar(
+          child: _currMember.avatar != null && _currMember.avatar.length > 0 ? CircleAvatar(
+            radius: 60,
+            backgroundImage: NetworkImage("${AppConstants.SERVER_ROOT_PATH}${AppConstants.SERVER_AVATAR_FOLDER}${_currMember.avatar}"),
+          ) : CircleAvatar(
             radius: 60,
             backgroundColor: Colors.blue[200],
-            backgroundImage: _currMember.avatar != null && _currMember.avatar.length > 0
-                ? NetworkImage("${AppConstants.SERVER_ROOT_PATH}${AppConstants.SERVER_AVATAR_FOLDER}${_currMember.avatar}")
-                : AssetImage("images/helmet-face.png"),
+            child: ShaderMask(
+              blendMode: BlendMode.srcATop,
+              shaderCallback: (bounds) => LinearGradient(
+                begin: const FractionalOffset(0.0, 0.0),
+                end: const FractionalOffset(0.0, 1.0),
+                stops: [0.0, 1.0],
+                colors: [Colors.red[700], Colors.blue[700]],
+              ).createShader(bounds),
+              child: Icon(CustomIcons.pilot, size: 75, color: Colors.white),
+            ),
           ),
         ),
         Positioned(

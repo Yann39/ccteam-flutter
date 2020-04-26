@@ -23,6 +23,7 @@ import 'package:chachatte_team/models/member.dart';
 import 'package:chachatte_team/providers/avatar_provider.dart';
 import 'package:chachatte_team/providers/login_provider.dart';
 import 'package:chachatte_team/utils/constants.dart';
+import 'package:chachatte_team/utils/custom_icons_icons.dart';
 import 'package:chachatte_team/utils/strings.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -119,12 +120,19 @@ class EditAvatar extends StatelessWidget {
                         margin: EdgeInsets.symmetric(vertical: 24.0, horizontal: 24.0),
                         child: _drawerProvider.image != null
                             ? Image.file(_drawerProvider.image, alignment: Alignment.topCenter, fit: BoxFit.contain)
-                            : Image(
+                            : member.avatar != null && member.avatar.length > 0 ? Image(
                                 alignment: Alignment.topCenter,
                                 fit: BoxFit.contain,
-                                image: member.avatar != null && member.avatar.length > 0
-                                    ? NetworkImage("${AppConstants.SERVER_ROOT_PATH}${AppConstants.SERVER_AVATAR_FOLDER}${member.avatar}")
-                                    : AssetImage("images/helmet-face.png"),
+                                image: NetworkImage("${AppConstants.SERVER_ROOT_PATH}${AppConstants.SERVER_AVATAR_FOLDER}${member.avatar}"),
+                              ) : ShaderMask(
+                          blendMode: BlendMode.srcATop,
+                                shaderCallback: (bounds) => LinearGradient(
+                                  begin: const FractionalOffset(0.0, 0.0),
+                                  end: const FractionalOffset(0.0, 1.0),
+                                  stops: [0.0, 1.0],
+                                  colors: [Colors.red[700], Colors.blue[700]],
+                                ).createShader(bounds),
+                                child: Icon(CustomIcons.pilot, size: 225, color: Colors.white),
                               ),
                       ),
                     ),
@@ -237,7 +245,7 @@ class HolePainter extends CustomPainter {
     print("${size.height} ${size.width}");
     final paint = Paint();
     paint.color = Colors.black38;
-    paint.blendMode = BlendMode.luminosity;
+    paint.blendMode = BlendMode.colorBurn;
     canvas.drawPath(
       Path.combine(
         PathOperation.difference,

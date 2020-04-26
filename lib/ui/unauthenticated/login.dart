@@ -21,6 +21,7 @@ import 'dart:ui';
 
 import 'package:chachatte_team/models/member.dart';
 import 'package:chachatte_team/providers/login_provider.dart';
+import 'package:chachatte_team/utils/custom_icons_icons.dart';
 import 'package:chachatte_team/utils/string_utils.dart';
 import 'package:chachatte_team/utils/strings.dart';
 import 'package:flutter/material.dart';
@@ -129,10 +130,8 @@ class _LoginState extends State<Login> {
         children: <Widget>[
           CircleAvatar(
             backgroundColor: Colors.transparent,
-            radius: 24.0,
-            child: Image.asset(
-              'images/helmet-face.png',
-            ),
+            radius: 26.0,
+            child: Icon(CustomIcons.pilot, color: Colors.white, size: 52),
           ),
           SizedBox(height: 6.0),
           Text(

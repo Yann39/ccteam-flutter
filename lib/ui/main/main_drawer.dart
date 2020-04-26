@@ -20,6 +20,7 @@
 import 'package:chachatte_team/models/member.dart';
 import 'package:chachatte_team/providers/login_provider.dart';
 import 'package:chachatte_team/utils/constants.dart';
+import 'package:chachatte_team/utils/custom_icons_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -80,13 +81,22 @@ class MainDrawer extends StatelessWidget {
                   ),
                   arrowColor: Colors.green,
                   currentAccountPicture: Container(
-                    decoration: ShapeDecoration(shape: CircleBorder(), color: Colors.blue[100]),
+                    decoration: ShapeDecoration(shape: CircleBorder(), color: Colors.white),
                     padding: EdgeInsets.all(2.0),
-                    child: CircleAvatar(
-                      backgroundColor: Colors.blue[200],
-                      backgroundImage: _loginProvider.loggedMember.avatar != null
-                          ? NetworkImage("${AppConstants.SERVER_ROOT_PATH}${AppConstants.SERVER_AVATAR_FOLDER}${_loginProvider.loggedMember.avatar}")
-                          : AssetImage("images/helmet-face.png"),
+                    child: _loginProvider.loggedMember.avatar != null ? CircleAvatar(
+                      backgroundColor: Colors.blue[100],
+                      backgroundImage: NetworkImage("${AppConstants.SERVER_ROOT_PATH}${AppConstants.SERVER_AVATAR_FOLDER}${_loginProvider.loggedMember.avatar}"),
+                    ) : CircleAvatar(
+                      backgroundColor: Colors.blue[100],
+                      child: ShaderMask(
+                        shaderCallback: (bounds) => LinearGradient(
+                          begin: const FractionalOffset(0.0, 0.0),
+                          end: const FractionalOffset(0.0, 1.0),
+                          stops: [0.0, 1.0],
+                          colors: [Colors.red[700], Colors.white],
+                        ).createShader(bounds),
+                        child: Icon(CustomIcons.pilot, size: 75),
+                      ),
                     ),
                   ),
                 ),
@@ -95,7 +105,7 @@ class MainDrawer extends StatelessWidget {
                   height: 110,
                   alignment: Alignment.topCenter,
                   child: Opacity(
-                    opacity: 0.5,
+                    opacity: 0.7,
                     child: Image.asset(
                       'images/chachatte-team-banner-drawer.png',
                       fit: BoxFit.fitWidth,

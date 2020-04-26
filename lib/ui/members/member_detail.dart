@@ -259,22 +259,25 @@ class _MemberDetailState extends State<MemberDetail> {
                             child: Container(
                               decoration: ShapeDecoration(shape: CircleBorder(), color: Colors.white),
                               padding: EdgeInsets.all(3.0),
-                              child: widget.member.avatar != null && widget.member.avatar.length > 0 ? CircleAvatar(
-                                radius: 50,
-                                backgroundImage: NetworkImage("${AppConstants.SERVER_ROOT_PATH}${AppConstants.SERVER_AVATAR_FOLDER}${widget.member.avatar}"),
-                              ) : CircleAvatar(
-                                  radius: 50,
-                                backgroundColor: Colors.blue[100],
-                                child: ShaderMask(
-                                  shaderCallback: (bounds) => LinearGradient(
-                                    begin: const FractionalOffset(0.0, 0.0),
-                                    end: const FractionalOffset(0.0, 1.0),
-                                    stops: [0.0, 1.0],
-                                    colors: [Colors.red[700], Colors.white],
-                                  ).createShader(bounds),
-                                  child: Icon(CustomIcons.pilot, size: 75),
-                                ),
-                              ),
+                              child: widget.member.avatar != null && widget.member.avatar.length > 0
+                                  ? CircleAvatar(
+                                      radius: 50,
+                                      backgroundImage: NetworkImage("${AppConstants.SERVER_ROOT_PATH}${AppConstants.SERVER_AVATAR_FOLDER}${widget.member.avatar}"),
+                                    )
+                                  : CircleAvatar(
+                                      radius: 50,
+                                      backgroundColor: Colors.blue[200],
+                                      child: ShaderMask(
+                                        blendMode: BlendMode.srcATop,
+                                        shaderCallback: (bounds) => LinearGradient(
+                                          begin: const FractionalOffset(0.0, 0.0),
+                                          end: const FractionalOffset(0.0, 1.0),
+                                          stops: [0.0, 1.0],
+                                          colors: [Colors.red[700], Colors.blue[700]],
+                                        ).createShader(bounds),
+                                        child: Icon(CustomIcons.pilot, size: 75),
+                                      ),
+                                    ),
                             ),
                           ),
                         ],
