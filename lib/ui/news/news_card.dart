@@ -34,17 +34,7 @@ class NewsCard extends StatelessWidget {
       height: 60.0,
       padding: EdgeInsets.symmetric(vertical: 8.0, horizontal: 12.0),
       margin: EdgeInsets.symmetric(vertical: 4.0, horizontal: 10.0),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          //colors: [Color.fromRGBO(0, 100, 200, 0.3), Color.fromRGBO(0, 100, 200, 0.5)],
-          colors: [Colors.blue[300], Colors.blue[500]],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          stops: [0.0, 1.0],
-        ),
-        shape: BoxShape.rectangle,
-        borderRadius: BorderRadius.circular(6.0),
-      ),
+      decoration: CustomDecorations.cardContent,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         crossAxisAlignment: CrossAxisAlignment.center,

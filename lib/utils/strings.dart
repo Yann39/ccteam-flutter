@@ -125,6 +125,7 @@ class AppString {
   static const String membersSearchHint = 'Nom / Prénom / E-mail';
 
   static const String tracksSearchHint = 'Nom du circuit';
+  static const String tracksNotFound = 'Aucun circuit trouvé';
 
   static const String avatarUploadFailed = 'Échec, la taille du fichier ne doit pas dépasser 500Ko';
   static const String avatarResetAreYouSure = 'Cette action va supprimer votre photo de profil et remettre celle par défaut, êtes-vous sûr de vouloir continuer ?';

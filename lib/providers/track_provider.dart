@@ -29,22 +29,28 @@ class TrackProvider extends ChangeNotifier {
   final Logger _log = new Logger('TrackProvider');
   final TracksService _tracksService = new TracksService();
   List<Track> _tracks = [];
+  bool _loading = true;
 
   TrackProvider() {
     fetchTracks();
   }
 
   UnmodifiableListView<Track> get tracks => UnmodifiableListView(_tracks);
+  bool get loading => _loading;
 
   /// Get the list of all tracks
   Future<void> fetchTracks() async {
+    _loading = true;
+    notifyListeners();
     await _tracksService.fetchTracks().then((value) async {
       _log.fine("Tracks list retrieved successfully");
       _tracks = value;
+      _loading = false;
       notifyListeners();
     }, onError: (error) {
       _log.warning("Error when retrieving tracks list ($error)");
       _tracks = [];
+      _loading = false;
       notifyListeners();
       throw (error);
     });
@@ -52,13 +58,17 @@ class TrackProvider extends ChangeNotifier {
 
   /// Search for tracks according to the specified [text]
   Future<void> searchTracks(String text) async {
+    _loading = true;
+    notifyListeners();
     await _tracksService.searchTracks(text).then((value) async {
       _log.fine("Members search list retrieved successfully");
       _tracks = value;
+      _loading = false;
       notifyListeners();
     }, onError: (error) {
       _log.warning("Error when searching tracks ($error)");
       _tracks = [];
+      _loading = false;
       notifyListeners();
       throw (error);
     });
