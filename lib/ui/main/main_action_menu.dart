@@ -25,8 +25,7 @@ enum QuickActions { about, contact, logout }
 
 class MainActionMenu extends StatelessWidget {
   /// Launch URL to contact user
-  _launchURL() async {
-    const url = 'mailto:rockyracer@mailfence.com';
+  _launchURL(String url) async {
     if (await canLaunch(url)) {
       await launch(url);
     } else {
@@ -37,7 +36,7 @@ class MainActionMenu extends StatelessWidget {
   /// Handle menu item click
   void _select(QuickActions choice) async {
     if (choice == QuickActions.contact) {
-      _launchURL();
+      _launchURL("mailto:rockyracer@mailfence.com");
     }
   }
 

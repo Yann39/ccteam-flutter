@@ -81,7 +81,7 @@ class Calendar extends StatelessWidget {
         child: _eventProvider.events != null && _eventProvider.events.length > 0
             ? Column(
                 children: <Widget>[
-                  Container(
+                  /*Container(
                     padding: EdgeInsets.all(8),
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.center,
@@ -93,7 +93,7 @@ class Calendar extends StatelessWidget {
                         //Text("Actualités", style: TextStyle(color: Colors.black87, fontSize: 16, fontFamily: 'Barbatrick', letterSpacing: 2)),
                       ],
                     ),
-                  ),
+                  ),*/
                   Row(
                     children: <Widget>[
                       Expanded(

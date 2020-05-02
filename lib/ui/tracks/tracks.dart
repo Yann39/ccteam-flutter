@@ -80,7 +80,7 @@ class _TracksState extends State<Tracks> {
             clipBehavior: Clip.antiAlias,
             child: Container(
               padding: EdgeInsets.all(8.0),
-              decoration: CustomDecorations.cardContent,
+              decoration: CustomDecorations.cardFull,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 mainAxisAlignment: MainAxisAlignment.start,
@@ -159,7 +159,7 @@ class _TracksState extends State<Tracks> {
           buildSearchField(_trackProvider),
           Expanded(
             child: Container(
-              decoration: CustomDecorations.mainContent,
+              color: Colors.blue[100],
               child: buildMembersListView(_trackProvider),
             ),
           ),

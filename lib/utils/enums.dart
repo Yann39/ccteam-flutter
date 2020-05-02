@@ -1,0 +1,2 @@
+
+enum ConfirmDialogAction { yes, no }

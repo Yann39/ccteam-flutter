@@ -39,19 +39,19 @@ class EditAvatar extends StatelessWidget {
   const EditAvatar({Key key, this.member}) : super(key: key);
 
   /// Allow user to select an image from the gallery
-  Future _selectImageFromGallery(BuildContext context) async {
+  Future _selectImageFromGallery(BuildContext context, AvatarProvider avatarProvider) async {
     File image = await ImagePicker.pickImage(source: ImageSource.gallery);
     if (image != null) {
-      Provider.of<AvatarProvider>(context, listen: false).loadImage(image);
+      avatarProvider.loadImage(image);
       Navigator.of(context).pushNamed('/imageCrop');
     }
   }
 
   /// Allow user to select an image from the camera
-  Future _selectImageFromCamera(BuildContext context) async {
+  Future _selectImageFromCamera(BuildContext context, AvatarProvider avatarProvider) async {
     File image = await ImagePicker.pickImage(source: ImageSource.camera);
     if (image != null) {
-      Provider.of<AvatarProvider>(context, listen: false).loadImage(image);
+      avatarProvider.loadImage(image);
       Navigator.of(context).pushNamed('/imageCrop');
     }
   }
@@ -92,7 +92,7 @@ class EditAvatar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final _loginProvider = Provider.of<LoginProvider>(context, listen: false);
-    final _drawerProvider = Provider.of<AvatarProvider>(context, listen: true);
+    final _avatarProvider = Provider.of<AvatarProvider>(context, listen: false);
 
     return Scaffold(
       appBar: AppBar(
@@ -118,8 +118,8 @@ class EditAvatar extends StatelessWidget {
                       aspectRatio: 1,
                       child: Container(
                         margin: EdgeInsets.symmetric(vertical: 24.0, horizontal: 24.0),
-                        child: _drawerProvider.image != null
-                            ? Image.file(_drawerProvider.image, alignment: Alignment.topCenter, fit: BoxFit.contain)
+                        child: _avatarProvider.image != null
+                            ? Image.file(_avatarProvider.image, alignment: Alignment.topCenter, fit: BoxFit.contain)
                             : member.avatar != null && member.avatar.length > 0 ? Image(
                                 alignment: Alignment.topCenter,
                                 fit: BoxFit.contain,
@@ -160,7 +160,7 @@ class EditAvatar extends StatelessWidget {
                         borderRadius: BorderRadius.circular(8),
                       ),
                       onPressed: () {
-                        _selectImageFromGallery(context);
+                        _selectImageFromGallery(context, _avatarProvider);
                       },
                       padding: EdgeInsets.fromLTRB(16.0, 12.0, 16.0, 12.0),
                       color: Colors.blue[700],
@@ -180,7 +180,7 @@ class EditAvatar extends StatelessWidget {
                         borderRadius: BorderRadius.circular(8),
                       ),
                       onPressed: () {
-                        _selectImageFromCamera(context);
+                        _selectImageFromCamera(context, _avatarProvider);
                       },
                       padding: EdgeInsets.fromLTRB(16.0, 12.0, 16.0, 12.0),
                       color: Colors.blue[700],
@@ -201,7 +201,7 @@ class EditAvatar extends StatelessWidget {
                   child: Text("Réinitialiser la photo de profil"),
                   onPressed: () => _showConfirmation(context, AppString.avatarResetAreYouSure),
                 ),
-                if (_drawerProvider.image != null)
+                if (_avatarProvider.image != null)
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: <Widget>[
@@ -210,7 +210,7 @@ class EditAvatar extends StatelessWidget {
                           borderRadius: BorderRadius.circular(8),
                         ),
                         onPressed: () {
-                          _loginProvider.uploadAvatar(_drawerProvider.image, member).then((value) {
+                          _loginProvider.uploadAvatar(_avatarProvider.image, member).then((value) {
                             Navigator.pop(context);
                           }, onError: (error) {
                             Scaffold.of(context)

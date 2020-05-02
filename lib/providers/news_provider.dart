@@ -56,7 +56,7 @@ class NewsProvider extends ChangeNotifier {
     return _news;
   }
 
-  /// Create the specified news
+  /// Create the specified [news]
   Future<void> createNews(News news) async {
     await _newsService.createNews(news).then((value) {
       _log.fine("New news created : ${value.title} (id=${value.id})");
@@ -68,7 +68,7 @@ class NewsProvider extends ChangeNotifier {
     });
   }
 
-  /// Update the specified news
+  /// Update the specified [news]
   Future<void> updateNews(News news) async {
     await _newsService.updateNews(news).then((value) {
       _log.fine("News successfully updated : ${news.title}");
@@ -80,7 +80,7 @@ class NewsProvider extends ChangeNotifier {
     });
   }
 
-  /// Delete the specified news
+  /// Delete the specified [news]
   Future<void> deleteNews(News news) async {
     await _newsService.deleteNews(news).then((value) {
       _log.fine("News deleted successfully : ${news.title}");

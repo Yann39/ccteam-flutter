@@ -32,8 +32,8 @@ class CustomDecorations {
     ),
   );
 
-  /// Decoration for main content
-  static BoxDecoration cardContent = BoxDecoration(
+  /// Decoration for cards content
+  static BoxDecoration cardFull = BoxDecoration(
     gradient: LinearGradient(
       colors: [Colors.blue[300], Colors.blue[500]],
       begin: Alignment.topLeft,
@@ -42,6 +42,18 @@ class CustomDecorations {
     ),
     shape: BoxShape.rectangle,
     borderRadius: BorderRadius.circular(6.0),
+  );
+
+  /// Decoration for cards body content
+  static BoxDecoration cardBody = BoxDecoration(
+    gradient: LinearGradient(
+      colors: [Colors.blue[300], Colors.blue[500]],
+      begin: Alignment.topLeft,
+      end: Alignment.bottomRight,
+      stops: [0.0, 1.0],
+    ),
+    shape: BoxShape.rectangle,
+    borderRadius: BorderRadius.only(bottomLeft: Radius.circular(6.0), bottomRight: Radius.circular(6.0)),
   );
 
 }

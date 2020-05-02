@@ -19,6 +19,7 @@
 
 import 'package:chachatte_team/models/news.dart';
 import 'package:chachatte_team/utils/constants.dart';
+import 'package:chachatte_team/utils/custom_decorations.dart';
 import 'package:chachatte_team/utils/date_utils.dart';
 import 'package:flutter/material.dart';
 
@@ -34,7 +35,7 @@ class NewsCard extends StatelessWidget {
       height: 60.0,
       padding: EdgeInsets.symmetric(vertical: 8.0, horizontal: 12.0),
       margin: EdgeInsets.symmetric(vertical: 4.0, horizontal: 10.0),
-      decoration: CustomDecorations.cardContent,
+      decoration: CustomDecorations.cardFull,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         crossAxisAlignment: CrossAxisAlignment.center,

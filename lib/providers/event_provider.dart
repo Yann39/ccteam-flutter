@@ -28,6 +28,7 @@ import 'package:logging/logging.dart';
 class EventProvider extends ChangeNotifier {
   final Logger _log = new Logger('EventProvider');
   final EventsService _eventsService = new EventsService();
+
   List<Event> _events = [];
   List<Event> _displayEvents = [];
   List<Event> _memberEvents = [];

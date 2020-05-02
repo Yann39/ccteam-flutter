@@ -30,9 +30,10 @@ class AvatarProvider extends ChangeNotifier {
 
   File get image => _image;
 
-  /// Check if the user needs to authenticate
+  /// Load the specified [imageFile] representing the avatar
   Future<void> loadImage(File imageFile) async {
     _image = imageFile;
+    _log.info("Notifying listeners of AvatarProvider");
     notifyListeners();
   }
 }

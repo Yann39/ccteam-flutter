@@ -26,7 +26,7 @@ class HomeProvider extends ChangeNotifier {
 
   int get currentIndex => _currentIndex;
 
-  /// set the current page index
+  /// set the current page index to be the specified [currIndex]
   setCurrentIndex(int currIndex) {
     _currentIndex = currIndex;
     _log.info("Notifying listeners of HomeProvider");

@@ -61,7 +61,7 @@ class Event {
     function readOne() {
 
         // query to get record corresponding to specified id
-        $query = "SELECT n.title, n.description, n.event_date, n.track_id, n.organizer, n.price, n.created_on, n.created_by, n.modified_on, n.modified_by FROM " . $this->table_name . " n WHERE n.id = ? LIMIT 0,1";
+        $query = "SELECT n.id, n.title, n.description, n.event_date, n.track_id, n.organizer, n.price, n.created_on, n.created_by, n.modified_on, n.modified_by FROM " . $this->table_name . " n WHERE n.id = ? LIMIT 0,1";
 
         // prepare query statement
         $stmt = $this->conn->prepare($query);

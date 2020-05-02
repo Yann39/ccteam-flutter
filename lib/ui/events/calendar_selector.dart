@@ -78,6 +78,12 @@ class CalendarSelectorState extends State<CalendarSelector> with TickerProviderS
     _animationController.forward();
   }
 
+  @override
+  void dispose() {
+    _animationController.dispose();
+    super.dispose();
+  }
+
   /// Capitalize the specified [string]
   String capitalize(String string) => string[0].toUpperCase() + string.substring(1);
 

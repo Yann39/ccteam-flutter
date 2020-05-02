@@ -22,6 +22,7 @@ import 'package:chachatte_team/providers/member_provider.dart';
 import 'package:chachatte_team/ui/main/main_action_menu.dart';
 import 'package:chachatte_team/ui/main/main_drawer.dart';
 import 'package:chachatte_team/utils/constants.dart';
+import 'package:chachatte_team/utils/custom_decorations.dart';
 import 'package:chachatte_team/utils/strings.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -35,8 +36,8 @@ class Team extends StatefulWidget {
 
 class _TeamState extends State<Team> {
   /// Method that launches the Add Member screen and awaits the result from Navigator.pop
-  _navigateToAddMemberScreen(BuildContext context) async {
-    // Navigator.push returns a Future that will complete after we call Navigator.pop on the target screen
+  void _navigateToAddMemberScreen(BuildContext context) async {
+    // Navigator.push returns a Future which will complete after we call Navigator.pop on the target screen
     final _result = await Navigator.pushNamed(context, '/addEditMember');
 
     // after the target screen returns a result, hide any previous snack bars and show the result
@@ -48,7 +49,7 @@ class _TeamState extends State<Team> {
   }
 
   /// Method that launches the Member detail screen and awaits the result from Navigator.pop
-  _navigateToMemberDetailScreen(BuildContext context, Member member) async {
+  void _navigateToMemberDetailScreen(BuildContext context, Member member) async {
     // Navigator.push returns a Future that will complete after we call Navigator.pop on the target screen
     final _result = await Navigator.pushNamed(context, '/memberDetail', arguments: member);
 
