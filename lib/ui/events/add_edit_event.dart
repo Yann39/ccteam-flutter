@@ -55,7 +55,7 @@ class _AddEditEventState extends State<AddEditEvent> {
     _futureTracks = _tracksService.fetchTracks();
     // set date picker text if set
     if (widget.event != null) {
-      _datePickerController.text = DateUtils.convertToString(widget.event.eventDate, AppConstants.DATE_FORMAT);
+      _datePickerController.text = DateUtils.convertToString(widget.event.eventDate, DATE_FORMAT);
     }
     return super.initState();
   }
@@ -86,7 +86,7 @@ class _AddEditEventState extends State<AddEditEvent> {
 
     // notify the framework that the internal state of this object has changed
     setState(() {
-      controller.text = DateFormat(AppConstants.DATE_FORMAT).format(finalDateTime);
+      controller.text = DateFormat(DATE_FORMAT).format(finalDateTime);
     });
   }
 
@@ -125,7 +125,7 @@ class _AddEditEventState extends State<AddEditEvent> {
     // the current Event to be edited
     final Event currEvent = widget.event != null ? widget.event : _newEvent;
 
-    final priceFormatter = new NumberFormat(AppConstants.PRICE_FORMAT);
+    final priceFormatter = new NumberFormat(PRICE_FORMAT);
 
     return Scaffold(
       key: _scaffoldKey,
@@ -272,7 +272,7 @@ class _AddEditEventState extends State<AddEditEvent> {
                       controller: _datePickerController,
                       keyboardType: TextInputType.datetime,
                       validator: (val) => val.isEmpty ? AppString.eventDateMandatory : null,
-                      onSaved: (val) => currEvent.eventDate = new DateFormat(AppConstants.DATE_FORMAT).parseStrict(val),
+                      onSaved: (val) => currEvent.eventDate = new DateFormat(DATE_FORMAT).parseStrict(val),
                     ),
                   ),
                 ),

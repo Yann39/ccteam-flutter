@@ -30,7 +30,7 @@ class PhotosService {
   /// Return empty array if no data found (404)
   Future<List<Photo>> fetchPhotos() async {
     // call to API
-    final response = await http.get(AppConstants.API_ROOT_URL + AppConstants.API_GET_ALL_PHOTOS_ENDPOINT);
+    final response = await http.get(API_ROOT_URL + API_GET_ALL_PHOTOS_ENDPOINT);
 
     if (response.statusCode == 200) {
       // if the call to the server was successful, parse the JSON and return content
@@ -49,7 +49,7 @@ class PhotosService {
   /// Throw an exception if response status code is different from 201
   Future<void> createPhoto(Photo photo) async {
     // call to API
-    final response = await http.post(AppConstants.API_ROOT_URL + AppConstants.API_CREATE_PHOTO_ENDPOINT, headers: {'Content-Type': 'application/json'}, body: photo.toJson());
+    final response = await http.post(API_ROOT_URL + API_CREATE_PHOTO_ENDPOINT, headers: {'Content-Type': 'application/json'}, body: photo.toJson());
 
     // handle server response code
     if (response.statusCode == 201) {
@@ -68,7 +68,7 @@ class PhotosService {
   /// Throw an exception if response status code is different from 200
   Future<void> updatePhoto(Photo photo) async {
     // call to API
-    final response = await http.post(AppConstants.API_ROOT_URL + AppConstants.API_UPDATE_PHOTO_ENDPOINT, headers: {'Content-Type': 'application/json'}, body: photo.toJson());
+    final response = await http.post(API_ROOT_URL + API_UPDATE_PHOTO_ENDPOINT, headers: {'Content-Type': 'application/json'}, body: photo.toJson());
 
     // handle server response code
     if (response.statusCode == 200) {
@@ -85,7 +85,7 @@ class PhotosService {
   /// Throw an exception if response status code is different from 204
   Future<void> deletePhoto(Photo photo) async {
     // call to API
-    final response = await http.post(AppConstants.API_ROOT_URL + AppConstants.API_DELETE_PHOTO_ENDPOINT, headers: {'Content-Type': 'application/json'}, body: photo.toJson());
+    final response = await http.post(API_ROOT_URL + API_DELETE_PHOTO_ENDPOINT, headers: {'Content-Type': 'application/json'}, body: photo.toJson());
 
     if (response.statusCode != 204) {
       throw Exception('Unexpected server response');

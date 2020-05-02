@@ -399,7 +399,7 @@ class _MemberDetailState extends State<MemberDetail> {
                             child: widget.member.avatar != null && widget.member.avatar.length > 0
                                 ? CircleAvatar(
                                     radius: 50,
-                                    backgroundImage: NetworkImage("${AppConstants.SERVER_ROOT_PATH}${AppConstants.SERVER_AVATAR_FOLDER}${widget.member.avatar}"),
+                                    backgroundImage: NetworkImage("$SERVER_ROOT_PATH$SERVER_AVATAR_FOLDER${widget.member.avatar}"),
                                   )
                                 : CircleAvatar(
                                     radius: 50,

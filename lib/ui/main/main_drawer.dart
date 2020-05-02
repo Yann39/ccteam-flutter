@@ -85,7 +85,7 @@ class MainDrawer extends StatelessWidget {
                     padding: EdgeInsets.all(2.0),
                     child: _loginProvider.loggedMember.avatar != null ? CircleAvatar(
                       backgroundColor: Colors.blue[100],
-                      backgroundImage: NetworkImage("${AppConstants.SERVER_ROOT_PATH}${AppConstants.SERVER_AVATAR_FOLDER}${_loginProvider.loggedMember.avatar}"),
+                      backgroundImage: NetworkImage("$SERVER_ROOT_PATH$SERVER_AVATAR_FOLDER${_loginProvider.loggedMember.avatar}"),
                     ) : CircleAvatar(
                       backgroundColor: Colors.blue[100],
                       child: ShaderMask(

@@ -30,7 +30,7 @@ class NewsService {
   /// Return empty array if no data found (404)
   Future<List<News>> fetchNews() async {
     // call to API
-    final response = await http.get(AppConstants.API_ROOT_URL + AppConstants.API_GET_ALL_NEWS_ENDPOINT);
+    final response = await http.get(API_ROOT_URL + API_GET_ALL_NEWS_ENDPOINT);
 
     if (response.statusCode == 200) {
       // if the call to the server was successful, parse the JSON and return content
@@ -50,7 +50,7 @@ class NewsService {
   /// Throw an exception if response status code is different from 200
   Future<News> getNewsById(int id) async {
     // call to API
-    final response = await http.get(AppConstants.API_ROOT_URL + AppConstants.API_GET_ALL_NEWS_ENDPOINT);
+    final response = await http.get(API_ROOT_URL + API_GET_ALL_NEWS_ENDPOINT);
 
     if (response.statusCode == 200) {
       // if the call to the server was successful, parse the JSON and return content
@@ -68,7 +68,7 @@ class NewsService {
   /// Throw an exception if response status code is different from 201
   Future<News> createNews(News news) async {
     // call to API
-    final response = await http.post(AppConstants.API_ROOT_URL + AppConstants.API_CREATE_NEWS_ENDPOINT, headers: {'Content-Type': 'application/json'}, body: news.toJson());
+    final response = await http.post(API_ROOT_URL + API_CREATE_NEWS_ENDPOINT, headers: {'Content-Type': 'application/json'}, body: news.toJson());
 
     final headers = response.headers;
     print(headers.toString());
@@ -79,7 +79,7 @@ class NewsService {
     if (response.statusCode == 201) {
       // get the URI of the new created object from the location header
       String uri = headers["location"];
-      final response = await http.get(AppConstants.API_ROOT_URL + uri);
+      final response = await http.get(API_ROOT_URL + uri);
       if (response.statusCode == 200) {
         // if the call to the server was successful, parse the JSON and return content
         dynamic responseJson = json.decode(response.body);
@@ -103,7 +103,7 @@ class NewsService {
   /// Throw an exception if response status code is different from 200
   Future<void> updateNews(News news) async {
     // call to API
-    final response = await http.post(AppConstants.API_ROOT_URL + AppConstants.API_UPDATE_NEWS_ENDPOINT, headers: {'Content-Type': 'application/json'}, body: news.toJson());
+    final response = await http.post(API_ROOT_URL + API_UPDATE_NEWS_ENDPOINT, headers: {'Content-Type': 'application/json'}, body: news.toJson());
 
     // handle server response code
     if (response.statusCode == 200) {
@@ -120,7 +120,7 @@ class NewsService {
   /// Throw an exception if response status code is different from 204
   Future<void> deleteNews(News news) async {
     // call to API
-    final response = await http.post(AppConstants.API_ROOT_URL + AppConstants.API_DELETE_NEWS_ENDPOINT, headers: {'Content-Type': 'application/json'}, body: news.toJson());
+    final response = await http.post(API_ROOT_URL + API_DELETE_NEWS_ENDPOINT, headers: {'Content-Type': 'application/json'}, body: news.toJson());
 
     if (response.statusCode != 204) {
       throw Exception('Unexpected server response');
@@ -135,7 +135,7 @@ class NewsService {
     final String jsonString = '{"news_id":$newsId,"member_id":$memberId}';
 
     // call to API
-    final response = await http.post(AppConstants.API_ROOT_URL + AppConstants.API_LIKE_NEWS_ENDPOINT, headers: {'Content-Type': 'application/json'}, body: jsonString);
+    final response = await http.post(API_ROOT_URL + API_LIKE_NEWS_ENDPOINT, headers: {'Content-Type': 'application/json'}, body: jsonString);
 
     if (response.statusCode != 200) {
       dynamic responseJson = json.decode(response.body);

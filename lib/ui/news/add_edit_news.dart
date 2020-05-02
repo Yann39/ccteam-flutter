@@ -49,7 +49,7 @@ class _AddEditNewsState extends State<AddEditNews> {
   initState() {
     // set date picker text if set
     if (widget.news != null) {
-      _datePickerController.text = DateUtils.convertToString(widget.news.newsDate, AppConstants.DATE_FORMAT);
+      _datePickerController.text = DateUtils.convertToString(widget.news.newsDate, DATE_FORMAT);
     }
     return super.initState();
   }
@@ -77,7 +77,7 @@ class _AddEditNewsState extends State<AddEditNews> {
 
     // notify the framework that the internal state of this object has changed
     setState(() {
-      controller.text = DateFormat(AppConstants.DATE_FORMAT).format(finalDateTime);
+      controller.text = DateFormat(DATE_FORMAT).format(finalDateTime);
     });
   }
 
@@ -187,8 +187,8 @@ class _AddEditNewsState extends State<AddEditNews> {
                       ),
                       controller: _datePickerController,
                       keyboardType: TextInputType.datetime,
-                      validator: (val) => !DateUtils.isBeforeNow(val, AppConstants.DATE_FORMAT) ? (val.isEmpty ? AppString.newsDateMandatory : null) : AppString.newsDateNotValid,
-                      onSaved: (val) => _currNews.newsDate = DateFormat(AppConstants.DATE_FORMAT).parseStrict(val),
+                      validator: (val) => !DateUtils.isBeforeNow(val, DATE_FORMAT) ? (val.isEmpty ? AppString.newsDateMandatory : null) : AppString.newsDateNotValid,
+                      onSaved: (val) => _currNews.newsDate = DateFormat(DATE_FORMAT).parseStrict(val),
                     ),
                   ),
                 ),

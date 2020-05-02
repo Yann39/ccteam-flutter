@@ -121,7 +121,7 @@ class _EventDetailState extends State<EventDetail> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: <Widget>[
-            Text(DateUtils.convertToString(widget.event.eventDate, AppConstants.DATE_FORMAT), textAlign: TextAlign.left),
+            Text(DateUtils.convertToString(widget.event.eventDate, DATE_FORMAT), textAlign: TextAlign.left),
             Text(widget.event.title, textScaleFactor: 2, textAlign: TextAlign.center),
             SizedBox(
               height: 10,

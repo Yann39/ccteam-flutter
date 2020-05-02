@@ -123,7 +123,7 @@ class EditAvatar extends StatelessWidget {
                             : member.avatar != null && member.avatar.length > 0 ? Image(
                                 alignment: Alignment.topCenter,
                                 fit: BoxFit.contain,
-                                image: NetworkImage("${AppConstants.SERVER_ROOT_PATH}${AppConstants.SERVER_AVATAR_FOLDER}${member.avatar}"),
+                                image: NetworkImage("$SERVER_ROOT_PATH$SERVER_AVATAR_FOLDER${member.avatar}"),
                               ) : ShaderMask(
                           blendMode: BlendMode.srcATop,
                                 shaderCallback: (bounds) => LinearGradient(

@@ -80,7 +80,7 @@ class _AddEditMemberState extends State<AddEditMember> {
   initState() {
     // set date picker text if set
     if (widget.member != null) {
-      _datePickerController.text = DateUtils.convertToString(widget.member.registrationDate, AppConstants.DATE_FORMAT);
+      _datePickerController.text = DateUtils.convertToString(widget.member.registrationDate, DATE_FORMAT);
     }
     return super.initState();
   }
@@ -108,7 +108,7 @@ class _AddEditMemberState extends State<AddEditMember> {
 
     // notify the framework that the internal state of this object has changed
     setState(() {
-      controller.text = DateFormat(AppConstants.DATE_FORMAT).format(finalDateTime);
+      controller.text = DateFormat(DATE_FORMAT).format(finalDateTime);
     });
   }
 
@@ -240,10 +240,10 @@ class _AddEditMemberState extends State<AddEditMember> {
           ),
           controller: _datePickerController,
           keyboardType: TextInputType.datetime,
-          validator: (val) => DateUtils.isBeforeNow(val, AppConstants.DATE_FORMAT)
+          validator: (val) => DateUtils.isBeforeNow(val, DATE_FORMAT)
               ? (val.isEmpty ? AppString.memberRegistrationDateMandatory : null)
               : AppString.memberRegistrationDateNotValid,
-          onSaved: (val) => _currMember.registrationDate = DateFormat(AppConstants.DATE_FORMAT).parseStrict(val),
+          onSaved: (val) => _currMember.registrationDate = DateFormat(DATE_FORMAT).parseStrict(val),
         ),
       ),
     );
@@ -295,7 +295,7 @@ class _AddEditMemberState extends State<AddEditMember> {
           },
           child: _currMember.avatar != null && _currMember.avatar.length > 0 ? CircleAvatar(
             radius: 60,
-            backgroundImage: NetworkImage("${AppConstants.SERVER_ROOT_PATH}${AppConstants.SERVER_AVATAR_FOLDER}${_currMember.avatar}"),
+            backgroundImage: NetworkImage("$SERVER_ROOT_PATH$SERVER_AVATAR_FOLDER${_currMember.avatar}"),
           ) : CircleAvatar(
             radius: 60,
             backgroundColor: Colors.blue[200],

@@ -124,7 +124,7 @@ class NewsDetail extends StatelessWidget {
               children: <Widget>[
                 Icon(Icons.access_time, color: Colors.lime, size: 12.0),
                 SizedBox(width: 2.0),
-                Text("Le ${DateUtils.convertToString(news.newsDate, AppConstants.DATE_FORMAT_TXT)}", textAlign: TextAlign.left, style: TextStyle(color: Colors.white)),
+                Text("Le ${DateUtils.convertToString(news.newsDate, DATE_FORMAT_TXT)}", textAlign: TextAlign.left, style: TextStyle(color: Colors.white)),
               ],
             ),
             Divider(height: 36, color: Colors.white),

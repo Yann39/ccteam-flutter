@@ -17,57 +17,52 @@
  * along with Chachatte Team. If not, see <http://www.gnu.org/licenses/>.
  */
 
-/// class that holds application global constants
-class AppConstants {
+const String API_ROOT_URL = 'obfuscated';
+const String SERVER_ROOT_PATH = 'obfuscated';
+const String SERVER_AVATAR_FOLDER = 'upload/avatars/';
 
-  static const String API_ROOT_URL = 'obfuscated';
-  static const String SERVER_ROOT_PATH = 'obfuscated';
-  static const String SERVER_AVATAR_FOLDER = 'upload/avatars/';
+const String API_GET_ALL_NEWS_ENDPOINT = '/news/read.php';
+const String API_GET_SINGLE_NEWS_ENDPOINT = '/news/read_one.php';
+const String API_CREATE_NEWS_ENDPOINT = '/news/create.php';
+const String API_UPDATE_NEWS_ENDPOINT = '/news/update.php';
+const String API_DELETE_NEWS_ENDPOINT = '/news/delete.php';
+const String API_LIKE_NEWS_ENDPOINT = '/news/like.php';
 
-  static const String API_GET_ALL_NEWS_ENDPOINT = '/news/read.php';
-  static const String API_GET_SINGLE_NEWS_ENDPOINT = '/news/read_one.php';
-  static const String API_CREATE_NEWS_ENDPOINT = '/news/create.php';
-  static const String API_UPDATE_NEWS_ENDPOINT = '/news/update.php';
-  static const String API_DELETE_NEWS_ENDPOINT = '/news/delete.php';
-  static const String API_LIKE_NEWS_ENDPOINT = '/news/like.php';
+const String API_GET_ALL_MEMBERS_ENDPOINT = '/members/read.php';
+const String API_GET_SINGLE_MEMBER_ENDPOINT = '/members/read_one.php';
+const String API_SEARCH_MEMBERS_ENDPOINT = '/members/search.php';
+const String API_CREATE_MEMBER_ENDPOINT = '/members/create.php';
+const String API_UPDATE_MEMBER_ENDPOINT = '/members/update.php';
+const String API_DELETE_MEMBER_ENDPOINT = '/members/delete.php';
+const String API_LOGIN_MEMBER_ENDPOINT = '/members/login.php';
+const String API_ASK_PASSWORD_MEMBER_ENDPOINT = '/members/ask_password.php';
+const String API_UPLOAD_MEMBER_AVATAR_ENDPOINT = '/members/upload_avatar.php';
+const String API_DELETE_MEMBER_AVATAR_ENDPOINT = '/members/delete_avatar.php';
 
-  static const String API_GET_ALL_MEMBERS_ENDPOINT = '/members/read.php';
-  static const String API_GET_SINGLE_MEMBER_ENDPOINT = '/members/read_one.php';
-  static const String API_SEARCH_MEMBERS_ENDPOINT = '/members/search.php';
-  static const String API_CREATE_MEMBER_ENDPOINT = '/members/create.php';
-  static const String API_UPDATE_MEMBER_ENDPOINT = '/members/update.php';
-  static const String API_DELETE_MEMBER_ENDPOINT = '/members/delete.php';
-  static const String API_LOGIN_MEMBER_ENDPOINT = '/members/login.php';
-  static const String API_ASK_PASSWORD_MEMBER_ENDPOINT = '/members/ask_password.php';
-  static const String API_UPLOAD_MEMBER_AVATAR_ENDPOINT = '/members/upload_avatar.php';
-  static const String API_DELETE_MEMBER_AVATAR_ENDPOINT = '/members/delete_avatar.php';
+const String API_GET_ALL_EVENTS_ENDPOINT = '/events/read.php';
+const String API_GET_MEMBER_EVENTS_ENDPOINT = '/events/read_by_member.php';
+const String API_CREATE_EVENT_ENDPOINT = '/events/create.php';
+const String API_UPDATE_EVENT_ENDPOINT = '/events/update.php';
+const String API_DELETE_EVENT_ENDPOINT = '/events/delete.php';
 
-  static const String API_GET_ALL_EVENTS_ENDPOINT = '/events/read.php';
-  static const String API_GET_MEMBER_EVENTS_ENDPOINT = '/events/read_by_member.php';
-  static const String API_CREATE_EVENT_ENDPOINT = '/events/create.php';
-  static const String API_UPDATE_EVENT_ENDPOINT = '/events/update.php';
-  static const String API_DELETE_EVENT_ENDPOINT = '/events/delete.php';
+const String API_GET_ALL_TRACKS_ENDPOINT = '/tracks/read.php';
+const String API_SEARCH_TRACKS_ENDPOINT = '/tracks/search.php';
+const String API_CREATE_TRACK_ENDPOINT = '/tracks/create.php';
+const String API_UPDATE_TRACK_ENDPOINT = '/tracks/update.php';
+const String API_DELETE_TRACK_ENDPOINT = '/tracks/delete.php';
 
-  static const String API_GET_ALL_TRACKS_ENDPOINT = '/tracks/read.php';
-  static const String API_SEARCH_TRACKS_ENDPOINT = '/tracks/search.php';
-  static const String API_CREATE_TRACK_ENDPOINT = '/tracks/create.php';
-  static const String API_UPDATE_TRACK_ENDPOINT = '/tracks/update.php';
-  static const String API_DELETE_TRACK_ENDPOINT = '/tracks/delete.php';
+const String API_GET_ALL_PHOTOS_ENDPOINT = '/photos/read.php';
+const String API_CREATE_PHOTO_ENDPOINT = '/photos/create.php';
+const String API_UPDATE_PHOTO_ENDPOINT = '/photos/update.php';
+const String API_DELETE_PHOTO_ENDPOINT = '/photos/delete.php';
 
-  static const String API_GET_ALL_PHOTOS_ENDPOINT = '/photos/read.php';
-  static const String API_CREATE_PHOTO_ENDPOINT = '/photos/create.php';
-  static const String API_UPDATE_PHOTO_ENDPOINT = '/photos/update.php';
-  static const String API_DELETE_PHOTO_ENDPOINT = '/photos/delete.php';
+const String API_GET_ALL_RECORDS_ENDPOINT = '/records/read.php';
+const String API_GET_TRACK_RECORDS_ENDPOINT = '/records/read_by_track.php';
+const String API_GET_MEMBER_RECORDS_ENDPOINT = '/records/read_by_member.php';
+const String API_CREATE_RECORD_ENDPOINT = '/records/create.php';
+const String API_UPDATE_RECORD_ENDPOINT = '/records/update.php';
+const String API_DELETE_RECORD_ENDPOINT = '/records/delete.php';
 
-  static const String API_GET_ALL_RECORDS_ENDPOINT = '/records/read.php';
-  static const String API_GET_TRACK_RECORDS_ENDPOINT = '/records/read_by_track.php';
-  static const String API_GET_MEMBER_RECORDS_ENDPOINT = '/records/read_by_member.php';
-  static const String API_CREATE_RECORD_ENDPOINT = '/records/create.php';
-  static const String API_UPDATE_RECORD_ENDPOINT = '/records/update.php';
-  static const String API_DELETE_RECORD_ENDPOINT = '/records/delete.php';
-
-  static const String DATE_FORMAT = 'dd/MM/yyyy HH:mm';
-  static const String DATE_FORMAT_TXT = 'dd MMM yyyy HH:mm';
-  static const String PRICE_FORMAT = '####.##';
-
-}
+const String DATE_FORMAT = 'dd/MM/yyyy HH:mm';
+const String DATE_FORMAT_TXT = 'dd MMM yyyy HH:mm';
+const String PRICE_FORMAT = '####.##';

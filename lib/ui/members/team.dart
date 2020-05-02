@@ -81,7 +81,7 @@ class _TeamState extends State<Team> {
                   title: Text(_memberProvider.members[index].firstName + " " + _memberProvider.members[index].lastName),
                   subtitle: Text(_memberProvider.members[index].bike),
                   leading: _memberProvider.members[index].avatar != null && _memberProvider.members[index].avatar.length > 0
-                      ? CircleAvatar(backgroundImage: NetworkImage("${AppConstants.SERVER_ROOT_PATH}${AppConstants.SERVER_AVATAR_FOLDER}${_memberProvider.members[index].avatar}"))
+                      ? CircleAvatar(backgroundImage: NetworkImage("$SERVER_ROOT_PATH$SERVER_AVATAR_FOLDER${_memberProvider.members[index].avatar}"))
                       : CircleAvatar(child: Text(_memberProvider.members[index].firstName[0])),
                 ),
                 onTap: () => _navigateToMemberDetailScreen(context, _memberProvider.members[index]),

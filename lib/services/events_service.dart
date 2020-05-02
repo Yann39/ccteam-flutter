@@ -30,7 +30,7 @@ class EventsService {
   /// Return empty array if no data found (404)
   Future<List<Event>> fetchEvents() async {
     // call to API
-    final response = await http.get(AppConstants.API_ROOT_URL + AppConstants.API_GET_ALL_EVENTS_ENDPOINT);
+    final response = await http.get(API_ROOT_URL + API_GET_ALL_EVENTS_ENDPOINT);
 
     if (response.statusCode == 200) {
       // if the call to the server was successful, parse the JSON and return content
@@ -50,7 +50,7 @@ class EventsService {
   /// Return empty array if no data found (404)
   Future<List<Event>> fetchMemberEvents(int memberId) async {
     // call to API
-    final response = await http.get(AppConstants.API_ROOT_URL + AppConstants.API_GET_MEMBER_EVENTS_ENDPOINT + "?memberId=$memberId");
+    final response = await http.get(API_ROOT_URL + API_GET_MEMBER_EVENTS_ENDPOINT + "?memberId=$memberId");
 
     if (response.statusCode == 200) {
       // if the call to the server was successful, parse the JSON and return content
@@ -71,7 +71,7 @@ class EventsService {
   /// Throw an exception if response status code is different from 201
   Future<void> createEvent(Event event) async {
     // call to API
-    final response = await http.post(AppConstants.API_ROOT_URL + AppConstants.API_CREATE_EVENT_ENDPOINT, headers: {'Content-Type': 'application/json'}, body: event.toJson());
+    final response = await http.post(API_ROOT_URL + API_CREATE_EVENT_ENDPOINT, headers: {'Content-Type': 'application/json'}, body: event.toJson());
 
     // handle server response code
     if (response.statusCode == 201) {
@@ -90,7 +90,7 @@ class EventsService {
   /// Throw an exception if response status code is different from 200
   Future<void> updateEvent(Event event) async {
     // call to API
-    final response = await http.post(AppConstants.API_ROOT_URL + AppConstants.API_UPDATE_EVENT_ENDPOINT, headers: {'Content-Type': 'application/json'}, body: event.toJson());
+    final response = await http.post(API_ROOT_URL + API_UPDATE_EVENT_ENDPOINT, headers: {'Content-Type': 'application/json'}, body: event.toJson());
 
     // handle server response code
     if (response.statusCode == 200) {
@@ -107,7 +107,7 @@ class EventsService {
   /// Throw an exception if response status code is different from 204
   Future<void> deleteEvent(Event event) async {
     // call to API
-    final response = await http.post(AppConstants.API_ROOT_URL + AppConstants.API_DELETE_EVENT_ENDPOINT, headers: {'Content-Type': 'application/json'}, body: event.toJson());
+    final response = await http.post(API_ROOT_URL + API_DELETE_EVENT_ENDPOINT, headers: {'Content-Type': 'application/json'}, body: event.toJson());
 
     if (response.statusCode != 204) {
       throw Exception('Unexpected server response');

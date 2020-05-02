@@ -56,7 +56,7 @@ class NewsCard extends StatelessWidget {
                     Icon(Icons.access_time, color: Colors.lime, size: 12.0),
                     SizedBox(width: 2.0),
                     Text(
-                      DateUtils.convertToString(news.newsDate, AppConstants.DATE_FORMAT),
+                      DateUtils.convertToString(news.newsDate, DATE_FORMAT),
                       softWrap: false,
                       textScaleFactor: 0.9,
                       style: TextStyle(color: Colors.white),

@@ -30,7 +30,7 @@ class RecordsService {
   /// Return empty array if no data found (404)
   Future<List<Record>> fetchRecords() async {
     // call to API
-    final response = await http.get(AppConstants.API_ROOT_URL + AppConstants.API_GET_ALL_RECORDS_ENDPOINT);
+    final response = await http.get(API_ROOT_URL + API_GET_ALL_RECORDS_ENDPOINT);
 
     if (response.statusCode == 200) {
       // if the call to the server was successful, parse the JSON and return content
@@ -50,7 +50,7 @@ class RecordsService {
   /// Return empty array if no data found (404)
   Future<List<Record>> fetchTrackRecords(int trackId) async {
     // call to API
-    final response = await http.get(AppConstants.API_ROOT_URL + AppConstants.API_GET_TRACK_RECORDS_ENDPOINT + "?trackId=$trackId");
+    final response = await http.get(API_ROOT_URL + API_GET_TRACK_RECORDS_ENDPOINT + "?trackId=$trackId");
 
     if (response.statusCode == 200) {
       // if the call to the server was successful, parse the JSON and return content
@@ -72,7 +72,7 @@ class RecordsService {
   /// Return empty array if no data found (404)
   Future<List<Record>> fetchMemberRecords(int memberId) async {
     // call to API
-    final response = await http.get(AppConstants.API_ROOT_URL + AppConstants.API_GET_MEMBER_RECORDS_ENDPOINT + "?memberId=$memberId");
+    final response = await http.get(API_ROOT_URL + API_GET_MEMBER_RECORDS_ENDPOINT + "?memberId=$memberId");
 
     if (response.statusCode == 200) {
       // if the call to the server was successful, parse the JSON and return content
@@ -93,7 +93,7 @@ class RecordsService {
   /// Throw an exception if response status code is different from 201
   Future<void> createRecord(Record record) async {
     // call to API
-    final response = await http.post(AppConstants.API_ROOT_URL + AppConstants.API_CREATE_RECORD_ENDPOINT, headers: {'Content-Type': 'application/json'}, body: record.toJson());
+    final response = await http.post(API_ROOT_URL + API_CREATE_RECORD_ENDPOINT, headers: {'Content-Type': 'application/json'}, body: record.toJson());
 
     // handle server response code
     if (response.statusCode == 201) {
@@ -112,7 +112,7 @@ class RecordsService {
   /// Throw an exception if response status code is different from 200
   Future<void> updateRecord(Record record) async {
     // call to API
-    final response = await http.post(AppConstants.API_ROOT_URL + AppConstants.API_UPDATE_RECORD_ENDPOINT, headers: {'Content-Type': 'application/json'}, body: record.toJson());
+    final response = await http.post(API_ROOT_URL + API_UPDATE_RECORD_ENDPOINT, headers: {'Content-Type': 'application/json'}, body: record.toJson());
 
     // handle server response code
     if (response.statusCode == 200) {
@@ -129,7 +129,7 @@ class RecordsService {
   /// Throw an exception if response status code is different from 204
   Future<void> deleteRecord(Record record) async {
     // call to API
-    final response = await http.post(AppConstants.API_ROOT_URL + AppConstants.API_DELETE_RECORD_ENDPOINT, headers: {'Content-Type': 'application/json'}, body: record.toJson());
+    final response = await http.post(API_ROOT_URL + API_DELETE_RECORD_ENDPOINT, headers: {'Content-Type': 'application/json'}, body: record.toJson());
 
     if (response.statusCode != 204) {
       throw Exception('Unexpected server response');
