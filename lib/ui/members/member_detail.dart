@@ -18,16 +18,21 @@
  */
 
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:chachatte_team/models/event.dart';
 import 'package:chachatte_team/models/member.dart';
 import 'package:chachatte_team/models/record.dart';
+import 'package:chachatte_team/providers/event_provider.dart';
 import 'package:chachatte_team/providers/member_provider.dart';
 import 'package:chachatte_team/providers/record_provider.dart';
 import 'package:chachatte_team/utils/constants.dart';
+import 'package:chachatte_team/utils/custom_decorations.dart';
 import 'package:chachatte_team/utils/custom_icons_icons.dart';
 import 'package:chachatte_team/utils/date_utils.dart';
+import 'package:chachatte_team/utils/enums.dart';
 import 'package:chachatte_team/utils/strings.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class MemberDetail extends StatefulWidget {
   final Member member;
@@ -40,12 +45,9 @@ class MemberDetail extends StatefulWidget {
   }
 }
 
-enum ConfirmDialogAction { yes, no }
-
-const kExpandedHeight = 216.0;
-
 class _MemberDetailState extends State<MemberDetail> {
   ScrollController _scrollController;
+  double _expandedHeight = 202;
 
   @override
   void initState() {
@@ -56,7 +58,16 @@ class _MemberDetailState extends State<MemberDetail> {
   }
 
   bool get _showTitle {
-    return _scrollController.hasClients && _scrollController.offset > kExpandedHeight - kToolbarHeight;
+    return _scrollController.hasClients && _scrollController.offset > _expandedHeight - kToolbarHeight;
+  }
+
+  /// Launch URL to contact user
+  void _launchURL(String url) async {
+    if (await canLaunch(url)) {
+      await launch(url);
+    } else {
+      throw 'Could not launch $url';
+    }
   }
 
   /// Method that launches the Edit Member screen and awaits the result from Navigator.pop
@@ -114,30 +125,76 @@ class _MemberDetailState extends State<MemberDetail> {
     Navigator.pop(context);
   }
 
-  /// get the right icon according to the specified [trackName]
-  Icon getTrackIcon(String trackName) {
-    if (trackName == 'Alès') {
-      return Icon(CustomIcons.track_ales, color: Colors.red[700], size: 40);
-    } else if (trackName == 'Bresse') {
-      return Icon(CustomIcons.track_bresse, color: Colors.red[700], size: 25);
-    } else if (trackName == 'Bourbonnais') {
-      return Icon(CustomIcons.track_bourbonnais, color: Colors.red[700], size: 60);
-    } else if (trackName == 'Carole') {
-      return Icon(CustomIcons.track_carole, color: Colors.red[700], size: 55);
-    } else if (trackName == 'Dijon-Prenois') {
-      return Icon(CustomIcons.track_dijon_prenois, color: Colors.red[700], size: 25);
-    } else if (trackName == 'La Ferté-Gaucher') {
-      return Icon(CustomIcons.track_la_ferte_gaucher, color: Colors.red[700], size: 65);
-    } else if (trackName == 'Le Mans') {
-      return Icon(CustomIcons.track_le_mans, color: Colors.red[700], size: 70);
-    } else if (trackName == 'Lédenon') {
-      return Icon(CustomIcons.track_ledenon, color: Colors.red[700], size: 60);
-    } else if (trackName == 'Magny-Cours') {
-      return Icon(CustomIcons.track_magny_cours, color: Colors.red[700], size: 25);
-    } else if (trackName == 'Vaison') {
-      return Icon(CustomIcons.track_vaison, color: Colors.red[700], size: 45);
+  Widget _eventsTable(EventProvider eventProvider) {
+    if (eventProvider.memberEvents != null && eventProvider.memberEvents.length > 0) {
+      return Table(
+        columnWidths: {0: FlexColumnWidth(1), 1: FlexColumnWidth(1)},
+        defaultVerticalAlignment: TableCellVerticalAlignment.middle,
+        border: TableBorder(horizontalInside: BorderSide(color: Colors.white, width: 0.5)),
+        children: [
+          for (Event ev in eventProvider.memberEvents)
+            TableRow(children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 0),
+                child: Text(DateUtils.convertToString(ev.eventDate, "EEE dd/MM/yyyy"), style: TextStyle(color: Colors.white)),
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 0),
+                child: Text(ev.track.name, style: TextStyle(color: Colors.white)),
+              ),
+            ])
+        ],
+      );
     } else {
-      return Icon(CustomIcons.track_sample, color: Colors.red[700], size: 40);
+      return Align(
+        child: Text(
+          "Aucun événement prévu",
+          style: TextStyle(color: Colors.white),
+        ),
+        alignment: Alignment.centerLeft,
+        heightFactor: 2,
+      );
+    }
+  }
+
+  Widget _recordsTable(RecordProvider recordProvider) {
+    if (recordProvider.memberRecords != null && recordProvider.memberRecords.length > 0) {
+      return Table(
+        columnWidths: {0: FlexColumnWidth(3), 1: FlexColumnWidth(2), 2: FlexColumnWidth(2), 3: FlexColumnWidth(1)},
+        defaultVerticalAlignment: TableCellVerticalAlignment.middle,
+        border: TableBorder(horizontalInside: BorderSide(color: Colors.white, width: 0.5)),
+        children: [
+          for (Record rec in recordProvider.memberRecords)
+            TableRow(children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 0),
+                child: Text(rec.track.name, style: TextStyle(color: Colors.white), overflow: TextOverflow.ellipsis),
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 0),
+                child: Text(DateUtils.toLapTime(rec.lapTime), style: TextStyle(color: Colors.white)),
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 0),
+                child: Text(DateUtils.convertToString(rec.recordDate, "dd/MM/yyyy"), style: TextStyle(color: Colors.white)),
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 0),
+                child: SizedBox(
+                    width: 10, child: rec.conditions == "dry" ? Icon(Icons.wb_sunny, color: Colors.white, size: 15) : Icon(CustomIcons.rain, color: Colors.white, size: 15)),
+              )
+            ])
+        ],
+      );
+    } else {
+      return Align(
+        child: Text(
+          "Aucun chronos enregistrés",
+          style: TextStyle(color: Colors.white),
+        ),
+        alignment: Alignment.centerLeft,
+        heightFactor: 2,
+      );
     }
   }
 
@@ -145,7 +202,7 @@ class _MemberDetailState extends State<MemberDetail> {
     final RecordProvider _recordProvider = Provider.of<RecordProvider>(context, listen: true);
     final EventProvider _eventProvider = Provider.of<EventProvider>(context, listen: true);
 
-    final motoInfo = MergeSemantics(
+    final _motoInfo = MergeSemantics(
       child: Padding(
         padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
         child: Row(
@@ -172,7 +229,7 @@ class _MemberDetailState extends State<MemberDetail> {
       ),
     );
 
-    final mobileInfo = MergeSemantics(
+    final _mobileInfo = MergeSemantics(
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
         child: Row(
@@ -193,14 +250,29 @@ class _MemberDetailState extends State<MemberDetail> {
                 ],
               ),
             ),
-            SizedBox(width: 72.0, child: IconButton(icon: Icon(Icons.phone), color: Colors.white, onPressed: () {})),
-            SizedBox(width: 72.0, child: IconButton(icon: Icon(Icons.sms), color: Colors.white, onPressed: () {}))
+            SizedBox(
+                width: 72.0,
+                child: IconButton(
+                    splashColor: Colors.red,
+                    icon: Icon(Icons.phone),
+                    color: Colors.white,
+                    onPressed: () {
+                      _launchURL("tel:${widget.member.phone}");
+                    })),
+            SizedBox(
+                width: 72.0,
+                child: IconButton(
+                    icon: Icon(Icons.sms),
+                    color: Colors.white,
+                    onPressed: () {
+                      _launchURL("sms:${widget.member.phone}");
+                    }))
           ],
         ),
       ),
     );
 
-    final emailInfo = MergeSemantics(
+    final _emailInfo = MergeSemantics(
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
         child: Row(
@@ -221,322 +293,193 @@ class _MemberDetailState extends State<MemberDetail> {
                 ],
               ),
             ),
-            SizedBox(width: 72.0, child: IconButton(icon: Icon(Icons.mail), color: Colors.white, onPressed: () {}))
+            SizedBox(
+                width: 72.0,
+                child: IconButton(
+                    icon: Icon(Icons.mail),
+                    color: Colors.white,
+                    onPressed: () {
+                      _launchURL("mailto:${widget.member.email}");
+                    }))
+          ],
+        ),
+      ),
+    );
+
+    final _titleInfo = MergeSemantics(
+      child: Container(
+        margin: EdgeInsets.only(left: 8.0, right: 8.0),
+        padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+        decoration: BoxDecoration(
+          color: Colors.red[700],
+          borderRadius: BorderRadius.only(topLeft: Radius.circular(6.0), topRight: Radius.circular(6.0)),
+        ),
+        child: Row(
+          children: <Widget>[
+            Icon(Icons.person, color: Colors.white, size: 16),
+            SizedBox(width: 5),
+            Text("Informations personnelles", style: TextStyle(color: Colors.white), textScaleFactor: 1.2),
+          ],
+        ),
+      ),
+    );
+
+    final _titleRecords = MergeSemantics(
+      child: Container(
+        margin: EdgeInsets.only(left: 8.0, right: 8.0),
+        padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+        decoration: BoxDecoration(
+          color: Colors.blue[700],
+          borderRadius: BorderRadius.only(topLeft: Radius.circular(6.0), topRight: Radius.circular(6.0)),
+        ),
+        child: Row(
+          children: <Widget>[
+            Icon(Icons.timer, color: Colors.white, size: 16),
+            SizedBox(width: 5),
+            Text("Records", style: TextStyle(color: Colors.white), textScaleFactor: 1.2),
+          ],
+        ),
+      ),
+    );
+
+    final _titleEvents = MergeSemantics(
+      child: Container(
+        margin: EdgeInsets.only(left: 8.0, right: 8.0),
+        padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+        decoration: BoxDecoration(
+          color: Colors.purple[700],
+          borderRadius: BorderRadius.only(topLeft: Radius.circular(6.0), topRight: Radius.circular(6.0)),
+        ),
+        child: Row(
+          children: <Widget>[
+            Icon(Icons.event, color: Colors.white, size: 16),
+            SizedBox(width: 5),
+            Text("Événements", style: TextStyle(color: Colors.white), textScaleFactor: 1.2),
           ],
         ),
       ),
     );
 
     return Scaffold(
-      body: Container(
-        child: CustomScrollView(
-          controller: _scrollController,
-          slivers: <Widget>[
-            SliverAppBar(
-              pinned: true,
-              expandedHeight: kExpandedHeight,
-              title: _showTitle
-                  ? Text(
-                      widget.member.firstName + ' ' + widget.member.lastName,
-                      overflow: TextOverflow.ellipsis,
-                    )
-                  : null,
-              flexibleSpace: _showTitle
-                  ? null
-                  : FlexibleSpaceBar(
-                      title: _Title(
-                        text: widget.member.firstName + ' ' + widget.member.lastName,
-                        padding: EdgeInsets.only(left: 84, bottom: 40),
-                      ),
-                      background: Stack(
-                        alignment: Alignment.bottomLeft,
-                        children: <Widget>[
-                          CachedNetworkImage(
-                            placeholder: (context, url) => CircularProgressIndicator(),
-                            imageUrl: 'https://images.freeimages.com/images/large-previews/e71/frog-1371919.jpg',
-                          ),
-                          Positioned(
-                            bottom: 15,
-                            left: 15,
-                            child: Container(
-                              decoration: ShapeDecoration(shape: CircleBorder(), color: Colors.white),
-                              padding: EdgeInsets.all(3.0),
-                              child: widget.member.avatar != null && widget.member.avatar.length > 0
-                                  ? CircleAvatar(
-                                      radius: 50,
-                                      backgroundImage: NetworkImage("${AppConstants.SERVER_ROOT_PATH}${AppConstants.SERVER_AVATAR_FOLDER}${widget.member.avatar}"),
-                                    )
-                                  : CircleAvatar(
-                                      radius: 50,
-                                      backgroundColor: Colors.blue[200],
-                                      child: ShaderMask(
-                                        blendMode: BlendMode.srcATop,
-                                        shaderCallback: (bounds) => LinearGradient(
-                                          begin: const FractionalOffset(0.0, 0.0),
-                                          end: const FractionalOffset(0.0, 1.0),
-                                          stops: [0.0, 1.0],
-                                          colors: [Colors.red[700], Colors.blue[700]],
-                                        ).createShader(bounds),
-                                        child: Icon(CustomIcons.pilot, size: 75),
-                                      ),
+      backgroundColor: Colors.blue[100],
+      body: CustomScrollView(
+        controller: _scrollController,
+        slivers: <Widget>[
+          SliverAppBar(
+            pinned: true,
+            expandedHeight: _expandedHeight,
+            title: _showTitle
+                ? Text(
+                    widget.member.firstName + ' ' + widget.member.lastName,
+                    overflow: TextOverflow.ellipsis,
+                  )
+                : null,
+            flexibleSpace: _showTitle
+                ? null
+                : FlexibleSpaceBar(
+                    title: _Title(
+                      text: widget.member.firstName + ' ' + widget.member.lastName,
+                      padding: EdgeInsets.only(left: 84, bottom: 40),
+                    ),
+                    background: Stack(
+                      alignment: Alignment.bottomLeft,
+                      fit: StackFit.expand,
+                      children: <Widget>[
+                        CachedNetworkImage(
+                          placeholder: (context, url) => CircularProgressIndicator(),
+                          imageUrl: 'https://images.freeimages.com/images/small-previews/e71/frog-1371919.jpg',
+                          fit: BoxFit.fitWidth,
+                        ),
+                        Positioned(
+                          bottom: 15,
+                          left: 15,
+                          child: Container(
+                            decoration: ShapeDecoration(shape: CircleBorder(), color: Colors.white),
+                            padding: EdgeInsets.all(3.0),
+                            child: widget.member.avatar != null && widget.member.avatar.length > 0
+                                ? CircleAvatar(
+                                    radius: 50,
+                                    backgroundImage: NetworkImage("${AppConstants.SERVER_ROOT_PATH}${AppConstants.SERVER_AVATAR_FOLDER}${widget.member.avatar}"),
+                                  )
+                                : CircleAvatar(
+                                    radius: 50,
+                                    backgroundColor: Colors.blue[200],
+                                    child: ShaderMask(
+                                      blendMode: BlendMode.srcATop,
+                                      shaderCallback: (bounds) => LinearGradient(
+                                        begin: const FractionalOffset(0.0, 0.0),
+                                        end: const FractionalOffset(0.0, 1.0),
+                                        stops: [0.0, 1.0],
+                                        colors: [Colors.red[700], Colors.blue[700]],
+                                      ).createShader(bounds),
+                                      child: Icon(CustomIcons.pilot, size: 75),
                                     ),
-                            ),
+                                  ),
                           ),
+                        ),
+                      ],
+                    ),
+                  ),
+            actions: <Widget>[
+              IconButton(
+                icon: const Icon(Icons.edit),
+                tooltip: 'Edit',
+                onPressed: () => _navigateToEditMemberScreen(context, widget.member),
+              ),
+              IconButton(
+                icon: const Icon(Icons.delete_forever),
+                tooltip: 'Delete',
+                onPressed: () => _showConfirmation(context, AppString.memberDeletionAreYouSure),
+              )
+            ],
+          ),
+          SliverList(
+            delegate: SliverChildListDelegate(
+              <Widget>[
+                SizedBox(height: 16.0),
+                Column(
+                  children: <Widget>[
+                    _titleInfo,
+                    Container(
+                      margin: EdgeInsets.only(left: 8.0, right: 8.0, top: 0.0, bottom: 16.0),
+                      decoration: CustomDecorations.cardBody,
+                      child: Column(
+                        children: <Widget>[
+                          _motoInfo,
+                          Divider(color: Colors.white, height: 5),
+                          _mobileInfo,
+                          Divider(color: Colors.white, height: 5),
+                          _emailInfo,
                         ],
                       ),
                     ),
-              actions: <Widget>[
-                IconButton(
-                  icon: const Icon(Icons.edit),
-                  tooltip: 'Edit',
-                  onPressed: () => _navigateToEditMemberScreen(context, widget.member),
+                  ],
                 ),
-                IconButton(
-                  icon: const Icon(Icons.delete_forever),
-                  tooltip: 'Delete',
-                  onPressed: () => _showConfirmation(context, AppString.memberDeletionAreYouSure),
-                )
+                Column(
+                  children: <Widget>[
+                    _titleRecords,
+                    Container(
+                      margin: EdgeInsets.only(left: 8.0, right: 8.0, top: 0.0, bottom: 16.0),
+                      padding: EdgeInsets.all(16.0),
+                      decoration: CustomDecorations.cardBody,
+                      child: _recordsTable(_recordProvider),
+                    ),
+                  ],
+                ),
+                Column(
+                  children: <Widget>[
+                    _titleEvents,
+                    Container(
+                        margin: EdgeInsets.only(left: 8.0, right: 8.0, top: 0.0, bottom: 16.0),
+                        padding: EdgeInsets.all(16.0),
+                        decoration: CustomDecorations.cardBody,
+                        child: _eventsTable(_eventProvider)),
+                  ],
+                ),
               ],
             ),
-            /*SliverPersistentHeader(
-                pinned: true,
-                floating: true,
-                delegate: CustomSliverDelegate(
-                  expandedHeight: 216,
-                  hideTitleWhenExpanded: true,
-                  inkWell: InkWell(
-                    onTap: () {
-                      //_drawerProvider.loadImage(null);
-                      Navigator.of(context).pushNamed('/editAvatar', arguments: widget.member);
-                    },
-                    child: CircleAvatar(
-                      radius: 80,
-                      backgroundColor: Colors.blue[200],
-                      backgroundImage: widget.member.avatar != null && widget.member.avatar.length > 0
-                          ? NetworkImage("${AppConstants.SERVER_ROOT_PATH}${AppConstants.SERVER_AVATAR_FOLDER}${widget.member.avatar}")
-                          : AssetImage("images/helmet-face.png"),
-                    ),
-                  ),
-                ),
-              ),*/
-            SliverList(
-              delegate: SliverChildListDelegate(
-                <Widget>[
-                  SizedBox(height: 16.0),
-                  Stack(
-                    alignment: Alignment.topCenter,
-                    children: <Widget>[
-                      Container(
-                        margin: EdgeInsets.only(left: 8.0, right: 8.0, top: 16.0, bottom: 16.0),
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            colors: [Colors.blue[300], Colors.blue[500]],
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                            stops: [0.0, 1.0],
-                          ),
-                          shape: BoxShape.rectangle,
-                          borderRadius: BorderRadius.circular(6.0),
-                        ),
-                        child: Column(
-                          children: <Widget>[
-                            motoInfo,
-                            Divider(color: Colors.white, height: 5),
-                            mobileInfo,
-                            Divider(color: Colors.white, height: 5),
-                            emailInfo,
-                          ],
-                        ),
-                      ),
-                      Positioned(
-                        left: 75,
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color: Colors.red[700],
-                            shape: BoxShape.rectangle,
-                            borderRadius: BorderRadius.circular(6.0),
-                          ),
-                          padding: EdgeInsets.all(8.0),
-                          child: Row(
-                            children: <Widget>[
-                              Icon(Icons.person, color: Colors.white, size: 13),
-                              SizedBox(width: 5.0),
-                              Text("Informations", style: TextStyle(color: Colors.white)),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  Stack(children: <Widget>[
-                    Container(
-                        margin: EdgeInsets.only(left: 8.0, right: 8.0, top: 16.0, bottom: 16.0),
-                        padding: EdgeInsets.all(16.0),
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            colors: [Colors.blue[300], Colors.blue[500]],
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                            stops: [0.0, 1.0],
-                          ),
-                          shape: BoxShape.rectangle,
-                          borderRadius: BorderRadius.circular(6.0),
-                        ),
-                        child: _recordProvider.memberRecords != null && _recordProvider.memberRecords.length > 0
-                            ? Table(
-                                columnWidths: {0: FlexColumnWidth(3), 1: FlexColumnWidth(2), 2: FlexColumnWidth(2), 3: FlexColumnWidth(1)},
-                                defaultVerticalAlignment: TableCellVerticalAlignment.middle,
-                                border: TableBorder(horizontalInside: BorderSide(color: Colors.white, width: 0.5)),
-                                children: [
-                                  for (Record rec in _recordProvider.memberRecords)
-                                    TableRow(children: [
-                                      Padding(
-                                        padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 0),
-                                        child: Text(rec.track.name, style: TextStyle(color: Colors.white), overflow: TextOverflow.ellipsis),
-                                      ),
-                                      Padding(
-                                        padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 0),
-                                        child: Text(DateUtils.toLapTime(rec.lapTime), style: TextStyle(color: Colors.white)),
-                                      ),
-                                      Padding(
-                                        padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 0),
-                                        child: Text(DateUtils.convertToString(rec.recordDate, "dd/MM/yyyy"), style: TextStyle(color: Colors.white)),
-                                      ),
-                                      Padding(
-                                        padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 0),
-                                        child: SizedBox(
-                                            width: 10,
-                                            child: rec.conditions == "dry"
-                                                ? Icon(Icons.wb_sunny, color: Colors.white, size: 15)
-                                                : Icon(CustomIcons.rain, color: Colors.white, size: 15)),
-                                      )
-                                    ])
-                                ],
-                              )
-                            : Align(
-                                child: Text(
-                                  "Aucun chronos enregistrés",
-                                  style: TextStyle(color: Colors.white),
-                                ),
-                                alignment: Alignment.centerLeft,
-                                heightFactor: 2,
-                              )
-                        /*DataTable(
-                            dataRowHeight: 30,
-                            columnSpacing: 16.0,
-                            columns: <DataColumn>[
-                              DataColumn(label: Text("Circuit")),
-                              DataColumn(label: Text("Chrono")),
-                              DataColumn(label: Text("Date")),
-                              DataColumn(label: Text("Conditions")),
-                            ],
-                            rows: <DataRow>[
-                              for (Record rec in _recordProvider.memberRecords)
-                                DataRow(cells: <DataCell>[
-                                  DataCell(Text(rec.track.name, style: TextStyle(color: Colors.white))),
-                                  DataCell(Text(DateUtils.toLapTime(rec.lapTime), style: TextStyle(color: Colors.white))),
-                                  DataCell(Text(DateUtils.convertToString(rec.recordDate, "dd MMM yyyy"), style: TextStyle(color: Colors.white))),
-                                  DataCell(SizedBox(width: 10,child: rec.conditions == "dry" ? Icon(Icons.wb_sunny, color: Colors.white, size: 15) : Icon(Icons.wb_cloudy, color: Colors.white, size: 15)))
-                                ])
-                            ],
-                          ),*/
-                        ),
-                    Positioned(
-                      left: 75,
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: Colors.purple[700],
-                          shape: BoxShape.rectangle,
-                          borderRadius: BorderRadius.circular(6.0),
-                        ),
-                        padding: EdgeInsets.all(8.0),
-                        child: Row(
-                          children: <Widget>[
-                            Icon(Icons.timer, color: Colors.white, size: 13),
-                            SizedBox(width: 5.0),
-                            Text("Chronos", style: TextStyle(color: Colors.white)),
-                          ],
-                        ),
-                      ),
-                    )
-                  ]),
-                  Stack(children: <Widget>[
-                    Container(
-                        margin: EdgeInsets.only(left: 8.0, right: 8.0, top: 16.0, bottom: 16.0),
-                        padding: EdgeInsets.all(16.0),
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            colors: [Colors.blue[300], Colors.blue[500]],
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                            stops: [0.0, 1.0],
-                          ),
-                          shape: BoxShape.rectangle,
-                          borderRadius: BorderRadius.circular(6.0),
-                        ),
-                        child: _eventProvider.memberEvents != null && _eventProvider.memberEvents.length > 0
-                            ? Table(
-                                columnWidths: {0: FlexColumnWidth(1), 1: FlexColumnWidth(1)},
-                                defaultVerticalAlignment: TableCellVerticalAlignment.middle,
-                                border: TableBorder(horizontalInside: BorderSide(color: Colors.white, width: 0.5)),
-                                children: [
-                                  for (Event ev in _eventProvider.memberEvents)
-                                    TableRow(children: [
-                                      Padding(
-                                        padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 0),
-                                        child: Text(DateUtils.convertToString(ev.eventDate, "EEE dd/MM/yyyy"), style: TextStyle(color: Colors.white)),
-                                      ),
-                                      Padding(
-                                        padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 0),
-                                        child: Text(ev.track.name, style: TextStyle(color: Colors.white)),
-                                      ),
-                                    ])
-                                ],
-                              )
-                            : Align(
-                                child: Text(
-                                  "Aucun événement prévu",
-                                  style: TextStyle(color: Colors.white),
-                                ),
-                                alignment: Alignment.centerLeft,
-                                heightFactor: 2,
-                              )),
-                    Positioned(
-                      left: 75,
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: Colors.green[700],
-                          shape: BoxShape.rectangle,
-                          borderRadius: BorderRadius.circular(6.0),
-                        ),
-                        padding: EdgeInsets.all(8.0),
-                        child: Row(
-                          children: <Widget>[
-                            Icon(Icons.event, color: Colors.white, size: 13),
-                            SizedBox(width: 5.0),
-                            Text(
-                              "Evénements",
-                              style: TextStyle(color: Colors.white)
-                            ),
-                          ],
-                        ),
-                      ),
-                    )
-                  ]),
-                ],
-              ),
-            ),
-          ],
-        ),
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Colors.blue[100], Colors.blue[300]],
-            begin: const FractionalOffset(0.0, 0.0),
-            end: const FractionalOffset(0.0, 1.0),
-            stops: [0.0, 1.0],
-            tileMode: TileMode.clamp,
           ),
-        ),
+        ],
       ),
     );
   }
@@ -555,7 +498,6 @@ class CustomSliverDelegate extends SliverPersistentHeaderDelegate {
 
   @override
   Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
-    print("SHRINKOFFSET : $shrinkOffset");
     final appBarSize = expandedHeight - shrinkOffset;
     final cardTopPosition = expandedHeight / 2 - shrinkOffset;
     final proportion = 2 - (expandedHeight / appBarSize);

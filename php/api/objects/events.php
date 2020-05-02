@@ -88,6 +88,24 @@ class Event {
         $this->modified_by = $row['modified_by'];
     }
 
+    // get all records for the specified track
+    function readByMember($member_id) {
+
+        // query to get all records containing the specified member
+        $query = "SELECT n.id, n.title, n.description, n.event_date, n.track_id, n.organizer, n.price, n.created_on, n.created_by, n.modified_on, n.modified_by FROM " . $this->table_name . " n INNER JOIN events_members em ON em.event_id = n.id INNER JOIN members m ON em.member_id = m.id WHERE m.id = ? ORDER BY n.event_date DESC";
+
+        // prepare query statement
+        $stmt = $this->conn->prepare($query);
+
+        // bind id
+        $stmt->bindParam(1, $member_id);
+
+        // execute query
+        $stmt->execute();
+
+        return $stmt;
+    }
+
     // create event
     function create() {
 

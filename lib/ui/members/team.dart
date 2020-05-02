@@ -27,6 +27,7 @@ import 'package:chachatte_team/utils/strings.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+/// We need stateful widget to keep search field value
 class Team extends StatefulWidget {
   @override
   State<StatefulWidget> createState() {
@@ -61,8 +62,58 @@ class _TeamState extends State<Team> {
     }
   }
 
+  /// Build the members list view according to provider state
+  Widget buildMembersListView(MemberProvider _memberProvider) {
+    if (_memberProvider.loading) {
+      return Center(child: SizedBox(child: CircularProgressIndicator(), height: 20.0, width: 20.0));
+    } else {
+      if (_memberProvider.members != null && _memberProvider.members.length > 0) {
+        return ListView.separated(
+          separatorBuilder: (context, index) => Divider(
+            color: Colors.black,
+            height: 4,
+          ),
+          itemCount: _memberProvider.members.length,
+          itemBuilder: (context, index) {
+            return Material(
+              child: InkWell(
+                child: ListTile(
+                  title: Text(_memberProvider.members[index].firstName + " " + _memberProvider.members[index].lastName),
+                  subtitle: Text(_memberProvider.members[index].bike),
+                  leading: _memberProvider.members[index].avatar != null && _memberProvider.members[index].avatar.length > 0
+                      ? CircleAvatar(backgroundImage: NetworkImage("${AppConstants.SERVER_ROOT_PATH}${AppConstants.SERVER_AVATAR_FOLDER}${_memberProvider.members[index].avatar}"))
+                      : CircleAvatar(child: Text(_memberProvider.members[index].firstName[0])),
+                ),
+                onTap: () => _navigateToMemberDetailScreen(context, _memberProvider.members[index]),
+              ),
+              color: Colors.transparent,
+            );
+          },
+        );
+      } else {
+        return Center(child: SizedBox(child: Text(AppString.membersNotFound)));
+      }
+    }
+  }
+
+  /// Build the search field
+  TextField buildSearchField(MemberProvider _memberProvider) {
+    return TextField(
+      decoration: InputDecoration(
+        filled: true,
+        fillColor: Colors.blue[100],
+        prefixIcon: Icon(Icons.search),
+        hintText: AppString.membersSearchHint,
+      ),
+      maxLines: 1,
+      onChanged: (String text) {
+        _memberProvider.searchMembers(text);
+      },
+    );
+  }
+
   Widget build(BuildContext context) {
-    final _memberProvider = Provider.of<MemberProvider>(context, listen: true);
+    final MemberProvider _memberProvider = Provider.of<MemberProvider>(context, listen: true);
 
     return Scaffold(
       appBar: AppBar(
@@ -72,50 +123,11 @@ class _TeamState extends State<Team> {
       drawer: MainDrawer(),
       body: Column(
         children: <Widget>[
-          TextField(
-            decoration: InputDecoration(
-              filled: true,
-              fillColor: Colors.blue[100],
-              prefixIcon: Icon(Icons.search),
-              hintText: AppString.membersSearchHint,
-            ),
-            maxLines: 1,
-            onChanged: (String text) {
-              _memberProvider.searchMembers(text);
-            },
-          ),
+          buildSearchField(_memberProvider),
           Expanded(
             child: Container(
-              child: _memberProvider.loading ? Center(child: SizedBox(child: CircularProgressIndicator(), height: 20.0, width: 20.0)) :
-              _memberProvider.members != null && _memberProvider.members.length > 0
-                  ? ListView.builder(
-                      itemCount: _memberProvider.members.length,
-                      itemBuilder: (context, index) {
-                        return Material(
-                          child: InkWell(
-                            child: ListTile(
-                              title: Text(_memberProvider.members[index].firstName + " " + _memberProvider.members[index].lastName),
-                              subtitle: Text(_memberProvider.members[index].bike),
-                              leading: _memberProvider.members[index].avatar != null && _memberProvider.members[index].avatar.length > 0
-                                  ? CircleAvatar(
-                                      backgroundImage: NetworkImage("${AppConstants.SERVER_ROOT_PATH}${AppConstants.SERVER_AVATAR_FOLDER}${_memberProvider.members[index].avatar}"))
-                                  : CircleAvatar(child: Text(_memberProvider.members[index].firstName[0])),
-                            ),
-                            onTap: () => _navigateToMemberDetailScreen(context, _memberProvider.members[index]),
-                          ),
-                          color: Colors.transparent,
-                        );
-                      })
-                  : Center(child: SizedBox(child: Text("No member found"))),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [Colors.blue[100], Colors.blue[300]],
-                  begin: const FractionalOffset(0.0, 0.0),
-                  end: const FractionalOffset(0.0, 1.0),
-                  stops: [0.0, 1.0],
-                  tileMode: TileMode.clamp,
-                ),
-              ),
+              decoration: CustomDecorations.mainContent,
+              child: buildMembersListView(_memberProvider),
             ),
           )
         ],
