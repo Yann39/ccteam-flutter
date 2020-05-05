@@ -129,6 +129,7 @@ class AppString {
   static const String tracksNotFound = 'Aucun circuit trouvé';
 
   static const String avatarUploadFailed = 'Échec, la taille du fichier ne doit pas dépasser 500Ko';
+  static const String avatarDeleteFailed = 'Échec de la suppression de l\'avatar';
   static const String avatarResetAreYouSure = 'Cette action va supprimer votre photo de profil et remettre celle par défaut, êtes-vous sûr de vouloir continuer ?';
 
   static const String eventScreenTitle = 'Calendrier';

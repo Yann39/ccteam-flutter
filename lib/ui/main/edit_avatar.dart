@@ -22,6 +22,7 @@ import 'dart:io';
 import 'package:chachatte_team/models/member.dart';
 import 'package:chachatte_team/providers/avatar_provider.dart';
 import 'package:chachatte_team/providers/login_provider.dart';
+import 'package:chachatte_team/providers/member_provider.dart';
 import 'package:chachatte_team/utils/constants.dart';
 import 'package:chachatte_team/utils/custom_icons_icons.dart';
 import 'package:chachatte_team/utils/strings.dart';
@@ -84,9 +85,16 @@ class EditAvatar extends StatelessWidget {
   /// Handle result of the avatar reset confirmation dialog
   void _dialogueResult(BuildContext context, AvatarProvider avatarProvider, ConfirmDialogAction value) {
     if (value == ConfirmDialogAction.yes) {
-      Provider.of<LoginProvider>(context, listen: false).deleteAvatar(member);
-      avatarProvider.loadImage(null);
-      member.avatar = null;
+      Provider.of<LoginProvider>(context, listen: false).deleteAvatar(member).then((value) {
+        avatarProvider.loadImage(null);
+        member.avatar = null;
+        // remove avatar from the members list so that the avatar is up to date in the team page
+        Provider.of<MemberProvider>(context, listen: false).resetMemberAvatar(member);
+      }, onError: (error) {
+        Scaffold.of(context)
+          ..removeCurrentSnackBar()
+          ..showSnackBar(SnackBar(backgroundColor: Colors.red, content: Text(AppString.avatarDeleteFailed)));
+      });
     }
     Navigator.pop(context);
   }
@@ -214,6 +222,8 @@ class EditAvatar extends StatelessWidget {
                         ),
                         onPressed: () {
                           _loginProvider.uploadAvatar(_avatarProvider.image, member).then((value) {
+                            // refresh member avatar in the members list so that the avatar is up to date in the team page
+                            Provider.of<MemberProvider>(context, listen: false).updateMemberAvatar(_loginProvider.loggedMember);
                             Navigator.pop(context);
                           }, onError: (error) {
                             Scaffold.of(context)

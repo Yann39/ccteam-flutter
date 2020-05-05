@@ -38,6 +38,18 @@ class MemberProvider extends ChangeNotifier {
   UnmodifiableListView<Member> get members => UnmodifiableListView(_members);
   bool get loading => _loading;
 
+  /// Update the avatar of the specified [member] in the current member list
+  void updateMemberAvatar(Member member) {
+    _members.singleWhere((m) => m.id == member.id).avatar = member.avatar;
+    notifyListeners();
+  }
+
+  /// Remove the avatar of the specified [member] in the current member list
+  void resetMemberAvatar(Member member) {
+    _members.singleWhere((m) => m.id == member.id).avatar = null;
+    notifyListeners();
+  }
+
   /// Get the list of all members
   Future<void> fetchMembers() async {
     _loading = true;
