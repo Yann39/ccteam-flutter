@@ -40,7 +40,7 @@ class EditAvatar extends StatelessWidget {
 
   /// Allow user to select an image from the gallery
   Future _selectImageFromGallery(BuildContext context, AvatarProvider avatarProvider) async {
-    File image = await ImagePicker.pickImage(source: ImageSource.gallery);
+    final File image = await ImagePicker.pickImage(source: ImageSource.gallery);
     if (image != null) {
       avatarProvider.loadImage(image);
       Navigator.of(context).pushNamed('/imageCrop');
@@ -49,7 +49,7 @@ class EditAvatar extends StatelessWidget {
 
   /// Allow user to select an image from the camera
   Future _selectImageFromCamera(BuildContext context, AvatarProvider avatarProvider) async {
-    File image = await ImagePicker.pickImage(source: ImageSource.camera);
+    final File image = await ImagePicker.pickImage(source: ImageSource.camera);
     if (image != null) {
       avatarProvider.loadImage(image);
       Navigator.of(context).pushNamed('/imageCrop');
@@ -57,7 +57,7 @@ class EditAvatar extends StatelessWidget {
   }
 
   /// Display a confirmation popup when trying to reset an avatar
-  void _showConfirmation(BuildContext context, String value) {
+  void _showConfirmation(BuildContext context, AvatarProvider avatarProvider, String value) {
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
@@ -66,13 +66,13 @@ class EditAvatar extends StatelessWidget {
         actions: <Widget>[
           FlatButton(
             onPressed: () {
-              _dialogueResult(context, ConfirmDialogAction.yes);
+              _dialogueResult(context, avatarProvider, ConfirmDialogAction.yes);
             },
             child: Text(AppString.confirm),
           ),
           FlatButton(
             onPressed: () {
-              _dialogueResult(context, ConfirmDialogAction.no);
+              _dialogueResult(context, avatarProvider, ConfirmDialogAction.no);
             },
             child: Text(AppString.cancel),
           ),
@@ -82,9 +82,11 @@ class EditAvatar extends StatelessWidget {
   }
 
   /// Handle result of the avatar reset confirmation dialog
-  void _dialogueResult(BuildContext context, ConfirmDialogAction value) {
+  void _dialogueResult(BuildContext context, AvatarProvider avatarProvider, ConfirmDialogAction value) {
     if (value == ConfirmDialogAction.yes) {
       Provider.of<LoginProvider>(context, listen: false).deleteAvatar(member);
+      avatarProvider.loadImage(null);
+      member.avatar = null;
     }
     Navigator.pop(context);
   }
@@ -92,7 +94,7 @@ class EditAvatar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final _loginProvider = Provider.of<LoginProvider>(context, listen: false);
-    final _avatarProvider = Provider.of<AvatarProvider>(context, listen: false);
+    final _avatarProvider = Provider.of<AvatarProvider>(context, listen: true);
 
     return Scaffold(
       appBar: AppBar(
@@ -197,10 +199,11 @@ class EditAvatar extends StatelessWidget {
                     ),
                   ],
                 ),
-                FlatButton(
-                  child: Text("Réinitialiser la photo de profil"),
-                  onPressed: () => _showConfirmation(context, AppString.avatarResetAreYouSure),
-                ),
+                if (member.avatar != null)
+                  FlatButton(
+                    child: Text("Réinitialiser la photo de profil"),
+                    onPressed: () => _showConfirmation(context, _avatarProvider, AppString.avatarResetAreYouSure),
+                  ),
                 if (_avatarProvider.image != null)
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,

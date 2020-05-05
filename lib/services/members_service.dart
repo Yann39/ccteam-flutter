@@ -232,7 +232,7 @@ class MembersService {
   /// Throw an exception if response status code is different from 200
   Future<void> deleteAvatar(int memberId) async {
     // convert Member object to JSON string
-    final String jsonString = '{memberId:$memberId}';
+    final String jsonString = '{\"memberId\":$memberId}';
 
     // call to API
     final response = await http.post(API_ROOT_URL + API_DELETE_MEMBER_AVATAR_ENDPOINT, headers: {'Content-Type': 'application/json'}, body: jsonString);
@@ -240,8 +240,10 @@ class MembersService {
     // handle server response code
     if (response.statusCode == 200) {
       return;
-    } else if (response.statusCode == 503) {
-      throw Exception('Failed to delete member avatar');
+    } else if (response.statusCode == 404) {
+      throw Exception('Member avatar file not found');
+    } else if (response.statusCode == 400) {
+      throw Exception('Missing member id');
     } else {
       throw Exception('Unexpected server response, member avatar has not been deleted');
     }

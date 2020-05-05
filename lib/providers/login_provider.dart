@@ -171,38 +171,42 @@ class LoginProvider extends ChangeNotifier {
         _log.severe("Failed to update avatar for member ${tmpMember.email} ($error)");
         throw (error);
       });
-
     }, onError: (error) {
       _log.severe("Failed to upload avatar ($error)");
       throw (error);
     });
   }
 
-  /// Delete the avatar of the current logged member
+  /// Delete the avatar of the specified [member]
+  /// If the specified [member] is different from the current logged user, it means we are deleting an avatar as admin for a member
+  /// If the specified [member] is the same as the current logged user, it means the current logged user is deleting its avatar
   Future<void> deleteAvatar(Member member) async {
-    await _membersService.deleteAvatar(member.id).then((value) async {
-      _log.fine("Avatar deleted successfully");
+    if (member.id != _loggedMember.id) {
+      _log.fine("Deleting avatar as admin for user ${member.email}");
+    }
 
-      final Member tmpMember = _loggedMember;
+    final Member tmpMember = member;
+
+    await _membersService.deleteAvatar(member.id).then((value) async {
+      _log.fine("Avatar file deleted successfully from server");
+
       tmpMember.avatar = null;
       tmpMember.modifiedOn = DateTime.now();
 
-      _log.info("Sending user with removed avatar : ${tmpMember.toString()}");
-
       await _membersService.updateMember(tmpMember).then((value) {
         _log.fine("Avatar deleted for member : ${tmpMember.email}");
-        _loggedMember.avatar = null;
-        _loggedMember.modifiedOn = tmpMember.modifiedOn;
+        if (member.id == _loggedMember.id) {
+          _loggedMember.avatar = null;
+          _loggedMember.modifiedOn = tmpMember.modifiedOn;
+        }
         notifyListeners();
       }, onError: (error) {
         _log.severe("Failed to delete avatar for member ${tmpMember.email} ($error)");
         throw (error);
       });
-
     }, onError: (error) {
       _log.severe("Failed to delete avatar ($error)");
       throw (error);
     });
   }
-
 }
