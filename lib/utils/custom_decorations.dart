@@ -44,7 +44,7 @@ class CustomDecorations {
     borderRadius: BorderRadius.circular(6.0),
   );
 
-  /// Decoration for cards body content
+  /// Decoration for cards body content (for cards with header)
   static BoxDecoration cardBody = BoxDecoration(
     gradient: LinearGradient(
       colors: [Colors.blue[300], Colors.blue[500]],

@@ -35,7 +35,6 @@ class NewsService {
     if (response.statusCode == 200) {
       // if the call to the server was successful, parse the JSON and return content
       dynamic responseJson = json.decode(response.body);
-      print(responseJson);
       return (responseJson['records'] as List).map((p) => News.fromJson(p)).toList();
     } else if (response.statusCode == 404) {
       // no data found, return empty array

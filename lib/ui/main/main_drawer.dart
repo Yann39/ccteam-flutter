@@ -20,7 +20,7 @@
 import 'package:chachatte_team/models/member.dart';
 import 'package:chachatte_team/providers/login_provider.dart';
 import 'package:chachatte_team/utils/constants.dart';
-import 'package:chachatte_team/utils/custom_icons_icons.dart';
+import 'package:chachatte_team/utils/custom_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 

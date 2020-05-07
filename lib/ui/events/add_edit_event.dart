@@ -22,7 +22,7 @@ import 'package:chachatte_team/models/track.dart';
 import 'package:chachatte_team/services/events_service.dart';
 import 'package:chachatte_team/services/tracks_service.dart';
 import 'package:chachatte_team/utils/constants.dart';
-import 'package:chachatte_team/utils/custom_icons_icons.dart';
+import 'package:chachatte_team/utils/custom_icons.dart';
 import 'package:chachatte_team/utils/date_utils.dart';
 import 'package:chachatte_team/utils/string_utils.dart';
 import 'package:chachatte_team/utils/strings.dart';
@@ -125,8 +125,6 @@ class _AddEditEventState extends State<AddEditEvent> {
     // the current Event to be edited
     final Event currEvent = widget.event != null ? widget.event : _newEvent;
 
-    final priceFormatter = new NumberFormat(PRICE_FORMAT);
-
     return Scaffold(
       key: _scaffoldKey,
       appBar: AppBar(
@@ -213,7 +211,7 @@ class _AddEditEventState extends State<AddEditEvent> {
                   inputFormatters: [new LengthLimitingTextInputFormatter(7)],
                   validator: (val) => val.isEmpty ? AppString.eventPriceMandatory : (StringUtils.isValidPrice(val) ? null : AppString.eventPriceNotValid),
                   onSaved: (val) => currEvent.price = double.parse(val),
-                  initialValue: currEvent.price != null ? priceFormatter.format(currEvent.price) : "",
+                  initialValue: currEvent.price != null ? StringUtils.formatPrice(currEvent.price) : "",
                 ),
                 new FutureBuilder<List<Track>>(
                   future: _futureTracks,

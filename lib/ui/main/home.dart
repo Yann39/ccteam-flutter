@@ -23,7 +23,7 @@ import 'package:chachatte_team/ui/members/team.dart';
 import 'package:chachatte_team/ui/news/news.dart';
 import 'package:chachatte_team/ui/photos/gallery.dart';
 import 'package:chachatte_team/ui/tracks/tracks.dart';
-import 'package:chachatte_team/utils/custom_icons_icons.dart';
+import 'package:chachatte_team/utils/custom_icons.dart';
 import 'package:chachatte_team/utils/strings.dart';
 import 'package:flutter/material.dart';
 import 'package:logging/logging.dart';

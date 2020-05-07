@@ -21,6 +21,8 @@ import 'package:chachatte_team/models/event.dart';
 import 'package:chachatte_team/services/events_service.dart';
 import 'package:chachatte_team/ui/events/add_edit_event.dart';
 import 'package:chachatte_team/utils/constants.dart';
+import 'package:chachatte_team/utils/custom_decorations.dart';
+import 'package:chachatte_team/utils/custom_icons.dart';
 import 'package:chachatte_team/utils/date_utils.dart';
 import 'package:chachatte_team/utils/strings.dart';
 import 'package:flutter/material.dart';

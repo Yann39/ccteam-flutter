@@ -22,6 +22,7 @@ import 'package:chachatte_team/ui/events/calendar_selector.dart';
 import 'package:chachatte_team/ui/events/event_card.dart';
 import 'package:chachatte_team/ui/main/main_action_menu.dart';
 import 'package:chachatte_team/ui/main/main_drawer.dart';
+import 'package:chachatte_team/utils/custom_decorations.dart';
 import 'package:chachatte_team/utils/strings.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -78,6 +79,7 @@ class Calendar extends StatelessWidget {
       drawer: MainDrawer(),
       body: Container(
         padding: const EdgeInsets.all(8.0),
+        decoration: CustomDecorations.mainContent,
         child: _eventProvider.events != null && _eventProvider.events.length > 0
             ? Column(
                 children: <Widget>[
@@ -178,15 +180,6 @@ class Calendar extends StatelessWidget {
                   width: 20.0,
                 ),
               ),
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Colors.blue[100], Colors.blue[300]],
-            begin: const FractionalOffset(0.0, 0.0),
-            end: const FractionalOffset(0.0, 1.0),
-            stops: [0.0, 1.0],
-            tileMode: TileMode.clamp,
-          ),
-        ),
       ),
       floatingActionButton: FloatingActionButton(
         elevation: 0.0,

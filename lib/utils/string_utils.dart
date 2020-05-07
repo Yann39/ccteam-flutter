@@ -17,31 +17,27 @@
  * along with Chachatte Team. If not, see <http://www.gnu.org/licenses/>.
  */
 
-/// class that holds string utility functions
+import 'package:chachatte_team/utils/constants.dart';
+import 'package:intl/intl.dart';
+
+/// String utility functions
 class StringUtils {
+  /// Capitalize the given [text]
+  static String capitalize(String text) => (text != null && text.length > 1) ? text[0].toUpperCase() + text.substring(1) : text != null ? text.toUpperCase() : null;
+
   /// Check that the specified [input] string is a valid E.164 formatted phone number
-  static bool isValidPhoneNumber(String input) {
-    final RegExp regex = new RegExp(r'^\+\d\d \d\d\d\d\d\d\d\d\d$');
-    return regex.hasMatch(input);
-  }
+  static bool isValidPhoneNumber(String input) => RegExp(r'^\+\d\d \d\d\d\d\d\d\d\d\d$').hasMatch(input);
 
   /// Check if the specified [input] string is a valid e-mail address
   /// It uses standard HTML5 validation spec, see https://stackoverflow.com/a/16888554/1274485
-  static bool isValidEmail(String input) {
-    return RegExp(r"^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,253}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,253}[a-zA-Z0-9])?)*$").hasMatch(input);
-  }
+  static bool isValidEmail(String input) =>
+      RegExp(r"^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,253}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,253}[a-zA-Z0-9])?)*$").hasMatch(input);
 
   /// Check if the specified [input] string is a valid price
   /// Maximum 4 digits before decimal(.) point
   /// Maximum 2 digits after decimal point
-  static bool isValidPrice(String input) {
-    final RegExp regex = new RegExp(r'^\d{0,4}(\.\d{1,2})?$');
-    return regex.hasMatch(input);
-  }
+  static bool isValidPrice(String input) => RegExp(r'^\d{0,4}(\.\d{1,2})?$').hasMatch(input);
 
-  /// Capitalize the given [text]
-  static String capitalize(String text) => (text != null && text.length > 1)
-      ? text[0].toUpperCase() + text.substring(1)
-      : text != null ? text.toUpperCase() : null;
-
+  /// Format the specified [price] as string
+  static String formatPrice(double price) => price == null ? null : NumberFormat(PRICE_FORMAT).format(price);
 }

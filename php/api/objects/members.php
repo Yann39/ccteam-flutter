@@ -274,7 +274,7 @@ class Member {
     function search($keywords){
 
         // query to search across all records
-        $query = "SELECT n.first_name, n.last_name, n.email, n.avatar, n.active, n.admin, n.phone, n.bike, n.registration_date, n.created_on, n.modified_on FROM " . $this->table_name . " n WHERE n.first_name LIKE ? OR n.last_name LIKE ? OR n.email LIKE ? ORDER BY n.registration_date DESC";
+        $query = "SELECT n.first_name, n.last_name, n.email, n.avatar, n.active, n.admin, n.phone, n.bike, n.registration_date, n.created_on, n.modified_on FROM " . $this->table_name . " n WHERE n.first_name LIKE ? OR n.last_name LIKE ? ORDER BY n.registration_date DESC";
 
         // prepare query statement
         $stmt = $this->conn->prepare($query);
