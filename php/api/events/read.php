@@ -72,6 +72,9 @@ if ($num > 0) {
                     "first_name" => $row2['first_name'],
                     "last_name" => $row2['last_name'],
                     "email" => $row2['email'],
+                    "avatar" => $row2['avatar'],
+                    "active" => $row2['active'],
+                    "admin" => $row2['admin'],
                     "phone" => $row2['phone'],
                     "bike" => $row2['bike'],
                     "registration_date" => $row2['registration_date']

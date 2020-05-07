@@ -48,4 +48,31 @@ class TrackUtils {
       return Icon(CustomIcons.track_sample, color: Colors.red[700], size: 40);
     }
   }
+
+  /// Get the right track icon according to the specified [trackName]
+  static IconData trackIconFromName(String trackName) {
+    if (trackName == 'Alès') {
+      return CustomIcons.track_ales;
+    } else if (trackName == 'Bresse') {
+      return CustomIcons.track_bresse;
+    } else if (trackName == 'Bourbonnais') {
+      return CustomIcons.track_bourbonnais;
+    } else if (trackName == 'Carole') {
+      return CustomIcons.track_carole;
+    } else if (trackName == 'Dijon-Prenois') {
+      return CustomIcons.track_dijon_prenois;
+    } else if (trackName == 'La Ferté-Gaucher') {
+      return CustomIcons.track_la_ferte_gaucher;
+    } else if (trackName == 'Le Mans') {
+      return CustomIcons.track_le_mans;
+    } else if (trackName == 'Lédenon') {
+      return CustomIcons.track_ledenon;
+    } else if (trackName == 'Magny-Cours') {
+      return CustomIcons.track_magny_cours;
+    } else if (trackName == 'Vaison') {
+      return CustomIcons.track_vaison;
+    } else {
+      return CustomIcons.track_sample;
+    }
+  }
 }

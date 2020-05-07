@@ -41,7 +41,7 @@ class CustomDecorations {
       stops: [0.0, 1.0],
     ),
     shape: BoxShape.rectangle,
-    borderRadius: BorderRadius.circular(6.0),
+    borderRadius: BorderRadius.circular(4.0),
   );
 
   /// Decoration for cards body content (for cards with header)
