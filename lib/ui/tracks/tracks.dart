@@ -21,10 +21,10 @@ import 'package:chachatte_team/providers/track_provider.dart';
 import 'package:chachatte_team/ui/main/main_action_menu.dart';
 import 'package:chachatte_team/ui/main/main_drawer.dart';
 import 'package:chachatte_team/utils/custom_decorations.dart';
-import 'package:chachatte_team/utils/custom_icons.dart';
 import 'package:chachatte_team/utils/date_utils.dart';
 import 'package:chachatte_team/utils/strings.dart';
 import 'package:chachatte_team/utils/track_utils.dart';
+import 'package:chachatte_team/widgets/loading_content.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:provider/provider.dart';
@@ -38,71 +38,6 @@ class Tracks extends StatefulWidget {
 }
 
 class _TracksState extends State<Tracks> {
-
-  /// Build the tracks list view according to provider state
-  Widget buildMembersListView(TrackProvider _trackProvider) {
-    if (_trackProvider.loading) {
-      return Center(child: SizedBox(child: CircularProgressIndicator(), height: 20.0, width: 20.0));
-    } else {
-      if (_trackProvider.tracks != null && _trackProvider.tracks.length > 0) {
-        return GridView.builder(
-          padding: EdgeInsets.all(4.0),
-          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: MediaQuery.of(context).orientation == Orientation.portrait ? 2 : 3, crossAxisSpacing: 4, mainAxisSpacing: 4, childAspectRatio: 1),
-          itemCount: _trackProvider.tracks.length,
-          itemBuilder: (BuildContext context, int index) => Card(
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6.0)),
-            clipBehavior: Clip.antiAlias,
-            child: Container(
-              padding: EdgeInsets.all(8.0),
-              decoration: CustomDecorations.cardFull,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: <Widget>[
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 5.0),
-                    child: Text(_trackProvider.tracks[index].name, style: TextStyle(color: Colors.white), textScaleFactor: 1.1),
-                  ),
-                  Divider(
-                    height: 1.0,
-                    color: Colors.white,
-                  ),
-                  Container(
-                    height: 90.0,
-                    padding: EdgeInsets.all(0),
-                    child: TrackUtils.getTrackIcon(_trackProvider.tracks[index].name),
-                  ),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    children: <Widget>[
-                      Row(
-                        children: <Widget>[
-                          Icon(Icons.straighten, size: 13, color: Colors.white),
-                          SizedBox(width: 6.0),
-                          Text("Longueur : ${(_trackProvider.tracks[index].distance / 1000).toStringAsFixed(2)} km", style: TextStyle(color: Colors.white), textScaleFactor: 0.9),
-                        ],
-                      ),
-                      Row(
-                        children: <Widget>[
-                          Icon(Icons.timer, size: 13, color: Colors.white),
-                          SizedBox(width: 6.0),
-                          Text("Record : ${DateUtils.toLapTime(_trackProvider.tracks[index].lapRecord)}", style: TextStyle(color: Colors.white), textScaleFactor: 0.9),
-                        ],
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          ),
-        );
-      } else {
-        return Center(child: SizedBox(child: Text(AppString.tracksNotFound)));
-      }
-    }
-  }
 
   /// Build the search field
   TextField buildSearchField(TrackProvider _trackProvider) {
@@ -135,7 +70,63 @@ class _TracksState extends State<Tracks> {
           Expanded(
             child: Container(
               color: Colors.blue[100],
-              child: buildMembersListView(_trackProvider),
+              child: LoadingContent(
+                emptyText: AppString.tracksNotFound,
+                loadingStatus: _trackProvider.loadingStatus,
+                child: GridView.builder(
+                  padding: EdgeInsets.all(4.0),
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: MediaQuery.of(context).orientation == Orientation.portrait ? 2 : 3, crossAxisSpacing: 4, mainAxisSpacing: 4, childAspectRatio: 1),
+                  itemCount: _trackProvider.tracks.length,
+                  itemBuilder: (BuildContext context, int index) => Card(
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6.0)),
+                    clipBehavior: Clip.antiAlias,
+                    child: Container(
+                      padding: EdgeInsets.all(8.0),
+                      decoration: CustomDecorations.cardFull,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        children: <Widget>[
+                          Padding(
+                            padding: const EdgeInsets.only(bottom: 5.0),
+                            child: Text(_trackProvider.tracks[index].name, style: TextStyle(color: Colors.white), textScaleFactor: 1.1),
+                          ),
+                          Divider(
+                            height: 1.0,
+                            color: Colors.white,
+                          ),
+                          Container(
+                            height: 90.0,
+                            padding: EdgeInsets.all(0),
+                            child: TrackUtils.getTrackIcon(_trackProvider.tracks[index].name),
+                          ),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            children: <Widget>[
+                              Row(
+                                children: <Widget>[
+                                  Icon(Icons.straighten, size: 13, color: Colors.white),
+                                  SizedBox(width: 6.0),
+                                  Text("Longueur : ${(_trackProvider.tracks[index].distance / 1000).toStringAsFixed(2)} km", style: TextStyle(color: Colors.white), textScaleFactor: 0.9),
+                                ],
+                              ),
+                              Row(
+                                children: <Widget>[
+                                  Icon(Icons.timer, size: 13, color: Colors.white),
+                                  SizedBox(width: 6.0),
+                                  Text("Record : ${DateUtils.toLapTime(_trackProvider.tracks[index].lapRecord)}", style: TextStyle(color: Colors.white), textScaleFactor: 0.9),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
             ),
           ),
         ],

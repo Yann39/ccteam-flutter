@@ -26,12 +26,13 @@ import 'package:logging/logging.dart';
 class AvatarProvider extends ChangeNotifier {
   final Logger _log = new Logger('AvatarProvider');
 
+  // chosen image file which may be set as avatar
   File _image;
 
   File get image => _image;
 
   /// Load the specified [imageFile] representing the avatar
-  Future<void> loadImage(File imageFile) async {
+  void loadImage(File imageFile) async {
     _image = imageFile;
     _log.info("Notifying listeners of AvatarProvider");
     notifyListeners();

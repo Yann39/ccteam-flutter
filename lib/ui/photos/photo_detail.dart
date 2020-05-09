@@ -21,12 +21,12 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:chachatte_team/models/photo.dart';
 import 'package:chachatte_team/providers/photo_provider.dart';
 import 'package:chachatte_team/services/photos_service.dart';
+import 'package:chachatte_team/utils/enums.dart';
 import 'package:chachatte_team/utils/strings.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 const double _kMinFlingVelocity = 800.0;
-enum ConfirmDialogAction { yes, no }
 
 class PhotoDetail extends StatefulWidget {
   final Photo photo;

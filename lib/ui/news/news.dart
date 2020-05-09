@@ -23,6 +23,7 @@ import 'package:chachatte_team/ui/main/main_action_menu.dart';
 import 'package:chachatte_team/ui/main/main_drawer.dart';
 import 'package:chachatte_team/ui/news/news_card.dart';
 import 'package:chachatte_team/utils/strings.dart';
+import 'package:chachatte_team/widgets/loading_content.dart';
 import 'package:flutter/material.dart';
 import 'package:logging/logging.dart';
 import 'package:provider/provider.dart';
@@ -116,25 +117,19 @@ class NewsList extends StatelessWidget {
                   ),
                 ),
                 Expanded(
-                  child: _newsProvider.newsStatus == NewsStatus.Fetched
-                      ? (_newsProvider.news.length > 0
-                          ? ListView.builder(
-                              itemCount: _newsProvider.news.length,
-                              itemBuilder: (context, index) {
-                                return InkWell(
-                                  child: NewsCard(_newsProvider.news[index], AssetImage(_helmets[index % 3])),
-                                  onTap: () => _navigateToNewsDetailScreen(context, _newsProvider.news[index]),
-                                );
-                              },
-                            )
-                          : Text(AppString.newsEmpty))
-                      : Center(
-                          child: SizedBox(
-                            child: CircularProgressIndicator(),
-                            height: 20.0,
-                            width: 20.0,
-                          ),
-                        ),
+                  child: LoadingContent(
+                    loadingStatus: _newsProvider.loadingStatus,
+                    emptyText: AppString.newsEmpty,
+                    child: ListView.builder(
+                      itemCount: _newsProvider.news.length,
+                      itemBuilder: (context, index) {
+                        return InkWell(
+                          child: NewsCard(_newsProvider.news[index], AssetImage(_helmets[index % 3])),
+                          onTap: () => _navigateToNewsDetailScreen(context, _newsProvider.news[index]),
+                        );
+                      },
+                    ),
+                  ),
                 ),
               ],
             ),

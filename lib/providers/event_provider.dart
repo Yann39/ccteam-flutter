@@ -21,6 +21,7 @@ import 'dart:collection';
 
 import 'package:chachatte_team/models/event.dart';
 import 'package:chachatte_team/services/events_service.dart';
+import 'package:chachatte_team/utils/enums.dart';
 import 'package:flutter/foundation.dart';
 import 'package:intl/intl.dart';
 import 'package:logging/logging.dart';
@@ -29,70 +30,92 @@ class EventProvider extends ChangeNotifier {
   final Logger _log = new Logger('EventProvider');
   final EventsService _eventsService = new EventsService();
 
+  // list of all events
   List<Event> _events = [];
-  List<Event> _displayEvents = [];
+
+  // list of events to be displayed when filtering per date
+  List<Event> _calendarEvents = [];
+
+  // list of events of a member
   List<Event> _memberEvents = [];
-  int _eventsPerLine = 1;
+
+  // index of the selected top filter, to display events for current year or per date
   int _eventModeSelectorIndex = 0;
 
+  // current loading status
+  LoadingStatus _loadingStatus = LoadingStatus.notLoaded;
+
+  // constructor
   EventProvider() {
-    fetchEvents();
+    // as soon as it is instantiated, we fetch events
+    _fetchEvents();
   }
 
   UnmodifiableListView<Event> get events => UnmodifiableListView(_events);
-  UnmodifiableListView<Event> get displayEvents => UnmodifiableListView(_displayEvents);
+
+  UnmodifiableListView<Event> get calendarEvents => UnmodifiableListView(_calendarEvents);
+
   UnmodifiableListView<Event> get memberEvents => UnmodifiableListView(_memberEvents);
-  int get eventsPerLine => _eventsPerLine;
+
   int get eventModeSelectorIndex => _eventModeSelectorIndex;
 
-  setDisplayEvents(DateTime date, String calendarMode) {
-    final String format = calendarMode == 'year' ? 'My' : 'dMy';
-    if (date != null) {
-      _displayEvents = _events.where((event) => DateFormat(format).format(event.eventDate) == DateFormat(format).format(date)).toList();
-    } else {
-      _displayEvents = [];
-    }
-    notifyListeners();
-  }
+  LoadingStatus get loadingStatus => _loadingStatus;
 
-  changeEventsPerLine() {
-    _eventsPerLine = _eventsPerLine < 3 ? _eventsPerLine+1 : 1;
-    notifyListeners();
-  }
-
-  changeEventModeSelectorIndex(int index) {
-    _eventModeSelectorIndex = index ?? 0;
+  /// Update the current loading status
+  /// todo Should we have different variables for all events and member events so that it does not refresh all ?
+  void _updateStatus(LoadingStatus status) {
+    _loadingStatus = status;
+    _log.info("Notifying listeners of EventProvider");
     notifyListeners();
   }
 
   /// Get the list of all events
-  Future<void> fetchEvents() async {
+  void _fetchEvents() async {
+    _updateStatus(LoadingStatus.loading);
     await _eventsService.fetchEvents().then((value) async {
       _log.fine("Events list retrieved successfully");
       _events = value;
-      notifyListeners();
+      _updateStatus(LoadingStatus.loaded);
     }, onError: (error) {
       _log.warning("Error when retrieving events list ($error)");
       _events = [];
-      notifyListeners();
+      _updateStatus(LoadingStatus.notLoaded);
       throw (error);
     });
-    return _events;
+  }
+
+  /// Fetch events for the specified [date] according to [calendarMode]
+  /// If [calendarMode] is 'year', retrieve all events of the [date] year, else retrieve events of the [date] month
+  void fetchDateEvents(DateTime date, String calendarMode) {
+    final String format = calendarMode == 'year' ? 'My' : 'dMy';
+    if (date != null) {
+      _calendarEvents = _events.where((event) => DateFormat(format).format(event.eventDate) == DateFormat(format).format(date)).toList();
+    } else {
+      _calendarEvents = [];
+    }
+    _log.info("Notifying listeners of EventProvider");
+    notifyListeners();
+  }
+
+  /// Change the index of the selected top filter, to display events for current year or per date
+  void changeEventModeSelectorIndex(int index) {
+    _eventModeSelectorIndex = index ?? 0;
+    _log.info("Notifying listeners of EventProvider");
+    notifyListeners();
   }
 
   /// Get the list of all events for the specified [memberId]
-  Future<void> fetchMemberEvents(int memberId) async {
+  void fetchMemberEvents(int memberId) async {
+    _updateStatus(LoadingStatus.loading);
     await _eventsService.fetchMemberEvents(memberId).then((value) async {
       _log.fine("Member events list retrieved successfully");
       _memberEvents = value;
-      notifyListeners();
+      _updateStatus(LoadingStatus.loaded);
     }, onError: (error) {
       _log.warning("Error when retrieving member events list ($error)");
       _memberEvents = [];
-      notifyListeners();
+      _updateStatus(LoadingStatus.notLoaded);
       throw (error);
     });
-    return _memberEvents;
   }
-
 }

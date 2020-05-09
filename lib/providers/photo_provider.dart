@@ -21,6 +21,7 @@ import 'dart:collection';
 
 import 'package:chachatte_team/models/photo.dart';
 import 'package:chachatte_team/services/photos_service.dart';
+import 'package:chachatte_team/utils/enums.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:logging/logging.dart';
@@ -28,24 +29,41 @@ import 'package:logging/logging.dart';
 class PhotoProvider extends ChangeNotifier {
   final Logger _log = new Logger('PhotoProvider');
   final PhotosService _photosService = new PhotosService();
+
+  // current list of photos
   List<Photo> _photos = [];
 
+  // current loading status
+  LoadingStatus _loadingStatus = LoadingStatus.notLoaded;
+
+  LoadingStatus get loadingStatus => _loadingStatus;
+
+  // constructor
   PhotoProvider() {
-    fetchPhotos();
+    // as soon as it is instantiated, we fetch all news
+    _fetchPhotos();
   }
 
   UnmodifiableListView<Photo> get photos => UnmodifiableListView(_photos);
 
+  /// Update the current loading status
+  void _updateStatus(LoadingStatus status) {
+    _loadingStatus = status;
+    _log.info("Notifying listeners of NewsProvider");
+    notifyListeners();
+  }
+
   /// Get the list of all photos
-  Future<void> fetchPhotos() async {
+  void _fetchPhotos() async {
+    _updateStatus(LoadingStatus.loading);
     await _photosService.fetchPhotos().then((value) async {
       _log.fine("Photos list retrieved successfully");
       _photos = value;
-      notifyListeners();
+      _updateStatus(LoadingStatus.loaded);
     }, onError: (error) {
       _log.warning("Error when retrieving photos list ($error)");
       _photos = [];
-      notifyListeners();
+      _updateStatus(LoadingStatus.notLoaded);
       throw (error);
     });
   }
@@ -55,6 +73,7 @@ class PhotoProvider extends ChangeNotifier {
     await _photosService.createPhoto(photo).then((value) {
       _log.fine("New photo created : ${photo.title}");
       _photos.add(photo);
+      _log.info("Notifying listeners of PhotoProvider");
       notifyListeners();
     }, onError: (error) {
       _log.severe("Failed to create new photo ($error)");
@@ -67,6 +86,7 @@ class PhotoProvider extends ChangeNotifier {
     await _photosService.createPhoto(photo).then((value) {
       _log.fine("Photo successfully updated : ${photo.title}");
       _photos[_photos.indexWhere((m) => m.id == photo.id)] = photo;
+      _log.info("Notifying listeners of PhotoProvider");
       notifyListeners();
     }, onError: (error) {
       _log.severe("Failed to update photo ($error)");
@@ -79,6 +99,7 @@ class PhotoProvider extends ChangeNotifier {
     await _photosService.deletePhoto(photo).then((value) {
       _log.fine("Photo deleted successfully : ${photo.title}");
       _photos.remove(photo);
+      _log.info("Notifying listeners of PhotoProvider");
       notifyListeners();
     }, onError: (error) {
       _log.severe("Failed to delete photo ($error)");

@@ -22,12 +22,14 @@ import 'package:logging/logging.dart';
 
 class HomeProvider extends ChangeNotifier {
   static final Logger _log = new Logger('HomeProvider');
+
+  // index of the current selected tab
   int _currentIndex = 0;
 
   int get currentIndex => _currentIndex;
 
-  /// set the current page index to be the specified [currIndex]
-  setCurrentIndex(int currIndex) {
+  /// Set the current tab index to be the specified [currIndex]
+  void setCurrentIndex(int currIndex) {
     _currentIndex = currIndex;
     _log.info("Notifying listeners of HomeProvider");
     notifyListeners();

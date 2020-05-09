@@ -17,7 +17,7 @@
  * along with Chachatte Team. If not, see <http://www.gnu.org/licenses/>.
  */
 
-/// class that holds string constants
+/// Class that holds string constants
 class AppString {
 
   static const String applicationTitle = 'Chachatte team';
@@ -167,7 +167,8 @@ class AppString {
   static const String eventDisplay3ItemsTooltip = 'Afficher 3 événements par ligne';
   static const String eventDisplay4ItemsTooltip = 'Afficher 4 événements par ligne';
   static const String eventDisplay6ItemsTooltip = 'Afficher 6 événements par ligne';
-  static const String eventDetailScreenTitle = 'Détail de l\'événement';
+  static const String eventDetailScreenTitle = 'Roulage';
+  static const String eventsNotFound = 'Aucun événement trouvé';
 
   static const String photoScreenTitle = 'Gallerie';
   static const String photoCreate = 'Ajouter une photo';
@@ -187,6 +188,7 @@ class AppString {
   static const String photoLink = 'Lien';
   static const String photoLinkHint = 'Lien de la photo';
   static const String photoLinkMandatory = 'Le lien de la photo est obligatoire';
+  static const String photosNotFound = 'Aucune photo trouvée';
 
   static const String participant = 'participant';
   static const String participants = 'participants';

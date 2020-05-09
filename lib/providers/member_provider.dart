@@ -21,6 +21,7 @@ import 'dart:collection';
 
 import 'package:chachatte_team/models/member.dart';
 import 'package:chachatte_team/services/members_service.dart';
+import 'package:chachatte_team/utils/enums.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:logging/logging.dart';
@@ -28,60 +29,57 @@ import 'package:logging/logging.dart';
 class MemberProvider extends ChangeNotifier {
   final Logger _log = new Logger('MemberProvider');
   final MembersService _membersService = new MembersService();
-  List<Member> _members = [];
-  bool _loading = true;
 
+  // current members list
+  List<Member> _members = [];
+
+  // current loading status
+  LoadingStatus _loadingStatus = LoadingStatus.notLoaded;
+
+  // constructor
   MemberProvider() {
-    fetchMembers();
+    // as soon as it is instantiated, we fetch members
+    _fetchMembers();
   }
 
   UnmodifiableListView<Member> get members => UnmodifiableListView(_members);
-  bool get loading => _loading;
 
-  /// Update the avatar of the specified [member] in the current member list
-  void updateMemberAvatar(Member member) {
-    _members.singleWhere((m) => m.id == member.id).avatar = member.avatar;
+  LoadingStatus get loadingStatus => _loadingStatus;
+
+  /// Update the current loading status
+  /// todo Should we have different variables for all members and events members so that it does not refresh all ?
+  void _updateStatus(LoadingStatus status) {
+    _loadingStatus = status;
+    _log.info("Notifying listeners of MemberProvider");
     notifyListeners();
   }
 
-  /// Remove the avatar of the specified [member] in the current member list
-  void resetMemberAvatar(Member member) {
-    _members.singleWhere((m) => m.id == member.id).avatar = null;
-    notifyListeners();
-  }
-
-  /// Get the list of all members
-  Future<void> fetchMembers() async {
-    _loading = true;
-    notifyListeners();
+  /// Fetch the list of all members
+  void _fetchMembers() async {
+    _updateStatus(LoadingStatus.loading);
     await _membersService.fetchMembers().then((value) async {
       _log.fine("Members list retrieved successfully");
       _members = value;
-      _loading = false;
-      notifyListeners();
+      _updateStatus(LoadingStatus.loaded);
     }, onError: (error) {
       _log.warning("Error when retrieving members list ($error)");
       _members = [];
-      _loading = false;
-      notifyListeners();
+      _updateStatus(LoadingStatus.notLoaded);
       throw (error);
     });
   }
 
   /// Search for members according to the specified [text]
-  Future<void> searchMembers(String text) async {
-    _loading = true;
-    notifyListeners();
+  void searchMembers(String text) async {
+    _updateStatus(LoadingStatus.loading);
     await _membersService.searchMembers(text).then((value) async {
       _log.fine("Members search list retrieved successfully");
       _members = value;
-      _loading = false;
-      notifyListeners();
+      _updateStatus(LoadingStatus.loaded);
     }, onError: (error) {
       _log.warning("Error when searching members ($error)");
       _members = [];
-      _loading = false;
-      notifyListeners();
+      _updateStatus(LoadingStatus.notLoaded);
       throw (error);
     });
   }
@@ -91,6 +89,7 @@ class MemberProvider extends ChangeNotifier {
     await _membersService.createMember(member).then((value) {
       _log.fine("Member user created : ${member.email}");
       _members.add(member);
+      _log.info("Notifying listeners of MemberProvider");
       notifyListeners();
     }, onError: (error) {
       _log.severe("Failed to create new member ($error)");
@@ -103,6 +102,7 @@ class MemberProvider extends ChangeNotifier {
     await _membersService.createMember(member).then((value) {
       _log.fine("Member successfully updated : ${member.email}");
       _members[_members.indexWhere((m) => m.id == member.id)] = member;
+      _log.info("Notifying listeners of MemberProvider");
       notifyListeners();
     }, onError: (error) {
       _log.severe("Failed to update member ($error)");
@@ -115,6 +115,7 @@ class MemberProvider extends ChangeNotifier {
     await _membersService.deleteMember(member).then((value) {
       _log.fine("Member deleted successfully : ${member.email}");
       _members.remove(member);
+      _log.info("Notifying listeners of MemberProvider");
       notifyListeners();
     }, onError: (error) {
       _log.severe("Failed to delete member ($error)");

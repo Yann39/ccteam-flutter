@@ -21,36 +21,48 @@ import 'dart:collection';
 
 import 'package:chachatte_team/models/news.dart';
 import 'package:chachatte_team/services/news_service.dart';
+import 'package:chachatte_team/utils/enums.dart';
 import 'package:flutter/foundation.dart';
 import 'package:logging/logging.dart';
-
-enum NewsStatus { Fetching, Fetched }
 
 class NewsProvider extends ChangeNotifier {
   final Logger _log = new Logger('NewsProvider');
   final NewsService _newsService = new NewsService();
-  List<News> _news = [];
-  NewsStatus _newsStatus = NewsStatus.Fetching;
 
+  // current news list
+  List<News> _news = [];
+
+  // current loading status
+  LoadingStatus _loadingStatus = LoadingStatus.notLoaded;
+
+  // constructor
   NewsProvider() {
-    fetchNews();
+    // as soon as it is instantiated, we fetch all news
+    _fetchNews();
   }
 
   UnmodifiableListView<News> get news => UnmodifiableListView(_news);
-  NewsStatus get newsStatus => _newsStatus;
+
+  LoadingStatus get loadingStatus => _loadingStatus;
+
+  /// Update the current loading status
+  void _updateStatus(LoadingStatus status) {
+    _loadingStatus = status;
+    _log.info("Notifying listeners of NewsProvider");
+    notifyListeners();
+  }
 
   /// Get the list of all news
-  Future<void> fetchNews() async {
+  Future<void> _fetchNews() async {
+    _updateStatus(LoadingStatus.loading);
     await _newsService.fetchNews().then((value) async {
       _log.fine("News list retrieved successfully");
       _news = value;
-      _newsStatus = NewsStatus.Fetched;
-      notifyListeners();
+      _updateStatus(LoadingStatus.loaded);
     }, onError: (error) {
       _log.warning("Error when retrieving news list ($error)");
       _news = [];
-      _newsStatus = NewsStatus.Fetched;
-      notifyListeners();
+      _updateStatus(LoadingStatus.notLoaded);
       throw (error);
     });
     return _news;
@@ -61,6 +73,7 @@ class NewsProvider extends ChangeNotifier {
     await _newsService.createNews(news).then((value) {
       _log.fine("New news created : ${value.title} (id=${value.id})");
       _news.add(value);
+      _log.info("Notifying listeners of NewsProvider");
       notifyListeners();
     }, onError: (error) {
       _log.severe("Failed to create new news ($error)");
@@ -73,6 +86,7 @@ class NewsProvider extends ChangeNotifier {
     await _newsService.updateNews(news).then((value) {
       _log.fine("News successfully updated : ${news.title}");
       _news[_news.indexWhere((m) => m.id == news.id)] = news;
+      _log.info("Notifying listeners of NewsProvider");
       notifyListeners();
     }, onError: (error) {
       _log.severe("Failed to update news ($error)");
@@ -85,6 +99,7 @@ class NewsProvider extends ChangeNotifier {
     await _newsService.deleteNews(news).then((value) {
       _log.fine("News deleted successfully : ${news.title}");
       _news.remove(news);
+      _log.info("Notifying listeners of NewsProvider");
       notifyListeners();
     }, onError: (error) {
       _log.severe("Failed to delete news ($error)");

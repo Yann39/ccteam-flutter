@@ -22,29 +22,33 @@ import 'dart:io';
 
 import 'package:chachatte_team/models/member.dart';
 import 'package:chachatte_team/services/members_service.dart';
+import 'package:chachatte_team/utils/enums.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:logging/logging.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-enum AuthStatus { Initializing, Unauthenticated, Authenticating, Authenticated }
-
 class LoginProvider extends ChangeNotifier {
   final Logger _log = new Logger('LoginProvider');
   final MembersService _membersService = new MembersService();
 
+  // current authentication status
   AuthStatus _authStatus = AuthStatus.Unauthenticated;
+
+  // logged member
   Member _loggedMember;
 
+  // constructor
   LoginProvider() {
-    checkUser();
+    // as soon as it is instantiated, we check if the user needs to authenticate
+    _checkUser();
   }
 
   Member get loggedMember => _loggedMember;
 
   AuthStatus get status => _authStatus;
 
-  /// change the current authentication [status]
+  /// Change the current authentication [status]
   void _setStatus(AuthStatus status) {
     _authStatus = status;
     _log.info("Notifying listeners of LoginProvider");
@@ -54,7 +58,7 @@ class LoginProvider extends ChangeNotifier {
   /// Check if the user needs to authenticate
   /// Used to be called on app start
   /// If email is found in shared preferences and exists in the database, user will be consider as logged in
-  Future<void> checkUser() async {
+  void _checkUser() async {
     _log.info("Checking user...");
     _setStatus(AuthStatus.Initializing);
 
@@ -84,15 +88,17 @@ class LoginProvider extends ChangeNotifier {
     }
   }
 
-  /// log in the specified [member] from the database using the credentials
+  /// Log in the specified [member] from the database using the credentials
   Future<void> loginMember(Member member) async {
     _log.info("Logging in user ${member.email} with password ${member.password}");
     _setStatus(AuthStatus.Authenticating);
     await _membersService.loginMember(member).then((value) async {
+
       // store the user e-mail in the shared preferences
       SharedPreferences _prefs = await SharedPreferences.getInstance();
       _prefs.setString('email', member.email);
       _log.fine("User ${member.email} logged in successfully");
+
       // get the full member from the database
       await _membersService.getMemberByEmail(member.email).then((value) async {
         _setStatus(AuthStatus.Authenticated);
@@ -109,15 +115,15 @@ class LoginProvider extends ChangeNotifier {
     });
   }
 
-  /// log out the current member
-  Future<void> logoutMember() async {
+  /// Log out the current member
+  void logoutMember() async {
     _log.info("Logging out user ${_loggedMember.email}");
     SharedPreferences prefs = await SharedPreferences.getInstance();
     prefs.remove('email');
     _setStatus(AuthStatus.Unauthenticated);
   }
 
-  /// create the specified member
+  /// Create the specified member
   Future<void> registerMember(Member member) async {
     await _membersService.createMember(member).then((value) {
       _log.fine("New user registered : ${member.email}");
@@ -127,7 +133,7 @@ class LoginProvider extends ChangeNotifier {
     });
   }
 
-  /// ask for forgot password
+  /// Ask for a new password
   Future<void> askPassword(String email) async {
     await _membersService.askPassword(email).then((value) {
       _log.fine("Forgot password requested for e-mail : $email");
@@ -165,6 +171,7 @@ class LoginProvider extends ChangeNotifier {
         if (member.id == _loggedMember.id) {
           _loggedMember.avatar = tmpMember.avatar;
           _loggedMember.modifiedOn = tmpMember.modifiedOn;
+          _log.info("Notifying listeners of LoginProvider");
           notifyListeners();
         }
       }, onError: (error) {
@@ -199,6 +206,7 @@ class LoginProvider extends ChangeNotifier {
           _loggedMember.avatar = null;
           _loggedMember.modifiedOn = tmpMember.modifiedOn;
         }
+        _log.info("Notifying listeners of LoginProvider");
         notifyListeners();
       }, onError: (error) {
         _log.severe("Failed to delete avatar for member ${tmpMember.email} ($error)");

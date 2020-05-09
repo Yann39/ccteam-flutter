@@ -21,6 +21,7 @@ import 'dart:collection';
 
 import 'package:chachatte_team/models/track.dart';
 import 'package:chachatte_team/services/tracks_service.dart';
+import 'package:chachatte_team/utils/enums.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:logging/logging.dart';
@@ -28,48 +29,57 @@ import 'package:logging/logging.dart';
 class TrackProvider extends ChangeNotifier {
   final Logger _log = new Logger('TrackProvider');
   final TracksService _tracksService = new TracksService();
-  List<Track> _tracks = [];
-  bool _loading = true;
 
+  // current list of tracks
+  List<Track> _tracks = [];
+
+  // current loading status
+  LoadingStatus _loadingStatus = LoadingStatus.notLoaded;
+
+  // constructor
   TrackProvider() {
-    fetchTracks();
+    // as soon as it is instantiated, we fetch all news
+    _fetchTracks();
   }
 
   UnmodifiableListView<Track> get tracks => UnmodifiableListView(_tracks);
-  bool get loading => _loading;
+
+  LoadingStatus get loadingStatus => _loadingStatus;
+
+  /// Update the current loading status
+  void _updateStatus(LoadingStatus status) {
+    _loadingStatus = status;
+    _log.info("Notifying listeners of TrackProvider");
+    notifyListeners();
+  }
 
   /// Get the list of all tracks
-  Future<void> fetchTracks() async {
-    _loading = true;
+  void _fetchTracks() async {
+    _updateStatus(LoadingStatus.loading);
     notifyListeners();
     await _tracksService.fetchTracks().then((value) async {
       _log.fine("Tracks list retrieved successfully");
       _tracks = value;
-      _loading = false;
-      notifyListeners();
+      _updateStatus(LoadingStatus.loaded);
     }, onError: (error) {
       _log.warning("Error when retrieving tracks list ($error)");
       _tracks = [];
-      _loading = false;
-      notifyListeners();
+      _updateStatus(LoadingStatus.notLoaded);
       throw (error);
     });
   }
 
   /// Search for tracks according to the specified [text]
-  Future<void> searchTracks(String text) async {
-    _loading = true;
-    notifyListeners();
+  void searchTracks(String text) async {
+    _updateStatus(LoadingStatus.loading);
     await _tracksService.searchTracks(text).then((value) async {
       _log.fine("Members search list retrieved successfully");
       _tracks = value;
-      _loading = false;
-      notifyListeners();
+      _updateStatus(LoadingStatus.loaded);
     }, onError: (error) {
       _log.warning("Error when searching tracks ($error)");
       _tracks = [];
-      _loading = false;
-      notifyListeners();
+      _updateStatus(LoadingStatus.notLoaded);
       throw (error);
     });
   }
@@ -79,6 +89,7 @@ class TrackProvider extends ChangeNotifier {
     await _tracksService.createTrack(track).then((value) {
       _log.fine("New track created : ${track.name}");
       _tracks.add(track);
+      _log.info("Notifying listeners of TrackProvider");
       notifyListeners();
     }, onError: (error) {
       _log.severe("Failed to create new track ($error)");
@@ -91,6 +102,7 @@ class TrackProvider extends ChangeNotifier {
     await _tracksService.createTrack(track).then((value) {
       _log.fine("Track successfully updated : ${track.name}");
       _tracks[_tracks.indexWhere((m) => m.id == track.id)] = track;
+      _log.info("Notifying listeners of TrackProvider");
       notifyListeners();
     }, onError: (error) {
       _log.severe("Failed to update track ($error)");
@@ -103,6 +115,7 @@ class TrackProvider extends ChangeNotifier {
     await _tracksService.deleteTrack(track).then((value) {
       _log.fine("Track deleted successfully : ${track.name}");
       _tracks.remove(track);
+      _log.info("Notifying listeners of TrackProvider");
       notifyListeners();
     }, onError: (error) {
       _log.severe("Failed to delete track ($error)");

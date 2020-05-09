@@ -25,6 +25,7 @@ import 'package:chachatte_team/utils/constants.dart';
 import 'package:chachatte_team/utils/custom_decorations.dart';
 import 'package:chachatte_team/utils/custom_icons.dart';
 import 'package:chachatte_team/utils/date_utils.dart';
+import 'package:chachatte_team/utils/enums.dart';
 import 'package:chachatte_team/utils/string_utils.dart';
 import 'package:chachatte_team/utils/strings.dart';
 import 'package:chachatte_team/utils/track_utils.dart';
@@ -41,8 +42,6 @@ class EventDetail extends StatefulWidget {
     return _EventDetailState();
   }
 }
-
-enum ConfirmDialogAction { yes, no }
 
 class _EventDetailState extends State<EventDetail> {
   /// Method that launches the Edit event screen and awaits the result from Navigator.pop

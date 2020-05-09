@@ -19,7 +19,7 @@
 
 import 'package:intl/intl.dart';
 
-/// class representing a team member
+/// Class representing a team member
 class Member {
   int id;
   String firstName;

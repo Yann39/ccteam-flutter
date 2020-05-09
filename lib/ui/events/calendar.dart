@@ -24,6 +24,7 @@ import 'package:chachatte_team/ui/main/main_action_menu.dart';
 import 'package:chachatte_team/ui/main/main_drawer.dart';
 import 'package:chachatte_team/utils/custom_decorations.dart';
 import 'package:chachatte_team/utils/strings.dart';
+import 'package:chachatte_team/widgets/loading_content.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:logging/logging.dart';
@@ -49,137 +50,101 @@ class Calendar extends StatelessWidget {
     _log.info("Building Event list");
     final _eventProvider = Provider.of<EventProvider>(context, listen: true);
 
-    // if user wants to display more events per line
-    final _eventsPerLine = _eventProvider.eventsPerLine;
-
-    // icon to display for the number of event per line option
-    final Icon nbColIcon = _eventsPerLine == 1 ? Icon(Icons.filter_1) : (_eventsPerLine == 2 ? Icon(Icons.filter_2) : Icon(Icons.filter_3));
-
-    final String nbColIconTooltip =
-        _eventsPerLine == 1 ? AppString.eventDisplay1ItemTooltip : (_eventsPerLine == 2 ? AppString.eventDisplay2ItemsTooltip : AppString.eventDisplay3ItemsTooltip);
-
     onSelect(date, calendarMode) {
-      _eventProvider.setDisplayEvents(date, calendarMode == CalendarMode.year ? "year" : "month");
+      _eventProvider.fetchDateEvents(date, calendarMode == CalendarMode.year ? "year" : "month");
     }
 
     return Scaffold(
       appBar: AppBar(
         title: Text(AppString.tabCalendar),
-        actions: <Widget>[
-          IconButton(
-            icon: nbColIcon,
-            tooltip: nbColIconTooltip,
-            onPressed: () {
-              _eventProvider.changeEventsPerLine();
-            },
-          ),
-          MainActionMenu()
-        ],
+        actions: <Widget>[MainActionMenu()],
       ),
       drawer: MainDrawer(),
       body: Container(
         padding: const EdgeInsets.all(8.0),
         decoration: CustomDecorations.mainContent,
-        child: _eventProvider.events != null && _eventProvider.events.length > 0
-            ? Column(
-                children: <Widget>[
-                  /*Container(
-                    padding: EdgeInsets.all(8),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: <Widget>[
-                        Icon(Icons.event, color: Colors.red[700], size: 18),
-                        SizedBox(width: 3),
-                        Text("EVENEMENTS", style: TextStyle(color: Colors.black87, fontSize: 15, fontWeight: FontWeight.bold)),
-                        //Text("Actualités", style: TextStyle(color: Colors.black87, fontSize: 16, fontFamily: 'Barbatrick', letterSpacing: 2)),
-                      ],
+        child: Column(
+          children: <Widget>[
+            Row(
+              children: <Widget>[
+                Expanded(
+                  child: GestureDetector(
+                    onTap: () {
+                      _eventProvider.changeEventModeSelectorIndex(0);
+                    },
+                    child: Container(
+                      padding: EdgeInsets.symmetric(horizontal: 6.0, vertical: 6.0),
+                      decoration: BoxDecoration(
+                        color: _eventProvider.eventModeSelectorIndex == 0 ? Colors.red[700] : Colors.white70,
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(Icons.event_note, color: _eventProvider.eventModeSelectorIndex == 0 ? Colors.white : Colors.black54),
+                          SizedBox(width: 3.0),
+                          Flexible(
+                            child: Text("Année courante", style: TextStyle(color: _eventProvider.eventModeSelectorIndex == 0 ? Colors.white : Colors.black54)),
+                          )
+                        ],
+                      ),
                     ),
-                  ),*/
-                  Row(
-                    children: <Widget>[
-                      Expanded(
-                        child: GestureDetector(
-                          onTap: () {
-                            _eventProvider.changeEventModeSelectorIndex(0);
-                          },
-                          child: Container(
-                            padding: EdgeInsets.symmetric(horizontal: 6.0, vertical: 6.0),
-                            decoration: BoxDecoration(
-                              color: _eventProvider.eventModeSelectorIndex == 0 ? Colors.red[700] : Colors.white70,
-                            ),
-                            child: Row(
-                              children: [
-                                Icon(Icons.event_note, color: _eventProvider.eventModeSelectorIndex == 0 ? Colors.white : Colors.black54),
-                                SizedBox(width: 3.0),
-                                Flexible(
-                                  child: Text("Année courante", style: TextStyle(color: _eventProvider.eventModeSelectorIndex == 0 ? Colors.white : Colors.black54)),
-                                )
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
-                      Expanded(
-                        child: GestureDetector(
-                          onTap: () {
-                            _eventProvider.changeEventModeSelectorIndex(1);
-                          },
-                          child: Container(
-                            padding: EdgeInsets.symmetric(horizontal: 6.0, vertical: 6.0),
-                            decoration: BoxDecoration(
-                              color: _eventProvider.eventModeSelectorIndex == 1 ? Colors.red[700] : Colors.white70,
-                            ),
-                            child: Row(
-                              children: [
-                                Icon(Icons.event, color: _eventProvider.eventModeSelectorIndex == 1 ? Colors.white : Colors.black54),
-                                SizedBox(width: 3.0),
-                                Flexible(
-                                  child: Text("Par date", style: TextStyle(color: _eventProvider.eventModeSelectorIndex == 1 ? Colors.white : Colors.black54)),
-                                )
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
                   ),
-                  _eventProvider.eventModeSelectorIndex == 1
-                      ? Column(
-                          children: <Widget>[
-                            SizedBox(height: 8.0),
-                            CalendarSelector(
-                              onDateSelected: onSelect,
-                              eventsDates: Map.fromIterable(_eventProvider.events, key: (v) => v.title, value: (v) => v.eventDate),
-                              onlyMonthDays: false,
-                              locale: "fr",
-                              weekEndDayColor: Colors.blue[700],
-                              mode: CalendarMode.week,
-                              expandable: true,
-                              firstWeekDay: DateTime.monday,
-                            ),
-                          ],
-                        )
-                      : SizedBox(),
-                  SizedBox(height: 8.0),
-                  Expanded(
-                    child: ListView.separated(
-                      separatorBuilder: (context, index) => SizedBox(height: 8.0),
-                      itemCount: _eventProvider.eventModeSelectorIndex == 1 ? _eventProvider.displayEvents.length : _eventProvider.events.length,
-                      itemBuilder: (context, index) {
-                        return EventCard(_eventProvider.events[index]);
-                      },
+                ),
+                Expanded(
+                  child: GestureDetector(
+                    onTap: () {
+                      _eventProvider.changeEventModeSelectorIndex(1);
+                    },
+                    child: Container(
+                      padding: EdgeInsets.symmetric(horizontal: 6.0, vertical: 6.0),
+                      decoration: BoxDecoration(
+                        color: _eventProvider.eventModeSelectorIndex == 1 ? Colors.red[700] : Colors.white70,
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(Icons.event, color: _eventProvider.eventModeSelectorIndex == 1 ? Colors.white : Colors.black54),
+                          SizedBox(width: 3.0),
+                          Flexible(
+                            child: Text("Par date", style: TextStyle(color: _eventProvider.eventModeSelectorIndex == 1 ? Colors.white : Colors.black54)),
+                          ),
+                        ],
+                      ),
                     ),
+                  ),
+                ),
+              ],
+            ),
+            if (_eventProvider.eventModeSelectorIndex == 1)
+              Column(
+                children: <Widget>[
+                  SizedBox(height: 8.0),
+                  CalendarSelector(
+                    onDateSelected: onSelect,
+                    eventsDates: Map.fromIterable(_eventProvider.events, key: (v) => v.title, value: (v) => v.eventDate),
+                    onlyMonthDays: false,
+                    locale: "fr",
+                    weekEndDayColor: Colors.blue[700],
+                    mode: CalendarMode.week,
+                    expandable: true,
+                    firstWeekDay: DateTime.monday,
                   ),
                 ],
-              )
-            : Center(
-                child: SizedBox(
-                  child: CircularProgressIndicator(),
-                  height: 20.0,
-                  width: 20.0,
+              ),
+            SizedBox(height: 8.0),
+            Expanded(
+              child: LoadingContent(
+                emptyText: AppString.eventsNotFound,
+                loadingStatus: _eventProvider.loadingStatus,
+                child: ListView.separated(
+                  separatorBuilder: (context, index) => SizedBox(height: 8.0),
+                  itemCount: _eventProvider.eventModeSelectorIndex == 1 ? _eventProvider.calendarEvents.length : _eventProvider.events.length,
+                  itemBuilder: (context, index) {
+                    return EventCard(_eventProvider.events[index]);
+                  },
                 ),
               ),
+            ),
+          ],
+        ),
       ),
       floatingActionButton: FloatingActionButton(
         elevation: 0.0,
@@ -192,3 +157,5 @@ class Calendar extends StatelessWidget {
     );
   }
 }
+
+

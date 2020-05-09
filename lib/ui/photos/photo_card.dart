@@ -21,11 +21,10 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:chachatte_team/models/photo.dart';
 import 'package:chachatte_team/providers/photo_provider.dart';
 import 'package:chachatte_team/ui/photos/add_edit_photo.dart';
+import 'package:chachatte_team/utils/enums.dart';
 import 'package:chachatte_team/utils/strings.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-
-enum ConfirmDialogAction { yes, no }
 
 class PhotoCard extends StatelessWidget {
   final Photo photo;

@@ -17,7 +17,7 @@
  * along with Chachatte Team. If not, see <http://www.gnu.org/licenses/>.
  */
 
-/// class representing a track
+/// Class representing a track
 class Track {
   int id;
   String name;

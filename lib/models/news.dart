@@ -20,7 +20,7 @@
 import 'package:chachatte_team/models/member.dart';
 import 'package:intl/intl.dart';
 
-/// class representing a news
+/// Class representing a news
 class News {
   int id;
   String title;

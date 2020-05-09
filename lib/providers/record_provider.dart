@@ -27,56 +27,45 @@ import 'package:logging/logging.dart';
 class RecordProvider extends ChangeNotifier {
   final Logger _log = new Logger('RecordProvider');
   final RecordsService _recordsService = new RecordsService();
-  List<Record> _records = [];
+
+  // list of all track records
   List<Record> _trackRecords = [];
+
+  // list of all member records
   List<Record> _memberRecords = [];
 
-  UnmodifiableListView<Record> get records => UnmodifiableListView(_records);
   UnmodifiableListView<Record> get trackRecords => UnmodifiableListView(_trackRecords);
   UnmodifiableListView<Record> get memberRecords => UnmodifiableListView(_memberRecords);
 
-  /// Get the list of all records
-  Future<void> fetchRecords() async {
-    await _recordsService.fetchRecords().then((value) async {
-      _log.fine("Records list retrieved successfully");
-      _records = value;
-      notifyListeners();
-    }, onError: (error) {
-      _log.warning("Error when retrieving records list ($error)");
-      _records = [];
-      notifyListeners();
-      throw (error);
-    });
-    return _records;
-  }
-
   /// Get the list of all records for the specified [trackId]
-  Future<void> fetchTrackRecords(int trackId) async {
+  void fetchTrackRecords(int trackId) async {
     await _recordsService.fetchTrackRecords(trackId).then((value) async {
       _log.fine("Track records list retrieved successfully");
       _trackRecords = value;
+      _log.info("Notifying listeners of RecordProvider");
       notifyListeners();
     }, onError: (error) {
       _log.warning("Error when retrieving track records list ($error)");
       _trackRecords = [];
+      _log.info("Notifying listeners of RecordProvider");
       notifyListeners();
       throw (error);
     });
-    return _trackRecords;
   }
 
   /// Get the list of all records for the specified [memberId]
-  Future<void> fetchMemberRecords(int memberId) async {
+  void fetchMemberRecords(int memberId) async {
     await _recordsService.fetchMemberRecords(memberId).then((value) async {
       _log.fine("Member records list retrieved successfully");
       _memberRecords = value;
+      _log.info("Notifying listeners of RecordProvider");
       notifyListeners();
     }, onError: (error) {
       _log.warning("Error when retrieving member records list ($error)");
       _memberRecords = [];
+      _log.info("Notifying listeners of RecordProvider");
       notifyListeners();
       throw (error);
     });
-    return _memberRecords;
   }
 }

@@ -23,6 +23,7 @@ import 'package:chachatte_team/ui/main/main_action_menu.dart';
 import 'package:chachatte_team/ui/main/main_drawer.dart';
 import 'package:chachatte_team/ui/photos/add_edit_photo.dart';
 import 'package:chachatte_team/utils/strings.dart';
+import 'package:chachatte_team/widgets/loading_content.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -52,55 +53,57 @@ class Gallery extends StatelessWidget {
       body: Container(
         color: Colors.blue[200],
         padding: EdgeInsets.all(4.0),
-        child: _photoProvider.photos != null && _photoProvider.photos.length > 0
-            ? GridView.builder(
-                padding: EdgeInsets.all(4.0),
-                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: MediaQuery.of(context).orientation == Orientation.portrait ? 2 : 3,
-                  crossAxisSpacing: 4,
-                  mainAxisSpacing: 4,
-                  childAspectRatio: 1.3,
-                ),
-                itemCount: _photoProvider.photos.length,
-                itemBuilder: (BuildContext context, int index) => InkWell(
-                  onTap: () => Navigator.pushNamed(context, "/photoDetail", arguments: _photoProvider.photos[index]),
-                  child: Stack(
-                    alignment: Alignment.bottomCenter,
-                    children: [
-                      Container(
-                        decoration: new BoxDecoration(
-                          image: new DecorationImage(
-                            image: CachedNetworkImageProvider(_photoProvider.photos[index].link
-                                /*placeholder: (context, url) => CircularProgressIndicator(),
+        child: LoadingContent(
+          loadingStatus: _photoProvider.loadingStatus,
+          emptyText: AppString.photosNotFound,
+          child: GridView.builder(
+            padding: EdgeInsets.all(4.0),
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: MediaQuery.of(context).orientation == Orientation.portrait ? 2 : 3,
+              crossAxisSpacing: 4,
+              mainAxisSpacing: 4,
+              childAspectRatio: 1.3,
+            ),
+            itemCount: _photoProvider.photos.length,
+            itemBuilder: (BuildContext context, int index) => InkWell(
+              onTap: () => Navigator.pushNamed(context, "/photoDetail", arguments: _photoProvider.photos[index]),
+              child: Stack(
+                alignment: Alignment.bottomCenter,
+                children: [
+                  Container(
+                    decoration: new BoxDecoration(
+                      image: new DecorationImage(
+                        image: CachedNetworkImageProvider(_photoProvider.photos[index].link
+                            /*placeholder: (context, url) => CircularProgressIndicator(),
                               imageUrl: _photoProvider.photos[index].link,
                               fit: BoxFit.fitWidth,*/
-                                ),
-                            fit: BoxFit.cover,
-                          ),
-                        ),
-                        /*child: CachedNetworkImage(
+                            ),
+                        fit: BoxFit.cover,
+                      ),
+                    ),
+                    /*child: CachedNetworkImage(
                           placeholder: (context, url) => CircularProgressIndicator(),
                           imageUrl: _photoProvider.photos[index].link,
                         ),*/
-                      ),
-                      Container(
-                        height: 20.0,
-                        alignment: Alignment.center,
-                        decoration: BoxDecoration(shape: BoxShape.rectangle, color: Colors.black.withOpacity(0.5)),
-                        child: Text(
-                          _photoProvider.photos[index].title,
-                          softWrap: false,
-                          style: TextStyle(color: Colors.white),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          textAlign: TextAlign.center,
-                        ),
-                      ),
-                    ],
                   ),
-                ),
-              )
-            : Text("Aucune photo à afficher"),
+                  Container(
+                    height: 20.0,
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(shape: BoxShape.rectangle, color: Colors.black.withOpacity(0.5)),
+                    child: Text(
+                      _photoProvider.photos[index].title,
+                      softWrap: false,
+                      style: TextStyle(color: Colors.white),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
       ),
       floatingActionButton: FloatingActionButton(
         elevation: 0.0,

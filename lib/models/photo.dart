@@ -19,7 +19,7 @@
 
 import 'package:intl/intl.dart';
 
-/// class representing a photo
+/// Class representing a photo
 class Photo {
   int id;
   String title;

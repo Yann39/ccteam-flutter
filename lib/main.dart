@@ -41,6 +41,7 @@ import 'package:chachatte_team/ui/news/add_edit_news.dart';
 import 'package:chachatte_team/ui/news/news.dart';
 import 'package:chachatte_team/ui/news/news_detail.dart';
 import 'package:chachatte_team/ui/unauthenticated/register.dart';
+import 'package:chachatte_team/utils/enums.dart';
 import 'package:chachatte_team/utils/strings.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';

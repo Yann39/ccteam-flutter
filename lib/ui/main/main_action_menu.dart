@@ -17,11 +17,10 @@
  * along with Chachatte Team. If not, see <http://www.gnu.org/licenses/>.
  */
 
+import 'package:chachatte_team/utils/enums.dart';
 import 'package:chachatte_team/utils/strings.dart';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
-
-enum QuickActions { about, contact, logout }
 
 class MainActionMenu extends StatelessWidget {
   /// Launch URL to contact user

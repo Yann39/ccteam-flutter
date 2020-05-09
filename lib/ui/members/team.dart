@@ -23,6 +23,7 @@ import 'package:chachatte_team/ui/main/main_action_menu.dart';
 import 'package:chachatte_team/ui/main/main_drawer.dart';
 import 'package:chachatte_team/utils/constants.dart';
 import 'package:chachatte_team/utils/custom_decorations.dart';
+import 'file:///C:/Git/chachatte_team/lib/widgets/loading_content.dart';
 import 'package:chachatte_team/utils/strings.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -62,42 +63,8 @@ class _TeamState extends State<Team> {
     }
   }
 
-  /// Build the members list view according to provider state
-  Widget buildMembersListView(MemberProvider _memberProvider) {
-    if (_memberProvider.loading) {
-      return Center(child: SizedBox(child: CircularProgressIndicator(), height: 20.0, width: 20.0));
-    } else {
-      if (_memberProvider.members != null && _memberProvider.members.length > 0) {
-        return ListView.separated(
-          separatorBuilder: (context, index) => Divider(
-            color: Colors.black,
-            height: 4,
-          ),
-          itemCount: _memberProvider.members.length,
-          itemBuilder: (context, index) {
-            return Material(
-              child: InkWell(
-                child: ListTile(
-                  title: Text(_memberProvider.members[index].firstName + " " + _memberProvider.members[index].lastName),
-                  subtitle: Text(_memberProvider.members[index].bike),
-                  leading: _memberProvider.members[index].avatar != null && _memberProvider.members[index].avatar.length > 0
-                      ? CircleAvatar(backgroundImage: NetworkImage("$SERVER_ROOT_PATH$SERVER_AVATAR_FOLDER${_memberProvider.members[index].avatar}"))
-                      : CircleAvatar(child: Text(_memberProvider.members[index].firstName[0])),
-                ),
-                onTap: () => _navigateToMemberDetailScreen(context, _memberProvider.members[index]),
-              ),
-              color: Colors.transparent,
-            );
-          },
-        );
-      } else {
-        return Center(child: SizedBox(child: Text(AppString.membersNotFound)));
-      }
-    }
-  }
-
   /// Build the search field
-  TextField buildSearchField(MemberProvider _memberProvider) {
+  TextField _buildSearchField(MemberProvider _memberProvider) {
     return TextField(
       decoration: InputDecoration(
         filled: true,
@@ -123,11 +90,36 @@ class _TeamState extends State<Team> {
       drawer: MainDrawer(),
       body: Column(
         children: <Widget>[
-          buildSearchField(_memberProvider),
+          _buildSearchField(_memberProvider),
           Expanded(
             child: Container(
               decoration: CustomDecorations.mainContent,
-              child: buildMembersListView(_memberProvider),
+              child: LoadingContent(
+                loadingStatus: _memberProvider.loadingStatus,
+                emptyText: AppString.membersNotFound,
+                child: ListView.separated(
+                  separatorBuilder: (context, index) => Divider(
+                    color: Colors.black,
+                    height: 4,
+                  ),
+                  itemCount: _memberProvider.members.length,
+                  itemBuilder: (context, index) {
+                    return Material(
+                      child: InkWell(
+                        child: ListTile(
+                          title: Text(_memberProvider.members[index].firstName + " " + _memberProvider.members[index].lastName),
+                          subtitle: Text(_memberProvider.members[index].bike),
+                          leading: _memberProvider.members[index].avatar != null && _memberProvider.members[index].avatar.length > 0
+                              ? CircleAvatar(backgroundImage: NetworkImage("$SERVER_ROOT_PATH$SERVER_AVATAR_FOLDER${_memberProvider.members[index].avatar}"))
+                              : CircleAvatar(child: Text(_memberProvider.members[index].firstName[0])),
+                        ),
+                        onTap: () => _navigateToMemberDetailScreen(context, _memberProvider.members[index]),
+                      ),
+                      color: Colors.transparent,
+                    );
+                  },
+                ),
+              ),
             ),
           )
         ],
