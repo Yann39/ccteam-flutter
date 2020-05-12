@@ -52,15 +52,15 @@ class TrackUtils {
   /// Get the right track icon according to the specified [trackName]
   static IconData trackIconFromName(String trackName) {
     if (trackName == 'Alès') {
-      return CustomIcons.track_ales;
+      return CustomIcons.track_ales_simple;
     } else if (trackName == 'Bresse') {
-      return CustomIcons.track_bresse;
+      return CustomIcons.track_bresse_simple;
     } else if (trackName == 'Bourbonnais') {
       return CustomIcons.track_bourbonnais;
     } else if (trackName == 'Carole') {
       return CustomIcons.track_carole;
     } else if (trackName == 'Dijon-Prenois') {
-      return CustomIcons.track_dijon_prenois;
+      return CustomIcons.track_dijon_simple;
     } else if (trackName == 'La Ferté-Gaucher') {
       return CustomIcons.track_la_ferte_gaucher;
     } else if (trackName == 'Le Mans') {
@@ -70,7 +70,7 @@ class TrackUtils {
     } else if (trackName == 'Magny-Cours') {
       return CustomIcons.track_magny_cours;
     } else if (trackName == 'Vaison') {
-      return CustomIcons.track_vaison;
+      return CustomIcons.track_vaison_simple;
     } else {
       return CustomIcons.track_sample;
     }

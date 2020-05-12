@@ -38,4 +38,8 @@ class CustomIcons {
   static const IconData helmet = IconData(0xe80e, fontFamily: _kFontFam, fontPackage: _kFontPkg);
   static const IconData rain = IconData(0xe810, fontFamily: _kFontFam, fontPackage: _kFontPkg);
   static const IconData group_helmet = IconData(0xe811, fontFamily: _kFontFam, fontPackage: _kFontPkg);
+  static const IconData track_ales_simple = IconData(0xe813, fontFamily: _kFontFam, fontPackage: _kFontPkg);
+  static const IconData track_bresse_simple = IconData(0xe814, fontFamily: _kFontFam, fontPackage: _kFontPkg);
+  static const IconData track_dijon_simple = IconData(0xe815, fontFamily: _kFontFam, fontPackage: _kFontPkg);
+  static const IconData track_vaison_simple = IconData(0xe816, fontFamily: _kFontFam, fontPackage: _kFontPkg);
 }

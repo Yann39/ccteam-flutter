@@ -19,9 +19,8 @@
 
 import 'package:flutter/material.dart';
 
-/// class that holds date utility functions
+/// Custom decorations
 class CustomDecorations {
-
   /// Decoration for main content
   static BoxDecoration mainContent = BoxDecoration(
     gradient: LinearGradient(
@@ -56,4 +55,15 @@ class CustomDecorations {
     borderRadius: BorderRadius.only(bottomLeft: Radius.circular(6.0), bottomRight: Radius.circular(6.0)),
   );
 
+  /// Decoration for light cards
+  static BoxDecoration cardLight = BoxDecoration(
+      gradient: LinearGradient(
+        colors: [Colors.blue[100].withOpacity(0.5), Colors.blue[100]],
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+        stops: [0.0, 1.0],
+      ),
+      shape: BoxShape.rectangle,
+      borderRadius: BorderRadius.circular(4.0),
+      border: Border.all(color: Colors.white, width: 1.0));
 }

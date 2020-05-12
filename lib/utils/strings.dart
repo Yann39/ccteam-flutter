@@ -124,6 +124,8 @@ class AppString {
   static const String memberLoginFailed = 'Connexion impossible, vérifiez vos informations et assurez-vous que votre compte est actif';
   static const String membersSearchHint = 'Nom / Prénom';
   static const String membersNotFound = 'Aucun membre trouvé';
+  static const String membersNoEvent = 'Ce membre n\'a aucun roulage';
+  static const String membersNoChrono = 'Ce membre n\'a aucun chrono';
 
   static const String tracksSearchHint = 'Nom du circuit';
   static const String tracksNotFound = 'Aucun circuit trouvé';
@@ -192,5 +194,11 @@ class AppString {
 
   static const String participant = 'participant';
   static const String participants = 'participants';
+  static const String moto = 'Moto';
+  static const String mobile = 'Mobile';
+  static const String email = 'E-mail';
+  static const String personalInformation = 'Informations personnelles';
+  static const String rides = 'Roulages';
+  static const String chronos = 'Chronos';
 
 }
