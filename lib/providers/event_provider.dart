@@ -89,7 +89,7 @@ class EventProvider extends ChangeNotifier {
   void fetchDateEvents(DateTime date, String calendarMode) {
     final String format = calendarMode == 'year' ? 'My' : 'dMy';
     if (date != null) {
-      _calendarEvents = _events.where((event) => DateFormat(format).format(event.eventDate) == DateFormat(format).format(date)).toList();
+      _calendarEvents = _events.where((event) => DateFormat(format).format(event.startDate) == DateFormat(format).format(date)).toList();
     } else {
       _calendarEvents = [];
     }

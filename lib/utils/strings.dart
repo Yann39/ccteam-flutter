@@ -160,9 +160,12 @@ class AppString {
   static const String eventOrganizer = 'Organisateur';
   static const String eventOrganizerHint = 'Organisateur de l\'événement';
   static const String eventOrganizerMandatory = 'L\'organisateur est obligatoire';
-  static const String eventDate = 'Date';
-  static const String eventDateHint = 'Date de l\'événement';
-  static const String eventDateMandatory = 'La date est obligatoire';
+  static const String eventStartDate = 'Date de début';
+  static const String eventEndDate = 'Date de fin';
+  static const String eventStartDateHint = 'Date de début de l\'événement';
+  static const String eventEndDateHint = 'Date de fin de l\'événement';
+  static const String eventStartDateMandatory = 'La date de début est obligatoire';
+  static const String eventEndDateMandatory = 'La date de fin est obligatoire';
   static const String eventDateNotValid = 'La date indiquée n\'est pas valide';
   static const String eventDisplay1ItemTooltip = 'Afficher 1 seul événement par ligne';
   static const String eventDisplay2ItemsTooltip = 'Afficher 2 événements par ligne';

@@ -28,7 +28,8 @@ class Event {
     public $id;
     public $title;
     public $description;
-    public $event_date;
+    public $start_date;
+    public $end_date;
     public $track_id;
     public $organizer;
     public $price;
@@ -46,7 +47,7 @@ class Event {
     function read() {
 
         // query to get all records
-        $query = "SELECT n.id, n.title, n.description, n.event_date, n.track_id, n.organizer, n.price, n.created_on, n.created_by, n.modified_on, n.modified_by FROM " . $this->table_name . " n ORDER BY n.event_date DESC";
+        $query = "SELECT n.id, n.title, n.description, n.start_date, n.end_date, n.track_id, n.organizer, n.price, n.created_on, n.created_by, n.modified_on, n.modified_by FROM " . $this->table_name . " n ORDER BY n.start_date DESC";
 
         // prepare query statement
         $stmt = $this->conn->prepare($query);
@@ -61,7 +62,7 @@ class Event {
     function readOne() {
 
         // query to get record corresponding to specified id
-        $query = "SELECT n.id, n.title, n.description, n.event_date, n.track_id, n.organizer, n.price, n.created_on, n.created_by, n.modified_on, n.modified_by FROM " . $this->table_name . " n WHERE n.id = ? LIMIT 0,1";
+        $query = "SELECT n.id, n.title, n.description, n.start_date, n.end_date, n.track_id, n.organizer, n.price, n.created_on, n.created_by, n.modified_on, n.modified_by FROM " . $this->table_name . " n WHERE n.id = ? LIMIT 0,1";
 
         // prepare query statement
         $stmt = $this->conn->prepare($query);
@@ -78,7 +79,8 @@ class Event {
         // set values to object properties
         $this->title = $row['title'];
         $this->description = $row['description'];
-        $this->event_date = $row['event_date'];
+        $this->start_date = $row['start_date'];
+        $this->end_date = $row['end_date'];
         $this->track_id = $row['track_id'];
         $this->organizer = $row['organizer'];
         $this->price = $row['price'];
@@ -92,7 +94,7 @@ class Event {
     function readByMember($member_id) {
 
         // query to get all records containing the specified member
-        $query = "SELECT n.id, n.title, n.description, n.event_date, n.track_id, n.organizer, n.price, n.created_on, n.created_by, n.modified_on, n.modified_by FROM " . $this->table_name . " n INNER JOIN events_members em ON em.event_id = n.id INNER JOIN members m ON em.member_id = m.id WHERE m.id = ? ORDER BY n.event_date DESC";
+        $query = "SELECT n.id, n.title, n.description, n.start_date, n.end_date, n.track_id, n.organizer, n.price, n.created_on, n.created_by, n.modified_on, n.modified_by FROM " . $this->table_name . " n INNER JOIN events_members em ON em.event_id = n.id INNER JOIN members m ON em.member_id = m.id WHERE m.id = ? ORDER BY n.start_date DESC";
 
         // prepare query statement
         $stmt = $this->conn->prepare($query);
@@ -110,7 +112,7 @@ class Event {
     function create() {
 
         // query to insert record
-        $query = "INSERT INTO " . $this->table_name . " SET title = :title, description = :description, event_date = :event_date, track_id = :track_id, organizer = :organizer, price = :price, created_on = :created_on, created_by = :created_by";
+        $query = "INSERT INTO " . $this->table_name . " SET title = :title, description = :description, start_date = :start_date, end_date = :end_date, track_id = :track_id, organizer = :organizer, price = :price, created_on = :created_on, created_by = :created_by";
 
         // prepare query
         $stmt = $this->conn->prepare($query);
@@ -118,7 +120,8 @@ class Event {
         // sanitize
         $this->title=htmlspecialchars(strip_tags($this->title));
         $this->description=htmlspecialchars(strip_tags($this->description));
-        $this->event_date=htmlspecialchars(strip_tags($this->event_date));
+        $this->start_date=htmlspecialchars(strip_tags($this->start_date));
+        $this->end_date=htmlspecialchars(strip_tags($this->end_date));
         $this->track_id=htmlspecialchars(strip_tags($this->track_id));
         $this->organizer=htmlspecialchars(strip_tags($this->organizer));
         $this->price=htmlspecialchars(strip_tags($this->price));
@@ -128,7 +131,8 @@ class Event {
         // bind values
         $stmt->bindParam(":title", $this->title);
         $stmt->bindParam(":description", $this->description);
-        $stmt->bindParam(":event_date", $this->event_date);
+        $stmt->bindParam(":start_date", $this->start_date);
+        $stmt->bindParam(":end_date", $this->end_date);
         $stmt->bindParam(":track_id", $this->track_id);
         $stmt->bindParam(":organizer", $this->organizer);
         $stmt->bindParam(":price", $this->price);
@@ -147,7 +151,7 @@ class Event {
     function update() {
 
         // query to update record
-        $query = "UPDATE " . $this->table_name . " SET title = :title, description = :description, event_date = :event_date, track_id = :track_id, organizer = :organizer, price = :price, modified_on = :modified_on, modified_by = :modified_by WHERE id = :id";
+        $query = "UPDATE " . $this->table_name . " SET title = :title, description = :description, start_date = :start_date, end_date = :end_date, track_id = :track_id, organizer = :organizer, price = :price, modified_on = :modified_on, modified_by = :modified_by WHERE id = :id";
 
         // prepare query statement
         $stmt = $this->conn->prepare($query);
@@ -155,7 +159,8 @@ class Event {
         // sanitize
         $this->title=htmlspecialchars(strip_tags($this->title));
         $this->description=htmlspecialchars(strip_tags($this->description));
-        $this->event_date=htmlspecialchars(strip_tags($this->event_date));
+        $this->start_date=htmlspecialchars(strip_tags($this->start_date));
+        $this->end_date=htmlspecialchars(strip_tags($this->end_date));
         $this->track_id=htmlspecialchars(strip_tags($this->track_id));
         $this->organizer=htmlspecialchars(strip_tags($this->organizer));
         $this->price=htmlspecialchars(strip_tags($this->price));
@@ -166,7 +171,8 @@ class Event {
         // bind new values
         $stmt->bindParam(":title", $this->title);
         $stmt->bindParam(":description", $this->description);
-        $stmt->bindParam(":event_date", $this->event_date);
+        $stmt->bindParam(":start_date", $this->start_date);
+        $stmt->bindParam(":end_date", $this->end_date);
         $stmt->bindParam(":track_id", $this->track_id);
         $stmt->bindParam(":organizer", $this->organizer);
         $stmt->bindParam(":price", $this->price);
@@ -209,7 +215,7 @@ class Event {
     function search($keywords){
 
         // query to search across all records
-        $query = "SELECT n.title, n.description, n.event_date, n.track_id, n.organizer, n.price, n.created_on, n.created_by, n.modified_on, n.modified_by FROM " . $this->table_name . " n WHERE n.title LIKE ? OR n.description LIKE ? OR n.organizer LIKE ? ORDER BY n.event_date DESC";
+        $query = "SELECT n.title, n.description, n.start_date, n.end_date, n.track_id, n.organizer, n.price, n.created_on, n.created_by, n.modified_on, n.modified_by FROM " . $this->table_name . " n WHERE n.title LIKE ? OR n.description LIKE ? OR n.organizer LIKE ? ORDER BY n.start_date DESC";
 
         // prepare query statement
         $stmt = $this->conn->prepare($query);

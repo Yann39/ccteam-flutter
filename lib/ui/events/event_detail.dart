@@ -193,7 +193,7 @@ class _EventDetailState extends State<EventDetail> {
                                     color: Colors.red[700],
                                   ),
                                   Text(
-                                    DateUtils.convertToString(widget.event.eventDate, "dd MMM yyyy"),
+                                    widget.event.fullDate,
                                     textAlign: TextAlign.center,
                                     maxLines: 2,
                                     overflow: TextOverflow.ellipsis,

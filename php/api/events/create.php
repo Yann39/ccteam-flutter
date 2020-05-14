@@ -40,12 +40,13 @@ $event = new Event($db);
 $data = json_decode(file_get_contents("php://input"));
 
 // make sure required data is not empty
-if (!empty($data->title) && !empty($data->description) && !empty($data->event_date) && !empty($data->track_id) && !empty($data->organizer) && !empty($data->price) && !empty($data->created_by)) {
+if (!empty($data->title) && !empty($data->description) && !empty($data->start_date) && !empty($data->end_date) && !empty($data->track_id) && !empty($data->organizer) && !empty($data->price) && !empty($data->created_by)) {
 
     // set event property values
     $event->title = $data->title;
     $event->description = $data->description;
-    $event->event_date = $data->event_date;
+    $event->start_date = $data->start_date;
+    $event->end_date = $data->end_date;
     $event->track_id = $data->track_id;
     $event->organizer = $data->organizer;
     $event->price = $data->price;

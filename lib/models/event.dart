@@ -26,7 +26,8 @@ class Event {
   int id;
   String title;
   String description;
-  DateTime eventDate;
+  DateTime startDate;
+  DateTime endDate;
   Track track;
   String organizer;
   double price;
@@ -40,7 +41,8 @@ class Event {
     this.id,
     this.title,
     this.description,
-    this.eventDate,
+    this.startDate,
+    this.endDate,
     this.track,
     this.organizer,
     this.price,
@@ -57,7 +59,8 @@ class Event {
       id: ${this.id},
       title: ${this.title},
       description: ${this.description},
-      eventDate: ${this.eventDate != null ? this.eventDate.toIso8601String() : ""},
+      startDate: ${this.startDate != null ? this.startDate.toIso8601String() : ""},
+      endDate: ${this.endDate != null ? this.endDate.toIso8601String() : ""},
       track: ${this.track != null ? this.track.toString() : ""},
       organizer: ${this.organizer},
       price: ${this.price},
@@ -74,7 +77,8 @@ class Event {
       : id = json['id'] != null ? int.parse(json['id']) : -1,
         title = json['title'],
         description = json['description'],
-        eventDate = json['event_date'] != null ? new DateFormat("yyyy-MM-dd HH:mm:ss").parseStrict(json['event_date']) : null,
+        startDate = json['start_date'] != null ? new DateFormat("yyyy-MM-dd HH:mm:ss").parseStrict(json['start_date']) : null,
+        endDate = json['end_date'] != null ? new DateFormat("yyyy-MM-dd HH:mm:ss").parseStrict(json['end_date']) : null,
         track = json['track'] != null ? Track.fromJson(json['track']) : null,
         organizer = json['organizer'],
         price = json['price'] != null ? double.parse(json['price']) : null,
@@ -89,7 +93,8 @@ class Event {
         "id": id,
         "title": title,
         "description": description,
-        "event_date": eventDate,
+        "start_date": startDate,
+        "end_date": endDate,
         "track": track != null ? track.toJson() : null,
         "organizer": organizer,
         "price": price,
@@ -99,4 +104,28 @@ class Event {
         "modified_on": modifiedOn,
         "modified_by": modifiedBy != null ? modifiedBy.toJson() : null,
       };
+
+  String get fullDate {
+    final DateFormat formatterDate = new DateFormat("dd MMM yyyy", "fr");
+    // same day, display only one of the dates (i.e "24 Apr. 2020")
+    if (this.startDate == this.endDate) {
+      return formatterDate.format(this.startDate);
+    } else {
+      // 2 different years, display the complete 2 dates (i.e. "27 Dec. 2019 - 04 Jan. 2020")
+      if (this.startDate.year != this.endDate.year) {
+        return formatterDate.format(this.startDate) + " - " + formatterDate.format(this.endDate);
+      }
+      // same year but 2 different months, display the 2 months (i.e. "27 Aug. - 11 Sept. 2020")
+      else if (this.startDate.month != this.endDate.month) {
+        final DateFormat formatterMonth = new DateFormat("dd MMM", "fr");
+        return formatterMonth.format(this.startDate) + " - " + formatterDate.format(this.endDate);
+      }
+      // same year and month but 2 different days, display the 2 days (i.e. "19 - 22 Oct. 2020")
+      else {
+        final DateFormat formatterDay = new DateFormat("dd", "fr");
+        return formatterDay.format(this.startDate) + " - " + formatterDate.format(this.endDate);
+      }
+    }
+  }
+
 }

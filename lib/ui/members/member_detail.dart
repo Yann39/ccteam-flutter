@@ -271,7 +271,7 @@ class _MemberDetailState extends State<MemberDetail> {
                                 ),
                                 child: Center(
                                   child: Text(
-                                    "${DateUtils.convertToString(eventProvider.memberEvents[index].eventDate, "MMM yy")}",
+                                    "${DateUtils.convertToString(eventProvider.memberEvents[index].startDate, "MMM yy")}",
                                     textScaleFactor: 0.75,
                                     style: TextStyle(color: Colors.white),
                                   ),
@@ -282,7 +282,7 @@ class _MemberDetailState extends State<MemberDetail> {
                                   decoration: CustomDecorations.cardBody,
                                   child: Center(
                                     child: Text(
-                                      "${DateUtils.convertToString(eventProvider.memberEvents[index].eventDate, "dd")}",
+                                      "${DateUtils.convertToString(eventProvider.memberEvents[index].startDate, "dd")}",
                                       style: TextStyle(color: Colors.white),
                                     ),
                                   ),

@@ -119,7 +119,7 @@ class Calendar extends StatelessWidget {
                   SizedBox(height: 8.0),
                   CalendarSelector(
                     onDateSelected: onSelect,
-                    eventsDates: Map.fromIterable(_eventProvider.events, key: (v) => v.title, value: (v) => v.eventDate),
+                    eventsDates: Map.fromIterable(_eventProvider.events, key: (v) => v.title, value: (v) => v.startDate),
                     onlyMonthDays: false,
                     locale: "fr",
                     weekEndDayColor: Colors.blue[700],

@@ -44,7 +44,8 @@ class AddEditEvent extends StatefulWidget {
 class _AddEditEventState extends State<AddEditEvent> {
   final GlobalKey<FormState> _formKey = new GlobalKey<FormState>();
   final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
-  final TextEditingController _datePickerController = new TextEditingController();
+  final TextEditingController _startDatePickerController = new TextEditingController();
+  final TextEditingController _endDatePickerController = new TextEditingController();
   final TracksService _tracksService = new TracksService();
 
   Future<List<Track>> _futureTracks;
@@ -55,7 +56,8 @@ class _AddEditEventState extends State<AddEditEvent> {
     _futureTracks = _tracksService.fetchTracks();
     // set date picker text if set
     if (widget.event != null) {
-      _datePickerController.text = DateUtils.convertToString(widget.event.eventDate, DATE_FORMAT);
+      _startDatePickerController.text = DateUtils.convertToString(widget.event.startDate, DATE_FORMAT);
+      _endDatePickerController.text = DateUtils.convertToString(widget.event.endDate, DATE_FORMAT);
     }
     return super.initState();
   }
@@ -259,18 +261,34 @@ class _AddEditEventState extends State<AddEditEvent> {
                   initialValue: currEvent.organizer,
                 ),
                 new GestureDetector(
-                  onTap: () => _chooseDate(context, _datePickerController, currEvent.eventDate),
+                  onTap: () => _chooseDate(context, _startDatePickerController, currEvent.startDate),
                   child: AbsorbPointer(
                     child: new TextFormField(
                       decoration: new InputDecoration(
                         icon: const Icon(Icons.calendar_today),
-                        hintText: AppString.eventDateHint,
-                        labelText: AppString.eventDate,
+                        hintText: AppString.eventStartDateHint,
+                        labelText: AppString.eventStartDate,
                       ),
-                      controller: _datePickerController,
+                      controller: _startDatePickerController,
                       keyboardType: TextInputType.datetime,
-                      validator: (val) => val.isEmpty ? AppString.eventDateMandatory : null,
-                      onSaved: (val) => currEvent.eventDate = new DateFormat(DATE_FORMAT).parseStrict(val),
+                      validator: (val) => val.isEmpty ? AppString.eventStartDateMandatory : null,
+                      onSaved: (val) => currEvent.startDate = new DateFormat(DATE_FORMAT).parseStrict(val),
+                    ),
+                  ),
+                ),
+                new GestureDetector(
+                  onTap: () => _chooseDate(context, _endDatePickerController, currEvent.endDate),
+                  child: AbsorbPointer(
+                    child: new TextFormField(
+                      decoration: new InputDecoration(
+                        icon: const Icon(Icons.calendar_today),
+                        hintText: AppString.eventEndDateHint,
+                        labelText: AppString.eventEndDate,
+                      ),
+                      controller: _endDatePickerController,
+                      keyboardType: TextInputType.datetime,
+                      validator: (val) => val.isEmpty ? AppString.eventEndDateMandatory : null,
+                      onSaved: (val) => currEvent.endDate = new DateFormat(DATE_FORMAT).parseStrict(val),
                     ),
                   ),
                 ),
