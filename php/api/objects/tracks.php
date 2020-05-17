@@ -29,6 +29,9 @@ class Track {
     public $name;
     public $distance;
     public $lap_record;
+    public $website;
+    public $latitude;
+    public $longitude;
 
     // constructor with $db as database connection
     public function __construct($db){
@@ -39,7 +42,7 @@ class Track {
     function read() {
 
         // query to get all records
-        $query = "SELECT n.id, n.name, n.distance, n.lap_record FROM " . $this->table_name . " n ORDER BY n.name";
+        $query = "SELECT n.id, n.name, n.distance, n.lap_record, n.website, n.latitude, n.longitude FROM " . $this->table_name . " n ORDER BY n.name";
 
         // prepare query statement
         $stmt = $this->conn->prepare($query);
@@ -54,7 +57,7 @@ class Track {
     function readOne() {
 
         // query to get record corresponding to specified id
-        $query = "SELECT n.id, n.name, n.distance, n.lap_record FROM " . $this->table_name . " n WHERE n.id = ? LIMIT 0,1";
+        $query = "SELECT n.id, n.name, n.distance, n.lap_record, n.website, n.latitude, n.longitude FROM " . $this->table_name . " n WHERE n.id = ? LIMIT 0,1";
 
         // prepare query statement
         $stmt = $this->conn->prepare($query);
@@ -72,13 +75,16 @@ class Track {
         $this->name = $row['name'];
         $this->distance = $row['distance'];
         $this->lap_record = $row['lap_record'];
+        $this->website = $row['website'];
+        $this->latitude = $row['latitude'];
+        $this->longitude = $row['longitude'];
     }
 
     // create track
     function create() {
 
         // query to insert record
-        $query = "INSERT INTO " . $this->table_name . " SET name = :name, distance = :distance, lap_record = :lap_record";
+        $query = "INSERT INTO " . $this->table_name . " SET name = :name, distance = :distance, lap_record = :lap_record, website = :website, latitude = :latitude, longitude = :longitude";
 
         // prepare query
         $stmt = $this->conn->prepare($query);
@@ -87,11 +93,17 @@ class Track {
         $this->name=htmlspecialchars(strip_tags($this->name));
         $this->distance=htmlspecialchars(strip_tags($this->distance));
         $this->lap_record=htmlspecialchars(strip_tags($this->lap_record));
+        $this->website=htmlspecialchars(strip_tags($this->website));
+        $this->latitude=htmlspecialchars(strip_tags($this->latitude));
+        $this->longitude=htmlspecialchars(strip_tags($this->longitude));
 
         // bind values
         $stmt->bindParam(":name", $this->name);
         $stmt->bindParam(":distance", $this->distance);
         $stmt->bindParam(":lap_record", $this->lap_record);
+        $stmt->bindParam(":website", $this->website);
+        $stmt->bindParam(":latitude", $this->latitude);
+        $stmt->bindParam(":longitude", $this->longitude);
 
         // execute query
         if ($stmt->execute()) {
@@ -105,22 +117,28 @@ class Track {
     function update() {
 
         // query to update record
-        $query = "UPDATE " . $this->table_name . " SET name = :name, distance = :distance, lap_record = :lap_record WHERE id = :id";
+        $query = "UPDATE " . $this->table_name . " SET name = :name, distance = :distance, lap_record = :lap_record, website = :website, latitude = :latitude, longitude = :longitude WHERE id = :id";
 
         // prepare query statement
         $stmt = $this->conn->prepare($query);
 
         // sanitize
+        $this->id=htmlspecialchars(strip_tags($this->id));
         $this->name=htmlspecialchars(strip_tags($this->name));
         $this->distance=htmlspecialchars(strip_tags($this->distance));
         $this->lap_record=htmlspecialchars(strip_tags($this->lap_record));
-        $this->id=htmlspecialchars(strip_tags($this->id));
+        $this->website=htmlspecialchars(strip_tags($this->website));
+        $this->latitude=htmlspecialchars(strip_tags($this->latitude));
+        $this->longitude=htmlspecialchars(strip_tags($this->longitude));
 
         // bind new values
+        $stmt->bindParam(':id', $this->id);
         $stmt->bindParam(":name", $this->name);
         $stmt->bindParam(":distance", $this->distance);
         $stmt->bindParam(":lap_record", $this->lap_record);
-        $stmt->bindParam(':id', $this->id);
+        $stmt->bindParam(":website", $this->website);
+        $stmt->bindParam(":latitude", $this->latitude);
+        $stmt->bindParam(":longitude", $this->longitude);
 
         // execute the query
         if ($stmt->execute()) {
@@ -140,7 +158,7 @@ class Track {
         $stmt = $this->conn->prepare($query);
 
         // sanitize
-        $this->id=htmlspecialchars(strip_tags($this->id));
+        $this->id = htmlspecialchars(strip_tags($this->id));
 
         // bind id of record to delete
         $stmt->bindParam(1, $this->id);
@@ -157,7 +175,7 @@ class Track {
     function search($keywords){
 
         // query to search across all records
-        $query = "SELECT n.name, n.distance, n.lap_record FROM " . $this->table_name . " n WHERE n.name LIKE ? ORDER BY n.name DESC";
+        $query = "SELECT n.name, n.distance, n.lap_record, n.website, n.latitude, n.longitude FROM " . $this->table_name . " n WHERE n.name LIKE ? ORDER BY n.name DESC";
 
         // prepare query statement
         $stmt = $this->conn->prepare($query);

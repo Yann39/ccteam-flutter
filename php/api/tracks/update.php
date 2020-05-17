@@ -44,6 +44,9 @@ $track->id = $data->id;
 $track->name = $data->name;
 $track->distance = $data->distance;
 $track->lap_record = $data->lap_record;
+$track->website = $data->website;
+$track->latitude = $data->latitude;
+$track->longitude = $data->longitude;
 
 // update the track
 if ($track->update()) {

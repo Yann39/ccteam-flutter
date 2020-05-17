@@ -49,7 +49,10 @@ if ($track->title!=null) {
         "id" =>  $track->id,
         "name" =>  $track->name,
         "distance" =>  $track->distance,
-        "lap_record" =>  $track->lap_record
+        "lap_record" =>  $track->lap_record,
+        "website" => $track->website,
+        "latitude" => $track->latitude,
+        "longitude" => $track->longitude
     );
 
     // set response code - 200 OK

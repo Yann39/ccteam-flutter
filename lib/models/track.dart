@@ -23,8 +23,11 @@ class Track {
   String name;
   int distance;
   int lapRecord;
+  String website;
+  double latitude;
+  double longitude;
 
-  Track({this.id, this.name, this.distance, this.lapRecord});
+  Track({this.id, this.name, this.distance, this.lapRecord, this.website, this.latitude, this.longitude});
 
   @override
   String toString() {
@@ -33,6 +36,9 @@ class Track {
       name: ${this.name},
       distance: ${this.distance},
       lap_record: ${this.lapRecord},
+      website: ${this.website},
+      latitude: ${this.latitude},
+      longitude: ${this.longitude},
     }""";
   }
 
@@ -41,7 +47,10 @@ class Track {
       : id = json['id'] != null ? int.parse(json['id']) : -1,
         name = json['name'],
         distance = int.parse(json['distance']),
-        lapRecord = int.parse(json['lap_record']);
+        lapRecord = int.parse(json['lap_record']),
+        website = json['website'],
+        latitude = double.parse(json['latitude']),
+        longitude = double.parse(json['longitude']);
 
   /// Convert [member] object to the corresponding JSON map
   Map<String, dynamic> toJson() => {
@@ -49,5 +58,8 @@ class Track {
     "name": name,
     "distance": distance,
     "lap_record": lapRecord,
+    "website": website,
+    "latitude": latitude,
+    "longitude": longitude,
   };
 }

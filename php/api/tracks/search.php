@@ -59,7 +59,10 @@ if ($num > 0) {
             "id" => $id,
             "name" => $name,
             "distance" => $distance,
-            "lap_record" => $lap_record
+            "lap_record" => $lap_record,
+            "website" => $website,
+            "latitude" => $latitude,
+            "longitude" => $longitude
         );
 
         // add it to the tracks array

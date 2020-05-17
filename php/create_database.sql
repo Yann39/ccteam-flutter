@@ -40,6 +40,9 @@ CREATE TABLE IF NOT EXISTS `tracks` (
   `name` varchar(128) NOT NULL,
   `distance` int NULL,
   `lap_record` int NULL,
+  `website` varchar(256) NULL,
+  `latitude` decimal(10, 8) NOT NULL,
+  `longitude` decimal(11, 8) NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1;
 
@@ -150,17 +153,17 @@ INSERT INTO `events` (`id`, `title`, `description`, `start_date`, `end_date`, `t
 (4, 'Week-end à Alès', '', '2019-10-25 00:00:00', '2019-10-26 00:00:00', 1, 'ActivBike', 256, '2019-04-20 11:01:47', 1, NULL, NULL),
 (5, 'Roulage Magny-cours', '2 jours à Magny-cours avec TP55', '2019-08-28 00:00:00', '2019-08-29 00:00:00', 1, 'Team Performance 55', 340, '2020-05-13 22:43:26', 1, NULL, NULL);
 
-INSERT INTO `tracks` (`id`, `name`, `distance`, `lap_record`) VALUES
-(1, 'Bresse', 3000, null),
-(2, 'Dijon-Prenois', 3800, null),
-(3, 'Magny-Cours', 4410, null),
-(4, 'Bourbonnais', 2300, null),
-(5, 'Vaison', 2000, null),
-(6, 'Lédenon', 3150, null),
-(7, 'Le Mans', 4190, null),
-(8, 'Carole', 2055, null),
-(9, 'La Ferté-Gaucher', 3600, null);
-(10, 'Alès', 2500, null);
+INSERT INTO `tracks` (`id`, `name`, `distance`, `lap_record`, `website`, `latitude`, `longitude`) VALUES
+(1, 'Bresse', 3000, 84330, 'https://www.circuitdebresse.com', 46.551431, 5.328642),
+(2, 'Dijon-Prenois', 3800, 79427, 'https://www.circuit-dijon-prenois.com', 47.3643282, 4.8977331),
+(3, 'Magny-Cours', 4410, 96950, 'https://www.circuitmagnycours.com', 46.8615409, 3.1612033),
+(4, 'Bourbonnais', 2300, 66800, 'https://circuitdubourbonnais.com', 46.5364023, 3.4311176),
+(5, 'Vaison', 2000, 58590, 'http://vaisonpiste.com', 46.762535, 4.4403653),
+(6, 'Lédenon', 3150, 81996, 'https://www.ledenon.com', 43.9236779, 4.5043975),
+(7, 'Le Mans', 4190, 91185, 'https://www.lemans.org', 47.9560052, 0.2056818),
+(8, 'Carole', 2055, 59462, 'https://www.circuit-carole.com', 48.9787026, 2.5203949),
+(9, 'La Ferté-Gaucher', 3600, 107245, 'https://www.circuitslfg.fr', 48.7579086, 3.2811883),
+(10, 'Alès', 2500, 74679, 'http://www.pole-mecanique.fr', 44.1421587, 4.0682965);
 
 INSERT INTO `photos` (`id`, `title`, `description`, `link`, `created_on`, `modified_on`) VALUES
 (1, 'Lorenzo', 'Lorenzo qui célèbre sa victoire', 'http://photos.example.com/wp-content/uploads/2018/06/IMG_1575.jpg', '2018-09-12 08:33:19', NULL),
