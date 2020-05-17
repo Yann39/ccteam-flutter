@@ -129,6 +129,8 @@ class AppString {
 
   static const String tracksSearchHint = 'Nom du circuit';
   static const String tracksNotFound = 'Aucun circuit trouvé';
+  static const String trackNoEvent = 'Ce circuit n\'a aucun roulage prévu';
+  static const String trackNoChrono = 'Ce circuit n\'a aucun chrono';
 
   static const String avatarUploadFailed = 'Échec, la taille du fichier ne doit pas dépasser 500Ko';
   static const String avatarDeleteFailed = 'Échec de la suppression de l\'avatar';

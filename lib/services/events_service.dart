@@ -66,6 +66,29 @@ class EventsService {
     }
   }
 
+  /// Fetch all events for the specified [trackId] from the database
+  /// Send a GET request to the Restful API
+  /// Throw an exception if response status code is different from 200 or 404
+  /// Return empty array if no data found (404)
+  Future<List<Event>> fetchTrackEvents(int trackId) async {
+    // call to API
+    final response = await http.get(API_ROOT_URL + API_GET_TRACK_EVENTS_ENDPOINT + "?trackId=$trackId");
+
+    if (response.statusCode == 200) {
+      // if the call to the server was successful, parse the JSON and return content
+      dynamic responseJson = json.decode(response.body);
+      print(responseJson);
+      return (responseJson['records'] as List).map((p) => Event.fromJson(p)).toList();
+    } else if (response.statusCode == 404) {
+      // no data found, return empty array
+      return new List<Event>();
+    } else if (response.statusCode == 400) {
+      throw Exception('Bad request, check that parameter has been specified correctly');
+    } else {
+      throw Exception('Unexpected server response');
+    }
+  }
+
   /// Create the specified [event] into the database
   /// Send a POST request to the Restful API
   /// Throw an exception if response status code is different from 201

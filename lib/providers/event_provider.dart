@@ -39,6 +39,9 @@ class EventProvider extends ChangeNotifier {
   // list of events of a member
   List<Event> _memberEvents = [];
 
+  // list of events of a track
+  List<Event> _trackEvents = [];
+
   // index of the selected top filter, to display events for current year or per date
   int _eventModeSelectorIndex = 0;
 
@@ -56,6 +59,8 @@ class EventProvider extends ChangeNotifier {
   UnmodifiableListView<Event> get calendarEvents => UnmodifiableListView(_calendarEvents);
 
   UnmodifiableListView<Event> get memberEvents => UnmodifiableListView(_memberEvents);
+
+  UnmodifiableListView<Event> get trackEvents => UnmodifiableListView(_trackEvents);
 
   int get eventModeSelectorIndex => _eventModeSelectorIndex;
 
@@ -114,6 +119,21 @@ class EventProvider extends ChangeNotifier {
     }, onError: (error) {
       _log.warning("Error when retrieving member events list ($error)");
       _memberEvents = [];
+      _updateStatus(LoadingStatus.notLoaded);
+      throw (error);
+    });
+  }
+
+  /// Get the list of all events for the specified [trackId]
+  void fetchTrackEvents(int trackId) async {
+    _updateStatus(LoadingStatus.loading);
+    await _eventsService.fetchTrackEvents(trackId).then((value) async {
+      _log.fine("Track events list retrieved successfully");
+      _trackEvents = value;
+      _updateStatus(LoadingStatus.loaded);
+    }, onError: (error) {
+      _log.warning("Error when retrieving track events list ($error)");
+      _trackEvents = [];
       _updateStatus(LoadingStatus.notLoaded);
       throw (error);
     });

@@ -31,6 +31,7 @@ import 'package:chachatte_team/ui/main/edit_avatar.dart';
 import 'package:chachatte_team/ui/main/image_crop.dart';
 import 'package:chachatte_team/ui/photos/add_edit_photo.dart';
 import 'package:chachatte_team/ui/photos/photo_detail.dart';
+import 'package:chachatte_team/ui/tracks/track_detail.dart';
 import 'package:chachatte_team/ui/unauthenticated/forgot_password.dart';
 import 'package:chachatte_team/ui/main/home.dart';
 import 'package:chachatte_team/ui/unauthenticated/loading.dart';
@@ -95,6 +96,7 @@ class ChachatteTeamApp extends StatelessWidget {
         '/newsDetail': (context) => NewsDetail(news: ModalRoute.of(context).settings.arguments),
         '/memberDetail': (context) => MemberDetail(member: ModalRoute.of(context).settings.arguments),
         '/photoDetail': (context) => PhotoDetail(photo: ModalRoute.of(context).settings.arguments),
+        '/trackDetail': (context) => TrackDetail(track: ModalRoute.of(context).settings.arguments),
       },
       home: Consumer<LoginProvider>(builder: (context, loginProvider, child) {
         switch (loginProvider.status) {

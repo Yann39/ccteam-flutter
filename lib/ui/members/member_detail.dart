@@ -17,9 +17,12 @@
  * along with Chachatte Team. If not, see <http://www.gnu.org/licenses/>.
  */
 
+import 'dart:math';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:chachatte_team/models/member.dart';
 import 'package:chachatte_team/models/record.dart';
+import 'package:chachatte_team/models/track.dart';
 import 'package:chachatte_team/providers/event_provider.dart';
 import 'package:chachatte_team/providers/member_provider.dart';
 import 'package:chachatte_team/providers/record_provider.dart';
@@ -80,6 +83,24 @@ class _MemberDetailState extends State<MemberDetail> {
   void _navigateToEditMemberScreen(BuildContext context, Member member) async {
     // Navigator.push returns a Future that will complete after we call Navigator.pop on the target screen
     final _result = await Navigator.pushNamed(context, '/addEditMember', arguments: member);
+
+    // after the target screen returns a result, hide any previous snack bars and show the result
+    if (_result != null) {
+      Scaffold.of(context)
+        ..removeCurrentSnackBar()
+        ..showSnackBar(SnackBar(content: Text("$_result")));
+    }
+  }
+
+  /// Method that launches the Track detail screen and awaits the result from Navigator.pop
+  void _navigateToTrackDetailScreen(BuildContext context, Track track) async {
+
+    // todo Maybe better to do it detail screen init method instead of each time here ?
+    Provider.of<RecordProvider>(context, listen: false).fetchTrackRecords(track.id);
+    Provider.of<EventProvider>(context, listen: false).fetchTrackEvents(track.id);
+
+    // Navigator.push returns a Future that will complete after we call Navigator.pop on the target screen
+    final _result = await Navigator.pushNamed(context, '/trackDetail', arguments: track);
 
     // after the target screen returns a result, hide any previous snack bars and show the result
     if (_result != null) {
@@ -190,7 +211,7 @@ class _MemberDetailState extends State<MemberDetail> {
           itemBuilder: (BuildContext context, int index) {
             // if list view is not large enough, add padding so it fills the whole screen width
             final double pad =
-                index >= eventProvider.memberEvents.length - 1 ? MediaQuery.of(context).size.width - ((_eventCardSize + 16) * eventProvider.memberEvents.length) - 16 : 0.0;
+                index >= eventProvider.memberEvents.length - 1 ? max(MediaQuery.of(context).size.width - ((_eventCardSize + 16) * eventProvider.memberEvents.length) - 16, 0) : 0.0;
             return Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
@@ -200,7 +221,7 @@ class _MemberDetailState extends State<MemberDetail> {
                       padding: EdgeInsets.only(top: 36.0),
                       margin: EdgeInsets.only(right: pad),
                       child: InkWell(
-                        //onTap: () => _navigateToMemberDetailScreen(context, widget.event.members[index]),
+                        onTap: () => _navigateToTrackDetailScreen(context, eventProvider.memberEvents[index].track),
                         child: Container(
                           decoration: CustomDecorations.cardLight,
                           width: _eventCardSize,

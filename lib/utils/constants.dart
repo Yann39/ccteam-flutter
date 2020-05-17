@@ -41,6 +41,7 @@ const String API_DELETE_MEMBER_AVATAR_ENDPOINT = '/members/delete_avatar.php';
 
 const String API_GET_ALL_EVENTS_ENDPOINT = '/events/read.php';
 const String API_GET_MEMBER_EVENTS_ENDPOINT = '/events/read_by_member.php';
+const String API_GET_TRACK_EVENTS_ENDPOINT = '/events/read_by_track.php';
 const String API_CREATE_EVENT_ENDPOINT = '/events/create.php';
 const String API_UPDATE_EVENT_ENDPOINT = '/events/update.php';
 const String API_DELETE_EVENT_ENDPOINT = '/events/delete.php';

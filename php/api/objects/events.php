@@ -91,6 +91,24 @@ class Event {
     }
 
     // get all records for the specified track
+    function readByTrack($track_id) {
+
+        // query to get all records containing the specified event
+        $query = "SELECT n.id, n.title, n.description, n.start_date, n.end_date, n.track_id, n.organizer, n.price, n.created_on, n.created_by, n.modified_on, n.modified_by FROM " . $this->table_name . " n WHERE n.track_id = ? ORDER BY n.start_date DESC";
+
+        // prepare query statement
+        $stmt = $this->conn->prepare($query);
+
+        // bind id
+        $stmt->bindParam(1, $track_id);
+
+        // execute query
+        $stmt->execute();
+
+        return $stmt;
+    }
+
+    // get all records for the specified track
     function readByMember($member_id) {
 
         // query to get all records containing the specified member
