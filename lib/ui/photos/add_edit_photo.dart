@@ -19,7 +19,9 @@
 
 import 'package:chachatte_team/models/photo.dart';
 import 'package:chachatte_team/services/photos_service.dart';
+import 'package:chachatte_team/utils/custom_decorations.dart';
 import 'package:chachatte_team/utils/strings.dart';
+import 'package:chachatte_team/widgets/save_cancel_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -46,7 +48,7 @@ class _AddEditPhotoState extends State<AddEditPhoto> {
     final FormState form = _formKey.currentState;
 
     if (!form.validate()) {
-      _scaffoldKey.currentState.showSnackBar(new SnackBar(backgroundColor: Colors.red, content: new Text(AppString.formNotValid)));
+      _scaffoldKey.currentState.showSnackBar(SnackBar(backgroundColor: Colors.red, content: Text(AppString.formNotValid)));
     } else {
       // this invokes each onSaved photo
       form.save();
@@ -74,94 +76,67 @@ class _AddEditPhotoState extends State<AddEditPhoto> {
 
   Widget build(BuildContext context) {
     // the current Photo to be edited
-    final Photo currPhoto = widget.photo != null ? widget.photo : _newPhoto;
+    final Photo _currPhoto = widget.photo != null ? widget.photo : _newPhoto;
 
     return Scaffold(
       key: _scaffoldKey,
       appBar: AppBar(
         title: Text(AppString.photoCreate),
-        bottom: PreferredSize(
-          child: Container(
-            child: Row(
-              children: <Widget>[
-                new Expanded(
-                  child: new FlatButton(
-                    child: Text(AppString.cancel.toUpperCase()),
-                    onPressed: () => Navigator.pop(context),
-                  ),
-                ),
-                new Expanded(
-                  child: new FlatButton(
-                    child: Text(AppString.save.toUpperCase()),
-                    onPressed: () => submitForm(currPhoto),
-                  ),
-                ),
-              ],
-            ),
-            decoration: new BoxDecoration(color: Colors.blue[200]),
-            height: 50.0,
-          ),
-          preferredSize: Size.fromHeight(50.0),
-        ),
       ),
       body: Container(
-        child: new SafeArea(
-          top: false,
-          bottom: false,
-          child: new Form(
-            key: _formKey,
-            autovalidate: false,
-            child: new ListView(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              children: <Widget>[
-                new TextFormField(
-                  decoration: const InputDecoration(
-                    icon: const Icon(Icons.title),
-                    hintText: AppString.photoTitleHint,
-                    labelText: AppString.photoTitle,
+        decoration: CustomDecorations.mainContent,
+        child: Stack(
+          children: <Widget>[
+            Form(
+              key: _formKey,
+              autovalidate: false,
+              child: ListView(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                children: <Widget>[
+                  TextFormField(
+                    decoration: const InputDecoration(
+                      icon: const Icon(Icons.title),
+                      hintText: AppString.photoTitleHint,
+                      labelText: AppString.photoTitle,
+                    ),
+                    maxLines: 1,
+                    inputFormatters: [LengthLimitingTextInputFormatter(128)],
+                    validator: (val) => val.isEmpty ? AppString.photoTitleMandatory : null,
+                    onSaved: (val) => _currPhoto.title = val,
+                    initialValue: _currPhoto.title,
                   ),
-                  maxLines: 1,
-                  inputFormatters: [new LengthLimitingTextInputFormatter(128)],
-                  validator: (val) => val.isEmpty ? AppString.photoTitleMandatory : null,
-                  onSaved: (val) => currPhoto.title = val,
-                  initialValue: currPhoto.title,
-                ),
-                new TextFormField(
-                  decoration: const InputDecoration(
-                    icon: const Icon(Icons.description),
-                    hintText: AppString.photoDescriptionHint,
-                    labelText: AppString.photoDescription,
+                  TextFormField(
+                    decoration: const InputDecoration(
+                      icon: const Icon(Icons.description),
+                      hintText: AppString.photoDescriptionHint,
+                      labelText: AppString.photoDescription,
+                    ),
+                    maxLines: 1,
+                    inputFormatters: [LengthLimitingTextInputFormatter(2048)],
+                    validator: (val) => val.isEmpty ? AppString.photoDescriptionMandatory : null,
+                    onSaved: (val) => _currPhoto.description = val,
+                    initialValue: _currPhoto.description,
                   ),
-                  maxLines: 1,
-                  inputFormatters: [new LengthLimitingTextInputFormatter(2048)],
-                  validator: (val) => val.isEmpty ? AppString.photoDescriptionMandatory : null,
-                  onSaved: (val) => currPhoto.description = val,
-                  initialValue: currPhoto.description,
-                ),
-                new TextFormField(
-                  decoration: const InputDecoration(
-                    icon: const Icon(Icons.link),
-                    hintText: AppString.photoLinkHint,
-                    labelText: AppString.photoLink,
+                  TextFormField(
+                    decoration: const InputDecoration(
+                      icon: const Icon(Icons.link),
+                      hintText: AppString.photoLinkHint,
+                      labelText: AppString.photoLink,
+                    ),
+                    maxLines: 1,
+                    inputFormatters: [LengthLimitingTextInputFormatter(2048)],
+                    validator: (val) => val.isEmpty ? AppString.photoLinkMandatory : null,
+                    onSaved: (val) => _currPhoto.link = val,
+                    initialValue: _currPhoto.link,
                   ),
-                  maxLines: 1,
-                  inputFormatters: [new LengthLimitingTextInputFormatter(2048)],
-                  validator: (val) => val.isEmpty ? AppString.photoLinkMandatory : null,
-                  onSaved: (val) => currPhoto.link = val,
-                  initialValue: currPhoto.link,
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-        ),
-        decoration: new BoxDecoration(
-          gradient: new LinearGradient(
-            colors: [Colors.blue[100], Colors.blue[300]],
-            begin: const FractionalOffset(0.0, 0.0),
-            end: const FractionalOffset(0.0, 1.0),
-            stops: [0.0, 1.0],
-            tileMode: TileMode.clamp,
-          ),
+            SaveCancelBar(
+              saveFunction: () => submitForm(_currPhoto),
+              cancelFunction: () => Navigator.pop(context),
+            ),
+          ],
         ),
       ),
     );

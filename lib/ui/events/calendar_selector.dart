@@ -280,17 +280,17 @@ class CalendarSelectorState extends State<CalendarSelector> with TickerProviderS
 
     // add next weeks if necessary to complete the 42 days
     while (dates.length < 42) {
-      DateTime last = dates.last;
+      final DateTime last = dates.last;
       for (int j = 1; j < 8; j++) {
         dates.add(last.add(Duration(days: j)));
       }
     }
 
     // create widget for each date
-    List<Widget> list = new List<Widget>();
+    final List<Widget> list = new List<Widget>();
     for (DateTime dt in dates) {
       // number of events in that specific day
-      int nbEvents = dt != null && widget.eventsDates != null ? widget.eventsDates.values.where((ed) => df.format(ed) == df.format(dt)).length : 0;
+      final int nbEvents = dt != null && widget.eventsDates != null ? widget.eventsDates.values.where((ed) => df.format(ed) == df.format(dt)).length : 0;
 
       list.add(
         dt == null
@@ -327,21 +327,24 @@ class CalendarSelectorState extends State<CalendarSelector> with TickerProviderS
     }
 
     // weekday labels row
-    List<Widget> cols = new List<Widget>();
+    final List<Widget> cols = new List<Widget>();
     for (int i = widget.firstWeekDay; i < widget.firstWeekDay + 7; i++) {
-      cols.add(Container(
-        height: 40,
-        width: 40,
-        alignment: Alignment.center,
-        child: Text(
-          DateFormat('EEEE', widget.locale).format(DateTime(2000, 1, i + 2)).substring(0, 3) /*.toUpperCase()*/,
-          textScaleFactor: 0.9,
-          style: TextStyle(fontWeight: FontWeight.bold, color: getDayColor(DateTime(2000, 1, i + 2), true)),
-          textAlign: TextAlign.center,
+      cols.add(
+        Container(
+          height: 40,
+          width: 40,
+          alignment: Alignment.center,
+          child: Text(
+            DateFormat('EEEE', widget.locale).format(DateTime(2000, 1, i + 2)).substring(0, 3) /*.toUpperCase()*/,
+            textScaleFactor: 0.9,
+            style: TextStyle(fontWeight: FontWeight.bold, color: getDayColor(DateTime(2000, 1, i + 2), true)),
+            textAlign: TextAlign.center,
+          ),
         ),
-      ));
+      );
     }
-    List<Widget> rows = new List<Widget>();
+
+    final List<Widget> rows = new List<Widget>();
     rows.add(Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, crossAxisAlignment: CrossAxisAlignment.start, children: cols));
 
     // days number rows
@@ -360,7 +363,7 @@ class CalendarSelectorState extends State<CalendarSelector> with TickerProviderS
     final DateFormat df = DateFormat('dMy', widget.locale);
 
     // add day and each 3 days around it
-    List<DateTime> dates = new List();
+    final List<DateTime> dates = new List();
     dates.add(date.subtract(Duration(days: 3)));
     dates.add(date.subtract(Duration(days: 2)));
     dates.add(date.subtract(Duration(days: 1)));
@@ -371,7 +374,7 @@ class CalendarSelectorState extends State<CalendarSelector> with TickerProviderS
 
     for (DateTime dt in dates) {
       // number of events in that specific day
-      int nbEvents = widget.eventsDates != null ? widget.eventsDates.values.where((ed) => df.format(ed) == df.format(dt)).length : 0;
+      final int nbEvents = widget.eventsDates != null ? widget.eventsDates.values.where((ed) => df.format(ed) == df.format(dt)).length : 0;
 
       list.add(
         InkWell(

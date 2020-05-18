@@ -22,6 +22,7 @@ import 'package:chachatte_team/providers/news_provider.dart';
 import 'package:chachatte_team/ui/main/main_action_menu.dart';
 import 'package:chachatte_team/ui/main/main_drawer.dart';
 import 'package:chachatte_team/ui/news/news_card.dart';
+import 'package:chachatte_team/utils/custom_decorations.dart';
 import 'package:chachatte_team/utils/strings.dart';
 import 'package:chachatte_team/widgets/loading_content.dart';
 import 'package:flutter/material.dart';
@@ -101,6 +102,7 @@ class NewsList extends StatelessWidget {
             ];
           },
           body: Container(
+            decoration: CustomDecorations.mainContent,
             child: Column(
               children: <Widget>[
                 Container(
@@ -111,8 +113,8 @@ class NewsList extends StatelessWidget {
                     children: <Widget>[
                       Icon(Icons.event_note, color: Colors.red[700], size: 18),
                       SizedBox(width: 3),
-                      Text("ACTUALITES", style: TextStyle(color: Colors.black87, fontSize: 15, fontWeight: FontWeight.bold)),
-                      //Text("Actualités", style: TextStyle(color: Colors.black87, fontSize: 16, fontFamily: 'Barbatrick', letterSpacing: 2)),
+                      Text(AppString.news.toUpperCase(), style: TextStyle(color: Colors.black87, fontSize: 15, fontWeight: FontWeight.bold)),
+                      //Text(AppString.news, style: TextStyle(color: Colors.black87, fontSize: 16, fontFamily: 'Barbatrick', letterSpacing: 2)),
                     ],
                   ),
                 ),
@@ -124,7 +126,7 @@ class NewsList extends StatelessWidget {
                       itemCount: _newsProvider.news.length,
                       itemBuilder: (context, index) {
                         return InkWell(
-                          child: NewsCard(_newsProvider.news[index], AssetImage(_helmets[index % 3])),
+                          child: NewsCard(_newsProvider.news[index], index),
                           onTap: () => _navigateToNewsDetailScreen(context, _newsProvider.news[index]),
                         );
                       },
@@ -132,14 +134,6 @@ class NewsList extends StatelessWidget {
                   ),
                 ),
               ],
-            ),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [Colors.blue[100], Colors.blue[300]],
-                begin: FractionalOffset(0.0, 0.0),
-                end: FractionalOffset(0.0, 1.0),
-                stops: [0.0, 1.0],
-              ),
             ),
           ),
         ),

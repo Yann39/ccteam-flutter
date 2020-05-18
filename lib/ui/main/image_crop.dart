@@ -18,6 +18,7 @@
  */
 
 import 'package:chachatte_team/providers/avatar_provider.dart';
+import 'package:chachatte_team/utils/strings.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:simple_image_crop/simple_image_crop.dart';
@@ -32,7 +33,7 @@ class ImageCrop extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         elevation: 0,
-        title: Text('Zoom et recadrage'),
+        title: Text(AppString.zoomAndCrop),
       ),
       body: Center(
         child: ImgCrop(
@@ -49,7 +50,6 @@ class ImageCrop extends StatelessWidget {
           _drawerProvider.loadImage(croppedFile);
           Navigator.pop(context);
         },
-        tooltip: 'Increment',
         child: Icon(Icons.check),
       ),
     );

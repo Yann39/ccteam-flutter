@@ -124,8 +124,8 @@ class AppString {
   static const String memberLoginFailed = 'Connexion impossible, vérifiez vos informations et assurez-vous que votre compte est actif';
   static const String membersSearchHint = 'Nom / Prénom';
   static const String membersNotFound = 'Aucun membre trouvé';
-  static const String membersNoEvent = 'Ce membre n\'a aucun roulage';
-  static const String membersNoChrono = 'Ce membre n\'a aucun chrono';
+  static const String memberNoEvent = 'Ce membre n\'a aucun roulage';
+  static const String memberNoChrono = 'Ce membre n\'a aucun chrono';
 
   static const String tracksSearchHint = 'Nom du circuit';
   static const String tracksNotFound = 'Aucun circuit trouvé';
@@ -205,5 +205,32 @@ class AppString {
   static const String personalInformation = 'Informations personnelles';
   static const String rides = 'Roulages';
   static const String chronos = 'Chronos';
+  static const String currentYear = 'Année courante';
+  static const String byDate = 'Par date';
+  static const String description = 'Description';
+  static const String noParticipant = 'Aucun participant';
+  static const String profilePhoto = 'Photo de profil';
+  static const String selectPhoto = 'Sélectionnez une photo';
+  static const String maxAvatarSize = 'Max. 500 Ko';
+  static const String avatarFormats = 'Formats JPG, GIF, PNG';
+  static const String gallery = 'Formats JPG, GIF, PNG';
+  static const String camera = 'Appareil photo';
+  static const String initProfilePhoto = 'Réinitialiser la photo de profil';
+  static const String confirmChange = 'Confirmer le changement';
+  static const String zoomAndCrop = 'Zoom et recadrage';
+  static const String profile = 'Profil';
+  static const String myTrackEvents = 'Mes roulages';
+  static const String myChronos = 'Mes chronos';
+  static const String notifications = 'Notifications';
+  static const String preferences = 'Préférences';
+  static const String disconnect = 'Déconnexion';
+  static const String news = 'Actualités';
+  static const String detail = 'Détail';
+  static const String by = 'Par';
+  static const String on = 'Le';
+  static const String record = 'Record';
+  static const String lapRecord = 'Record du tour';
+  static const String length = 'Longueur';
+  static const String trackEvents = 'Roulages';
 
 }

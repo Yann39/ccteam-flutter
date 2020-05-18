@@ -255,7 +255,7 @@ class _TrackDetailState extends State<TrackDetail> {
                                     color: Colors.red[700],
                                   ),
                                   Text(
-                                    "Record du tour",
+                                    AppString.lapRecord,
                                     textAlign: TextAlign.center,
                                   ),
                                   Text(
@@ -284,7 +284,7 @@ class _TrackDetailState extends State<TrackDetail> {
                                     color: Colors.red[700],
                                   ),
                                   Text(
-                                    "Distance",
+                                    AppString.length,
                                     textAlign: TextAlign.center,
                                   ),
                                   Text(
@@ -333,7 +333,7 @@ class _TrackDetailState extends State<TrackDetail> {
                           Icon(Icons.description, size: 16, color: Colors.black.withOpacity(0.8)),
                           SizedBox(width: 5.0),
                           Text(
-                            "Roulages",
+                            AppString.trackEvents,
                             textScaleFactor: 1.2,
                             style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black.withOpacity(0.8)),
                           ),
@@ -349,7 +349,7 @@ class _TrackDetailState extends State<TrackDetail> {
                           Icon(Icons.group, size: 18, color: Colors.black.withOpacity(0.64)),
                           SizedBox(width: 5.0),
                           Text(
-                            "Chronos",
+                            AppString.chronos,
                             textScaleFactor: 1.2,
                             style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black.withOpacity(0.64)),
                           ),

@@ -24,7 +24,7 @@ class CustomDecorations {
   /// Decoration for main content
   static BoxDecoration mainContent = BoxDecoration(
     gradient: LinearGradient(
-      colors: [Colors.blue[100], Colors.blue[300]],
+      colors: [Colors.blue[100], Colors.blue[200]],
       begin: const FractionalOffset(0.0, 0.0),
       end: const FractionalOffset(0.0, 1.0),
       tileMode: TileMode.clamp,

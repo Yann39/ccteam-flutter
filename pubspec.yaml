@@ -71,11 +71,6 @@ flutter:
   assets:
     - images/chachatte-team-banner.png
     - images/chachatte-team-banner-drawer.png
-    - images/helmet-blue.png
-    - images/helmet-green.png
-    - images/helmet-yellow.png
-    - images/helmet-red.png
-    - images/helmet-purple.png
     - images/motos.jpg
     - images/finish_flag.png
 

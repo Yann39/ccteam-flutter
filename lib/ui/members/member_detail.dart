@@ -196,7 +196,7 @@ class _MemberDetailState extends State<MemberDetail> {
       return Container(
         padding: EdgeInsets.all(12.0),
         decoration: CustomDecorations.cardLight,
-        child: Text(AppString.membersNoChrono),
+        child: Text(AppString.memberNoChrono),
       );
     }
   }
@@ -325,7 +325,7 @@ class _MemberDetailState extends State<MemberDetail> {
       return Container(
         padding: EdgeInsets.all(12.0),
         decoration: CustomDecorations.cardLight,
-        child: Text(AppString.membersNoEvent),
+        child: Text(AppString.memberNoEvent),
       );
     }
   }
@@ -467,7 +467,13 @@ class _MemberDetailState extends State<MemberDetail> {
                         fit: StackFit.expand,
                         children: <Widget>[
                           CachedNetworkImage(
-                            placeholder: (context, url) => CircularProgressIndicator(),
+                            placeholder: (context, url) => Center(
+                              child: SizedBox(
+                                child: CircularProgressIndicator(),
+                                height: 20.0,
+                                width: 20.0,
+                              ),
+                            ),
                             imageUrl: 'https://images.freeimages.com/images/small-previews/e71/frog-1371919.jpg',
                             fit: BoxFit.fitWidth,
                           ),
@@ -526,60 +532,68 @@ class _MemberDetailState extends State<MemberDetail> {
               sliver: SliverList(
                 delegate: SliverChildListDelegate(
                   <Widget>[
-                    Row(
-                      children: <Widget>[
-                        Icon(Icons.person, size: 16, color: Colors.black.withOpacity(0.8)),
-                        SizedBox(width: 5.0),
-                        Text(
-                          AppString.personalInformation,
-                          textScaleFactor: 1.2,
-                          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black.withOpacity(0.8)),
-                        ),
-                      ],
-                    ),
-                    SizedBox(height: 10),
-                    Container(
-                      padding: EdgeInsets.all(8.0),
-                      decoration: CustomDecorations.cardLight,
+                    ConstrainedBox(
+                      // set minimum height : screen height - app bar height - status bar height - padding
+                      constraints: new BoxConstraints(minHeight: MediaQuery.of(context).size.height - kToolbarHeight - MediaQuery.of(context).padding.top - 16),
                       child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: <Widget>[
-                          _motoInfo,
-                          Divider(color: Colors.black.withOpacity(0.8), height: 5),
-                          _mobileInfo,
-                          Divider(color: Colors.black.withOpacity(0.8), height: 5),
-                          _emailInfo,
+                          Row(
+                            children: <Widget>[
+                              Icon(Icons.person, size: 16, color: Colors.black.withOpacity(0.8)),
+                              SizedBox(width: 5.0),
+                              Text(
+                                AppString.personalInformation,
+                                textScaleFactor: 1.2,
+                                style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black.withOpacity(0.8)),
+                              ),
+                            ],
+                          ),
+                          SizedBox(height: 10),
+                          Container(
+                            padding: EdgeInsets.all(8.0),
+                            decoration: CustomDecorations.cardLight,
+                            child: Column(
+                              children: <Widget>[
+                                _motoInfo,
+                                Divider(color: Colors.black.withOpacity(0.8), height: 5),
+                                _mobileInfo,
+                                Divider(color: Colors.black.withOpacity(0.8), height: 5),
+                                _emailInfo,
+                              ],
+                            ),
+                          ),
+                          SizedBox(height: 15),
+                          Row(
+                            children: <Widget>[
+                              Icon(Icons.event, size: 16, color: Colors.black.withOpacity(0.8)),
+                              SizedBox(width: 5.0),
+                              Text(
+                                AppString.rides,
+                                textScaleFactor: 1.2,
+                                style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black.withOpacity(0.8)),
+                              ),
+                            ],
+                          ),
+                          SizedBox(height: 10),
+                          _eventsTimeline(_eventProvider),
+                          SizedBox(height: 10),
+                          Row(
+                            children: <Widget>[
+                              Icon(Icons.timer, size: 16, color: Colors.black.withOpacity(0.8)),
+                              SizedBox(width: 5.0),
+                              Text(
+                                AppString.chronos,
+                                textScaleFactor: 1.2,
+                                style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black.withOpacity(0.8)),
+                              ),
+                            ],
+                          ),
+                          SizedBox(height: 10),
+                          _recordsTable(_recordProvider),
                         ],
                       ),
                     ),
-                    SizedBox(height: 15),
-                    Row(
-                      children: <Widget>[
-                        Icon(Icons.event, size: 16, color: Colors.black.withOpacity(0.8)),
-                        SizedBox(width: 5.0),
-                        Text(
-                          AppString.rides,
-                          textScaleFactor: 1.2,
-                          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black.withOpacity(0.8)),
-                        ),
-                      ],
-                    ),
-                    SizedBox(height: 10),
-                    _eventsTimeline(_eventProvider),
-                    SizedBox(height: 10),
-                    Row(
-                      children: <Widget>[
-                        Icon(Icons.timer, size: 16, color: Colors.black.withOpacity(0.8)),
-                        SizedBox(width: 5.0),
-                        Text(
-                          AppString.chronos,
-                          textScaleFactor: 1.2,
-                          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black.withOpacity(0.8)),
-                        ),
-                      ],
-                    ),
-                    SizedBox(height: 10),
-                    _recordsTable(_recordProvider),
-                    Divider(color: Colors.white),
                   ],
                 ),
               ),

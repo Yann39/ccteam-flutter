@@ -17,12 +17,14 @@
  * along with Chachatte Team. If not, see <http://www.gnu.org/licenses/>.
  */
 
+import 'package:chachatte_team/utils/custom_decorations.dart';
 import 'package:flutter/material.dart';
 
 class Loading extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
+        decoration: CustomDecorations.mainContent,
         child: Column(
           children: <Widget>[
             Expanded(
@@ -35,15 +37,6 @@ class Loading extends StatelessWidget {
               ),
             ),
           ],
-        ),
-        decoration: new BoxDecoration(
-          gradient: new LinearGradient(
-            colors: [Colors.blue[100], Colors.blue[300]],
-            begin: const FractionalOffset(0.0, 0.0),
-            end: const FractionalOffset(0.0, 1.0),
-            stops: [0.0, 1.0],
-            tileMode: TileMode.clamp,
-          ),
         ),
       ),
     );

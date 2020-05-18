@@ -21,10 +21,12 @@ import 'package:chachatte_team/models/member.dart';
 import 'package:chachatte_team/providers/avatar_provider.dart';
 import 'package:chachatte_team/providers/member_provider.dart';
 import 'package:chachatte_team/utils/constants.dart';
+import 'package:chachatte_team/utils/custom_decorations.dart';
 import 'package:chachatte_team/utils/custom_icons.dart';
 import 'package:chachatte_team/utils/date_utils.dart';
 import 'package:chachatte_team/utils/string_utils.dart';
 import 'package:chachatte_team/utils/strings.dart';
+import 'package:chachatte_team/widgets/save_cancel_bar.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -146,35 +148,6 @@ class _AddEditMemberState extends State<AddEditMember> {
     final Member _currMember = widget.member != null ? widget.member : _newMember;
     final AvatarProvider _drawerProvider = Provider.of<AvatarProvider>(context, listen: false);
 
-    final bottomMenu = Container(
-      padding: EdgeInsets.symmetric(horizontal: 6.0),
-      decoration: BoxDecoration(color: Colors.red[700]),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: <Widget>[
-          Expanded(
-            child: FlatButton(
-              child: Text(
-                AppString.cancel.toUpperCase(),
-                style: TextStyle(color: Colors.white),
-              ),
-              onPressed: () => Navigator.pop(context),
-            ),
-          ),
-          Expanded(
-            child: FlatButton(
-              child: Text(
-                AppString.save.toUpperCase(),
-                style: TextStyle(color: Colors.white),
-              ),
-              onPressed: () => submitForm(_currMember),
-            ),
-          ),
-        ],
-      ),
-    );
-
     final firstNameField = TextFormField(
       decoration: const InputDecoration(
         icon: const Icon(Icons.person),
@@ -240,9 +213,7 @@ class _AddEditMemberState extends State<AddEditMember> {
           ),
           controller: _datePickerController,
           keyboardType: TextInputType.datetime,
-          validator: (val) => DateUtils.isBeforeNow(val, DATE_FORMAT)
-              ? (val.isEmpty ? AppString.memberRegistrationDateMandatory : null)
-              : AppString.memberRegistrationDateNotValid,
+          validator: (val) => DateUtils.isBeforeNow(val, DATE_FORMAT) ? (val.isEmpty ? AppString.memberRegistrationDateMandatory : null) : AppString.memberRegistrationDateNotValid,
           onSaved: (val) => _currMember.registrationDate = DateFormat(DATE_FORMAT).parseStrict(val),
         ),
       ),
@@ -293,23 +264,25 @@ class _AddEditMemberState extends State<AddEditMember> {
             _drawerProvider.loadImage(null);
             Navigator.of(context).pushNamed('/editAvatar', arguments: _currMember);
           },
-          child: _currMember.avatar != null && _currMember.avatar.length > 0 ? CircleAvatar(
-            radius: 60,
-            backgroundImage: NetworkImage("$SERVER_ROOT_PATH$SERVER_AVATAR_FOLDER${_currMember.avatar}"),
-          ) : CircleAvatar(
-            radius: 60,
-            backgroundColor: Colors.blue[200],
-            child: ShaderMask(
-              blendMode: BlendMode.srcATop,
-              shaderCallback: (bounds) => LinearGradient(
-                begin: const FractionalOffset(0.0, 0.0),
-                end: const FractionalOffset(0.0, 1.0),
-                stops: [0.0, 1.0],
-                colors: [Colors.red[700], Colors.blue[700]],
-              ).createShader(bounds),
-              child: Icon(CustomIcons.pilot, size: 75, color: Colors.white),
-            ),
-          ),
+          child: _currMember.avatar != null && _currMember.avatar.length > 0
+              ? CircleAvatar(
+                  radius: 60,
+                  backgroundImage: NetworkImage("$SERVER_ROOT_PATH$SERVER_AVATAR_FOLDER${_currMember.avatar}"),
+                )
+              : CircleAvatar(
+                  radius: 60,
+                  backgroundColor: Colors.blue[200],
+                  child: ShaderMask(
+                    blendMode: BlendMode.srcATop,
+                    shaderCallback: (bounds) => LinearGradient(
+                      begin: const FractionalOffset(0.0, 0.0),
+                      end: const FractionalOffset(0.0, 1.0),
+                      stops: [0.0, 1.0],
+                      colors: [Colors.red[700], Colors.blue[700]],
+                    ).createShader(bounds),
+                    child: Icon(CustomIcons.pilot, size: 75, color: Colors.white),
+                  ),
+                ),
         ),
         Positioned(
           height: 30,
@@ -364,15 +337,7 @@ class _AddEditMemberState extends State<AddEditMember> {
         ),
         Container(
           padding: const EdgeInsets.only(top: 0, left: 16.0, right: 16.0, bottom: 56.0),
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [Colors.blue[100], Colors.blue[300]],
-              begin: const FractionalOffset(0.0, 0.0),
-              end: const FractionalOffset(0.0, 1.0),
-              stops: [0.0, 1.0],
-              tileMode: TileMode.clamp,
-            ),
-          ),
+          decoration: CustomDecorations.mainContent,
           child: Form(
             key: _formKey,
             autovalidate: false,
@@ -386,7 +351,8 @@ class _AddEditMemberState extends State<AddEditMember> {
                 registrationDateField,
                 activeField,
               ],
-            ),),
+            ),
+          ),
         ),
       ],
     );
@@ -415,13 +381,18 @@ class _AddEditMemberState extends State<AddEditMember> {
         title: Text(AppString.profileEdit),
         actions: MediaQuery.of(context).orientation == Orientation.portrait ? null : actionMenu,
       ),
-      body: MediaQuery.of(context).orientation == Orientation.portrait ? Stack(
-        alignment: Alignment.topCenter,
-        children: <Widget>[
-          listView,
-          Positioned(bottom: 0, left: 0, right: 0, child: bottomMenu),
-        ],
-      ) : listView,
+      body: MediaQuery.of(context).orientation == Orientation.portrait
+          ? Stack(
+              alignment: Alignment.topCenter,
+              children: <Widget>[
+                listView,
+                SaveCancelBar(
+                  saveFunction: () => submitForm(_currMember),
+                  cancelFunction: () => Navigator.pop(context),
+                ),
+              ],
+            )
+          : listView,
     );
   }
 }

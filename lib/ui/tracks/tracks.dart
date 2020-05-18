@@ -86,7 +86,7 @@ class _TracksState extends State<Tracks> {
           buildSearchField(_trackProvider),
           Expanded(
             child: Container(
-              color: Colors.blue[100],
+              decoration: CustomDecorations.mainContent,
               child: LoadingContent(
                 emptyText: AppString.tracksNotFound,
                 loadingStatus: _trackProvider.loadingStatus,
@@ -128,14 +128,14 @@ class _TracksState extends State<Tracks> {
                                   children: <Widget>[
                                     Icon(Icons.straighten, size: 13, color: Colors.white),
                                     SizedBox(width: 6.0),
-                                    Text("Longueur : ${(_trackProvider.tracks[index].distance / 1000).toStringAsFixed(2)} km", style: TextStyle(color: Colors.white), textScaleFactor: 0.9),
+                                    Text("${AppString.length} : ${(_trackProvider.tracks[index].distance / 1000).toStringAsFixed(2)} km", style: TextStyle(color: Colors.white), textScaleFactor: 0.9),
                                   ],
                                 ),
                                 Row(
                                   children: <Widget>[
                                     Icon(Icons.timer, size: 13, color: Colors.white),
                                     SizedBox(width: 6.0),
-                                    Text("Record : ${DateUtils.toLapTime(_trackProvider.tracks[index].lapRecord)}", style: TextStyle(color: Colors.white), textScaleFactor: 0.9),
+                                    Text("${AppString.record} : ${DateUtils.toLapTime(_trackProvider.tracks[index].lapRecord)}", style: TextStyle(color: Colors.white), textScaleFactor: 0.9),
                                   ],
                                 ),
                               ],

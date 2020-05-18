@@ -22,6 +22,7 @@ import 'package:chachatte_team/providers/photo_provider.dart';
 import 'package:chachatte_team/ui/main/main_action_menu.dart';
 import 'package:chachatte_team/ui/main/main_drawer.dart';
 import 'package:chachatte_team/ui/photos/add_edit_photo.dart';
+import 'package:chachatte_team/utils/custom_decorations.dart';
 import 'package:chachatte_team/utils/strings.dart';
 import 'package:chachatte_team/widgets/loading_content.dart';
 import 'package:flutter/material.dart';
@@ -51,7 +52,7 @@ class Gallery extends StatelessWidget {
       ),
       drawer: MainDrawer(),
       body: Container(
-        color: Colors.blue[200],
+        decoration: CustomDecorations.mainContent,
         padding: EdgeInsets.all(4.0),
         child: LoadingContent(
           loadingStatus: _photoProvider.loadingStatus,
@@ -71,8 +72,8 @@ class Gallery extends StatelessWidget {
                 alignment: Alignment.bottomCenter,
                 children: [
                   Container(
-                    decoration: new BoxDecoration(
-                      image: new DecorationImage(
+                    decoration: BoxDecoration(
+                      image: DecorationImage(
                         image: CachedNetworkImageProvider(_photoProvider.photos[index].link
                             /*placeholder: (context, url) => CircularProgressIndicator(),
                               imageUrl: _photoProvider.photos[index].link,

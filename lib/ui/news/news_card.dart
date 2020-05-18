@@ -20,14 +20,15 @@
 import 'package:chachatte_team/models/news.dart';
 import 'package:chachatte_team/utils/constants.dart';
 import 'package:chachatte_team/utils/custom_decorations.dart';
+import 'package:chachatte_team/utils/custom_icons.dart';
 import 'package:chachatte_team/utils/date_utils.dart';
 import 'package:flutter/material.dart';
 
 class NewsCard extends StatelessWidget {
   final News news;
-  final AssetImage image;
+  final int index;
 
-  NewsCard(this.news, this.image);
+  NewsCard(this.news, this.index);
 
   @override
   Widget build(BuildContext context) {
@@ -40,7 +41,8 @@ class NewsCard extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: <Widget>[
-          Image(image: image, height: 30),
+          //Image(image: image, height: 30, colorBlendMode: BlendMode.modulate, color: Colors.green),
+          Icon(CustomIcons.helmet, size: 35, color: index%3 == 0 ? Colors.red[700] : index%3 == 1 ? Colors.green[700] : Colors.blue[700]),
           SizedBox(width: 8.0),
           Expanded(
             child: Column(

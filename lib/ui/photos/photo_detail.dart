@@ -21,6 +21,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:chachatte_team/models/photo.dart';
 import 'package:chachatte_team/providers/photo_provider.dart';
 import 'package:chachatte_team/services/photos_service.dart';
+import 'package:chachatte_team/utils/custom_decorations.dart';
 import 'package:chachatte_team/utils/enums.dart';
 import 'package:chachatte_team/utils/strings.dart';
 import 'package:flutter/material.dart';
@@ -174,30 +175,21 @@ class _PhotoDetailState extends State<PhotoDetail> with SingleTickerProviderStat
         actions: <Widget>[
           IconButton(
             icon: const Icon(Icons.edit),
-            tooltip: 'Edit',
             onPressed: () => _navigateToEditPhotoScreen(context, _photoProvider.photos[_currentPage]),
           ),
           IconButton(
             icon: const Icon(Icons.delete_forever),
-            tooltip: 'Delete',
             onPressed: () => _showConfirmation(context, AppString.photoDeletionAreYouSure, _photoProvider.photos[_currentPage]),
           )
         ],
-        title: Text('Photo detail'),
+        title: Text(AppString.detail),
         leading: IconButton(
           icon: Icon(Icons.arrow_back),
           onPressed: () => Navigator.pop(context),
         ),
       ),
       body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Colors.blue[100], Colors.blue[300]],
-            begin: FractionalOffset(0.0, 0.0),
-            end: FractionalOffset(0.0, 1.0),
-            stops: [0.0, 1.0],
-          ),
-        ),
+        decoration: CustomDecorations.mainContent,
         child: PageView.builder(
           itemCount: _photoProvider.photos.length,
           onPageChanged: (value) {

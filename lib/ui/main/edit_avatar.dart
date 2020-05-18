@@ -24,6 +24,7 @@ import 'package:chachatte_team/providers/avatar_provider.dart';
 import 'package:chachatte_team/providers/login_provider.dart';
 import 'package:chachatte_team/providers/member_provider.dart';
 import 'package:chachatte_team/utils/constants.dart';
+import 'package:chachatte_team/utils/custom_decorations.dart';
 import 'package:chachatte_team/utils/custom_icons.dart';
 import 'package:chachatte_team/utils/enums.dart';
 import 'package:chachatte_team/utils/strings.dart';
@@ -105,17 +106,10 @@ class EditAvatar extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Photo de profil'),
+        title: Text(AppString.profilePhoto),
       ),
       body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Colors.blue[100], Colors.blue[300]],
-            begin: FractionalOffset(0.0, 0.0),
-            end: FractionalOffset(0.0, 1.0),
-            stops: [0.0, 1.0],
-          ),
-        ),
+        decoration: CustomDecorations.mainContent,
         child: Align(
           alignment: Alignment.topCenter,
           child: SingleChildScrollView(
@@ -154,12 +148,12 @@ class EditAvatar extends StatelessWidget {
                   ],
                 ),
                 Text(
-                  "Sélectionnez une photo",
+                  AppString.selectPhoto,
                   textAlign: TextAlign.center,
                   textScaleFactor: 1.3,
                 ),
-                Text("Max. 500 Ko", textAlign: TextAlign.center),
-                Text("Formats JPG, GIF, PNG", textAlign: TextAlign.center),
+                Text(AppString.maxAvatarSize, textAlign: TextAlign.center),
+                Text(AppString.avatarFormats, textAlign: TextAlign.center),
                 SizedBox(height: 16.0),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -178,7 +172,7 @@ class EditAvatar extends StatelessWidget {
                           Icon(Icons.photo_library, color: Colors.white, size: 15),
                           SizedBox(width: 5),
                           Text(
-                            "Gallerie",
+                            AppString.gallery,
                             style: TextStyle(color: Colors.white),
                           ),
                         ],
@@ -198,7 +192,7 @@ class EditAvatar extends StatelessWidget {
                           Icon(Icons.photo_camera, color: Colors.white, size: 15),
                           SizedBox(width: 5),
                           Text(
-                            "Appareil photo",
+                            AppString.camera,
                             style: TextStyle(color: Colors.white),
                           ),
                         ],
@@ -208,7 +202,7 @@ class EditAvatar extends StatelessWidget {
                 ),
                 if (member.avatar != null)
                   FlatButton(
-                    child: Text("Réinitialiser la photo de profil"),
+                    child: Text(AppString.initProfilePhoto),
                     onPressed: () => _showConfirmation(context, _avatarProvider, AppString.avatarResetAreYouSure),
                   ),
                 if (_avatarProvider.image != null)
@@ -222,7 +216,7 @@ class EditAvatar extends StatelessWidget {
                         onPressed: () {
                           _loginProvider.uploadAvatar(_avatarProvider.image, member).then((value) {
                             // refresh member avatar in the members list so that the avatar is up to date in the team page
-                            Provider.of<MemberProvider>(context, listen: false).updateMemberAvatar(_loginProvider.loggedMember);
+                            Provider.of<MemberProvider>(context, listen: false).updateMemberAvatar(member);
                             Navigator.pop(context);
                           }, onError: (error) {
                             Scaffold.of(context)
@@ -236,7 +230,7 @@ class EditAvatar extends StatelessWidget {
                           children: <Widget>[
                             Icon(Icons.check, color: Colors.white, size: 15),
                             SizedBox(width: 5),
-                            Text("Confirmer le changement", style: TextStyle(color: Colors.white)),
+                            Text(AppString.confirmChange, style: TextStyle(color: Colors.white)),
                           ],
                         ),
                       ),

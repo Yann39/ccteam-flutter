@@ -20,6 +20,7 @@
 const String API_ROOT_URL = 'obfuscated';
 const String SERVER_ROOT_PATH = 'obfuscated';
 const String SERVER_AVATAR_FOLDER = 'upload/avatars/';
+const String SERVER_TRACK_IMAGES_FOLDER = 'images/tracks/';
 
 const String API_GET_ALL_NEWS_ENDPOINT = '/news/read.php';
 const String API_GET_SINGLE_NEWS_ENDPOINT = '/news/read_one.php';

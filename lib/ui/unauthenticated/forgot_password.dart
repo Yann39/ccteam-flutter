@@ -53,9 +53,9 @@ class _ForgotPassword extends State<ForgotPassword> {
 
       // submit data to backend then display a message
       Provider.of<LoginProvider>(context, listen: false).askPassword(_email).then((value) {
-        Navigator.pop(context, AppString.memberCreated);
+        Navigator.pop(context, "");
       }, onError: (error) {
-        Navigator.pop(context, AppString.memberCreationFailed);
+        Navigator.pop(context, "");
       });
     }
   }

@@ -20,6 +20,7 @@
 import 'package:chachatte_team/models/news.dart';
 import 'package:chachatte_team/providers/news_provider.dart';
 import 'package:chachatte_team/utils/constants.dart';
+import 'package:chachatte_team/utils/custom_decorations.dart';
 import 'package:chachatte_team/utils/date_utils.dart';
 import 'package:chachatte_team/utils/strings.dart';
 import 'package:flutter/material.dart';
@@ -83,19 +84,17 @@ class NewsDetail extends StatelessWidget {
           Builder(
             builder: (context) => IconButton(
               icon: Icon(Icons.edit),
-              tooltip: 'Edit',
               onPressed: () => _navigateToEditNewsScreen(context, news),
             ),
           ),
           Builder(
             builder: (context) => IconButton(
               icon: Icon(Icons.delete_forever),
-              tooltip: 'Delete',
               onPressed: () => _showConfirmation(context, AppString.newsDeletionAreYouSure),
             ),
           ),
         ],
-        title: Text('News detail'),
+        title: Text(AppString.detail),
         leading: IconButton(
           icon: Icon(Icons.arrow_back),
           onPressed: () => Navigator.pop(context),
@@ -103,6 +102,7 @@ class NewsDetail extends StatelessWidget {
       ),
       body: Container(
         padding: EdgeInsets.symmetric(vertical: 32.0, horizontal: 16),
+        decoration: CustomDecorations.mainContent,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisAlignment: MainAxisAlignment.start,
@@ -115,7 +115,7 @@ class NewsDetail extends StatelessWidget {
               children: <Widget>[
                 Icon(Icons.person, color: Colors.lime, size: 12.0),
                 SizedBox(width: 2.0),
-                Text("Par ${news.createdBy.firstName} ${news.createdBy.lastName}", textAlign: TextAlign.left, style: TextStyle(color: Colors.white)),
+                Text("${AppString.by} ${news.createdBy.firstName} ${news.createdBy.lastName}", textAlign: TextAlign.left, style: TextStyle(color: Colors.white)),
               ],
             ),
             Row(
@@ -124,21 +124,12 @@ class NewsDetail extends StatelessWidget {
               children: <Widget>[
                 Icon(Icons.access_time, color: Colors.lime, size: 12.0),
                 SizedBox(width: 2.0),
-                Text("Le ${DateUtils.convertToString(news.newsDate, DATE_FORMAT_TXT)}", textAlign: TextAlign.left, style: TextStyle(color: Colors.white)),
+                Text("${AppString.on} ${DateUtils.convertToString(news.newsDate, DATE_FORMAT_TXT)}", textAlign: TextAlign.left, style: TextStyle(color: Colors.white)),
               ],
             ),
             Divider(height: 36, color: Colors.white),
             Text(news.content, textScaleFactor: 1.3, style: TextStyle(color: Colors.white)),
           ],
-        ),
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Colors.blue[500], Colors.blue[100]],
-            begin: FractionalOffset(0.0, 0.0),
-            end: FractionalOffset(0.0, 1.0),
-            stops: [0.0, 1.0],
-            tileMode: TileMode.clamp,
-          ),
         ),
       ),
     );

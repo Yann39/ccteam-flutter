@@ -82,7 +82,7 @@ class Calendar extends StatelessWidget {
                           Icon(Icons.event_note, color: _eventProvider.eventModeSelectorIndex == 0 ? Colors.white : Colors.black54),
                           SizedBox(width: 3.0),
                           Flexible(
-                            child: Text("Année courante", style: TextStyle(color: _eventProvider.eventModeSelectorIndex == 0 ? Colors.white : Colors.black54)),
+                            child: Text(AppString.currentYear, style: TextStyle(color: _eventProvider.eventModeSelectorIndex == 0 ? Colors.white : Colors.black54)),
                           )
                         ],
                       ),
@@ -104,7 +104,7 @@ class Calendar extends StatelessWidget {
                           Icon(Icons.event, color: _eventProvider.eventModeSelectorIndex == 1 ? Colors.white : Colors.black54),
                           SizedBox(width: 3.0),
                           Flexible(
-                            child: Text("Par date", style: TextStyle(color: _eventProvider.eventModeSelectorIndex == 1 ? Colors.white : Colors.black54)),
+                            child: Text(AppString.byDate, style: TextStyle(color: _eventProvider.eventModeSelectorIndex == 1 ? Colors.white : Colors.black54)),
                           ),
                         ],
                       ),

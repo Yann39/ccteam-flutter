@@ -20,8 +20,10 @@
 import 'package:chachatte_team/models/news.dart';
 import 'package:chachatte_team/providers/news_provider.dart';
 import 'package:chachatte_team/utils/constants.dart';
+import 'package:chachatte_team/utils/custom_decorations.dart';
 import 'package:chachatte_team/utils/date_utils.dart';
 import 'package:chachatte_team/utils/strings.dart';
+import 'package:chachatte_team/widgets/save_cancel_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
@@ -118,92 +120,65 @@ class _AddEditNewsState extends State<AddEditNews> {
       key: _scaffoldKey,
       appBar: AppBar(
         title: Text(AppString.newsCreate),
-        bottom: PreferredSize(
-          child: Container(
-            child: Row(
-              children: <Widget>[
-                Expanded(
-                  child: FlatButton(
-                    child: Text(AppString.cancel.toUpperCase()),
-                    onPressed: () => Navigator.pop(context),
-                  ),
-                ),
-                Expanded(
-                  child: FlatButton(
-                    child: Text(AppString.save.toUpperCase()),
-                    onPressed: () => submitForm(_currNews),
-                  ),
-                ),
-              ],
-            ),
-            decoration: BoxDecoration(color: Colors.blue[200]),
-            height: 50.0,
-          ),
-          preferredSize: Size.fromHeight(50.0),
-        ),
       ),
       body: Container(
-        child: SafeArea(
-          top: false,
-          bottom: false,
-          child: Form(
-            key: _formKey,
-            autovalidate: false,
-            child: ListView(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              children: <Widget>[
-                TextFormField(
-                  decoration: const InputDecoration(
-                    icon: const Icon(Icons.title),
-                    hintText: AppString.newsTitleHint,
-                    labelText: AppString.newsTitle,
+        decoration: CustomDecorations.mainContent,
+        child: Stack(
+          children: <Widget>[
+            Form(
+              key: _formKey,
+              autovalidate: false,
+              child: ListView(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                children: <Widget>[
+                  TextFormField(
+                    decoration: const InputDecoration(
+                      icon: const Icon(Icons.title),
+                      hintText: AppString.newsTitleHint,
+                      labelText: AppString.newsTitle,
+                    ),
+                    maxLines: 1,
+                    inputFormatters: [LengthLimitingTextInputFormatter(128)],
+                    validator: (val) => val.isEmpty ? AppString.newsTitleMandatory : null,
+                    onSaved: (val) => _currNews.title = val,
+                    initialValue: _currNews.title,
                   ),
-                  maxLines: 1,
-                  inputFormatters: [LengthLimitingTextInputFormatter(128)],
-                  validator: (val) => val.isEmpty ? AppString.newsTitleMandatory : null,
-                  onSaved: (val) => _currNews.title = val,
-                  initialValue: _currNews.title,
-                ),
-                TextFormField(
-                  decoration: const InputDecoration(
-                    icon: const Icon(Icons.short_text),
-                    hintText: AppString.newsContentHint,
-                    labelText: AppString.newsContent,
+                  TextFormField(
+                    decoration: const InputDecoration(
+                      icon: const Icon(Icons.short_text),
+                      hintText: AppString.newsContentHint,
+                      labelText: AppString.newsContent,
+                    ),
+                    maxLines: 5,
+                    inputFormatters: [LengthLimitingTextInputFormatter(2048)],
+                    validator: (val) => val.isEmpty ? AppString.newsContentMandatory : null,
+                    onSaved: (val) => _currNews.content = val,
+                    initialValue: _currNews.content,
                   ),
-                  maxLines: 5,
-                  inputFormatters: [LengthLimitingTextInputFormatter(2048)],
-                  validator: (val) => val.isEmpty ? AppString.newsContentMandatory : null,
-                  onSaved: (val) => _currNews.content = val,
-                  initialValue: _currNews.content,
-                ),
-                GestureDetector(
-                  onTap: () => _chooseDate(context, _datePickerController, _currNews.newsDate),
-                  child: AbsorbPointer(
-                    child: TextFormField(
-                      decoration: InputDecoration(
-                        icon: const Icon(Icons.calendar_today),
-                        hintText: AppString.newsDateHint,
-                        labelText: AppString.newsDate,
+                  GestureDetector(
+                    onTap: () => _chooseDate(context, _datePickerController, _currNews.newsDate),
+                    child: AbsorbPointer(
+                      child: TextFormField(
+                        decoration: InputDecoration(
+                          icon: const Icon(Icons.calendar_today),
+                          hintText: AppString.newsDateHint,
+                          labelText: AppString.newsDate,
+                        ),
+                        controller: _datePickerController,
+                        keyboardType: TextInputType.datetime,
+                        validator: (val) => !DateUtils.isBeforeNow(val, DATE_FORMAT) ? (val.isEmpty ? AppString.newsDateMandatory : null) : AppString.newsDateNotValid,
+                        onSaved: (val) => _currNews.newsDate = DateFormat(DATE_FORMAT).parseStrict(val),
                       ),
-                      controller: _datePickerController,
-                      keyboardType: TextInputType.datetime,
-                      validator: (val) => !DateUtils.isBeforeNow(val, DATE_FORMAT) ? (val.isEmpty ? AppString.newsDateMandatory : null) : AppString.newsDateNotValid,
-                      onSaved: (val) => _currNews.newsDate = DateFormat(DATE_FORMAT).parseStrict(val),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-        ),
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Colors.blue[100], Colors.blue[300]],
-            begin: const FractionalOffset(0.0, 0.0),
-            end: const FractionalOffset(0.0, 1.0),
-            stops: [0.0, 1.0],
-            tileMode: TileMode.clamp,
-          ),
+            SaveCancelBar(
+              saveFunction: () => submitForm(_currNews),
+              cancelFunction: () => Navigator.pop(context),
+            ),
+          ],
         ),
       ),
     );

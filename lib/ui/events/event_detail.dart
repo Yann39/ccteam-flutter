@@ -24,7 +24,6 @@ import 'package:chachatte_team/ui/events/add_edit_event.dart';
 import 'package:chachatte_team/utils/constants.dart';
 import 'package:chachatte_team/utils/custom_decorations.dart';
 import 'package:chachatte_team/utils/custom_icons.dart';
-import 'package:chachatte_team/utils/date_utils.dart';
 import 'package:chachatte_team/utils/enums.dart';
 import 'package:chachatte_team/utils/string_utils.dart';
 import 'package:chachatte_team/utils/strings.dart';
@@ -143,24 +142,30 @@ class _EventDetailState extends State<EventDetail> {
               children: <Widget>[
                 Container(
                   alignment: Alignment.center,
-                  height: 120,
+                  height: 132,
                   padding: EdgeInsets.all(16.0),
                   decoration: BoxDecoration(
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.blue[300],
+                        spreadRadius: 1,
+                        blurRadius: 2,
+                      ),
+                    ],
                     image: DecorationImage(
                       fit: BoxFit.fill,
                       image: AssetImage("images/finish_flag.png"),
-                      colorFilter: new ColorFilter.mode(Colors.black.withOpacity(0.04), BlendMode.dstATop),
+                      colorFilter: ColorFilter.mode(Colors.black.withOpacity(0.05), BlendMode.dstATop),
                     ),
                     gradient: LinearGradient(
-                      colors: [Colors.blue[400], Colors.blue[600]],
+                      colors: [Colors.blue[300], Colors.blue[500]],
                       begin: Alignment.topCenter,
                       end: Alignment.bottomCenter,
                     ),
                   ),
                   child: Text(
-                    widget.event.title,
+                    "${widget.event.title}",
                     textScaleFactor: 2,
-                    textAlign: TextAlign.center,
                     style: TextStyle(color: Colors.white),
                     maxLines: 3,
                     overflow: TextOverflow.ellipsis,
@@ -180,9 +185,12 @@ class _EventDetailState extends State<EventDetail> {
                               margin: EdgeInsets.all(4.0),
                               padding: EdgeInsets.all(8.0),
                               decoration: BoxDecoration(
-                                border: Border.all(color: Colors.white, width: 2.0),
+                                border: Border.all(color: Colors.white, width: 1.0),
                                 borderRadius: BorderRadius.all(Radius.circular(4.0)),
                                 color: Colors.blue[100],
+                                boxShadow: [
+                                  BoxShadow(color: Colors.black.withOpacity(0.1), spreadRadius: 0.5, blurRadius: 0.5, offset: Offset(2, 2)),
+                                ],
                               ),
                               child: Column(
                                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -208,8 +216,14 @@ class _EventDetailState extends State<EventDetail> {
                               height: 100,
                               margin: EdgeInsets.all(4.0),
                               padding: EdgeInsets.all(8.0),
-                              decoration:
-                                  BoxDecoration(border: Border.all(color: Colors.white, width: 2.0), borderRadius: BorderRadius.all(Radius.circular(4.0)), color: Colors.blue[100]),
+                              decoration: BoxDecoration(
+                                border: Border.all(color: Colors.white, width: 1.0),
+                                borderRadius: BorderRadius.all(Radius.circular(4.0)),
+                                color: Colors.blue[100],
+                                boxShadow: [
+                                  BoxShadow(color: Colors.black.withOpacity(0.1), spreadRadius: 0.5, blurRadius: 0.5, offset: Offset(2, 2)),
+                                ],
+                              ),
                               child: Column(
                                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 children: <Widget>[
@@ -234,8 +248,14 @@ class _EventDetailState extends State<EventDetail> {
                               height: 100,
                               margin: EdgeInsets.all(4.0),
                               padding: EdgeInsets.all(8.0),
-                              decoration:
-                                  BoxDecoration(border: Border.all(color: Colors.white, width: 2.0), borderRadius: BorderRadius.all(Radius.circular(4.0)), color: Colors.blue[100]),
+                              decoration: BoxDecoration(
+                                border: Border.all(color: Colors.white, width: 1.0),
+                                borderRadius: BorderRadius.all(Radius.circular(4.0)),
+                                color: Colors.blue[100],
+                                boxShadow: [
+                                  BoxShadow(color: Colors.black.withOpacity(0.1), spreadRadius: 0.5, blurRadius: 0.5, offset: Offset(2, 2)),
+                                ],
+                              ),
                               child: Column(
                                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 children: <Widget>[
@@ -256,8 +276,14 @@ class _EventDetailState extends State<EventDetail> {
                               height: 100,
                               margin: EdgeInsets.all(4.0),
                               padding: EdgeInsets.all(8.0),
-                              decoration:
-                                  BoxDecoration(border: Border.all(color: Colors.white, width: 2.0), borderRadius: BorderRadius.all(Radius.circular(4.0)), color: Colors.blue[100]),
+                              decoration: BoxDecoration(
+                                border: Border.all(color: Colors.white, width: 1.0),
+                                borderRadius: BorderRadius.all(Radius.circular(4.0)),
+                                color: Colors.blue[100],
+                                boxShadow: [
+                                  BoxShadow(color: Colors.black.withOpacity(0.1), spreadRadius: 0.5, blurRadius: 0.5, offset: Offset(2, 2)),
+                                ],
+                              ),
                               child: Column(
                                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 children: <Widget>[
@@ -275,84 +301,87 @@ class _EventDetailState extends State<EventDetail> {
                         ],
                       ),
                       Divider(color: Colors.white),
-                      Container(
-                        color: Colors.transparent,
-                        padding: EdgeInsets.only(bottom: 12.0),
-                        child: Row(
-                          children: <Widget>[
-                            Icon(Icons.description, size: 18),
-                            SizedBox(width: 5.0),
-                            Text(
-                              "Description",
-                              textScaleFactor: 1.2,
-                              style: TextStyle(fontWeight: FontWeight.bold),
-                            ),
-                          ],
-                        ),
-                      ),
-                      Text(widget.event.description),
                       SizedBox(height: 10),
-                      Divider(color: Colors.white),
                       Row(
                         children: <Widget>[
-                          Icon(Icons.group, size: 18),
+                          Icon(Icons.description, size: 16, color: Colors.black.withOpacity(0.64)),
                           SizedBox(width: 5.0),
                           Text(
-                            "Participants",
+                            AppString.description,
                             textScaleFactor: 1.2,
-                            style: TextStyle(fontWeight: FontWeight.bold),
+                            style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black.withOpacity(0.64)),
                           ),
                         ],
                       ),
-                      SizedBox(
-                        height: 140,
-                        child: ListView.builder(
-                          scrollDirection: Axis.horizontal,
-                          itemCount: widget.event.members.length,
-                          itemBuilder: (BuildContext context, int index) {
-                            return Column(
-                              children: <Widget>[
-                                InkWell(
-                                  onTap: () => _navigateToMemberDetailScreen(context, widget.event.members[index]),
-                                  child: Container(
-                                    width: 80,
-                                    height: 80,
-                                    padding: EdgeInsets.all(2.0),
-                                    margin: EdgeInsets.all(12.0),
-                                    decoration: ShapeDecoration(shape: CircleBorder(), color: Colors.white),
-                                    child: widget.event.members[index].avatar != null && widget.event.members[index].avatar.length > 0
-                                        ? CircleAvatar(
-                                            backgroundColor: Colors.blue[100],
-                                            backgroundImage: NetworkImage("$SERVER_ROOT_PATH$SERVER_AVATAR_FOLDER${widget.event.members[index].avatar}"),
-                                          )
-                                        : CircleAvatar(
-                                            backgroundColor: Colors.blue[100],
-                                            child: ShaderMask(
-                                              shaderCallback: (bounds) => LinearGradient(
-                                                begin: const FractionalOffset(0.0, 0.0),
-                                                end: const FractionalOffset(0.0, 1.0),
-                                                stops: [0.0, 1.0],
-                                                colors: [Colors.red[700], Colors.white],
-                                              ).createShader(bounds),
-                                              child: Icon(CustomIcons.pilot, size: 50),
-                                            ),
-                                          ),
-                                  ),
-                                ),
-                                Container(
-                                  width: 80,
-                                  child: Text(
-                                    "${widget.event.members[index].firstName} ${widget.event.members[index].lastName}",
-                                    overflow: TextOverflow.ellipsis,
-                                    maxLines: 2,
-                                    textAlign: TextAlign.center,
-                                  ),
-                                ),
-                              ],
-                            );
-                          },
-                        ),
+                      SizedBox(height: 10),
+                      Text(widget.event.description),
+                      SizedBox(height: 10),
+                      Divider(color: Colors.white),
+                      SizedBox(height: 10),
+                      Row(
+                        children: <Widget>[
+                          Icon(Icons.group, size: 18, color: Colors.black.withOpacity(0.64)),
+                          SizedBox(width: 5.0),
+                          Text(
+                            AppString.participants,
+                            textScaleFactor: 1.2,
+                            style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black.withOpacity(0.64)),
+                          ),
+                        ],
                       ),
+                      SizedBox(height: 10),
+                      widget.event.members.length > 0
+                          ? SizedBox(
+                              height: 140,
+                              child: ListView.builder(
+                                scrollDirection: Axis.horizontal,
+                                itemCount: widget.event.members.length,
+                                itemBuilder: (BuildContext context, int index) {
+                                  return Column(
+                                    children: <Widget>[
+                                      InkWell(
+                                        onTap: () => _navigateToMemberDetailScreen(context, widget.event.members[index]),
+                                        child: Container(
+                                          width: 80,
+                                          height: 80,
+                                          padding: EdgeInsets.all(2.0),
+                                          margin: EdgeInsets.symmetric(horizontal: 12.0),
+                                          decoration: ShapeDecoration(shape: CircleBorder(), color: Colors.white70),
+                                          child: widget.event.members[index].avatar != null && widget.event.members[index].avatar.length > 0
+                                              ? CircleAvatar(
+                                                  backgroundColor: Colors.blue[100],
+                                                  backgroundImage: NetworkImage("$SERVER_ROOT_PATH$SERVER_AVATAR_FOLDER${widget.event.members[index].avatar}"),
+                                                )
+                                              : CircleAvatar(
+                                                  backgroundColor: Colors.blue[100],
+                                                  child: ShaderMask(
+                                                    shaderCallback: (bounds) => LinearGradient(
+                                                      begin: const FractionalOffset(0.0, 0.0),
+                                                      end: const FractionalOffset(0.0, 1.0),
+                                                      stops: [0.0, 1.0],
+                                                      colors: [Colors.red[300], Colors.white],
+                                                    ).createShader(bounds),
+                                                    child: Icon(CustomIcons.pilot, size: 50),
+                                                  ),
+                                                ),
+                                        ),
+                                      ),
+                                      Container(
+                                        width: 80,
+                                        child: Text(
+                                          "${widget.event.members[index].firstName} ${widget.event.members[index].lastName}",
+                                          overflow: TextOverflow.ellipsis,
+                                          maxLines: 2,
+                                          textAlign: TextAlign.center,
+                                        ),
+                                      ),
+                                    ],
+                                  );
+                                },
+                              ),
+                            )
+                          : Text(AppString.noParticipant),
+                      SizedBox(height: 10),
                       Divider(color: Colors.white),
                     ],
                   ),

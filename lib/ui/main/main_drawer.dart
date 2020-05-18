@@ -21,6 +21,7 @@ import 'package:chachatte_team/models/member.dart';
 import 'package:chachatte_team/providers/login_provider.dart';
 import 'package:chachatte_team/utils/constants.dart';
 import 'package:chachatte_team/utils/custom_icons.dart';
+import 'package:chachatte_team/utils/strings.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -121,10 +122,10 @@ class MainDrawer extends StatelessWidget {
                 ListTile(
                   leading: Icon(
                     Icons.person,
-                    color: Colors.green[600],
+                    color: Colors.green[700],
                   ),
                   trailing: Icon(Icons.arrow_right),
-                  title: Text('Profile'),
+                  title: Text(AppString.profile),
                   onTap: () {
                     _navigateToEditMemberScreen(context, _loginProvider.loggedMember);
                   },
@@ -132,10 +133,10 @@ class MainDrawer extends StatelessWidget {
                 ListTile(
                   leading: Icon(
                     Icons.notifications,
-                    color: Colors.blue[600],
+                    color: Colors.blue[700],
                   ),
                   trailing: Icon(Icons.arrow_right),
-                  title: Text('Notifications'),
+                  title: Text(AppString.notifications),
                   onTap: () {
                     Navigator.pop(context);
                   },
@@ -143,21 +144,22 @@ class MainDrawer extends StatelessWidget {
                 ListTile(
                   leading: Icon(
                     Icons.settings,
-                    color: Colors.teal[600],
+                    color: Colors.teal[700],
                   ),
                   trailing: Icon(Icons.arrow_right),
-                  title: Text('Préférences'),
+                  title: Text(AppString.preferences),
                   onTap: () {
                     Navigator.pop(context);
                   },
                 ),
+                Divider(),
                 ListTile(
                   leading: Icon(
                     Icons.lock,
-                    color: Colors.purple[600],
+                    color: Colors.red[900],
                   ),
                   trailing: Icon(Icons.arrow_right),
-                  title: Text('Déconnexion'),
+                  title: Text(AppString.disconnect),
                   onTap: () {
                     _logout(context);
                   },
