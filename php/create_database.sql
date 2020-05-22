@@ -151,7 +151,8 @@ INSERT INTO `events` (`id`, `title`, `description`, `start_date`, `end_date`, `t
 (2, 'Roulage Vaison piste', 'Vaison avec Goret team comme d''habitude', '2018-08-02 00:00:00', '2018-08-02 00:00:00', 5, 'ActivBike', 90, '2018-02-08 14:30:29', 1, NULL, NULL),
 (3, 'Journée du club à Bresse', 'Journée du Club sur le circuit de Bresse. Tous les participants se verront rembourser 70€ (par chéque) pris sur le compte du club.', '2018-08-28 00:00:00', '2018-08-28 00:00:00', 1, 'Team Blatz', 125, '2018-04-20 17:14:27', 1, NULL, NULL),
 (4, 'Week-end à Alès', '', '2019-10-25 00:00:00', '2019-10-26 00:00:00', 1, 'ActivBike', 256, '2019-04-20 11:01:47', 1, NULL, NULL),
-(5, 'Roulage Magny-cours', '2 jours à Magny-cours avec TP55', '2019-08-28 00:00:00', '2019-08-29 00:00:00', 1, 'Team Performance 55', 340, '2020-05-13 22:43:26', 1, NULL, NULL);
+(5, 'Roulage Magny-cours', '2 jours à Magny-cours avec TP55', '2019-08-28 00:00:00', '2019-08-29 00:00:00', 1, 'Team Performance 55', 340, '2020-05-13 22:43:26', 1, NULL, NULL),
+(6, 'Roulage Bresse', 'Premier roualge de l''année à Bresse avec ActivBike', '2020-05-09 00:00:00', '2019-05-09 00:00:00', 1, 'ActivBike', 140, '2020-05-22 13:20:45', 1, NULL, NULL);
 
 INSERT INTO `tracks` (`id`, `name`, `distance`, `lap_record`, `website`, `latitude`, `longitude`) VALUES
 (1, 'Bresse', 3000, 84330, 'https://www.circuitdebresse.com', 46.551431, 5.328642),

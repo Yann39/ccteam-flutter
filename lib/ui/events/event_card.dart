@@ -20,18 +20,16 @@
 import 'package:chachatte_team/models/event.dart';
 import 'package:chachatte_team/ui/events/event_detail.dart';
 import 'package:chachatte_team/utils/custom_decorations.dart';
+import 'package:chachatte_team/utils/custom_icons.dart';
+import 'package:chachatte_team/utils/string_utils.dart';
+import 'package:chachatte_team/utils/track_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 class EventCard extends StatelessWidget {
   final Event event;
 
-  //final int nbCol;
-
-  EventCard(
-    this.event,
-    /*this.nbCol*/
-  );
+  EventCard(this.event);
 
   /// Method that launches the Event detail screen and awaits the result from Navigator.pop
   _navigateToEventDetailScreen(BuildContext context, Event event) async {
@@ -48,38 +46,125 @@ class EventCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-
     return InkWell(
       onTap: () => _navigateToEventDetailScreen(context, event),
       child: Container(
+        height: 90,
         decoration: CustomDecorations.cardFull,
-        child: ListTile(
-          title: Text(event.title, style: TextStyle(color: Colors.white)),
-          subtitle: Text(
-            event.description,
-            style: TextStyle(color: Colors.white),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-          leading: Container(
-            padding: EdgeInsets.only(right: 16.0),
-            child: Column(
-              children: <Widget>[
-                Text("${DateFormat('EEEE', 'fr').format(event.startDate).substring(0, 3)}", textScaleFactor: 0.8, style: TextStyle(color: Colors.white)),
-                Text("${DateFormat('dd', 'fr').format(event.startDate)}", textScaleFactor: 1.7, style: TextStyle(color: Colors.white)),
-                Text("${DateFormat('MMM', 'fr').format(event.startDate)}", textScaleFactor: 0.9, style: TextStyle(color: Colors.white)),
-              ],
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            Container(
+              decoration: BoxDecoration(
+                shape: BoxShape.rectangle,
+                color: event.endDate.isAfter(DateTime.now()) ? Colors.green[700] : Colors.grey[700],
+                borderRadius: BorderRadius.only(topLeft: Radius.circular(4.0), bottomLeft: Radius.circular(4.0)),
+              ),
+              width: 5,
             ),
-            decoration: BoxDecoration(border: Border(right: BorderSide(width: 1.0, color: Colors.grey[300]))),
-          ),
-          trailing: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[
-              Icon(event.members.length > 1 ? Icons.group : Icons.person, color: Colors.white, size: 18),
-              Text("${event.members.length}", textScaleFactor: 0.8, style: TextStyle(color: Colors.white))
-            ],
-          ),
+            Expanded(
+              child: Padding(
+                child: Row(
+                  children: <Widget>[
+                    Column(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: <Widget>[
+                        ClipRRect(
+                          borderRadius: BorderRadius.all(Radius.circular(8.0)),
+                          child: Image.network(
+                            TrackUtils.trackCoverImageUrlFromName(event.track.name),
+                            width: 50,
+                            //fit: BoxFit.fill,
+                          ),
+                        ),
+                        Container(
+                          child: Row(
+                            children: <Widget>[
+                              RotatedBox(
+                                quarterTurns: -1,
+                                child: Text(
+                                  "${DateFormat('EEEE', 'fr').format(event.startDate).substring(0, 3)}",
+                                  style: TextStyle(color: Colors.white, height: 1),
+                                ),
+                              ),
+                              Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: <Widget>[
+                                  Text("${DateFormat('dd', 'fr').format(event.startDate)}", textScaleFactor: 1.5, style: TextStyle(color: Colors.white, height: 1)),
+                                  Text("${DateFormat('MMM', 'fr').format(event.startDate)}", textScaleFactor: 0.9, style: TextStyle(color: Colors.white, height: 0.8)),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                    VerticalDivider(color: Colors.white),
+                    Expanded(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: <Widget>[
+                          Text(event.title, textScaleFactor: 1.2, style: TextStyle(color: Colors.white)),
+                          Divider(height: 12.0, color: Colors.white),
+                          Expanded(
+                            child: ListView(
+                              scrollDirection: Axis.horizontal,
+                              children: <Widget>[
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.start,
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: <Widget>[
+                                    Column(
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      children: <Widget>[
+                                        Icon(Icons.location_on, size: 15, color: Colors.red[700]),
+                                        Text("${event.track.name}", textScaleFactor: 0.9, style: TextStyle(color: Colors.white)),
+                                      ],
+                                    ),
+                                    VerticalDivider(color: Colors.white),
+                                    Column(
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      children: <Widget>[
+                                        Icon(Icons.euro_symbol, size: 15, color: Colors.purple[700]),
+                                        Text("${StringUtils.formatPrice(event.price)}€", textScaleFactor: 0.9, style: TextStyle(color: Colors.white)),
+                                      ],
+                                    ),
+                                    VerticalDivider(color: Colors.white),
+                                    Column(
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      children: <Widget>[
+                                        Icon(CustomIcons.helmet, size: 15, color: Colors.teal[700]),
+                                        Text(event.organizer, textScaleFactor: 0.9, style: TextStyle(color: Colors.white)),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Container(
+                      width: 26,
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: <Widget>[
+                          Icon(event.members.length > 1 ? Icons.group : Icons.person, color: Colors.white, size: 18),
+                          Text("${event.members.length}", textScaleFactor: 0.8, style: TextStyle(color: Colors.white)),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                padding: EdgeInsets.all(8.0),
+              ),
+            )
+          ],
         ),
       ),
     );

@@ -138,7 +138,23 @@ class Calendar extends StatelessWidget {
                   separatorBuilder: (context, index) => SizedBox(height: 8.0),
                   itemCount: _eventProvider.eventModeSelectorIndex == 1 ? _eventProvider.calendarEvents.length : _eventProvider.events.length,
                   itemBuilder: (context, index) {
-                    return EventCard(_eventProvider.events[index]);
+                    if (index == 0 || (index > 0 && _eventProvider.events[index].startDate.year < _eventProvider.events[index - 1].startDate.year)) {
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: <Widget>[
+                          Row(
+                            children: <Widget>[
+                              Icon(Icons.arrow_downward, size: 16,),
+                              Text("${_eventProvider.events[index].startDate.year}"),
+                            ],
+                          ),
+                          SizedBox(height: 4.0),
+                          EventCard(_eventProvider.events[index]),
+                        ],
+                      );
+                    } else {
+                      return EventCard(_eventProvider.events[index]);
+                    }
                   },
                 ),
               ),

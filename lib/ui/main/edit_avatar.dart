@@ -248,7 +248,6 @@ class EditAvatar extends StatelessWidget {
 class HolePainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
-    print("${size.height} ${size.width}");
     final paint = Paint();
     paint.color = Colors.black38;
     paint.blendMode = BlendMode.colorBurn;

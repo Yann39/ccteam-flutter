@@ -70,9 +70,6 @@ class NewsService {
     final response = await http.post(API_ROOT_URL + API_CREATE_NEWS_ENDPOINT, headers: {'Content-Type': 'application/json'}, body: news.toJson());
 
     final headers = response.headers;
-    print(headers.toString());
-    print("Status code : ${response.statusCode}");
-    print("Body : ${response.body}");
 
     // handle server response code
     if (response.statusCode == 201) {
@@ -138,7 +135,6 @@ class NewsService {
 
     if (response.statusCode != 200) {
       dynamic responseJson = json.decode(response.body);
-      print("regarde : $responseJson");
       throw Exception('Unexpected server response');
     }
   }
