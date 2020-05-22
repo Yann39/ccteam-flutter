@@ -17,6 +17,7 @@
  * along with Chachatte Team. If not, see <http://www.gnu.org/licenses/>.
  */
 
+import 'package:chachatte_team/models/event.dart';
 import 'package:chachatte_team/providers/event_provider.dart';
 import 'package:chachatte_team/ui/events/calendar_selector.dart';
 import 'package:chachatte_team/ui/events/event_card.dart';
@@ -54,10 +55,18 @@ class Calendar extends StatelessWidget {
       _eventProvider.fetchDateEvents(date, calendarMode == CalendarMode.year ? "year" : "month");
     }
 
+    final List<Event> _currEvents = _eventProvider.eventModeSelectorIndex == 0 ? _eventProvider.events : _eventProvider.eventModeSelectorIndex == 1 ? _eventProvider.yearEvents : _eventProvider.calendarEvents;
+
     return Scaffold(
       appBar: AppBar(
         title: Text(AppString.tabCalendar),
-        actions: <Widget>[MainActionMenu()],
+        actions: <Widget>[
+          IconButton(
+            icon: Icon(Icons.add),
+            onPressed: () {
+              _navigateToAddEventScreen(context);
+            },
+          ),MainActionMenu(),],
       ),
       drawer: MainDrawer(),
       body: Container(
@@ -65,55 +74,72 @@ class Calendar extends StatelessWidget {
         decoration: CustomDecorations.mainContent,
         child: Column(
           children: <Widget>[
-            Row(
-              children: <Widget>[
-                Expanded(
-                  child: GestureDetector(
-                    onTap: () {
-                      _eventProvider.changeEventModeSelectorIndex(0);
-                    },
-                    child: Container(
-                      padding: EdgeInsets.symmetric(horizontal: 6.0, vertical: 6.0),
-                      decoration: BoxDecoration(
-                        color: _eventProvider.eventModeSelectorIndex == 0 ? Colors.red[700] : Colors.white70,
-                      ),
-                      child: Row(
-                        children: [
-                          Icon(Icons.event_note, color: _eventProvider.eventModeSelectorIndex == 0 ? Colors.white : Colors.black54),
-                          SizedBox(width: 3.0),
-                          Flexible(
-                            child: Text(AppString.currentYear, style: TextStyle(color: _eventProvider.eventModeSelectorIndex == 0 ? Colors.white : Colors.black54)),
-                          )
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-                Expanded(
-                  child: GestureDetector(
-                    onTap: () {
-                      _eventProvider.changeEventModeSelectorIndex(1);
-                    },
-                    child: Container(
-                      padding: EdgeInsets.symmetric(horizontal: 6.0, vertical: 6.0),
-                      decoration: BoxDecoration(
-                        color: _eventProvider.eventModeSelectorIndex == 1 ? Colors.red[700] : Colors.white70,
-                      ),
-                      child: Row(
-                        children: [
-                          Icon(Icons.event, color: _eventProvider.eventModeSelectorIndex == 1 ? Colors.white : Colors.black54),
-                          SizedBox(width: 3.0),
-                          Flexible(
-                            child: Text(AppString.byDate, style: TextStyle(color: _eventProvider.eventModeSelectorIndex == 1 ? Colors.white : Colors.black54)),
-                          ),
-                        ],
+            Container(
+              decoration: BoxDecoration(border: Border.all(color: Colors.red[700], width: 1)),
+              child: Row(
+                children: <Widget>[
+                  Expanded(
+                    flex: 2,
+                    child: GestureDetector(
+                      onTap: () {
+                        _eventProvider.changeEventModeSelectorIndex(0);
+                      },
+                      child: Container(
+                        padding: EdgeInsets.symmetric(horizontal: 6.0, vertical: 6.0),
+                        decoration: BoxDecoration(
+                            color: _eventProvider.eventModeSelectorIndex == 0 ? Colors.red[700] : Colors.white70,
+                            border: Border(right: BorderSide(color: Colors.red[700], width: 1))),
+                        child: Text(
+                          AppString.all,
+                          style: TextStyle(color: _eventProvider.eventModeSelectorIndex == 0 ? Colors.white : Colors.black87),
+                          textAlign: TextAlign.center,
+                        ),
                       ),
                     ),
                   ),
-                ),
-              ],
+                  Expanded(
+                    flex: 3,
+                    child: GestureDetector(
+                      onTap: () {
+                        _eventProvider.fetchCurrentYearEvents();
+                        _eventProvider.changeEventModeSelectorIndex(1);
+                      },
+                      child: Container(
+                        padding: EdgeInsets.symmetric(horizontal: 6.0, vertical: 6.0),
+                        decoration: BoxDecoration(
+                            color: _eventProvider.eventModeSelectorIndex == 1 ? Colors.red[700] : Colors.white70,
+                            border: Border(right: BorderSide(color: Colors.red[700], width: 1))),
+                        child: Text(
+                          AppString.currentYear,
+                          style: TextStyle(color: _eventProvider.eventModeSelectorIndex == 1 ? Colors.white : Colors.black87),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                    ),
+                  ),
+                  Expanded(
+                    flex: 2,
+                    child: GestureDetector(
+                      onTap: () {
+                        _eventProvider.changeEventModeSelectorIndex(2);
+                      },
+                      child: Container(
+                        padding: EdgeInsets.symmetric(horizontal: 6.0, vertical: 6.0),
+                        decoration: BoxDecoration(
+                          color: _eventProvider.eventModeSelectorIndex == 2 ? Colors.red[700] : Colors.white70,
+                        ),
+                        child: Text(
+                          AppString.byDate,
+                          style: TextStyle(color: _eventProvider.eventModeSelectorIndex == 2 ? Colors.white : Colors.black87),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
-            if (_eventProvider.eventModeSelectorIndex == 1)
+            if (_eventProvider.eventModeSelectorIndex == 2)
               Column(
                 children: <Widget>[
                   SizedBox(height: 8.0),
@@ -136,24 +162,27 @@ class Calendar extends StatelessWidget {
                 loadingStatus: _eventProvider.loadingStatus,
                 child: ListView.separated(
                   separatorBuilder: (context, index) => SizedBox(height: 8.0),
-                  itemCount: _eventProvider.eventModeSelectorIndex == 1 ? _eventProvider.calendarEvents.length : _eventProvider.events.length,
+                  itemCount: _currEvents.length,
                   itemBuilder: (context, index) {
-                    if (index == 0 || (index > 0 && _eventProvider.events[index].startDate.year < _eventProvider.events[index - 1].startDate.year)) {
+                    if (index == 0 || (index > 0 && _currEvents[index].startDate.year < _currEvents[index - 1].startDate.year)) {
                       return Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: <Widget>[
                           Row(
                             children: <Widget>[
-                              Icon(Icons.arrow_downward, size: 16,),
-                              Text("${_eventProvider.events[index].startDate.year}"),
+                              Icon(
+                                Icons.arrow_downward,
+                                size: 16,
+                              ),
+                              Text("${_currEvents[index].startDate.year}"),
                             ],
                           ),
                           SizedBox(height: 4.0),
-                          EventCard(_eventProvider.events[index]),
+                          EventCard(_currEvents[index]),
                         ],
                       );
                     } else {
-                      return EventCard(_eventProvider.events[index]);
+                      return EventCard(_currEvents[index]);
                     }
                   },
                 ),
@@ -162,16 +191,6 @@ class Calendar extends StatelessWidget {
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        elevation: 0.0,
-        child: Icon(Icons.add),
-        backgroundColor: Colors.red[700],
-        onPressed: () {
-          _navigateToAddEventScreen(context);
-        },
-      ),
     );
   }
 }
-
-

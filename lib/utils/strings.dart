@@ -226,6 +226,7 @@ class AppString {
   static const String disconnect = 'Déconnexion';
   static const String news = 'Actualités';
   static const String detail = 'Détail';
+  static const String all = 'Tous';
   static const String by = 'Par';
   static const String on = 'Le';
   static const String record = 'Record';

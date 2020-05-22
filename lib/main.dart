@@ -29,6 +29,7 @@ import 'package:chachatte_team/providers/track_provider.dart';
 import 'package:chachatte_team/ui/events/add_edit_event.dart';
 import 'package:chachatte_team/ui/main/edit_avatar.dart';
 import 'package:chachatte_team/ui/main/image_crop.dart';
+import 'package:chachatte_team/ui/members/member_events.dart';
 import 'package:chachatte_team/ui/photos/add_edit_photo.dart';
 import 'package:chachatte_team/ui/photos/photo_detail.dart';
 import 'package:chachatte_team/ui/tracks/track_detail.dart';
@@ -95,6 +96,7 @@ class ChachatteTeamApp extends StatelessWidget {
         '/addEditPhoto': (context) => AddEditPhoto(photo: ModalRoute.of(context).settings.arguments),
         '/newsDetail': (context) => NewsDetail(news: ModalRoute.of(context).settings.arguments),
         '/memberDetail': (context) => MemberDetail(member: ModalRoute.of(context).settings.arguments),
+        '/memberEvents': (context) => MemberEvents(member: ModalRoute.of(context).settings.arguments),
         '/photoDetail': (context) => PhotoDetail(photo: ModalRoute.of(context).settings.arguments),
         '/trackDetail': (context) => TrackDetail(track: ModalRoute.of(context).settings.arguments),
       },

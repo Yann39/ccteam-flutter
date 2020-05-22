@@ -132,6 +132,29 @@ class MainDrawer extends StatelessWidget {
                 ),
                 ListTile(
                   leading: Icon(
+                    Icons.event,
+                    color: Colors.purple[600],
+                  ),
+                  trailing: Icon(Icons.arrow_right),
+                  title: Text(AppString.myTrackEvents),
+                  onTap: () {
+                    Navigator.pushNamed(context, '/memberEvents', arguments: _loginProvider.loggedMember);
+                  },
+                ),
+                ListTile(
+                  leading: Icon(
+                    Icons.timer,
+                    color: Colors.orange[800],
+                  ),
+                  trailing: Icon(Icons.arrow_right),
+                  title: Text(AppString.myChronos),
+                  onTap: () {
+                    Navigator.pop(context);
+                  },
+                ),
+                Divider(),
+                ListTile(
+                  leading: Icon(
                     Icons.notifications,
                     color: Colors.blue[700],
                   ),

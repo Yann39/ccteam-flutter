@@ -198,7 +198,7 @@ class _EventDetailState extends State<EventDetail> {
                                   Icon(
                                     Icons.event,
                                     size: 38,
-                                    color: Colors.red[700],
+                                    color: Colors.blue[700],
                                   ),
                                   Text(
                                     widget.event.fullDate,
@@ -230,7 +230,7 @@ class _EventDetailState extends State<EventDetail> {
                                   Icon(
                                     Icons.euro_symbol,
                                     size: 38,
-                                    color: Colors.red[700],
+                                    color: Colors.purple[700],
                                   ),
                                   Text(
                                     "${StringUtils.formatPrice(widget.event.price)}",
@@ -287,7 +287,7 @@ class _EventDetailState extends State<EventDetail> {
                               child: Column(
                                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 children: <Widget>[
-                                  Icon(CustomIcons.helmet, size: 38, color: Colors.red[700]),
+                                  Icon(Icons.perm_contact_calendar, size: 38, color: Colors.teal[700]),
                                   Text(
                                     widget.event.organizer,
                                     textAlign: TextAlign.center,
@@ -366,6 +366,7 @@ class _EventDetailState extends State<EventDetail> {
                                                 ),
                                         ),
                                       ),
+                                      SizedBox(height: 5.0),
                                       Container(
                                         width: 80,
                                         child: Text(

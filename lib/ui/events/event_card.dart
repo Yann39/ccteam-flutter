@@ -20,7 +20,6 @@
 import 'package:chachatte_team/models/event.dart';
 import 'package:chachatte_team/ui/events/event_detail.dart';
 import 'package:chachatte_team/utils/custom_decorations.dart';
-import 'package:chachatte_team/utils/custom_icons.dart';
 import 'package:chachatte_team/utils/string_utils.dart';
 import 'package:chachatte_team/utils/track_utils.dart';
 import 'package:flutter/material.dart';
@@ -55,14 +54,6 @@ class EventCard extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
-            Container(
-              decoration: BoxDecoration(
-                shape: BoxShape.rectangle,
-                color: event.endDate.isAfter(DateTime.now()) ? Colors.green[700] : Colors.grey[700],
-                borderRadius: BorderRadius.only(topLeft: Radius.circular(4.0), bottomLeft: Radius.circular(4.0)),
-              ),
-              width: 5,
-            ),
             Expanded(
               child: Padding(
                 child: Row(
@@ -136,7 +127,7 @@ class EventCard extends StatelessWidget {
                                     Column(
                                       mainAxisAlignment: MainAxisAlignment.center,
                                       children: <Widget>[
-                                        Icon(CustomIcons.helmet, size: 15, color: Colors.teal[700]),
+                                        Icon(Icons.perm_contact_calendar, size: 15, color: Colors.teal[700]),
                                         Text(event.organizer, textScaleFactor: 0.9, style: TextStyle(color: Colors.white)),
                                       ],
                                     ),
@@ -163,7 +154,15 @@ class EventCard extends StatelessWidget {
                 ),
                 padding: EdgeInsets.all(8.0),
               ),
-            )
+            ),
+            Container(
+              decoration: BoxDecoration(
+                shape: BoxShape.rectangle,
+                color: event.endDate.isAfter(DateTime.now()) ? Colors.green[700] : Colors.grey[600],
+                borderRadius: BorderRadius.only(topRight: Radius.circular(4.0), bottomRight: Radius.circular(4.0)),
+              ),
+              width: 5,
+            ),
           ],
         ),
       ),

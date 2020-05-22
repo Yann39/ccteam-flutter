@@ -36,6 +36,9 @@ class EventProvider extends ChangeNotifier {
   // list of events to be displayed when filtering per date
   List<Event> _calendarEvents = [];
 
+  // list of events to be displayed when filtering per current year
+  List<Event> _yearEvents = [];
+
   // list of events of a member
   List<Event> _memberEvents = [];
 
@@ -48,6 +51,9 @@ class EventProvider extends ChangeNotifier {
   // current loading status
   LoadingStatus _loadingStatus = LoadingStatus.notLoaded;
 
+  // list of selected event statuses indexes
+  List<int> _selectedStatuses = [0];
+
   // constructor
   EventProvider() {
     // as soon as it is instantiated, we fetch events
@@ -58,6 +64,8 @@ class EventProvider extends ChangeNotifier {
 
   UnmodifiableListView<Event> get calendarEvents => UnmodifiableListView(_calendarEvents);
 
+  UnmodifiableListView<Event> get yearEvents => UnmodifiableListView(_yearEvents);
+
   UnmodifiableListView<Event> get memberEvents => UnmodifiableListView(_memberEvents);
 
   UnmodifiableListView<Event> get trackEvents => UnmodifiableListView(_trackEvents);
@@ -66,9 +74,22 @@ class EventProvider extends ChangeNotifier {
 
   LoadingStatus get loadingStatus => _loadingStatus;
 
+  List<int> get selectedStatuses => _selectedStatuses;
+
+  /// Update the current selected statuses according to the new clicked [index]
+  /// It will fetch new events according to the selected status(es) for the specified [memberId]
+  void updateStatusSelection(int index, int memberId) {
+    if (_selectedStatuses.contains(index)) {
+      _selectedStatuses.remove(index);
+    } else {
+      _selectedStatuses.add(index);
+    }
+    fetchMemberEventsByStatus(memberId);
+  }
+
   /// Update the current loading status
   /// todo Should we have different variables for all events and member events so that it does not refresh all ?
-  void _updateStatus(LoadingStatus status) {
+  void _updateLoadingStatus(LoadingStatus status) {
     _loadingStatus = status;
     _log.info("Notifying listeners of EventProvider");
     notifyListeners();
@@ -76,15 +97,15 @@ class EventProvider extends ChangeNotifier {
 
   /// Get the list of all events
   void _fetchEvents() async {
-    _updateStatus(LoadingStatus.loading);
+    _updateLoadingStatus(LoadingStatus.loading);
     await _eventsService.fetchEvents().then((value) async {
       _log.fine("Events list retrieved successfully");
       _events = value;
-      _updateStatus(LoadingStatus.loaded);
+      _updateLoadingStatus(LoadingStatus.loaded);
     }, onError: (error) {
       _log.warning("Error when retrieving events list ($error)");
       _events = [];
-      _updateStatus(LoadingStatus.notLoaded);
+      _updateLoadingStatus(LoadingStatus.notLoaded);
       throw (error);
     });
   }
@@ -102,6 +123,13 @@ class EventProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Filter current events list to retrieve only event of the current year
+  void fetchCurrentYearEvents() {
+    _yearEvents = _events.where((event) => DateTime.now().year == event.startDate.year).toList();
+    _log.info("Notifying listeners of EventProvider");
+    notifyListeners();
+  }
+
   /// Change the index of the selected top filter, to display events for current year or per date
   void changeEventModeSelectorIndex(int index) {
     _eventModeSelectorIndex = index ?? 0;
@@ -111,30 +139,57 @@ class EventProvider extends ChangeNotifier {
 
   /// Get the list of all events for the specified [memberId]
   void fetchMemberEvents(int memberId) async {
-    _updateStatus(LoadingStatus.loading);
+    _updateLoadingStatus(LoadingStatus.loading);
     await _eventsService.fetchMemberEvents(memberId).then((value) async {
       _log.fine("Member events list retrieved successfully");
       _memberEvents = value;
-      _updateStatus(LoadingStatus.loaded);
+      _updateLoadingStatus(LoadingStatus.loaded);
     }, onError: (error) {
       _log.warning("Error when retrieving member events list ($error)");
       _memberEvents = [];
-      _updateStatus(LoadingStatus.notLoaded);
+      _updateLoadingStatus(LoadingStatus.notLoaded);
       throw (error);
     });
   }
 
+  /// Get the list of all events for the specified [memberId] according to current selected status filters
+  void fetchMemberEventsByStatus(int memberId) async {
+    _updateLoadingStatus(LoadingStatus.loading);
+    if (_selectedStatuses.length < 1) {
+      _memberEvents.clear();
+      _updateLoadingStatus(LoadingStatus.loaded);
+    } else {
+      await _eventsService.fetchMemberEvents(memberId).then((value) async {
+        _log.fine("Member events list retrieved successfully");
+        if (_selectedStatuses.length == 2) {
+          _memberEvents = value;
+        }
+        else if (_selectedStatuses.contains(0)) {
+          _memberEvents = value.where((element) => element.endDate.isAfter(DateTime.now())).toList();
+        } else if (_selectedStatuses.contains(1)) {
+          _memberEvents = value.where((element) => element.endDate.isBefore(DateTime.now())).toList();
+        }
+        _updateLoadingStatus(LoadingStatus.loaded);
+      }, onError: (error) {
+        _log.warning("Error when retrieving member events list ($error)");
+        _memberEvents = [];
+        _updateLoadingStatus(LoadingStatus.notLoaded);
+        throw (error);
+      });
+    }
+  }
+
   /// Get the list of all events for the specified [trackId]
   void fetchTrackEvents(int trackId) async {
-    _updateStatus(LoadingStatus.loading);
+    _updateLoadingStatus(LoadingStatus.loading);
     await _eventsService.fetchTrackEvents(trackId).then((value) async {
       _log.fine("Track events list retrieved successfully");
       _trackEvents = value;
-      _updateStatus(LoadingStatus.loaded);
+      _updateLoadingStatus(LoadingStatus.loaded);
     }, onError: (error) {
       _log.warning("Error when retrieving track events list ($error)");
       _trackEvents = [];
-      _updateStatus(LoadingStatus.notLoaded);
+      _updateLoadingStatus(LoadingStatus.notLoaded);
       throw (error);
     });
   }
