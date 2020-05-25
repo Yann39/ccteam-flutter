@@ -24,6 +24,7 @@ import 'package:chachatte_team/utils/custom_decorations.dart';
 import 'package:chachatte_team/utils/date_utils.dart';
 import 'package:chachatte_team/utils/strings.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:provider/provider.dart';
 
 class NewsDetail extends StatelessWidget {
@@ -101,34 +102,72 @@ class NewsDetail extends StatelessWidget {
         ),
       ),
       body: Container(
-        padding: EdgeInsets.symmetric(vertical: 32.0, horizontal: 16),
         decoration: CustomDecorations.mainContent,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisAlignment: MainAxisAlignment.start,
           children: <Widget>[
-            Text(news.title, textScaleFactor: 2.4, textAlign: TextAlign.left, style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-            SizedBox(height: 10),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.start,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: <Widget>[
-                Icon(Icons.person, color: Colors.lime, size: 12.0),
-                SizedBox(width: 2.0),
-                Text("${AppString.by} ${news.createdBy.firstName} ${news.createdBy.lastName}", textAlign: TextAlign.left, style: TextStyle(color: Colors.white)),
-              ],
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.start,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: <Widget>[
-                Icon(Icons.access_time, color: Colors.lime, size: 12.0),
-                SizedBox(width: 2.0),
-                Text("${AppString.on} ${DateUtils.convertToString(news.newsDate, DATE_FORMAT_TXT)}", textAlign: TextAlign.left, style: TextStyle(color: Colors.white)),
-              ],
+            Container(
+              alignment: Alignment.center,
+              height: 132,
+              padding: EdgeInsets.all(16.0),
+              decoration: BoxDecoration(
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.blue[300],
+                    spreadRadius: 1,
+                    blurRadius: 2,
+                  ),
+                ],
+                image: DecorationImage(
+                  fit: BoxFit.fill,
+                  image: AssetImage("images/finish_flag.png"),
+                  colorFilter: ColorFilter.mode(Colors.black.withOpacity(0.05), BlendMode.dstATop),
+                ),
+                gradient: LinearGradient(
+                  colors: [Colors.blue[300], Colors.blue[500]],
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                ),
+              ),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: <Widget>[
+                  Text(
+                    "${news.title}",
+                    textScaleFactor: 2,
+                    style: TextStyle(color: Colors.white),
+                    maxLines: 3,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: <Widget>[
+                      Icon(Icons.person, color: Colors.lime, size: 12.0),
+                      SizedBox(width: 2.0),
+                      Text("${AppString.by} ${news.createdBy.firstName} ${news.createdBy.lastName}", textAlign: TextAlign.left, style: TextStyle(color: Colors.white)),
+                    ],
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: <Widget>[
+                      Icon(Icons.access_time, color: Colors.lime, size: 12.0),
+                      SizedBox(width: 2.0),
+                      Text("${AppString.on} ${DateUtils.convertToString(news.newsDate, DATE_FORMAT_TXT)}", textAlign: TextAlign.left, style: TextStyle(color: Colors.white)),
+                    ],
+                  ),
+                ],
+              ),
             ),
             Divider(height: 36, color: Colors.white),
-            Text(news.content, textScaleFactor: 1.3, style: TextStyle(color: Colors.white)),
+            Flexible(
+              child: Markdown(
+                data: news.content,
+              ),
+            ),
+            //Text(news.content, textScaleFactor: 1.3, style: TextStyle(color: Colors.white)),
           ],
         ),
       ),

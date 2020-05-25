@@ -24,6 +24,7 @@ import 'package:intl/intl.dart';
 class News {
   int id;
   String title;
+  String catchLine;
   String content;
   DateTime newsDate;
   List<Member> members;
@@ -32,13 +33,14 @@ class News {
   DateTime modifiedOn;
   Member modifiedBy;
 
-  News({this.id, this.title, this.content, this.newsDate, this.members, this.createdOn, this.createdBy, this.modifiedOn, this.modifiedBy,});
+  News({this.id, this.title, this.catchLine, this.content, this.newsDate, this.members, this.createdOn, this.createdBy, this.modifiedOn, this.modifiedBy,});
 
   @override
   String toString() {
     return """{
       id: ${this.id},
       title: ${this.title},
+      catchLine: ${this.catchLine},
       content: ${this.content},
       newsDate: ${this.newsDate != null ? this.newsDate.toIso8601String() : ""},
       members: ${this.members != null ? this.members.map((i) => i.toString()) : ""},
@@ -53,6 +55,7 @@ class News {
   News.fromJson(Map<String, dynamic> json)
       : id = json['id'] != null ? int.parse(json['id']) : -1,
         title = json['title'],
+        catchLine = json['catch_line'],
         content = json['content'],
         newsDate = json['news_date'] != null ? new DateFormat("yyyy-MM-dd HH:mm:ss").parseStrict(json['news_date']) : null,
         members = json['members'] != null ? (json['members'] as List).map((i) => Member.fromJson(i)).toList() : null,
@@ -65,6 +68,7 @@ class News {
   Map<String, dynamic> toJson() => {
     "id": id,
     "title": title,
+    "catch_line": catchLine,
     "content": content,
     "news_date": newsDate,
     'members': members != null ? members.map((i) => i.toJson()) : null,

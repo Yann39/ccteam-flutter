@@ -48,6 +48,7 @@ if ($news->title != null) {
     $news_arr = array(
         "id" =>  $news->id,
         "title" => $news->title,
+        "catch_line" => $news->catch_line,
         "content" => $news->content,
         "news_date" => $news->news_date,
         "created_on" => $news->created_on,

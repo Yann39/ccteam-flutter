@@ -59,6 +59,7 @@ CREATE TABLE IF NOT EXISTS `photos` (
 CREATE TABLE IF NOT EXISTS `news` (
   `id` int NOT NULL AUTO_INCREMENT,
   `title` varchar(128) NOT NULL,
+  `catch_line` varchar(512) NOT NULL,
   `content` text NOT NULL,
   `news_date` datetime NOT NULL,
   `created_on` timestamp NOT NULL,
@@ -138,13 +139,13 @@ INSERT INTO `members` (`id`, `first_name`, `last_name`, `email`, `password`, `ac
 (9, 'John', 'Doe', 'john.doe@mail.fr', '', 0, 0, '+33608080808', 'Honda CBR 600 RR 2010', '2018-01-30 00:00:00', '2018-07-01 09:30:54', NULL),
 (10, 'Jenna', 'Jonhnson', 'jenna.jonhnson@mail.com', '', 0, 0, NULL, 'Kawasaki ZX6R 636 2013', '2018-02-19 13:56:42', '2018-07-01 09:37:12', NULL);
 
-INSERT INTO `news` (`id`, `title`, `content`, `news_date`, `created_on`, `created_by`, `modified_on`, `modified_by`) VALUES
-(1, 'Repas du club', 'Repas de club avec tartiflettre géante', '2018-05-30 23:17:12', '2018-06-01 11:50:41', 1, NULL, NULL),
-(2, 'Réunion de dèbut d''année', 'Réunion de dèbut d''année pour oganiser les roulages', '2018-05-30 23:31:44', '2018-06-01 00:35:07', 1, NULL, NULL),
-(3, 'Réunion pour organisation foire au 2 roues', 'Réunion pour organisation foire au 2 roues qui auralieu de 21 mars 2020', '2018-06-01 00:01:36', '2018-06-01 00:35:07', 1, '2018-06-01 02:14:44', 1,
-(4, 'Annulation du roulage Alés fin d\'année', 'Attention le roulage qui devait avoir lieu à Ales en fin d\'année est annulé car le circuit est fermé suite au record du circuit battu par Yann', '2019-01-22 18:00:00', '2018-06-01 00:01:36', 1, NULL, NULL),
-(5, 'Essai de la nouvelle R1 à Barcelone', 'Essai de la nouvelle R1 à Barcelone sous la pluie', '2019-11-22 16:08:00', '2019-06-01 16:08:00', 1, NULL, NULL),
-(6, 'Soirée mousse chez Fred', 'Soirée mousse chez Fred avec DJ Fred et Arnold T', '2019-12-02 19:24:16', '2019-06-01 16:08:00', 1, NULL, NULL);
+INSERT INTO `news` (`id`, `title`, `catch_line`, `content`, `news_date`, `created_on`, `created_by`, `modified_on`, `modified_by`) VALUES
+(1, 'Repas du club', 'Repas de club avec tartiflettre géante', NULL, '2018-05-30 23:17:12', '2018-06-01 11:50:41', 1, NULL, NULL),
+(2, 'Réunion de dèbut d''année', 'Réunion de dèbut d''année pour oganiser les roulages', NULL, '2018-05-30 23:31:44', '2018-06-01 00:35:07', 1, NULL, NULL),
+(3, 'Réunion pour organisation foire au 2 roues', 'Réunion pour organisation foire au 2 roues qui aura lieu de 21 mars 2020', NULL, '2018-06-01 00:01:36', '2018-06-01 00:35:07', 1, '2018-06-01 02:14:44', 1,
+(4, 'Annulation du roulage Alés fin d''année', 'Attention le roulage qui devait avoir lieu à Ales en fin d''année est annulé car le circuit est fermé suite au record du circuit battu par Yann', NULL, '2019-01-22 18:00:00', '2018-06-01 00:01:36', 1, NULL, NULL),
+(5, 'Essai de la nouvelle R1 à Barcelone', 'Essai de la nouvelle R1 à Barcelone sous la pluie', NULL, '2019-11-22 16:08:00', '2019-06-01 16:08:00', 1, NULL, NULL),
+(6, 'Soirée mousse chez Fred', 'Soirée mousse chez Fred avec DJ Fred et Arnold T', NULL, '2019-12-02 19:24:16', '2019-06-01 16:08:00', 1, NULL, NULL);
 
 INSERT INTO `events` (`id`, `title`, `description`, `start_date`, `end_date`, `track_id`, `organizer`, `price`, `created_on`, `created_by`, `modified_on`, `modified_by`) VALUES
 (1, 'Roulage Dijon', 'Roulage à Dijon-Prenois avec ActivBike', '2018-07-12 00:00:00', '2018-07-12 00:00:00', 2, 'ActivBike', 189, '2018-06-01 09:35:07', 1, NULL, NULL),

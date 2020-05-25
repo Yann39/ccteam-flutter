@@ -146,11 +146,23 @@ class _AddEditNewsState extends State<AddEditNews> {
                   TextFormField(
                     decoration: const InputDecoration(
                       icon: const Icon(Icons.short_text),
+                      hintText: AppString.newsCatchLineHint,
+                      labelText: AppString.newsCatchLine,
+                    ),
+                    maxLines: 2,
+                    inputFormatters: [LengthLimitingTextInputFormatter(512)],
+                    validator: (val) => val.isEmpty ? AppString.newsContentMandatory : null,
+                    onSaved: (val) => _currNews.catchLine = val,
+                    initialValue: _currNews.catchLine,
+                  ),
+                  TextFormField(
+                    decoration: const InputDecoration(
+                      icon: const Icon(Icons.format_align_left),
                       hintText: AppString.newsContentHint,
                       labelText: AppString.newsContent,
                     ),
                     maxLines: 5,
-                    inputFormatters: [LengthLimitingTextInputFormatter(2048)],
+                    inputFormatters: [LengthLimitingTextInputFormatter(8128)],
                     validator: (val) => val.isEmpty ? AppString.newsContentMandatory : null,
                     onSaved: (val) => _currNews.content = val,
                     initialValue: _currNews.content,

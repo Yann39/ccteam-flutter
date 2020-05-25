@@ -42,6 +42,7 @@ $data = json_decode(file_get_contents("php://input"));
 // set news property values
 $news->id = $data->id;
 $news->title = $data->title;
+$news->catch_line = $data->catch_line;
 $news->content = $data->content;
 $news->news_date = $data->news_date;
 $news->modified_on = $data->modified_on;

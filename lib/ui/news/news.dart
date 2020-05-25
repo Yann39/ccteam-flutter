@@ -31,7 +31,6 @@ import 'package:provider/provider.dart';
 
 class NewsList extends StatelessWidget {
   final Logger _log = new Logger('NewsList');
-  final List _helmets = ["images/helmet-blue.png", "images/helmet-green.png", "images/helmet-red.png", "images/helmet-purple.png", "images/helmet-yellow.png"];
 
   /// Navigates to the Add News screen and awaits the result from Navigator.pop
   _navigateToAddNewsScreen(BuildContext context) async {
@@ -66,7 +65,15 @@ class NewsList extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text(AppString.tabHome),
-        actions: <Widget>[MainActionMenu()],
+        actions: <Widget>[
+          IconButton(
+            icon: Icon(Icons.add),
+            onPressed: () {
+              _navigateToAddNewsScreen(context);
+            },
+          ),
+          MainActionMenu(),
+        ],
       ),
       drawer: MainDrawer(),
       body: Scaffold(
@@ -137,14 +144,6 @@ class NewsList extends StatelessWidget {
             ),
           ),
         ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        elevation: 0.0,
-        child: Icon(Icons.add),
-        backgroundColor: Colors.red[700],
-        onPressed: () {
-          _navigateToAddNewsScreen(context);
-        },
       ),
     );
   }

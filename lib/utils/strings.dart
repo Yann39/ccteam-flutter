@@ -78,6 +78,8 @@ class AppString {
   static const String newsTitle = 'Titre';
   static const String newsTitleHint = 'Saisissez le titre de l\'actualité';
   static const String newsTitleMandatory = 'Le titre est obligatoire';
+  static const String newsCatchLine = 'Accroche';
+  static const String newsCatchLineHint = 'Saisissez une phrase d\'accroche';
   static const String newsContent = 'Contenu';
   static const String newsContentHint = 'Saisissez le contenu de l\'actualité';
   static const String newsContentMandatory = 'Le contenu est obligatoire';

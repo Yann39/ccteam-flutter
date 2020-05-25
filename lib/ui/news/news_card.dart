@@ -32,8 +32,11 @@ class NewsCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+
+    final Color _color = index%3 == 0 ? Colors.red[900] : index%3 == 1 ? Colors.green[600] : Colors.blue[600];
+
     return Container(
-      height: 60.0,
+      height: 76.0,
       padding: EdgeInsets.symmetric(vertical: 8.0, horizontal: 12.0),
       margin: EdgeInsets.symmetric(vertical: 4.0, horizontal: 10.0),
       decoration: CustomDecorations.cardFull,
@@ -42,14 +45,44 @@ class NewsCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.center,
         children: <Widget>[
           //Image(image: image, height: 30, colorBlendMode: BlendMode.modulate, color: Colors.green),
-          Icon(CustomIcons.helmet, size: 35, color: index%3 == 0 ? Colors.red[700] : index%3 == 1 ? Colors.green[700] : Colors.blue[700]),
+          Column(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: <Widget>[
+              //Icon(CustomIcons.helmet, size: 35, color: _color,),
+              ShaderMask(
+                blendMode: BlendMode.srcATop,
+                shaderCallback: (bounds) => LinearGradient(
+                  begin: const FractionalOffset(0.0, 0.0),
+                  end: const FractionalOffset(0.0, 1.0),
+                  stops: [0.0, 1.0],
+                  colors: [_color, Colors.purple[700]],
+                ).createShader(bounds),
+                child: Icon(CustomIcons.helmet, size: 35, color: _color,),
+              ),
+              Row(children: <Widget>[
+                Icon(Icons.favorite_border, color: Colors.pink, size: 12.0),
+                SizedBox(width: 2.0),
+                Text(
+                  "3",
+                  softWrap: false,
+                  textScaleFactor: 0.9,
+                  style: TextStyle(color: Colors.white),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],),
+              //Text("News", textScaleFactor: 0.6, style: TextStyle(color: _color, fontFamily: 'Barbatrick', letterSpacing: 1)),
+            ],
+          ),
           SizedBox(width: 8.0),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[
-                Text(news.title, textScaleFactor: 1.1, style: TextStyle(color: Colors.white), maxLines: 1, overflow: TextOverflow.ellipsis),
+                Text(news.title, textScaleFactor: 1.2, style: TextStyle(color: Colors.white), maxLines: 1, overflow: TextOverflow.ellipsis),
+                SizedBox(height: 4.0),
+                Text(news.catchLine, textScaleFactor: 0.9, style: TextStyle(color: Colors.white), maxLines: 1, overflow: TextOverflow.ellipsis),
                 SizedBox(height: 4.0),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.start,
@@ -65,6 +98,7 @@ class NewsCard extends StatelessWidget {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
+                    SizedBox(width: 8.0),
                   ],
                 ),
               ],

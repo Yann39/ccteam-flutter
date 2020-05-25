@@ -28,6 +28,7 @@ class News {
     // object properties
     public $id;
     public $title;
+    public $catch_line;
     public $content;
     public $news_date;
     public $created_on;
@@ -44,7 +45,7 @@ class News {
     function read() {
 
         // query to get all records
-        $query = "SELECT n.id, n.title, n.content, n.news_date, n.created_on, n.created_by, n.modified_on, n.modified_by FROM " . $this->table_name . " n ORDER BY n.news_date DESC";
+        $query = "SELECT n.id, n.title, n.catch_line, n.content, n.news_date, n.created_on, n.created_by, n.modified_on, n.modified_by FROM " . $this->table_name . " n ORDER BY n.news_date DESC";
 
         // prepare query statement
         $stmt = $this->conn->prepare($query);
@@ -59,7 +60,7 @@ class News {
     function readOne() {
 
         // query to get record corresponding to specified id
-        $query = "SELECT n.title, n.content, n.news_date, n.created_on, n.created_by, n.modified_on, n.modified_by FROM " . $this->table_name . " n WHERE n.id = ? LIMIT 0,1";
+        $query = "SELECT n.title, n.catch_line, n.content, n.news_date, n.created_on, n.created_by, n.modified_on, n.modified_by FROM " . $this->table_name . " n WHERE n.id = ? LIMIT 0,1";
 
         // prepare query statement
         $stmt = $this->conn->prepare($query);
@@ -75,6 +76,7 @@ class News {
 
         // set values to object properties
         $this->title = $row['title'];
+        $this->catch_line = $row['catch_line'];
         $this->content = $row['content'];
         $this->news_date = $row['news_date'];
         $this->created_on = $row['created_on'];
@@ -87,13 +89,14 @@ class News {
     function create() {
 
         // query to insert record
-        $query = "INSERT INTO " . $this->table_name . " SET title = :title, content = :content, news_date = :news_date, created_on = :created_on, created_by = :created_by";
+        $query = "INSERT INTO " . $this->table_name . " SET title = :title, catch_line = :catch_line, content = :content, news_date = :news_date, created_on = :created_on, created_by = :created_by";
 
         // prepare query
         $stmt = $this->conn->prepare($query);
 
         // sanitize
         $this->title = htmlspecialchars(strip_tags($this->title));
+        $this->catch_line = htmlspecialchars(strip_tags($this->catch_line));
         $this->content = htmlspecialchars(strip_tags($this->content));
         $this->news_date = htmlspecialchars(strip_tags($this->news_date));
         $this->created_on = htmlspecialchars(strip_tags($this->created_on));
@@ -101,6 +104,7 @@ class News {
 
         // bind values
         $stmt->bindParam(":title", $this->title);
+        $stmt->bindParam(":catch_line", $this->catch_line);
         $stmt->bindParam(":content", $this->content);
         $stmt->bindParam(":news_date", $this->news_date);
         $stmt->bindParam(":created_on", $this->created_on);
@@ -118,13 +122,14 @@ class News {
     function update() {
 
         // query to update record
-        $query = "UPDATE " . $this->table_name . " SET title = :title, content = :content, news_date = :news_date, modified_on = :modified_on, modified_by = :modified_by WHERE id = :id";
+        $query = "UPDATE " . $this->table_name . " SET title = :title, catch_line = :catch_line, content = :content, news_date = :news_date, modified_on = :modified_on, modified_by = :modified_by WHERE id = :id";
 
         // prepare query statement
         $stmt = $this->conn->prepare($query);
 
         // sanitize
         $this->title = htmlspecialchars(strip_tags($this->title));
+        $this->catch_line = htmlspecialchars(strip_tags($this->catch_line));
         $this->content = htmlspecialchars(strip_tags($this->content));
         $this->news_date = htmlspecialchars(strip_tags($this->news_date));
         $this->id = htmlspecialchars(strip_tags($this->id));
@@ -133,6 +138,7 @@ class News {
 
         // bind new values
         $stmt->bindParam(':title', $this->title);
+        $stmt->bindParam(':catch_line', $this->catch_line);
         $stmt->bindParam(':content', $this->content);
         $stmt->bindParam(':news_date', $this->news_date);
         $stmt->bindParam(':id', $this->id);
@@ -174,7 +180,7 @@ class News {
     function search($keywords){
 
         // query to search across all records
-        $query = "SELECT n.title, n.content, n.news_date, n.created_on, n.created_by, n.modified_on, n.modified_by FROM " . $this->table_name . " n WHERE n.title LIKE ? OR n.content LIKE ? ORDER BY n.created_on DESC";
+        $query = "SELECT n.title, n.catch_line, n.content, n.news_date, n.created_on, n.created_by, n.modified_on, n.modified_by FROM " . $this->table_name . " n WHERE n.title LIKE ? OR n.catch_line LIKE ? OR n.content LIKE ? ORDER BY n.created_on DESC";
 
         // prepare query statement
         $stmt = $this->conn->prepare($query);

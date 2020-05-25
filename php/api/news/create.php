@@ -40,10 +40,11 @@ $news = new News($db);
 $data = json_decode(file_get_contents("php://input"));
 
 // make sure required data is not empty
-if (!empty($data->title) && !empty($data->content) && !empty($data->news_date) && !empty($data->created_by)) {
+if (!empty($data->title) && !empty($data->catch_line) && !empty($data->content) && !empty($data->news_date) && !empty($data->created_by)) {
 
     // set news property values
     $news->title = $data->title;
+    $news->catch_line = $data->catch_line;
     $news->content = $data->content;
     $news->news_date = $data->news_date;
     $news->created_on = date('Y-m-d H:i:s');

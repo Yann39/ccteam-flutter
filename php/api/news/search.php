@@ -58,6 +58,7 @@ if ($num > 0) {
         $news_item = array(
             "id" => $id,
             "title" => $title,
+            "catch_line" => $catch_line,
             "content" => $content,
             "news_date" => $news_date
         );
