@@ -26,9 +26,13 @@ import 'package:chachatte_team/providers/news_provider.dart';
 import 'package:chachatte_team/providers/photo_provider.dart';
 import 'package:chachatte_team/providers/record_provider.dart';
 import 'package:chachatte_team/providers/track_provider.dart';
+import 'package:chachatte_team/services/notifications_service.dart';
 import 'package:chachatte_team/ui/events/add_edit_event.dart';
 import 'package:chachatte_team/ui/main/edit_avatar.dart';
+import 'package:chachatte_team/ui/main/home.dart';
 import 'package:chachatte_team/ui/main/image_crop.dart';
+import 'package:chachatte_team/ui/members/add_edit_member.dart';
+import 'package:chachatte_team/ui/members/member_detail.dart';
 import 'package:chachatte_team/ui/members/member_events.dart';
 import 'package:chachatte_team/ui/news/add_edit_news.dart';
 import 'package:chachatte_team/ui/news/news.dart';
@@ -37,14 +41,8 @@ import 'package:chachatte_team/ui/photos/add_edit_photo.dart';
 import 'package:chachatte_team/ui/photos/photo_detail.dart';
 import 'package:chachatte_team/ui/tracks/track_detail.dart';
 import 'package:chachatte_team/ui/unauthenticated/forgot_password.dart';
-import 'package:chachatte_team/ui/main/home.dart';
 import 'package:chachatte_team/ui/unauthenticated/loading.dart';
 import 'package:chachatte_team/ui/unauthenticated/login.dart';
-import 'package:chachatte_team/ui/members/add_edit_member.dart';
-import 'package:chachatte_team/ui/members/member_detail.dart';
-import 'package:chachatte_team/ui/news/add_edit_news.dart';
-import 'package:chachatte_team/ui/news/news.dart';
-import 'package:chachatte_team/ui/news/news_detail.dart';
 import 'package:chachatte_team/ui/unauthenticated/register.dart';
 import 'package:chachatte_team/utils/enums.dart';
 import 'package:chachatte_team/utils/strings.dart';
@@ -84,6 +82,10 @@ class ChachatteTeamApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     _log.info("Building ChachatteTeamApp...");
+
+    // Initialize notifications plugin
+    NotificationsService.initialize(context);
+
     return MaterialApp(
       title: AppString.applicationTitle,
       initialRoute: '/',

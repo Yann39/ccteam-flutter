@@ -20,6 +20,7 @@
 import 'package:chachatte_team/models/event.dart';
 import 'package:chachatte_team/models/track.dart';
 import 'package:chachatte_team/services/events_service.dart';
+import 'package:chachatte_team/services/notifications_service.dart';
 import 'package:chachatte_team/services/tracks_service.dart';
 import 'package:chachatte_team/utils/constants.dart';
 import 'package:chachatte_team/utils/custom_decorations.dart';
@@ -118,6 +119,8 @@ class _AddEditEventState extends State<AddEditEvent> {
         // create the event and go back with a message, the result is awaited in caller
         eventsService.createEvent(event).then((value) {
           Navigator.pop(context, AppString.eventCreated);
+          // schedule a push notification 6 hours before the event starts
+          NotificationsService.scheduleEventNotification(event);
         }, onError: (error) {
           Navigator.pop(context, AppString.eventCreationFailed + " : " + error.toString());
         });

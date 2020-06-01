@@ -43,6 +43,9 @@ dependencies:
   # markdown text interpreter
   flutter_markdown: ^0.4.0
 
+  # to display notifications
+  flutter_local_notifications: ^1.4.3
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

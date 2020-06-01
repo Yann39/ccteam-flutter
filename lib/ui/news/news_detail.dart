@@ -19,6 +19,7 @@
 
 import 'package:chachatte_team/models/news.dart';
 import 'package:chachatte_team/providers/news_provider.dart';
+import 'package:chachatte_team/services/notifications_service.dart';
 import 'package:chachatte_team/utils/constants.dart';
 import 'package:chachatte_team/utils/custom_decorations.dart';
 import 'package:chachatte_team/utils/date_utils.dart';
@@ -82,6 +83,14 @@ class NewsDetail extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         actions: <Widget>[
+          Builder(
+            builder: (context) => IconButton(
+              icon: Icon(Icons.notifications_active),
+              onPressed: () =>
+                  // send a push notification
+              NotificationsService.pushInstantNewsNotification(news),
+            ),
+          ),
           Builder(
             builder: (context) => IconButton(
               icon: Icon(Icons.edit),

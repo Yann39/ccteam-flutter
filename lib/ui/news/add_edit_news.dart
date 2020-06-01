@@ -20,6 +20,7 @@
 import 'package:chachatte_team/models/news.dart';
 import 'package:chachatte_team/providers/login_provider.dart';
 import 'package:chachatte_team/providers/news_provider.dart';
+import 'package:chachatte_team/services/notifications_service.dart';
 import 'package:chachatte_team/utils/constants.dart';
 import 'package:chachatte_team/utils/custom_decorations.dart';
 import 'package:chachatte_team/utils/date_utils.dart';
@@ -110,6 +111,8 @@ class _AddEditNewsState extends State<AddEditNews> {
         // create the news then go back with a message, the result is awaited in caller
         Provider.of<NewsProvider>(context, listen: false).createNews(news).then((value) {
           Navigator.pop(context, AppString.newsCreated);
+          // send a push notification
+          NotificationsService.pushInstantNewsNotification(news);
         }, onError: (error) {
           Navigator.pop(context, AppString.newsCreationFailed);
         });
