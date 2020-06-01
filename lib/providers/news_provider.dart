@@ -38,7 +38,7 @@ class NewsProvider extends ChangeNotifier {
   // constructor
   NewsProvider() {
     // as soon as it is instantiated, we fetch all news
-    _fetchNews();
+    fetchNews();
   }
 
   UnmodifiableListView<News> get news => UnmodifiableListView(_news);
@@ -53,7 +53,7 @@ class NewsProvider extends ChangeNotifier {
   }
 
   /// Get the list of all news
-  Future<void> _fetchNews() async {
+  Future<void> fetchNews() async {
     _updateStatus(LoadingStatus.loading);
     await _newsService.fetchNews().then((value) async {
       _log.fine("News list retrieved successfully");

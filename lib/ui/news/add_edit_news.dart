@@ -18,6 +18,7 @@
  */
 
 import 'package:chachatte_team/models/news.dart';
+import 'package:chachatte_team/providers/login_provider.dart';
 import 'package:chachatte_team/providers/news_provider.dart';
 import 'package:chachatte_team/utils/constants.dart';
 import 'package:chachatte_team/utils/custom_decorations.dart';
@@ -31,8 +32,9 @@ import 'package:provider/provider.dart';
 
 class AddEditNews extends StatefulWidget {
   final News news;
+  final String title;
 
-  const AddEditNews({Key key, this.news}) : super(key: key);
+  const AddEditNews({Key key, this.news, this.title}) : super(key: key);
 
   @override
   State<StatefulWidget> createState() {
@@ -95,6 +97,8 @@ class _AddEditNewsState extends State<AddEditNews> {
 
       // submit data to backend, if id is set this is an update, else a creation
       if (news.id != null) {
+        news.modifiedBy = Provider.of<LoginProvider>(context, listen: false).loggedMember.id;
+        news.modifiedOn = DateTime.now();
         // update the news then go back with a message, the result is awaited in caller
         Provider.of<NewsProvider>(context, listen: false).updateNews(news).then((value) {
           Navigator.pop(context, AppString.newsUpdated);
@@ -102,11 +106,12 @@ class _AddEditNewsState extends State<AddEditNews> {
           Navigator.pop(context, AppString.newsUpdateFailed);
         });
       } else {
+        news.createdBy = Provider.of<LoginProvider>(context, listen: false).loggedMember.id;
         // create the news then go back with a message, the result is awaited in caller
         Provider.of<NewsProvider>(context, listen: false).createNews(news).then((value) {
           Navigator.pop(context, AppString.newsCreated);
         }, onError: (error) {
-          Navigator.pop(context, AppString.newsUpdateFailed);
+          Navigator.pop(context, AppString.newsCreationFailed);
         });
       }
     }
@@ -119,7 +124,7 @@ class _AddEditNewsState extends State<AddEditNews> {
     return Scaffold(
       key: _scaffoldKey,
       appBar: AppBar(
-        title: Text(AppString.newsCreate),
+        title: Text(widget.title),
       ),
       body: Container(
         decoration: CustomDecorations.mainContent,
@@ -178,7 +183,8 @@ class _AddEditNewsState extends State<AddEditNews> {
                         ),
                         controller: _datePickerController,
                         keyboardType: TextInputType.datetime,
-                        validator: (val) => !DateUtils.isBeforeNow(val, DATE_FORMAT) ? (val.isEmpty ? AppString.newsDateMandatory : null) : AppString.newsDateNotValid,
+                        validator: (val) =>
+                            _currNews.id == null && !DateUtils.isBeforeNow(val, DATE_FORMAT) ? AppString.newsDateMustBeFuture : (val.isEmpty ? AppString.newsDateMandatory : null),
                         onSaved: (val) => _currNews.newsDate = DateFormat(DATE_FORMAT).parseStrict(val),
                       ),
                     ),

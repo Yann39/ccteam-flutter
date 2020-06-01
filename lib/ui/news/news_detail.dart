@@ -35,7 +35,7 @@ class NewsDetail extends StatelessWidget {
   /// Method that launches the Edit New screen and awaits the result from Navigator.pop
   _navigateToEditNewsScreen(BuildContext context, News news) async {
     // Navigator.push returns a Future that will complete after we call Navigator.pop on the Add News screen
-    final _result = await Navigator.pushNamed(context, '/addEditNews', arguments: news);
+    final _result = await Navigator.pushNamed(context, '/addEditNews', arguments: [news, AppString.newsEdit]);
 
     // after the Edit New Screen returns a result, hide any previous snack bars and show the new result
     if (_result != null) {

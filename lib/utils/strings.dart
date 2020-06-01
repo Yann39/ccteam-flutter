@@ -70,6 +70,7 @@ class AppString {
   static const String newsCreate = 'Ajouter une actualité';
   static const String newsCreated = 'L\'actualité à été créée avec succès !';
   static const String newsCreationFailed = 'Echec lors de la création de l\'actualité';
+  static const String newsEdit = 'Modifier une actualité';
   static const String newsUpdated = 'L\'actualité à été mise à jour avec succès !';
   static const String newsUpdateFailed = 'Echec lors de la mise à jour de l\'actualité';
   static const String newsDeleted = 'L\'actualité à été supprimé avec succès !';
@@ -86,7 +87,7 @@ class AppString {
   static const String newsDate = 'Date';
   static const String newsDateHint = 'JJ/MM/AAAA';
   static const String newsDateMandatory = 'La date est obligatoire';
-  static const String newsDateNotValid = 'La date indiquée n\'est pas valide';
+  static const String newsDateMustBeFuture = 'La date indiquée doit être supérieure à la date courante';
   static const String newsLikeFailed = 'Erreur, impossible d\'aimer cette actualité';
   static const String newsEmpty = 'Aucune actualité à afficher';
 

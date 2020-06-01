@@ -35,7 +35,7 @@ class NewsList extends StatelessWidget {
   /// Navigates to the Add News screen and awaits the result from Navigator.pop
   _navigateToAddNewsScreen(BuildContext context) async {
     // Navigator.push returns a Future that will complete after we call Navigator.pop on the target screen
-    final _result = await Navigator.pushNamed(context, '/addEditNews');
+    final _result = await Navigator.pushNamed(context, '/addEditNews', arguments: [null, AppString.newsCreate]);
 
     // after the target screen returns a result, hide any previous snack bars and show the new result
     if (_result != null) {
@@ -126,17 +126,20 @@ class NewsList extends StatelessWidget {
                   ),
                 ),
                 Expanded(
-                  child: LoadingContent(
-                    loadingStatus: _newsProvider.loadingStatus,
-                    emptyText: AppString.newsEmpty,
-                    child: ListView.builder(
-                      itemCount: _newsProvider.news.length,
-                      itemBuilder: (context, index) {
-                        return InkWell(
-                          child: NewsCard(_newsProvider.news[index], index),
-                          onTap: () => _navigateToNewsDetailScreen(context, _newsProvider.news[index]),
-                        );
-                      },
+                  child: RefreshIndicator(
+                    onRefresh: () => _newsProvider.fetchNews(),
+                    child: LoadingContent(
+                      loadingStatus: _newsProvider.loadingStatus,
+                      emptyText: AppString.newsEmpty,
+                      child: ListView.builder(
+                        itemCount: _newsProvider.news.length,
+                        itemBuilder: (context, index) {
+                          return InkWell(
+                            child: NewsCard(_newsProvider.news[index], index),
+                            onTap: () => _navigateToNewsDetailScreen(context, _newsProvider.news[index]),
+                          );
+                        },
+                      ),
                     ),
                   ),
                 ),

@@ -67,7 +67,7 @@ class NewsService {
   /// Throw an exception if response status code is different from 201
   Future<News> createNews(News news) async {
     // call to API
-    final response = await http.post(API_ROOT_URL + API_CREATE_NEWS_ENDPOINT, headers: {'Content-Type': 'application/json'}, body: news.toJson());
+    final response = await http.post(API_ROOT_URL + API_CREATE_NEWS_ENDPOINT, headers: {'Content-Type': 'application/json'}, body: json.encode(news.toJson()));
 
     final headers = response.headers;
 
@@ -99,7 +99,7 @@ class NewsService {
   /// Throw an exception if response status code is different from 200
   Future<void> updateNews(News news) async {
     // call to API
-    final response = await http.post(API_ROOT_URL + API_UPDATE_NEWS_ENDPOINT, headers: {'Content-Type': 'application/json'}, body: news.toJson());
+    final response = await http.post(API_ROOT_URL + API_UPDATE_NEWS_ENDPOINT, headers: {'Content-Type': 'application/json'}, body: json.encode(news.toJson()));
 
     // handle server response code
     if (response.statusCode == 200) {
@@ -116,7 +116,7 @@ class NewsService {
   /// Throw an exception if response status code is different from 204
   Future<void> deleteNews(News news) async {
     // call to API
-    final response = await http.post(API_ROOT_URL + API_DELETE_NEWS_ENDPOINT, headers: {'Content-Type': 'application/json'}, body: news.toJson());
+    final response = await http.post(API_ROOT_URL + API_DELETE_NEWS_ENDPOINT, headers: {'Content-Type': 'application/json'}, body: json.encode(news.toJson()));
 
     if (response.statusCode != 204) {
       throw Exception('Unexpected server response');

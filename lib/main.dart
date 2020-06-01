@@ -30,6 +30,9 @@ import 'package:chachatte_team/ui/events/add_edit_event.dart';
 import 'package:chachatte_team/ui/main/edit_avatar.dart';
 import 'package:chachatte_team/ui/main/image_crop.dart';
 import 'package:chachatte_team/ui/members/member_events.dart';
+import 'package:chachatte_team/ui/news/add_edit_news.dart';
+import 'package:chachatte_team/ui/news/news.dart';
+import 'package:chachatte_team/ui/news/news_detail.dart';
 import 'package:chachatte_team/ui/photos/add_edit_photo.dart';
 import 'package:chachatte_team/ui/photos/photo_detail.dart';
 import 'package:chachatte_team/ui/tracks/track_detail.dart';
@@ -90,7 +93,7 @@ class ChachatteTeamApp extends StatelessWidget {
         '/newsList': (context) => NewsList(),
         '/imageCrop': (context) => ImageCrop(),
         '/editAvatar': (context) => EditAvatar(member: ModalRoute.of(context).settings.arguments),
-        '/addEditNews': (context) => AddEditNews(news: ModalRoute.of(context).settings.arguments),
+        '/addEditNews': (context) => AddEditNews(news: (ModalRoute.of(context).settings.arguments as List)[0], title: (ModalRoute.of(context).settings.arguments as List)[1]),
         '/addEditEvent': (context) => AddEditEvent(event: ModalRoute.of(context).settings.arguments),
         '/addEditMember': (context) => AddEditMember(member: ModalRoute.of(context).settings.arguments),
         '/addEditPhoto': (context) => AddEditPhoto(photo: ModalRoute.of(context).settings.arguments),
