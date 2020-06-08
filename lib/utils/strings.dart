@@ -216,7 +216,7 @@ class AppString {
   static const String selectPhoto = 'Sélectionnez une photo';
   static const String maxAvatarSize = 'Max. 500 Ko';
   static const String avatarFormats = 'Formats JPG, GIF, PNG';
-  static const String gallery = 'Formats JPG, GIF, PNG';
+  static const String gallery = 'Gallerie';
   static const String camera = 'Appareil photo';
   static const String initProfilePhoto = 'Réinitialiser la photo de profil';
   static const String confirmChange = 'Confirmer le changement';

@@ -23,13 +23,13 @@ import 'package:intl/intl.dart';
 class DateUtils {
   /// convert the specified [input] string to a DateTime object according to the specified [format]
   /// return null if the specified input string is not a valid date
-static DateTime convertToDate(String input, String format) {
-  try {
-    return DateFormat(format, 'fr').parseStrict(input);
-  } catch (e) {
-    return null;
+  static DateTime convertToDate(String input, String format) {
+    try {
+      return DateFormat(format, 'fr').parseStrict(input);
+    } catch (e) {
+      return null;
+    }
   }
-}
 
   /// convert the specified [input] DateTime object to a String according to the specified [format]
   /// return null if the specified input is not a valid date
@@ -62,5 +62,4 @@ static DateTime convertToDate(String input, String format) {
     if (duration == null) return null;
     return "${Duration(milliseconds: duration).inMinutes.remainder(60).toString().padLeft(2, '0')}'${Duration(milliseconds: duration).inSeconds.remainder(60).toString().padLeft(2, '0')}\"${Duration(milliseconds: duration).inMilliseconds.remainder(1000)}";
   }
-
 }

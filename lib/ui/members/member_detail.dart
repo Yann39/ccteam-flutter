@@ -26,6 +26,7 @@ import 'package:chachatte_team/models/track.dart';
 import 'package:chachatte_team/providers/event_provider.dart';
 import 'package:chachatte_team/providers/member_provider.dart';
 import 'package:chachatte_team/providers/record_provider.dart';
+import 'package:chachatte_team/utils/app_utils.dart';
 import 'package:chachatte_team/utils/constants.dart';
 import 'package:chachatte_team/utils/custom_decorations.dart';
 import 'package:chachatte_team/utils/custom_icons.dart';
@@ -33,9 +34,9 @@ import 'package:chachatte_team/utils/date_utils.dart';
 import 'package:chachatte_team/utils/enums.dart';
 import 'package:chachatte_team/utils/strings.dart';
 import 'package:chachatte_team/utils/track_utils.dart';
+import 'package:chachatte_team/widgets/flexible_title.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 class MemberDetail extends StatefulWidget {
   final Member member;
@@ -70,15 +71,6 @@ class _MemberDetailState extends State<MemberDetail> {
     return _scrollController.hasClients && _scrollController.offset > _expandedHeight - kToolbarHeight;
   }
 
-  /// Launch URL to contact user
-  void _launchURL(String url) async {
-    if (await canLaunch(url)) {
-      await launch(url);
-    } else {
-      throw 'Could not launch $url';
-    }
-  }
-
   /// Method that launches the Edit Member screen and awaits the result from Navigator.pop
   void _navigateToEditMemberScreen(BuildContext context, Member member) async {
     // Navigator.push returns a Future that will complete after we call Navigator.pop on the target screen
@@ -94,8 +86,7 @@ class _MemberDetailState extends State<MemberDetail> {
 
   /// Method that launches the Track detail screen and awaits the result from Navigator.pop
   void _navigateToTrackDetailScreen(BuildContext context, Track track) async {
-
-    // todo Maybe better to do it detail screen init method instead of each time here ?
+    // todo Maybe better to do it in detail screen init method instead of each time here ?
     Provider.of<RecordProvider>(context, listen: false).fetchTrackRecords(track.id);
     Provider.of<EventProvider>(context, listen: false).fetchTrackEvents(track.id);
 
@@ -391,7 +382,7 @@ class _MemberDetailState extends State<MemberDetail> {
                     icon: Icon(Icons.phone),
                     color: Colors.green,
                     onPressed: () {
-                      _launchURL("tel:${widget.member.phone}");
+                      AppUtils.launchURL("tel:${widget.member.phone}");
                     })),
             SizedBox(
                 width: 72.0,
@@ -399,7 +390,7 @@ class _MemberDetailState extends State<MemberDetail> {
                     icon: Icon(Icons.sms),
                     color: Colors.blue,
                     onPressed: () {
-                      _launchURL("sms:${widget.member.phone}");
+                      AppUtils.launchURL("sms:${widget.member.phone}");
                     }))
           ],
         ),
@@ -433,7 +424,7 @@ class _MemberDetailState extends State<MemberDetail> {
                     icon: Icon(Icons.mail),
                     color: Colors.purple.withOpacity(0.6),
                     onPressed: () {
-                      _launchURL("mailto:${widget.member.email}");
+                      AppUtils.launchURL("mailto:${widget.member.email}");
                     }))
           ],
         ),
@@ -458,9 +449,9 @@ class _MemberDetailState extends State<MemberDetail> {
               flexibleSpace: _showTitle
                   ? null
                   : FlexibleSpaceBar(
-                      title: _Title(
+                      title: FlexibleTitle(
                         text: widget.member.firstName + ' ' + widget.member.lastName,
-                        padding: EdgeInsets.only(left: 84, bottom: 40),
+                        padding: EdgeInsets.only(left: 84, bottom: 44),
                       ),
                       background: Stack(
                         alignment: Alignment.bottomLeft,
@@ -534,7 +525,7 @@ class _MemberDetailState extends State<MemberDetail> {
                   <Widget>[
                     ConstrainedBox(
                       // set minimum height : screen height - app bar height - status bar height - padding
-                      constraints: new BoxConstraints(minHeight: MediaQuery.of(context).size.height - kToolbarHeight - MediaQuery.of(context).padding.top - 16),
+                      constraints: BoxConstraints(minHeight: MediaQuery.of(context).size.height - kToolbarHeight - MediaQuery.of(context).padding.top - 16),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: <Widget>[
@@ -602,37 +593,5 @@ class _MemberDetailState extends State<MemberDetail> {
         ),
       ),
     );
-  }
-}
-
-class _Title extends StatelessWidget {
-  const _Title({
-    Key key,
-    this.text,
-    this.padding,
-  }) : super(key: key);
-
-  final String text;
-  final EdgeInsets padding;
-
-  @override
-  Widget build(BuildContext context) {
-    final settings = context.dependOnInheritedWidgetOfExactType<FlexibleSpaceBarSettings>();
-    final deltaExtent = settings.maxExtent - settings.minExtent;
-    final t = (1.0 - (settings.currentExtent - settings.minExtent) / deltaExtent).clamp(0.0, 1.0) as double;
-    final double scaleValue = Tween<double>(begin: 1.5, end: 1.0).transform(t);
-    return LayoutBuilder(builder: (context, constraints) {
-      return Container(
-        width: constraints.maxWidth / scaleValue,
-        child: Padding(
-          padding: EdgeInsets.only(left: (scaleValue - 1) * (padding.left * (8.5 - scaleValue * 5)), bottom: (scaleValue - 1) * (padding.bottom * (8.5 - scaleValue * 5))),
-          child: Text(
-            text,
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-          ),
-        ),
-      );
-    });
   }
 }

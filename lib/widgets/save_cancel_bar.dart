@@ -17,10 +17,10 @@
  * along with Chachatte Team. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import 'package:chachatte_team/utils/enums.dart';
 import 'package:chachatte_team/utils/strings.dart';
 import 'package:flutter/material.dart';
 
+/// Bottom action bar with cancel and save buttons, stuck to the bottom of the screen
 class SaveCancelBar extends StatelessWidget {
   const SaveCancelBar({Key key, this.cancelFunction, this.saveFunction}) : super(key: key);
 

@@ -23,8 +23,8 @@ import 'package:chachatte_team/ui/main/main_action_menu.dart';
 import 'package:chachatte_team/ui/main/main_drawer.dart';
 import 'package:chachatte_team/utils/constants.dart';
 import 'package:chachatte_team/utils/custom_decorations.dart';
-import 'file:///C:/Git/chachatte_team/lib/widgets/loading_content.dart';
 import 'package:chachatte_team/utils/strings.dart';
+import 'package:chachatte_team/widgets/loading_content.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 

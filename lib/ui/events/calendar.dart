@@ -55,7 +55,8 @@ class Calendar extends StatelessWidget {
       _eventProvider.fetchDateEvents(date, calendarMode == CalendarMode.year ? "year" : "month");
     }
 
-    final List<Event> _currEvents = _eventProvider.eventModeSelectorIndex == 0 ? _eventProvider.events : _eventProvider.eventModeSelectorIndex == 1 ? _eventProvider.yearEvents : _eventProvider.calendarEvents;
+    final List<Event> _currEvents =
+        _eventProvider.eventModeSelectorIndex == 0 ? _eventProvider.events : _eventProvider.eventModeSelectorIndex == 1 ? _eventProvider.yearEvents : _eventProvider.calendarEvents;
 
     return Scaffold(
       appBar: AppBar(
@@ -66,7 +67,9 @@ class Calendar extends StatelessWidget {
             onPressed: () {
               _navigateToAddEventScreen(context);
             },
-          ),MainActionMenu(),],
+          ),
+          MainActionMenu(),
+        ],
       ),
       drawer: MainDrawer(),
       body: Container(
@@ -157,34 +160,37 @@ class Calendar extends StatelessWidget {
               ),
             SizedBox(height: 8.0),
             Expanded(
-              child: LoadingContent(
-                emptyText: AppString.eventsNotFound,
-                loadingStatus: _eventProvider.loadingStatus,
-                child: ListView.separated(
-                  separatorBuilder: (context, index) => SizedBox(height: 8.0),
-                  itemCount: _currEvents.length,
-                  itemBuilder: (context, index) {
-                    if (index == 0 || (index > 0 && _currEvents[index].startDate.year < _currEvents[index - 1].startDate.year)) {
-                      return Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: <Widget>[
-                          Row(
-                            children: <Widget>[
-                              Icon(
-                                Icons.arrow_downward,
-                                size: 16,
-                              ),
-                              Text("${_currEvents[index].startDate.year}"),
-                            ],
-                          ),
-                          SizedBox(height: 4.0),
-                          EventCard(_currEvents[index]),
-                        ],
-                      );
-                    } else {
-                      return EventCard(_currEvents[index]);
-                    }
-                  },
+              child: RefreshIndicator(
+                onRefresh: () => _eventProvider.fetchEvents(),
+                child: LoadingContent(
+                  emptyText: AppString.eventsNotFound,
+                  loadingStatus: _eventProvider.loadingStatus,
+                  child: ListView.separated(
+                    separatorBuilder: (context, index) => SizedBox(height: 8.0),
+                    itemCount: _currEvents.length,
+                    itemBuilder: (context, index) {
+                      if (index > 0 && _currEvents[index].startDate.year < _currEvents[index - 1].startDate.year) {
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: <Widget>[
+                            Row(
+                              children: <Widget>[
+                                Icon(
+                                  Icons.arrow_downward,
+                                  size: 16,
+                                ),
+                                Text("${_currEvents[index].startDate.year}"),
+                              ],
+                            ),
+                            SizedBox(height: 4.0),
+                            EventCard(_currEvents[index]),
+                          ],
+                        );
+                      } else {
+                        return EventCard(_currEvents[index]);
+                      }
+                    },
+                  ),
                 ),
               ),
             ),

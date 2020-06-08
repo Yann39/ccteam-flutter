@@ -71,6 +71,25 @@ class MembersService {
     }
   }
 
+  /// Get the member corresponding to the specified [id]
+  /// Send a POST request to the Restful API
+  /// Throw an exception if response status code is different from 200
+  Future<Member> getMemberById(int id) async {
+    // call to API
+    final response = await http.post(API_ROOT_URL + API_GET_SINGLE_MEMBER_ENDPOINT + "?id=$id");
+
+    // handle server response code
+    if (response.statusCode == 200) {
+      // if the call to the server was successful, parse the JSON and return content
+      dynamic responseJson = json.decode(response.body);
+      return Member.fromJson(responseJson);
+    } else if (response.statusCode == 404) {
+      throw Exception('No member found with the specified id');
+    } else {
+      throw Exception('Unexpected server response');
+    }
+  }
+
   /// Get the member corresponding to the specified [email]
   /// Send a POST request to the Restful API
   /// Throw an exception if response status code is different from 200
@@ -79,7 +98,7 @@ class MembersService {
     final String jsonString = "{\"email\":\"$email\"}";
 
     // call to API
-    final response = await http.post(API_ROOT_URL + API_GET_SINGLE_MEMBER_ENDPOINT, headers: {'Content-Type': 'application/json'}, body: jsonString);
+    final response = await http.post(API_ROOT_URL + API_GET_MEMBER_BY_EMAIL_ENDPOINT, headers: {'Content-Type': 'application/json'}, body: jsonString);
 
     // handle server response code
     if (response.statusCode == 200) {

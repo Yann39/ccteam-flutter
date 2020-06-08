@@ -121,7 +121,7 @@ class ChachatteTeamApp extends StatelessWidget {
         return Text("Unknown authentication status");
       }),
       theme: ThemeData(
-        primarySwatch: Colors.blue,
+        primarySwatch: Colors.red,
         primaryColor: Colors.red[700],
       ),
       supportedLocales: [

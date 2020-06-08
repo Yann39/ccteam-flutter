@@ -72,7 +72,7 @@ class _TrackDetailState extends State<TrackDetail> {
           columnWidths: {0: FlexColumnWidth(3), 1: FlexColumnWidth(2), 2: FlexColumnWidth(2), 3: FlexColumnWidth(1)},
           defaultVerticalAlignment: TableCellVerticalAlignment.middle,
           border:
-          TableBorder(horizontalInside: BorderSide(color: Colors.black.withOpacity(0.3), width: 1), verticalInside: BorderSide(color: Colors.black.withOpacity(0.3), width: 1)),
+              TableBorder(horizontalInside: BorderSide(color: Colors.black.withOpacity(0.3), width: 1), verticalInside: BorderSide(color: Colors.black.withOpacity(0.3), width: 1)),
           children: [
             for (Record rec in recordProvider.trackRecords)
               TableRow(children: [
@@ -121,7 +121,7 @@ class _TrackDetailState extends State<TrackDetail> {
           columnWidths: {0: FlexColumnWidth(3), 1: FlexColumnWidth(2), 2: FlexColumnWidth(1), 3: FlexColumnWidth(1)},
           defaultVerticalAlignment: TableCellVerticalAlignment.middle,
           border:
-          TableBorder(horizontalInside: BorderSide(color: Colors.black.withOpacity(0.3), width: 1), verticalInside: BorderSide(color: Colors.black.withOpacity(0.3), width: 1)),
+              TableBorder(horizontalInside: BorderSide(color: Colors.black.withOpacity(0.3), width: 1), verticalInside: BorderSide(color: Colors.black.withOpacity(0.3), width: 1)),
           children: [
             for (Event ev in eventProvider.trackEvents)
               TableRow(children: [
@@ -149,7 +149,6 @@ class _TrackDetailState extends State<TrackDetail> {
                   style: TextStyle(color: Colors.black.withOpacity(0.8)),
                   textAlign: TextAlign.center,
                 ),
-
               ])
           ],
         ),

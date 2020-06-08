@@ -19,7 +19,9 @@
 
 import 'dart:collection';
 
+import 'package:chachatte_team/models/member.dart';
 import 'package:chachatte_team/models/news.dart';
+import 'package:chachatte_team/services/members_service.dart';
 import 'package:chachatte_team/services/news_service.dart';
 import 'package:chachatte_team/utils/enums.dart';
 import 'package:flutter/foundation.dart';
@@ -28,9 +30,16 @@ import 'package:logging/logging.dart';
 class NewsProvider extends ChangeNotifier {
   final Logger _log = new Logger('NewsProvider');
   final NewsService _newsService = new NewsService();
+  final MembersService _membersService = new MembersService();
 
   // current news list
   List<News> _news = [];
+
+  // news member creator
+  Member _createdBy;
+
+  // news member last modifier
+  Member _modifiedBy;
 
   // current loading status
   LoadingStatus _loadingStatus = LoadingStatus.notLoaded;
@@ -42,6 +51,10 @@ class NewsProvider extends ChangeNotifier {
   }
 
   UnmodifiableListView<News> get news => UnmodifiableListView(_news);
+
+  Member get createdBy => _createdBy;
+
+  Member get modifiedBy => _modifiedBy;
 
   LoadingStatus get loadingStatus => _loadingStatus;
 
@@ -66,6 +79,38 @@ class NewsProvider extends ChangeNotifier {
       throw (error);
     });
     return _news;
+  }
+
+  /// Fetch the member corresponding to the specified [memberId] representing the news creator
+  void fetchCreatedByMember(int memberId) async {
+    _createdBy = null;
+    if (memberId == null) return null;
+    await _membersService.getMemberById(memberId).then((value) async {
+      _log.fine("News createdBy member retrieved successfully");
+      _createdBy = value;
+      notifyListeners();
+    }, onError: (error) {
+      _log.warning("Error when retrieving news createdBy member ($error)");
+      _createdBy = null;
+      notifyListeners();
+      throw (error);
+    });
+  }
+
+  /// Fetch the member corresponding to the specified [memberId] representing the news last modifier
+  void fetchModifiedByMember(int memberId) async {
+    _modifiedBy = null;
+    if (memberId == null) return null;
+    await _membersService.getMemberById(memberId).then((value) async {
+      _log.fine("News modifiedBy member retrieved successfully");
+      _modifiedBy = value;
+      notifyListeners();
+    }, onError: (error) {
+      _log.warning("Error when retrieving news modifiedBy member ($error)");
+      _modifiedBy = null;
+      notifyListeners();
+      throw (error);
+    });
   }
 
   /// Create the specified [news]

@@ -98,7 +98,7 @@ class Event {
         "track": track != null ? track.toJson() : null,
         "organizer": organizer,
         "price": price,
-        'members': members != null ? members.map((i) => i.toJson()) : null,
+        "members": members != null ? members.map((i) => i.toJson()) : null,
         "created_on": createdOn,
         "created_by": createdBy != null ? createdBy.toJson() : null,
         "modified_on": modifiedOn,

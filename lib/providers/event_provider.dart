@@ -57,7 +57,7 @@ class EventProvider extends ChangeNotifier {
   // constructor
   EventProvider() {
     // as soon as it is instantiated, we fetch events
-    _fetchEvents();
+    fetchEvents();
   }
 
   UnmodifiableListView<Event> get events => UnmodifiableListView(_events);
@@ -96,7 +96,7 @@ class EventProvider extends ChangeNotifier {
   }
 
   /// Get the list of all events
-  void _fetchEvents() async {
+  Future<void> fetchEvents() async {
     _updateLoadingStatus(LoadingStatus.loading);
     await _eventsService.fetchEvents().then((value) async {
       _log.fine("Events list retrieved successfully");

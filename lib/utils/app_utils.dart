@@ -17,27 +17,16 @@
  * along with Chachatte Team. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import 'package:chachatte_team/utils/enums.dart';
-import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 
-/// Loading indicator widget
-class LoadingContent extends StatelessWidget {
-  const LoadingContent({Key key, this.emptyText, this.child, this.loadingStatus}) : super(key: key);
-
-  final String emptyText;
-  final Widget child;
-  final LoadingStatus loadingStatus;
-
-  static final Widget _loader = Center(
-    child: SizedBox(
-      child: CircularProgressIndicator(),
-      height: 20.0,
-      width: 20.0,
-    ),
-  );
-
-  @override
-  Widget build(BuildContext context) {
-    return loadingStatus == LoadingStatus.notLoaded ? Text(emptyText) : loadingStatus == LoadingStatus.loading ? _loader : child;
+/// Application utility functions
+class AppUtils {
+  /// Launch URL to contact user
+  static void launchURL(String url) async {
+    if (await canLaunch(url)) {
+      await launch(url);
+    } else {
+      throw 'Could not launch $url';
+    }
   }
 }

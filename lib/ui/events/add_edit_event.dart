@@ -165,7 +165,7 @@ class _AddEditEventState extends State<AddEditEvent> {
                       hintText: AppString.eventDescriptionHint,
                       labelText: AppString.eventDescription,
                     ),
-                    maxLines: 1,
+                    maxLines: 2,
                     inputFormatters: [LengthLimitingTextInputFormatter(2048)],
                     validator: (val) => val.isEmpty ? AppString.eventDescriptionMandatory : null,
                     onSaved: (val) => _currEvent.description = val,
@@ -219,7 +219,7 @@ class _AddEditEventState extends State<AddEditEvent> {
                   ),
                   TextFormField(
                     decoration: const InputDecoration(
-                      icon: const Icon(Icons.person),
+                      icon: const Icon(Icons.perm_contact_calendar),
                       hintText: AppString.eventOrganizerHint,
                       labelText: AppString.eventOrganizer,
                     ),
@@ -234,7 +234,7 @@ class _AddEditEventState extends State<AddEditEvent> {
                     child: AbsorbPointer(
                       child: TextFormField(
                         decoration: InputDecoration(
-                          icon: const Icon(Icons.calendar_today),
+                          icon: const Icon(Icons.event),
                           hintText: AppString.eventStartDateHint,
                           labelText: AppString.eventStartDate,
                         ),
@@ -250,7 +250,7 @@ class _AddEditEventState extends State<AddEditEvent> {
                     child: AbsorbPointer(
                       child: TextFormField(
                         decoration: InputDecoration(
-                          icon: const Icon(Icons.calendar_today),
+                          icon: const Icon(Icons.event),
                           hintText: AppString.eventEndDateHint,
                           labelText: AppString.eventEndDate,
                         ),

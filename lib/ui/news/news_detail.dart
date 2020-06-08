@@ -80,6 +80,7 @@ class NewsDetail extends StatelessWidget {
   }
 
   Widget build(BuildContext context) {
+    final NewsProvider _newsProvider = Provider.of<NewsProvider>(context, listen: true);
     return Scaffold(
       appBar: AppBar(
         actions: <Widget>[
@@ -88,7 +89,7 @@ class NewsDetail extends StatelessWidget {
               icon: Icon(Icons.notifications_active),
               onPressed: () =>
                   // send a push notification
-              NotificationsService.pushInstantNewsNotification(news),
+                  NotificationsService.pushInstantNewsNotification(news),
             ),
           ),
           Builder(

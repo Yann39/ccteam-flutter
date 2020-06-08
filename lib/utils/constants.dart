@@ -31,6 +31,7 @@ const String API_LIKE_NEWS_ENDPOINT = '/news/like.php';
 
 const String API_GET_ALL_MEMBERS_ENDPOINT = '/members/read.php';
 const String API_GET_SINGLE_MEMBER_ENDPOINT = '/members/read_one.php';
+const String API_GET_MEMBER_BY_EMAIL_ENDPOINT = '/members/read_by_email.php';
 const String API_SEARCH_MEMBERS_ENDPOINT = '/members/search.php';
 const String API_CREATE_MEMBER_ENDPOINT = '/members/create.php';
 const String API_UPDATE_MEMBER_ENDPOINT = '/members/update.php';
