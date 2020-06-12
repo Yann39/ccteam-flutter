@@ -163,8 +163,7 @@ class EventProvider extends ChangeNotifier {
         _log.fine("Member events list retrieved successfully");
         if (_selectedStatuses.length == 2) {
           _memberEvents = value;
-        }
-        else if (_selectedStatuses.contains(0)) {
+        } else if (_selectedStatuses.contains(0)) {
           _memberEvents = value.where((element) => element.endDate.isAfter(DateTime.now())).toList();
         } else if (_selectedStatuses.contains(1)) {
           _memberEvents = value.where((element) => element.endDate.isBefore(DateTime.now())).toList();

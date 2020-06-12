@@ -52,8 +52,7 @@ class MembersService {
   /// Throw an exception if response status code is different from 200
   Future<void> loginMember(Member member) async {
     // call to API
-    final response =
-        await http.post(API_ROOT_URL + API_LOGIN_MEMBER_ENDPOINT, headers: {'Content-Type': 'application/json'}, body: json.encode(member.toJson()));
+    final response = await http.post(API_ROOT_URL + API_LOGIN_MEMBER_ENDPOINT, headers: {'Content-Type': 'application/json'}, body: json.encode(member.toJson()));
 
     // handle server response code
     if (response.statusCode == 200) {
@@ -243,7 +242,6 @@ class MembersService {
     } else {
       throw Exception('Unexpected server response');
     }
-
   }
 
   /// Delete avatar for the specified [memberId]
@@ -266,6 +264,5 @@ class MembersService {
     } else {
       throw Exception('Unexpected server response, member avatar has not been deleted');
     }
-
   }
 }

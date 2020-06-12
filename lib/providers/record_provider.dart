@@ -35,6 +35,7 @@ class RecordProvider extends ChangeNotifier {
   List<Record> _memberRecords = [];
 
   UnmodifiableListView<Record> get trackRecords => UnmodifiableListView(_trackRecords);
+
   UnmodifiableListView<Record> get memberRecords => UnmodifiableListView(_memberRecords);
 
   /// Get the list of all records for the specified [trackId]

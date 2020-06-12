@@ -82,7 +82,7 @@ class NewsDetail extends StatelessWidget {
   Widget build(BuildContext context) {
     final NewsProvider _newsProvider = Provider.of<NewsProvider>(context, listen: true);
     return Scaffold(
-      appBar: AppBar(
+      /*appBar: AppBar(
         actions: <Widget>[
           Builder(
             builder: (context) => IconButton(
@@ -110,14 +110,31 @@ class NewsDetail extends StatelessWidget {
           icon: Icon(Icons.arrow_back),
           onPressed: () => Navigator.pop(context),
         ),
-      ),
+      ),*/
       body: Container(
         decoration: CustomDecorations.mainContent,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisAlignment: MainAxisAlignment.start,
           children: <Widget>[
-            Container(
+            CustomPaint(
+              child: Container(
+                color: Colors.blue.withOpacity(0.4),
+                height: 132,
+                padding: EdgeInsets.symmetric(vertical: 32.0, horizontal: 8.0),
+                width: double.infinity,
+                /*child: Text(
+                  "${news.title}",
+                  textScaleFactor: 2,
+                  style: TextStyle(color: Colors.white),
+                  maxLines: 3,
+                  overflow: TextOverflow.ellipsis,
+                  textAlign: TextAlign.center,
+                ),*/
+              ),
+              painter: HeaderPainter(),
+            ),
+            /*Container(
               alignment: Alignment.center,
               height: 132,
               padding: EdgeInsets.all(16.0),
@@ -150,15 +167,20 @@ class NewsDetail extends StatelessWidget {
                     maxLines: 3,
                     overflow: TextOverflow.ellipsis,
                   ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: <Widget>[
-                      Icon(Icons.person, color: Colors.lime, size: 12.0),
-                      SizedBox(width: 2.0),
-                      Text("${AppString.by} ${news.createdBy.firstName} ${news.createdBy.lastName}", textAlign: TextAlign.left, style: TextStyle(color: Colors.white)),
-                    ],
-                  ),
+                  if (_newsProvider.createdBy != null)
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: <Widget>[
+                        Icon(Icons.person, color: Colors.lime, size: 12.0),
+                        SizedBox(width: 2.0),
+                        Text(
+                          "${AppString.by} ${_newsProvider.createdBy.firstName} ${_newsProvider.createdBy.lastName}",
+                          textAlign: TextAlign.left,
+                          style: TextStyle(color: Colors.white),
+                        ),
+                      ],
+                    ),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.start,
                     crossAxisAlignment: CrossAxisAlignment.center,
@@ -170,8 +192,57 @@ class NewsDetail extends StatelessWidget {
                   ),
                 ],
               ),
+            ),*/
+            /*Container(
+              color: Colors.blue.withOpacity(0.5),
+              width: double.infinity,
+              padding: EdgeInsets.all(8.0),
+              child: Text(
+                "${news.title}",
+                textScaleFactor: 2,
+                style: TextStyle(color: Colors.white),
+                maxLines: 3,
+                overflow: TextOverflow.ellipsis,
+                textAlign: TextAlign.center,
+              ),
+            ),*/
+            Container(
+              color: Colors.blue.withOpacity(0.4),
+              padding: EdgeInsets.only(left:8.0, right: 8.0, bottom: 8.0),
+              child: Column(
+                children: <Widget>[
+                  if (_newsProvider.createdBy != null)
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: <Widget>[
+                        Icon(Icons.person, color: Colors.purple[700], size: 12.0),
+                        SizedBox(width: 2.0),
+                        Text(
+                          "${AppString.by} ${_newsProvider.createdBy.firstName} ${_newsProvider.createdBy.lastName}",
+                          textAlign: TextAlign.left,
+                          style: TextStyle(color: Colors.white),
+                          textScaleFactor: 0.9,
+                        ),
+                      ],
+                    ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: <Widget>[
+                      Icon(Icons.access_time, color: Colors.red[700], size: 12.0),
+                      SizedBox(width: 2.0),
+                      Text(
+                        "${AppString.on} ${DateUtils.convertToString(news.newsDate, DATE_FORMAT_TXT)}",
+                        textAlign: TextAlign.left,
+                        style: TextStyle(color: Colors.white),
+                        textScaleFactor: 0.9,
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
-            Divider(height: 36, color: Colors.white),
             Flexible(
               child: Markdown(
                 data: news.content,
@@ -182,5 +253,66 @@ class NewsDetail extends StatelessWidget {
         ),
       ),
     );
+  }
+}
+
+class HeaderPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    Paint paint = Paint();
+
+    Path path = Path()
+      ..lineTo(0, size.height)
+      ..lineTo(size.width * 0.30, size.height * 0.25)
+      ..lineTo(size.width * 0.55, size.height * 0.55)
+      ..lineTo(size.width * 0.62, size.height * 0.30)
+      ..lineTo(size.width * 0.80, size.height * 0.88)
+      ..lineTo(size.width, size.height * 0.37)
+      ..lineTo(size.width, 0)
+      ..close();
+
+    paint.color = Colors.blue.withOpacity(0.6);
+    canvas.drawPath(path, paint);
+
+    path = Path()
+      ..lineTo(0, size.height * 0.35)
+      ..lineTo(size.width * 0.20, size.height * 0.75)
+      ..lineTo(size.width * 0.58, size.height * 0.15)
+      ..lineTo(size.width * 0.70, size.height * 0.35)
+      ..lineTo(size.width * 0.90, 0)
+      ..lineTo(size.width, size.height * 0.10)
+      ..lineTo(size.width, 0)
+      ..close();
+
+    paint.color = Colors.teal.withOpacity(0.4);
+    canvas.drawPath(path, paint);
+
+    path = Path()
+      ..lineTo(size.width * 0.02, 0)
+      ..lineTo(size.width * 0.35, size.height * 0.95)
+      ..lineTo(size.width * 0.45, size.height * 0.50)
+      ..lineTo(size.width * 0.58, size.height * 0.78)
+      ..lineTo(size.width * 0.80, size.height * 0.30)
+      ..lineTo(size.width, size.height * 0.65)
+      ..lineTo(size.width, 0)
+      ..close();
+
+    paint.color = Colors.purple.withOpacity(0.3);
+    canvas.drawPath(path, paint);
+
+    path = Path()
+      ..lineTo(size.width * 0.25, 0)
+      ..lineTo(size.width * 0.40, size.height * 0.20)
+      ..lineTo(size.width * 0.50, 0)
+      ..lineTo(size.width, 0)
+      ..close();
+
+    paint.color = Colors.green.withOpacity(0.8);
+    canvas.drawPath(path, paint);
+  }
+
+  @override
+  bool shouldRepaint(CustomPainter oldDelegate) {
+    return oldDelegate != this;
   }
 }

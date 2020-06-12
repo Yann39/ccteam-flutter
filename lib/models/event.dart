@@ -21,7 +21,7 @@ import 'package:chachatte_team/models/member.dart';
 import 'package:chachatte_team/models/track.dart';
 import 'package:intl/intl.dart';
 
-/// Class representing an event on a track
+/// Class representing a track event
 class Event {
   int id;
   String title;
@@ -127,5 +127,4 @@ class Event {
       }
     }
   }
-
 }

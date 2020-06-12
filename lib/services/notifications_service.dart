@@ -25,13 +25,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
 class NotificationsService {
-
   static BuildContext buildContext;
   static final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
   static final initializationSettingsAndroid = AndroidInitializationSettings('@mipmap/ic_launcher');
   static final initializationSettingsIOS = IOSInitializationSettings();
   static final initializationSettings = InitializationSettings(initializationSettingsAndroid, initializationSettingsIOS);
 
+  /// Function to be executed when a notification is clicked
+  /// It navigates to the right page depending on the specified [payload]
   static Future onSelectNotification(String payload) async {
     print("A notification has been clicked, payload is : $payload");
     dynamic jsonData = json.decode(payload);
@@ -39,8 +40,7 @@ class NotificationsService {
       print("Navigates to news detail from notification");
       //await navigatorKey.currentState.pushNamed('/newsDetail', arguments: News.fromJson(jsonData['value']));
       Navigator.pushNamed(buildContext, '/newsDetail', arguments: News.fromJson(jsonData['value']));
-    }
-    else if (jsonData['type'] == 'event') {
+    } else if (jsonData['type'] == 'event') {
       print("Navigates to event detail from notification");
       //await ChachatteTeamApp.navigatorKey.currentState.pushNamed('/eventDetail', arguments: Event.fromJson(jsonData['value']));
       await Navigator.pushNamed(buildContext, '/eventDetail', arguments: Event.fromJson(jsonData['value']));
@@ -54,6 +54,7 @@ class NotificationsService {
     buildContext = context;
   }
 
+  /// Push a new notification instantly for the specified [news]
   static Future pushInstantNewsNotification(News news) async {
     var androidPlatformChannelSpecifics = AndroidNotificationDetails(
       'news',
@@ -80,6 +81,8 @@ class NotificationsService {
     );
   }
 
+  /// Schedule an event notification for the specified [event]
+  /// The notification will be sent 6 hours before the event start date
   static Future scheduleEventNotification(Event event) async {
     var scheduledNotificationDateTime = event.startDate.subtract(Duration(hours: 6));
     var androidPlatformChannelSpecifics = AndroidNotificationDetails(
@@ -108,5 +111,4 @@ class NotificationsService {
       androidAllowWhileIdle: true,
     );
   }
-
 }

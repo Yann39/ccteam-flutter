@@ -93,7 +93,6 @@ class LoginProvider extends ChangeNotifier {
     _log.info("Logging in user ${member.email} with password ${member.password}");
     _setStatus(AuthStatus.Authenticating);
     await _membersService.loginMember(member).then((value) async {
-
       // store the user e-mail in the shared preferences
       SharedPreferences _prefs = await SharedPreferences.getInstance();
       _prefs.setString('email', member.email);

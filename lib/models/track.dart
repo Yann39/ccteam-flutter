@@ -54,12 +54,12 @@ class Track {
 
   /// Convert [member] object to the corresponding JSON map
   Map<String, dynamic> toJson() => {
-    "id": id,
-    "name": name,
-    "distance": distance,
-    "lap_record": lapRecord,
-    "website": website,
-    "latitude": latitude,
-    "longitude": longitude,
-  };
+        "id": id,
+        "name": name,
+        "distance": distance,
+        "lap_record": lapRecord,
+        "website": website,
+        "latitude": latitude,
+        "longitude": longitude,
+      };
 }

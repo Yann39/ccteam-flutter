@@ -21,7 +21,7 @@ import 'package:chachatte_team/models/member.dart';
 import 'package:chachatte_team/models/track.dart';
 import 'package:intl/intl.dart';
 
-/// Class representing a track record by a member
+/// Class representing a member track record
 class Record {
   int id;
   Track track;
