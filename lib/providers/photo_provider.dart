@@ -19,7 +19,9 @@
 
 import 'dart:collection';
 
+import 'package:chachatte_team/models/gallery.dart';
 import 'package:chachatte_team/models/photo.dart';
+import 'package:chachatte_team/services/galleries_service.dart';
 import 'package:chachatte_team/services/photos_service.dart';
 import 'package:chachatte_team/utils/enums.dart';
 import 'package:flutter/foundation.dart';
@@ -29,6 +31,10 @@ import 'package:logging/logging.dart';
 class PhotoProvider extends ChangeNotifier {
   final Logger _log = new Logger('PhotoProvider');
   final PhotosService _photosService = new PhotosService();
+  final GalleriesService _galleriesService = new GalleriesService();
+
+  // current list of photos
+  List<Gallery> _galleries = [];
 
   // current list of photos
   List<Photo> _photos = [];
@@ -42,9 +48,11 @@ class PhotoProvider extends ChangeNotifier {
   PhotoProvider() {
     // as soon as it is instantiated, we fetch all news
     _fetchPhotos();
+    _fetchGalleries();
   }
 
   UnmodifiableListView<Photo> get photos => UnmodifiableListView(_photos);
+  UnmodifiableListView<Gallery> get galleries => UnmodifiableListView(_galleries);
 
   /// Update the current loading status
   void _updateStatus(LoadingStatus status) {
@@ -63,6 +71,21 @@ class PhotoProvider extends ChangeNotifier {
     }, onError: (error) {
       _log.warning("Error when retrieving photos list ($error)");
       _photos = [];
+      _updateStatus(LoadingStatus.notLoaded);
+      throw (error);
+    });
+  }
+
+  /// Get the list of all galleries
+  void _fetchGalleries() async {
+    _updateStatus(LoadingStatus.loading);
+    await _galleriesService.fetchGalleries().then((value) async {
+      _log.fine("Galleries list retrieved successfully");
+      _galleries = value;
+      _updateStatus(LoadingStatus.loaded);
+    }, onError: (error) {
+      _log.warning("Error when retrieving galleries list ($error)");
+      _galleries = [];
       _updateStatus(LoadingStatus.notLoaded);
       throw (error);
     });

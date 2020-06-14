@@ -17,24 +17,25 @@
  * along with Chachatte Team. If not, see <http://www.gnu.org/licenses/>.
  */
 
+import 'package:chachatte_team/models/photo.dart';
 import 'package:intl/intl.dart';
 
-/// Class representing a photo
-class Photo {
+/// Class representing a photo gallery
+class Gallery {
   int id;
   String title;
   String description;
-  String link;
   DateTime createdOn;
   DateTime modifiedOn;
+  List<Photo> photos;
 
-  Photo({
+  Gallery({
     this.id,
     this.title,
     this.description,
-    this.link,
     this.createdOn,
     this.modifiedOn,
+    this.photos,
   });
 
   @override
@@ -43,28 +44,28 @@ class Photo {
       id: ${this.id},
       title: ${this.title},
       description: ${this.description},
-      link: ${this.link},
       createdOn: ${this.createdOn != null ? this.createdOn.toIso8601String() : ""},
       modifiedOn: ${this.modifiedOn != null ? this.modifiedOn.toIso8601String() : ""},
+      photos: ${this.photos != null ? this.photos.map((i) => i.toString()) : ""},
     }""";
   }
 
-  /// Convert [json] map to the corresponding [photo] object
-  Photo.fromJson(Map<String, dynamic> json)
+  /// Convert [json] map to the corresponding [Gallery] object
+  Gallery.fromJson(Map<String, dynamic> json)
       : id = json['id'] != null ? int.parse(json['id']) : -1,
         title = json['title'],
         description = json['description'],
-        link = json['link'],
         createdOn = json['created_on'] != null ? new DateFormat("yyyy-MM-dd HH:mm:ss").parseStrict(json['created_on']) : null,
-        modifiedOn = json['modified_on'] != null ? new DateFormat("yyyy-MM-dd HH:mm:ss").parseStrict(json['modified_on']) : null;
+        modifiedOn = json['modified_on'] != null ? new DateFormat("yyyy-MM-dd HH:mm:ss").parseStrict(json['modified_on']) : null,
+        photos = json['photos'] != null ? (json['photos'] as List).map((i) => Photo.fromJson(i)).toList() : null;
 
-  /// Convert [photo] object to the corresponding JSON map
+  /// Convert [Gallery] object to the corresponding JSON map
   Map<String, dynamic> toJson() => {
         "id": id,
         "title": title,
         "description": description,
-        "link": link,
         "created_on": createdOn,
         "modified_on": modifiedOn,
+        "photos": photos != null ? photos.map((i) => i.toJson()) : null,
       };
 }

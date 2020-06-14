@@ -51,6 +51,17 @@ CREATE TABLE IF NOT EXISTS `photos` (
   `title` varchar(64) NOT NULL,
   `description` text NULL,
   `link` text NOT NULL,
+  `gallery_id` int NOT NULL,
+  `created_on` timestamp NOT NULL,
+  `modified_on` timestamp NULL,
+  PRIMARY KEY (`id`),
+  CONSTRAINT fk_photos_gallery FOREIGN KEY (gallery_id) REFERENCES galleries(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1;
+
+CREATE TABLE IF NOT EXISTS `galleries` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `title` varchar(64) NOT NULL,
+  `description` text NULL,
   `created_on` timestamp NOT NULL,
   `modified_on` timestamp NULL,
   PRIMARY KEY (`id`)
@@ -175,6 +186,9 @@ INSERT INTO `tracks` (`id`, `name`, `distance`, `lap_record`, `website`, `latitu
 (8, 'Carole', 2055, 59462, 'https://www.circuit-carole.com', 48.9787026, 2.5203949),
 (9, 'La Ferté-Gaucher', 3600, 107245, 'https://www.circuitslfg.fr', 48.7579086, 3.2811883),
 (10, 'Alès', 2500, 74679, 'http://www.pole-mecanique.fr', 44.1421587, 4.0682965);
+
+INSERT INTO `galleries` (`id`, `title`, `description`, `created_on`, `modified_on`) VALUES
+(1, 'Défaut', 'Gallerie par défaut', '2020-05-29 23:18:52', NULL)
 
 INSERT INTO `photos` (`id`, `title`, `description`, `link`, `created_on`, `modified_on`) VALUES
 (1, 'Lorenzo', 'Lorenzo qui célèbre sa victoire', 'http://photos.example.com/wp-content/uploads/2018/06/IMG_1575.jpg', '2018-09-12 08:33:19', NULL),

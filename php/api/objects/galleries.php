@@ -18,17 +18,16 @@
  * along with Chachatte Team. If not, see <http://www.gnu.org/licenses/>.
  */
 
-class Photo {
+class Gallery {
 
     // database connection and table name
     private $conn;
-    private $table_name = "photos";
+    private $table_name = "galleries";
 
     // object properties
     public $id;
     public $title;
     public $description;
-    public $link;
     public $created_on;
     public $modified_on;
 
@@ -37,11 +36,11 @@ class Photo {
         $this->conn = $db;
     }
 
-    // get all photos
+    // get all galleries
     function read() {
 
         // query to get all records
-        $query = "SELECT n.id, n.title, n.description, n.link, n.created_on, n.modified_on FROM " . $this->table_name . " n ORDER BY n.created_on DESC";
+        $query = "SELECT n.id, n.title, n.description, n.created_on, n.modified_on FROM " . $this->table_name . " n ORDER BY n.created_on DESC";
 
         // prepare query statement
         $stmt = $this->conn->prepare($query);
@@ -52,11 +51,11 @@ class Photo {
         return $stmt;
     }
 
-    // get a photo given its id
+    // get a gallery given its id
     function readOne() {
 
         // query to get record corresponding to specified id
-        $query = "SELECT n.title, n.description, n.link, n.created_on, n.modified_on FROM " . $this->table_name . " n WHERE n.id = ? LIMIT 0,1";
+        $query = "SELECT n.title, n.description, n.created_on, n.modified_on FROM " . $this->table_name . " n WHERE n.id = ? LIMIT 0,1";
 
         // prepare query statement
         $stmt = $this->conn->prepare($query);
@@ -73,34 +72,15 @@ class Photo {
         // set values to object properties
         $this->title = $row['title'];
         $this->description = $row['description'];
-        $this->link = $row['link'];
         $this->created_on = $row['created_on'];
         $this->modified_on = $row['modified_on'];
     }
 
-    // get all members of the specified event
-    function readByGallery($gallery_id) {
-
-        // query to get all records containing the specified gallery
-        $query = "SELECT n.title, n.description, n.link, n.created_on, n.modified_on FROM " . $this->table_name . " p WHERE p.gallery_id = ?";
-
-        // prepare query statement
-        $stmt = $this->conn->prepare($query);
-
-        // bind id
-        $stmt->bindParam(1, $event_id);
-
-        // execute query
-        $stmt->execute();
-
-        return $stmt;
-    }
-
-    // create photo
+    // create gallery
     function create() {
 
         // query to insert record
-        $query = "INSERT INTO " . $this->table_name . " SET title = :title, description = :description, link = :link, created_on = :created_on";
+        $query = "INSERT INTO " . $this->table_name . " SET title = :title, description = :description, created_on = :created_on";
 
         // prepare query
         $stmt = $this->conn->prepare($query);
@@ -108,13 +88,11 @@ class Photo {
         // sanitize
         $this->title=htmlspecialchars(strip_tags($this->title));
         $this->description=htmlspecialchars(strip_tags($this->description));
-        $this->link=htmlspecialchars(strip_tags($this->link));
         $this->created_on=htmlspecialchars(strip_tags($this->created_on));
 
         // bind values
         $stmt->bindParam(":title", $this->title);
         $stmt->bindParam(":description", $this->description);
-        $stmt->bindParam(":link", $this->link);
         $stmt->bindParam(":created_on", $this->created_on);
 
         // execute query
@@ -125,11 +103,11 @@ class Photo {
         return -1;
     }
 
-    // update photo
+    // update gallery
     function update() {
 
         // query to update record
-        $query = "UPDATE " . $this->table_name . " SET title = :title, description = :description, link = :link, modified_on = :modified_on WHERE id = :id";
+        $query = "UPDATE " . $this->table_name . " SET title = :title, description = :description, modified_on = :modified_on WHERE id = :id";
 
         // prepare query statement
         $stmt = $this->conn->prepare($query);
@@ -137,14 +115,12 @@ class Photo {
         // sanitize
         $this->title=htmlspecialchars(strip_tags($this->title));
         $this->description=htmlspecialchars(strip_tags($this->description));
-        $this->link=htmlspecialchars(strip_tags($this->link));
         $this->id=htmlspecialchars(strip_tags($this->id));
         $this->modified_on=htmlspecialchars(strip_tags($this->modified_on));
 
         // bind new values
         $stmt->bindParam(":title", $this->title);
         $stmt->bindParam(":description", $this->description);
-        $stmt->bindParam(":link", $this->link);
         $stmt->bindParam(':id', $this->id);
         $stmt->bindParam(':modified_on', $this->modified_on);
 
@@ -156,7 +132,7 @@ class Photo {
         return false;
     }
 
-    // delete photo
+    // delete gallery
     function delete() {
 
         // query to delete record
@@ -179,11 +155,11 @@ class Photo {
         return false;
     }
 
-    // search photo
+    // search gallery
     function search($keywords){
 
         // query to search across all records
-        $query = "SELECT n.title, n.description, n.link, n.created_on, n.modified_on FROM " . $this->table_name . " n WHERE n.title LIKE ? OR n.description LIKE ? ORDER BY n.created_on DESC";
+        $query = "SELECT n.title, n.description, n.created_on, n.modified_on FROM " . $this->table_name . " n WHERE n.title LIKE ? OR n.description LIKE ? ORDER BY n.created_on DESC";
 
         // prepare query statement
         $stmt = $this->conn->prepare($query);

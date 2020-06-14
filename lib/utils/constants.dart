@@ -54,6 +54,11 @@ const String API_CREATE_TRACK_ENDPOINT = '/tracks/create.php';
 const String API_UPDATE_TRACK_ENDPOINT = '/tracks/update.php';
 const String API_DELETE_TRACK_ENDPOINT = '/tracks/delete.php';
 
+const String API_GET_ALL_GALLERIES_ENDPOINT = '/galleries/read.php';
+const String API_CREATE_GALLERY_ENDPOINT = '/galleries/create.php';
+const String API_UPDATE_GALLERY_ENDPOINT = '/galleries/update.php';
+const String API_DELETE_GALLERY_ENDPOINT = '/galleries/delete.php';
+
 const String API_GET_ALL_PHOTOS_ENDPOINT = '/photos/read.php';
 const String API_CREATE_PHOTO_ENDPOINT = '/photos/create.php';
 const String API_UPDATE_PHOTO_ENDPOINT = '/photos/update.php';
