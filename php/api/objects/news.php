@@ -203,8 +203,8 @@ class News {
     // like news
     function like($news_id, $member_id) {
 
-        // query to get all records containing the specified event
-        $query = "INSERT INTO " . $this->$news_members_table_name . " SET news_id = :news_id, member_id = :member_id, created_on = :created_on";
+        // query
+        $query = "INSERT INTO " . $this->news_members_table_name . " SET news_id = :news_id, member_id = :member_id, created_on = :created_on";
 
         // prepare query statement
         $stmt = $this->conn->prepare($query);
@@ -225,8 +225,8 @@ class News {
     // unlike news
     function unlike($news_id, $member_id) {
 
-        // query to get all records containing the specified event
-        $query = "DELETE FROM " . $this->$news_members_table_name . " WHERE news_id = ? AND member_id = ?";
+        // query
+        $query = "DELETE FROM " . $this->news_members_table_name . " WHERE news_id = ? AND member_id = ?";
 
         // prepare query statement
         $stmt = $this->conn->prepare($query);

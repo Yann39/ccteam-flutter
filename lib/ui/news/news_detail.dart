@@ -28,11 +28,11 @@ import 'package:chachatte_team/utils/strings.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:provider/provider.dart';
+import 'package:share/share.dart';
 
 class NewsDetail extends StatelessWidget {
-  //final News news;
 
-  const NewsDetail({Key key, /*this.news*/}) : super(key: key);
+  const NewsDetail({Key key}) : super(key: key);
 
   /// Method that launches the Edit New screen and awaits the result from Navigator.pop
   _navigateToEditNewsScreen(BuildContext context, News news) async {
@@ -192,6 +192,28 @@ class NewsDetail extends StatelessWidget {
               padding: const EdgeInsets.all(8.0),
               child: Row(
                 children: <Widget>[
+                  SizedBox(
+                    height: 20,
+                    child: RaisedButton(
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      onPressed: () => {Share.share(_newsProvider.currentNews.catchLine, subject: _newsProvider.currentNews.title)},
+                      padding: EdgeInsets.symmetric(horizontal: 6.0),
+                      color: Colors.blue[700],
+                      child: Row(
+                        children: <Widget>[
+                          Icon(Icons.share, color: Colors.white, size: 13),
+                          SizedBox(width: 5),
+                          Text(
+                            AppString.share,
+                            style: TextStyle(color: Colors.white),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  SizedBox(width: 8.0),
                   SizedBox(
                     height: 20,
                     child: RaisedButton(

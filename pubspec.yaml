@@ -46,6 +46,9 @@ dependencies:
   # to display notifications
   flutter_local_notifications: ^1.4.3
 
+  # to share content
+  share: ^0.6.4+3
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
