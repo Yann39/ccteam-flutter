@@ -134,8 +134,22 @@ class NewsService {
     final response = await http.post(API_ROOT_URL + API_LIKE_NEWS_ENDPOINT, headers: {'Content-Type': 'application/json'}, body: jsonString);
 
     if (response.statusCode != 200) {
-      dynamic responseJson = json.decode(response.body);
-      throw Exception('Unexpected server response');
+      throw Exception('Unexpected server response (code ${response.statusCode})');
+    }
+  }
+
+  /// Set the news (identified by the specified [newsId]) as not liked for the user (identified by the specified [userId]) from the database
+  /// Send a POST request to the Restful API
+  /// Throw an exception if response status code is different from 200
+  Future<void> unlikeNews(int newsId, int memberId) async {
+    // convert News object to JSON string
+    final String jsonString = '{"news_id":$newsId,"member_id":$memberId}';
+
+    // call to API
+    final response = await http.post(API_ROOT_URL + API_UNLIKE_NEWS_ENDPOINT, headers: {'Content-Type': 'application/json'}, body: jsonString);
+
+    if (response.statusCode != 200) {
+      throw Exception('Unexpected server response (code ${response.statusCode})');
     }
   }
 }

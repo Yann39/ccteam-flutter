@@ -47,10 +47,12 @@ class NewsList extends StatelessWidget {
 
   /// Navigates to the News detail screen and awaits the result from Navigator.pop
   _navigateToNewsDetailScreen(BuildContext context, News news) async {
+    // fetch the current news
+    Provider.of<NewsProvider>(context, listen: false).fetchCurrentNews(news);
     // fetch the news creator from its ID
-    Provider.of<NewsProvider>(context, listen: false).fetchCreatedByMember(news.createdBy);
+    //Provider.of<NewsProvider>(context, listen: false).fetchCreatedByMember(news.createdBy);
     // fetch the news last modifier from its ID
-    Provider.of<NewsProvider>(context, listen: false).fetchModifiedByMember(news.modifiedBy);
+    //Provider.of<NewsProvider>(context, listen: false).fetchModifiedByMember(news.modifiedBy);
     // Navigator.push returns a Future that will complete after we call Navigator.pop on the target screen
     final _result = await Navigator.pushNamed(context, '/newsDetail', arguments: news);
 
@@ -131,7 +133,7 @@ class NewsList extends StatelessWidget {
                 ),
                 Expanded(
                   child: RefreshIndicator(
-                    onRefresh: () => _newsProvider.fetchNews(),
+                    onRefresh: () => _newsProvider.fetchNewsList(),
                     child: LoadingContent(
                       loadingStatus: _newsProvider.loadingStatus,
                       emptyText: AppString.newsEmpty,

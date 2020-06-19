@@ -18,6 +18,7 @@
  */
 
 import 'package:chachatte_team/models/news.dart';
+import 'package:chachatte_team/providers/login_provider.dart';
 import 'package:chachatte_team/providers/news_provider.dart';
 import 'package:chachatte_team/services/notifications_service.dart';
 import 'package:chachatte_team/utils/constants.dart';
@@ -29,9 +30,9 @@ import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:provider/provider.dart';
 
 class NewsDetail extends StatelessWidget {
-  final News news;
+  //final News news;
 
-  const NewsDetail({Key key, this.news}) : super(key: key);
+  const NewsDetail({Key key, /*this.news*/}) : super(key: key);
 
   /// Method that launches the Edit New screen and awaits the result from Navigator.pop
   _navigateToEditNewsScreen(BuildContext context, News news) async {
@@ -44,6 +45,16 @@ class NewsDetail extends StatelessWidget {
         ..removeCurrentSnackBar()
         ..showSnackBar(SnackBar(content: Text("$_result")));
     }
+  }
+
+  /// Method to like a news
+  _likeNews(BuildContext context, News news) async {
+    Provider.of<NewsProvider>(context, listen: false).likeNews(news, Provider.of<LoginProvider>(context, listen: false).loggedMember);
+  }
+
+  /// Method to unlike a news
+  _unlikeNews(BuildContext context, News news) async {
+    Provider.of<NewsProvider>(context, listen: false).unlikeNews(news, Provider.of<LoginProvider>(context, listen: false).loggedMember);
   }
 
   /// Display a confirmation popup when trying to delete a news
@@ -59,7 +70,7 @@ class NewsDetail extends StatelessWidget {
               // close this dialog
               Navigator.pop(context);
               // delete news
-              Provider.of<NewsProvider>(context, listen: false).deleteNews(news).then((value) {
+              Provider.of<NewsProvider>(context, listen: false).deleteNews(Provider.of<NewsProvider>(context, listen: false).currentNews).then((value) {
                 Navigator.pop(context, AppString.newsDeleted);
               }, onError: (error) {
                 Navigator.pop(context, AppString.newsDeletionFailed);
@@ -81,21 +92,26 @@ class NewsDetail extends StatelessWidget {
 
   Widget build(BuildContext context) {
     final NewsProvider _newsProvider = Provider.of<NewsProvider>(context, listen: true);
+    final isLiked = _newsProvider.currentNews.members.any((element) => element.id == Provider.of<LoginProvider>(context, listen: false).loggedMember.id);
+    print(isLiked);
     return Scaffold(
-      /*appBar: AppBar(
+      //extendBodyBehindAppBar: true,
+      appBar: AppBar(
+        //backgroundColor: Colors.transparent,
+        //elevation: 0,
         actions: <Widget>[
           Builder(
             builder: (context) => IconButton(
               icon: Icon(Icons.notifications_active),
               onPressed: () =>
                   // send a push notification
-                  NotificationsService.pushInstantNewsNotification(news),
+                  NotificationsService.pushInstantNewsNotification(_newsProvider.currentNews),
             ),
           ),
           Builder(
             builder: (context) => IconButton(
               icon: Icon(Icons.edit),
-              onPressed: () => _navigateToEditNewsScreen(context, news),
+              onPressed: () => _navigateToEditNewsScreen(context, _newsProvider.currentNews),
             ),
           ),
           Builder(
@@ -110,7 +126,7 @@ class NewsDetail extends StatelessWidget {
           icon: Icon(Icons.arrow_back),
           onPressed: () => Navigator.pop(context),
         ),
-      ),*/
+      ),
       body: Container(
         decoration: CustomDecorations.mainContent,
         child: Column(
@@ -119,96 +135,16 @@ class NewsDetail extends StatelessWidget {
           children: <Widget>[
             CustomPaint(
               child: Container(
-                color: Colors.blue.withOpacity(0.4),
+                color: Colors.transparent,
                 height: 132,
                 padding: EdgeInsets.symmetric(vertical: 32.0, horizontal: 8.0),
                 width: double.infinity,
-                /*child: Text(
-                  "${news.title}",
-                  textScaleFactor: 2,
-                  style: TextStyle(color: Colors.white),
-                  maxLines: 3,
-                  overflow: TextOverflow.ellipsis,
-                  textAlign: TextAlign.center,
-                ),*/
               ),
               painter: HeaderPainter(),
             ),
-            /*Container(
-              alignment: Alignment.center,
-              height: 132,
-              padding: EdgeInsets.all(16.0),
-              decoration: BoxDecoration(
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.blue[300],
-                    spreadRadius: 1,
-                    blurRadius: 2,
-                  ),
-                ],
-                image: DecorationImage(
-                  fit: BoxFit.fill,
-                  image: AssetImage("images/finish_flag.png"),
-                  colorFilter: ColorFilter.mode(Colors.black.withOpacity(0.05), BlendMode.dstATop),
-                ),
-                gradient: LinearGradient(
-                  colors: [Colors.blue[300], Colors.blue[500]],
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                ),
-              ),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: <Widget>[
-                  Text(
-                    "${news.title}",
-                    textScaleFactor: 2,
-                    style: TextStyle(color: Colors.white),
-                    maxLines: 3,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  if (_newsProvider.createdBy != null)
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: <Widget>[
-                        Icon(Icons.person, color: Colors.lime, size: 12.0),
-                        SizedBox(width: 2.0),
-                        Text(
-                          "${AppString.by} ${_newsProvider.createdBy.firstName} ${_newsProvider.createdBy.lastName}",
-                          textAlign: TextAlign.left,
-                          style: TextStyle(color: Colors.white),
-                        ),
-                      ],
-                    ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: <Widget>[
-                      Icon(Icons.access_time, color: Colors.lime, size: 12.0),
-                      SizedBox(width: 2.0),
-                      Text("${AppString.on} ${DateUtils.convertToString(news.newsDate, DATE_FORMAT_TXT)}", textAlign: TextAlign.left, style: TextStyle(color: Colors.white)),
-                    ],
-                  ),
-                ],
-              ),
-            ),*/
-            /*Container(
-              color: Colors.blue.withOpacity(0.5),
-              width: double.infinity,
-              padding: EdgeInsets.all(8.0),
-              child: Text(
-                "${news.title}",
-                textScaleFactor: 2,
-                style: TextStyle(color: Colors.white),
-                maxLines: 3,
-                overflow: TextOverflow.ellipsis,
-                textAlign: TextAlign.center,
-              ),
-            ),*/
             Container(
-              color: Colors.blue.withOpacity(0.4),
-              padding: EdgeInsets.only(left:8.0, right: 8.0, bottom: 8.0),
+              color: Colors.transparent,
+              padding: EdgeInsets.only(left: 8.0, right: 8.0, bottom: 8.0),
               child: Column(
                 children: <Widget>[
                   if (_newsProvider.createdBy != null)
@@ -216,13 +152,11 @@ class NewsDetail extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.end,
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: <Widget>[
-                        Icon(Icons.person, color: Colors.purple[700], size: 12.0),
+                        Icon(Icons.person, color: Colors.purple[700], size: 13.0),
                         SizedBox(width: 2.0),
                         Text(
                           "${AppString.by} ${_newsProvider.createdBy.firstName} ${_newsProvider.createdBy.lastName}",
                           textAlign: TextAlign.left,
-                          style: TextStyle(color: Colors.white),
-                          textScaleFactor: 0.9,
                         ),
                       ],
                     ),
@@ -230,25 +164,64 @@ class NewsDetail extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.end,
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: <Widget>[
-                      Icon(Icons.access_time, color: Colors.red[700], size: 12.0),
+                      Icon(Icons.access_time, color: Colors.red[700], size: 13.0),
                       SizedBox(width: 2.0),
                       Text(
-                        "${AppString.on} ${DateUtils.convertToString(news.newsDate, DATE_FORMAT_TXT)}",
+                        "${AppString.on} ${DateUtils.convertToString(_newsProvider.currentNews.newsDate, DATE_FORMAT_TXT)}",
                         textAlign: TextAlign.left,
-                        style: TextStyle(color: Colors.white),
-                        textScaleFactor: 0.9,
                       ),
                     ],
                   ),
                 ],
               ),
             ),
-            Flexible(
-              child: Markdown(
-                data: news.content,
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Text(
+                _newsProvider.currentNews.title,
+                textScaleFactor: 2,
+                style: TextStyle(color: Colors.black87),
               ),
             ),
-            //Text(news.content, textScaleFactor: 1.3, style: TextStyle(color: Colors.white)),
+            Divider(
+              height: 8,
+              color: Colors.purple,
+              thickness: 2.0,
+            ),
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Row(
+                children: <Widget>[
+                  SizedBox(
+                    height: 20,
+                    child: RaisedButton(
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      onPressed: () => isLiked ? _unlikeNews(context, _newsProvider.currentNews) : _likeNews(context, _newsProvider.currentNews),
+                      padding: EdgeInsets.symmetric(horizontal: 6.0),
+                      color: Colors.blue[700],
+                      child: Row(
+                        children: <Widget>[
+                          Icon(isLiked ? Icons.favorite : Icons.favorite_border, color: isLiked ? Colors.pink : Colors.white, size: 13),
+                          SizedBox(width: 5),
+                          Text(
+                            isLiked ? AppString.unlike : AppString.like,
+                            style: TextStyle(color: Colors.white),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Flexible(
+              child: Markdown(
+                padding: EdgeInsets.all(8.0),
+                data: _newsProvider.currentNews.content,
+              ),
+            ),
           ],
         ),
       ),
@@ -260,6 +233,7 @@ class HeaderPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     Paint paint = Paint();
+    paint.blendMode = BlendMode.srcATop;
 
     Path path = Path()
       ..lineTo(0, size.height)
@@ -271,20 +245,14 @@ class HeaderPainter extends CustomPainter {
       ..lineTo(size.width, 0)
       ..close();
 
-    paint.color = Colors.blue.withOpacity(0.6);
-    canvas.drawPath(path, paint);
+    paint
+      ..shader = LinearGradient(
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+        stops: [0, 1],
+        colors: [Colors.red[700].withOpacity(0.4), Colors.purple[700].withOpacity(0.7)],
+      ).createShader(Rect.fromLTRB(0, 0, size.width, size.height));
 
-    path = Path()
-      ..lineTo(0, size.height * 0.35)
-      ..lineTo(size.width * 0.20, size.height * 0.75)
-      ..lineTo(size.width * 0.58, size.height * 0.15)
-      ..lineTo(size.width * 0.70, size.height * 0.35)
-      ..lineTo(size.width * 0.90, 0)
-      ..lineTo(size.width, size.height * 0.10)
-      ..lineTo(size.width, 0)
-      ..close();
-
-    paint.color = Colors.teal.withOpacity(0.4);
     canvas.drawPath(path, paint);
 
     path = Path()
@@ -297,7 +265,18 @@ class HeaderPainter extends CustomPainter {
       ..lineTo(size.width, 0)
       ..close();
 
-    paint.color = Colors.purple.withOpacity(0.3);
+    canvas.drawPath(path, paint);
+
+    path = Path()
+      ..lineTo(0, size.height * 0.35)
+      ..lineTo(size.width * 0.20, size.height * 0.75)
+      ..lineTo(size.width * 0.58, size.height * 0.15)
+      ..lineTo(size.width * 0.70, size.height * 0.35)
+      ..lineTo(size.width * 0.90, 0)
+      ..lineTo(size.width, size.height * 0.10)
+      ..lineTo(size.width, 0)
+      ..close();
+
     canvas.drawPath(path, paint);
 
     path = Path()
@@ -307,7 +286,6 @@ class HeaderPainter extends CustomPainter {
       ..lineTo(size.width, 0)
       ..close();
 
-    paint.color = Colors.green.withOpacity(0.8);
     canvas.drawPath(path, paint);
   }
 

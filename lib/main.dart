@@ -99,7 +99,7 @@ class ChachatteTeamApp extends StatelessWidget {
         '/addEditEvent': (context) => AddEditEvent(event: ModalRoute.of(context).settings.arguments),
         '/addEditMember': (context) => AddEditMember(member: ModalRoute.of(context).settings.arguments),
         '/addEditPhoto': (context) => AddEditPhoto(photo: ModalRoute.of(context).settings.arguments),
-        '/newsDetail': (context) => NewsDetail(news: ModalRoute.of(context).settings.arguments),
+        '/newsDetail': (context) => NewsDetail(),
         '/memberDetail': (context) => MemberDetail(member: ModalRoute.of(context).settings.arguments),
         '/memberEvents': (context) => MemberEvents(member: ModalRoute.of(context).settings.arguments),
         '/photoDetail': (context) => PhotoDetail(photo: ModalRoute.of(context).settings.arguments),

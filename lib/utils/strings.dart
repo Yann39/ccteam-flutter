@@ -32,6 +32,8 @@ class AppString {
   static const String register = 'S\'inscrire';
   static const String send = 'Envoyer';
   static const String valid = 'Valider';
+  static const String like = 'J\'aime';
+  static const String unlike = 'Je n\'aime plus';
 
   static const String confirmation = 'Confirmation';
   static const String identification = 'Identification';

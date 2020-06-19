@@ -35,6 +35,9 @@ class NewsProvider extends ChangeNotifier {
   // current news list
   List<News> _news = [];
 
+  // current news
+  News _currentNews;
+
   // news member creator
   Member _createdBy;
 
@@ -47,10 +50,12 @@ class NewsProvider extends ChangeNotifier {
   // constructor
   NewsProvider() {
     // as soon as it is instantiated, we fetch all news
-    fetchNews();
+    fetchNewsList();
   }
 
   UnmodifiableListView<News> get news => UnmodifiableListView(_news);
+
+  News get currentNews => _currentNews;
 
   Member get createdBy => _createdBy;
 
@@ -66,7 +71,7 @@ class NewsProvider extends ChangeNotifier {
   }
 
   /// Get the list of all news
-  Future<void> fetchNews() async {
+  Future<void> fetchNewsList() async {
     _updateStatus(LoadingStatus.loading);
     await _newsService.fetchNews().then((value) async {
       _log.fine("News list retrieved successfully");
@@ -79,6 +84,15 @@ class NewsProvider extends ChangeNotifier {
       throw (error);
     });
     return _news;
+  }
+
+  /// Fetch the specified [news]
+  Future<void> fetchCurrentNews(News news) async {
+    _log.fine("Fetching news ${news.title}");
+    _currentNews = news;
+    notifyListeners();
+    fetchCreatedByMember(news.createdBy);
+    fetchModifiedByMember(news.modifiedBy);
   }
 
   /// Fetch the member corresponding to the specified [memberId] representing the news creator
@@ -109,6 +123,30 @@ class NewsProvider extends ChangeNotifier {
       _log.warning("Error when retrieving news modifiedBy member ($error)");
       _modifiedBy = null;
       notifyListeners();
+      throw (error);
+    });
+  }
+
+  /// Like the specified [news] for the specified [member]
+  Future<void> likeNews(News news, Member member) async {
+    await _newsService.likeNews(news.id, member.id).then((value) async {
+      _log.fine("News ${news.title} liked by user ${member.email}");
+      _currentNews.members.add(member);
+      notifyListeners();
+    }, onError: (error) {
+      _log.warning("Error when liking news ${news.title} for user ${member.email} ($error)");
+      throw (error);
+    });
+  }
+
+  /// Unlike the specified [news] for the specified [member]
+  Future<void> unlikeNews(News news, Member member) async {
+    await _newsService.unlikeNews(news.id, member.id).then((value) async {
+      _log.fine("News ${news.title} unliked by user ${member.email}");
+      _currentNews.members.remove(member);
+      notifyListeners();
+    }, onError: (error) {
+      _log.warning("Error when unliking news ${news.title} for user ${member.email} ($error)");
       throw (error);
     });
   }

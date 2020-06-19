@@ -28,6 +28,7 @@ const String API_CREATE_NEWS_ENDPOINT = '/news/create.php';
 const String API_UPDATE_NEWS_ENDPOINT = '/news/update.php';
 const String API_DELETE_NEWS_ENDPOINT = '/news/delete.php';
 const String API_LIKE_NEWS_ENDPOINT = '/news/like.php';
+const String API_UNLIKE_NEWS_ENDPOINT = '/news/unlike.php';
 
 const String API_GET_ALL_MEMBERS_ENDPOINT = '/members/read.php';
 const String API_GET_SINGLE_MEMBER_ENDPOINT = '/members/read_one.php';

@@ -32,8 +32,7 @@ class NewsCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-
-    final Color _color = index%3 == 0 ? Colors.red[900] : index%3 == 1 ? Colors.green[600] : Colors.blue[600];
+    final Color _color = index % 3 == 0 ? Colors.red[900] : index % 3 == 1 ? Colors.green[600] : Colors.blue[600];
 
     return Container(
       height: 76.0,
@@ -57,20 +56,26 @@ class NewsCard extends StatelessWidget {
                   stops: [0.0, 1.0],
                   colors: [_color, Colors.purple[700]],
                 ).createShader(bounds),
-                child: Icon(CustomIcons.helmet, size: 35, color: _color,),
-              ),
-              Row(children: <Widget>[
-                Icon(Icons.favorite_border, color: Colors.pink, size: 12.0),
-                SizedBox(width: 2.0),
-                Text(
-                  "3",
-                  softWrap: false,
-                  textScaleFactor: 0.9,
-                  style: TextStyle(color: Colors.white),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
+                child: Icon(
+                  CustomIcons.helmet,
+                  size: 35,
+                  color: _color,
                 ),
-              ],),
+              ),
+              Row(
+                children: <Widget>[
+                  Icon(Icons.favorite_border, color: Colors.pink, size: 12.0),
+                  SizedBox(width: 2.0),
+                  Text(
+                    "${news.members.length}",
+                    softWrap: false,
+                    textScaleFactor: 0.9,
+                    style: TextStyle(color: Colors.white),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
               //Text("News", textScaleFactor: 0.6, style: TextStyle(color: _color, fontFamily: 'Barbatrick', letterSpacing: 1)),
             ],
           ),
