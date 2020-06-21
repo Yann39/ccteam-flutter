@@ -82,13 +82,13 @@ class Photo {
     function readByGallery($gallery_id) {
 
         // query to get all records containing the specified gallery
-        $query = "SELECT n.title, n.description, n.link, n.created_on, n.modified_on FROM " . $this->table_name . " p WHERE p.gallery_id = ?";
+        $query = "SELECT p.title, p.description, p.link, p.created_on, p.modified_on FROM " . $this->table_name . " p WHERE p.gallery_id = ?";
 
         // prepare query statement
         $stmt = $this->conn->prepare($query);
 
         // bind id
-        $stmt->bindParam(1, $event_id);
+        $stmt->bindParam(1, $gallery_id);
 
         // execute query
         $stmt->execute();

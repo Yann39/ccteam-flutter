@@ -20,6 +20,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:chachatte_team/providers/photo_provider.dart';
 import 'package:chachatte_team/ui/main/main_action_menu.dart';
+import 'package:chachatte_team/ui/main/main_drawer.dart';
 import 'package:chachatte_team/ui/photos/add_edit_photo.dart';
 import 'package:chachatte_team/utils/custom_decorations.dart';
 import 'package:chachatte_team/utils/strings.dart';
@@ -27,11 +28,7 @@ import 'package:chachatte_team/widgets/loading_content.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-class Gallery extends StatelessWidget {
-  final String title;
-
-  const Gallery({Key key, this.title}) : super(key: key);
-
+class Galleries extends StatelessWidget {
   /// Method that launches the Add Photo screen and awaits the result from Navigator.pop
   _navigateAndDisplaySelection(BuildContext context) async {
     // Navigator.push returns a Future that will complete after we call Navigator.pop on the Add News Screen
@@ -50,9 +47,10 @@ class Gallery extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(title),
+        title: Text(AppString.galleries),
         actions: <Widget>[MainActionMenu()],
       ),
+      drawer: MainDrawer(),
       body: Container(
         decoration: CustomDecorations.mainContent,
         padding: EdgeInsets.all(4.0),
@@ -67,34 +65,88 @@ class Gallery extends StatelessWidget {
               mainAxisSpacing: 4,
               childAspectRatio: 1.3,
             ),
-            itemCount: _photoProvider.photos.length,
+            itemCount: _photoProvider.galleries.length,
             itemBuilder: (BuildContext context, int index) => InkWell(
-              onTap: () => Navigator.pushNamed(context, "/photoDetail", arguments: _photoProvider.photos[index]),
+              onTap: () {
+                _photoProvider.fetchPhotosFromGallery(_photoProvider.galleries[index].id);
+                Navigator.pushNamed(context, "/gallery", arguments: _photoProvider.galleries[index].title);
+              },
               child: Stack(
                 alignment: Alignment.bottomCenter,
                 children: [
-                  Container(
-                    decoration: BoxDecoration(
-                      image: DecorationImage(
-                        image: CachedNetworkImageProvider(_photoProvider.photos[index].link
-                            /*placeholder: (context, url) => CircularProgressIndicator(),
-                              imageUrl: _photoProvider.photos[index].link,
-                              fit: BoxFit.fitWidth,*/
+                  Column(
+                    children: <Widget>[
+                      Expanded(
+                        child: Row(
+                          children: <Widget>[
+                            Expanded(
+                              child: Container(
+                                decoration: _photoProvider.galleries[index].photos.length > 0
+                                    ? BoxDecoration(
+                                        image: DecorationImage(
+                                          image: CachedNetworkImageProvider(_photoProvider.galleries[index].photos[0].link),
+                                          fit: BoxFit.cover,
+                                        ),
+                                      )
+                                    : BoxDecoration(),
+                              ),
                             ),
-                        fit: BoxFit.cover,
+                            SizedBox(width: 2),
+                            Expanded(
+                              child: Container(
+                                decoration: _photoProvider.galleries[index].photos.length > 1
+                                    ? BoxDecoration(
+                                        image: DecorationImage(
+                                          image: CachedNetworkImageProvider(_photoProvider.galleries[index].photos[1].link),
+                                          fit: BoxFit.cover,
+                                        ),
+                                      )
+                                    : BoxDecoration(),
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
-                    /*child: CachedNetworkImage(
-                          placeholder: (context, url) => CircularProgressIndicator(),
-                          imageUrl: _photoProvider.photos[index].link,
-                        ),*/
+                      SizedBox(height: 2),
+                      Expanded(
+                        child: Row(
+                          children: <Widget>[
+                            Expanded(
+                              child: Container(
+                                decoration: _photoProvider.galleries[index].photos.length > 2
+                                    ? BoxDecoration(
+                                        image: DecorationImage(
+                                          image: CachedNetworkImageProvider(_photoProvider.galleries[index].photos[2].link),
+                                          fit: BoxFit.cover,
+                                        ),
+                                      )
+                                    : BoxDecoration(),
+                              ),
+                            ),
+                            SizedBox(width: 2),
+                            Expanded(
+                              child: Container(
+                                decoration: _photoProvider.galleries[index].photos.length > 3
+                                    ? BoxDecoration(
+                                        image: DecorationImage(
+                                          image: CachedNetworkImageProvider(_photoProvider.galleries[index].photos[3].link),
+                                          fit: BoxFit.cover,
+                                        ),
+                                      )
+                                    : BoxDecoration(),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
                   ),
                   Container(
                     height: 20.0,
                     alignment: Alignment.center,
                     decoration: BoxDecoration(shape: BoxShape.rectangle, color: Colors.black.withOpacity(0.5)),
                     child: Text(
-                      _photoProvider.photos[index].title,
+                      _photoProvider.galleries[index].title,
                       softWrap: false,
                       style: TextStyle(color: Colors.white),
                       maxLines: 1,

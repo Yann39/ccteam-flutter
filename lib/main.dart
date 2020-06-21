@@ -38,6 +38,7 @@ import 'package:chachatte_team/ui/news/add_edit_news.dart';
 import 'package:chachatte_team/ui/news/news.dart';
 import 'package:chachatte_team/ui/news/news_detail.dart';
 import 'package:chachatte_team/ui/photos/add_edit_photo.dart';
+import 'package:chachatte_team/ui/photos/gallery.dart';
 import 'package:chachatte_team/ui/photos/photo_detail.dart';
 import 'package:chachatte_team/ui/tracks/track_detail.dart';
 import 'package:chachatte_team/ui/unauthenticated/forgot_password.dart';
@@ -94,6 +95,7 @@ class ChachatteTeamApp extends StatelessWidget {
         '/forgotPassword': (context) => ForgotPassword(),
         '/newsList': (context) => NewsList(),
         '/imageCrop': (context) => ImageCrop(),
+        '/gallery': (context) => Gallery(title: ModalRoute.of(context).settings.arguments),
         '/editAvatar': (context) => EditAvatar(member: ModalRoute.of(context).settings.arguments),
         '/addEditNews': (context) => AddEditNews(news: (ModalRoute.of(context).settings.arguments as List)[0], title: (ModalRoute.of(context).settings.arguments as List)[1]),
         '/addEditEvent': (context) => AddEditEvent(event: ModalRoute.of(context).settings.arguments),

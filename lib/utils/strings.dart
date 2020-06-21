@@ -44,6 +44,7 @@ class AppString {
   static const String about = 'A propos';
   static const String contact = 'Contact';
   static const String logout = 'Se déconnecter';
+  static const String galleries = 'Galleries';
 
   static const String forgotPassword = 'Mot de passe oublié?';
   static const String alreadyHaveAccount = 'J\'ai déjà un compte';

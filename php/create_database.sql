@@ -188,7 +188,9 @@ INSERT INTO `tracks` (`id`, `name`, `distance`, `lap_record`, `website`, `latitu
 (10, 'Alès', 2500, 74679, 'http://www.pole-mecanique.fr', 44.1421587, 4.0682965);
 
 INSERT INTO `galleries` (`id`, `title`, `description`, `created_on`, `modified_on`) VALUES
-(1, 'Défaut', 'Gallerie par défaut', '2020-05-29 23:18:52', NULL)
+(1, 'Divers', 'Gallerie par défaut', '2020-05-29 23:18:52', NULL),
+(2, 'Alès 2018', 'Roulage à Alès avec ActivBike en octobre 2018', '2020-06-02 09:25:17', NULL),
+(3, 'Lédenon 2018', 'Roulage à Alès avec ActivBike en octobre 2018', '2020-06-02 09:25:17', NULL)
 
 INSERT INTO `photos` (`id`, `title`, `description`, `link`, `created_on`, `modified_on`) VALUES
 (1, 'Lorenzo', 'Lorenzo qui célèbre sa victoire', 'http://photos.example.com/wp-content/uploads/2018/06/IMG_1575.jpg', '2018-09-12 08:33:19', NULL),

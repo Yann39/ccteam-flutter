@@ -175,6 +175,11 @@ class NewsDetail extends StatelessWidget {
                 ],
               ),
             ),
+            Divider(
+              height: 8,
+              color: Colors.purple,
+              thickness: 2.0,
+            ),
             Padding(
               padding: const EdgeInsets.all(8.0),
               child: Text(
@@ -182,11 +187,6 @@ class NewsDetail extends StatelessWidget {
                 textScaleFactor: 2,
                 style: TextStyle(color: Colors.black87),
               ),
-            ),
-            Divider(
-              height: 8,
-              color: Colors.purple,
-              thickness: 2.0,
             ),
             Padding(
               padding: const EdgeInsets.all(8.0),

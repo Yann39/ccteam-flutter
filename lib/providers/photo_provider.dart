@@ -52,6 +52,7 @@ class PhotoProvider extends ChangeNotifier {
   }
 
   UnmodifiableListView<Photo> get photos => UnmodifiableListView(_photos);
+
   UnmodifiableListView<Gallery> get galleries => UnmodifiableListView(_galleries);
 
   /// Update the current loading status
@@ -74,6 +75,15 @@ class PhotoProvider extends ChangeNotifier {
       _updateStatus(LoadingStatus.notLoaded);
       throw (error);
     });
+  }
+
+  /// Get the list of all photos for the specified [galleryId]
+  /// Galleries must have be fetched before
+  void fetchPhotosFromGallery(int galleryId) async {
+    _updateStatus(LoadingStatus.loading);
+    _log.fine("Fetching photos for gallery ID $galleryId");
+    _photos = _galleries.singleWhere((element) => element.id == galleryId).photos;
+    _updateStatus(LoadingStatus.loaded);
   }
 
   /// Get the list of all galleries

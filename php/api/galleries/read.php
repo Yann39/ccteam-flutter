@@ -74,7 +74,7 @@ if ($num > 0) {
                     "modified_on" => $row2['modified_on']
                 );
 
-                // add it to the members array
+                // add it to the photo array
                 array_push($photo_arr, $photo_item);
             }
         }

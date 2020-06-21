@@ -21,7 +21,7 @@ import 'package:chachatte_team/providers/home_provider.dart';
 import 'package:chachatte_team/ui/events/calendar.dart';
 import 'package:chachatte_team/ui/members/team.dart';
 import 'package:chachatte_team/ui/news/news.dart';
-import 'package:chachatte_team/ui/photos/gallery.dart';
+import 'package:chachatte_team/ui/photos/galleries.dart';
 import 'package:chachatte_team/ui/tracks/tracks.dart';
 import 'package:chachatte_team/utils/custom_icons.dart';
 import 'package:chachatte_team/utils/strings.dart';
@@ -33,7 +33,7 @@ class Home extends StatelessWidget {
   final Logger _log = new Logger('Home');
 
   // list of pages of the bottom navigation bar
-  final List<Widget> _children = [NewsList(), Calendar(), Team(), Tracks(), Gallery()];
+  final List<Widget> _children = [NewsList(), Calendar(), Team(), Tracks(), Galleries()];
 
   // this should be called for at least one locale before any date formatting methods are called
   //initializeDateFormatting();
