@@ -33,6 +33,9 @@ class TrackProvider extends ChangeNotifier {
   // current list of tracks
   List<Track> _tracks = [];
 
+  // current selected track
+  Track _selectedTrack;
+
   // current loading status
   LoadingStatus _loadingStatus = LoadingStatus.notLoaded;
 
@@ -46,9 +49,18 @@ class TrackProvider extends ChangeNotifier {
 
   LoadingStatus get loadingStatus => _loadingStatus;
 
+  Track get selectedTrack => _selectedTrack;
+
   /// Update the current loading status
   void _updateStatus(LoadingStatus status) {
     _loadingStatus = status;
+    _log.info("Notifying listeners of TrackProvider");
+    notifyListeners();
+  }
+
+  /// Set the specified [track] as the current selected track
+  void selectTrack(Track track) {
+    _selectedTrack = track;
     _log.info("Notifying listeners of TrackProvider");
     notifyListeners();
   }
@@ -99,7 +111,7 @@ class TrackProvider extends ChangeNotifier {
 
   /// Update the specified [track]
   Future<void> updateTrack(Track track) async {
-    await _tracksService.createTrack(track).then((value) {
+    await _tracksService.updateTrack(track).then((value) {
       _log.fine("Track successfully updated : ${track.name}");
       _tracks[_tracks.indexWhere((m) => m.id == track.id)] = track;
       _log.info("Notifying listeners of TrackProvider");

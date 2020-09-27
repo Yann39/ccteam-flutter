@@ -135,7 +135,7 @@ class _TracksState extends State<Tracks> {
                                   children: <Widget>[
                                     Icon(Icons.timer, size: 13, color: Colors.white),
                                     SizedBox(width: 6.0),
-                                    Text("${AppString.record} : ${DateUtils.toLapTime(_trackProvider.tracks[index].lapRecord)}", style: TextStyle(color: Colors.white), textScaleFactor: 0.9),
+                                    Text("${AppString.record} : ${DateUtils.toLapTimeString(_trackProvider.tracks[index].lapRecord)}", style: TextStyle(color: Colors.white), textScaleFactor: 0.9),
                                   ],
                                 ),
                               ],

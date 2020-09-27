@@ -117,6 +117,9 @@ flutter:
     - family: Barbatrick
       fonts:
         - asset: fonts/barbatrick.regular.ttf
+    - family: AlarmClock
+      fonts:
+        - asset: fonts/alarmclock.ttf
     - family: CustomIcons
       fonts:
         - asset: fonts/CustomIcons.ttf

@@ -21,6 +21,7 @@ import 'dart:collection';
 
 import 'package:chachatte_team/models/record.dart';
 import 'package:chachatte_team/services/records_service.dart';
+import 'package:chachatte_team/utils/enums.dart';
 import 'package:flutter/foundation.dart';
 import 'package:logging/logging.dart';
 
@@ -34,39 +35,76 @@ class RecordProvider extends ChangeNotifier {
   // list of all member records
   List<Record> _memberRecords = [];
 
+  // current loading status
+  LoadingStatus _loadingStatus = LoadingStatus.notLoaded;
+
   UnmodifiableListView<Record> get trackRecords => UnmodifiableListView(_trackRecords);
 
   UnmodifiableListView<Record> get memberRecords => UnmodifiableListView(_memberRecords);
 
+  LoadingStatus get loadingStatus => _loadingStatus;
+
+  /// Update the current loading status
+  void _updateStatus(LoadingStatus status) {
+    _loadingStatus = status;
+    _log.info("Notifying listeners of RecordProvider");
+    notifyListeners();
+  }
+
   /// Get the list of all records for the specified [trackId]
   void fetchTrackRecords(int trackId) async {
+    _updateStatus(LoadingStatus.loading);
     await _recordsService.fetchTrackRecords(trackId).then((value) async {
       _log.fine("Track records list retrieved successfully");
       _trackRecords = value;
-      _log.info("Notifying listeners of RecordProvider");
-      notifyListeners();
+      _updateStatus(LoadingStatus.loaded);
     }, onError: (error) {
       _log.warning("Error when retrieving track records list ($error)");
       _trackRecords = [];
-      _log.info("Notifying listeners of RecordProvider");
-      notifyListeners();
+      _updateStatus(LoadingStatus.notLoaded);
       throw (error);
     });
   }
 
   /// Get the list of all records for the specified [memberId]
-  void fetchMemberRecords(int memberId) async {
+  Future<void> fetchMemberRecords(int memberId) async {
+    _updateStatus(LoadingStatus.loading);
     await _recordsService.fetchMemberRecords(memberId).then((value) async {
       _log.fine("Member records list retrieved successfully");
       _memberRecords = value;
-      _log.info("Notifying listeners of RecordProvider");
-      notifyListeners();
+      _updateStatus(LoadingStatus.loaded);
     }, onError: (error) {
       _log.warning("Error when retrieving member records list ($error)");
       _memberRecords = [];
-      _log.info("Notifying listeners of RecordProvider");
-      notifyListeners();
+      _updateStatus(LoadingStatus.notLoaded);
       throw (error);
     });
   }
+
+  /// Create the specified [record]
+  Future<void> createRecord(Record record) async {
+    await _recordsService.createRecord(record).then((value) {
+      _log.fine("New record created : ${record.id}");
+      _trackRecords.add(record);
+      _log.info("Notifying listeners of RecordProvider");
+      notifyListeners();
+    }, onError: (error) {
+      _log.severe("Failed to create new record ($error)");
+      throw (error);
+    });
+  }
+
+  /// Update the specified [record]
+  Future<void> updateRecord(Record record) async {
+    await _recordsService.updateRecord(record).then((value) {
+      _log.fine("Record successfully updated : ${record.id}");
+      _trackRecords[_trackRecords.indexWhere((m) => m.id == record.id)] = record;
+      _log.info("Notifying listeners of RecordProvider");
+      notifyListeners();
+    }, onError: (error) {
+      _log.severe("Failed to update record ($error)");
+      throw (error);
+    });
+  }
+
 }

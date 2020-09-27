@@ -184,6 +184,22 @@ class AppString {
   static const String eventDetailScreenTitle = 'Roulage';
   static const String eventsNotFound = 'Aucun événement trouvé';
 
+  static const String recordCreate = 'Ajouter un chrono';
+  static const String recordEdit = 'Modifier un chrono';
+  static const String recordCreated = 'Le chrono à été ajouté avec succès !';
+  static const String recordCreationFailed = 'Echec lors de l\'ajout du chrono';
+  static const String recordUpdated = 'Le chrono à été mis à jour avec succès !';
+  static const String recordUpdateFailed = 'Echec lors de la mise à jour du chrono';
+  static const String recordDate = 'Date';
+  static const String recordDateHint = 'Date du chrono';
+  static const String recordDateMandatory = 'La date du chrono est obligatoire';
+  static const String recordDateNotValid = 'La date du chrono n\'est pas valide';
+  static const String recordLapTime = 'Chrono';
+  static const String recordLapTimeHint = 'Chrono';
+  static const String recordLapTimeMandatory = 'Le chrono est obligatoire';
+  static const String recordLapTimeNotValid = 'Le chrono n\'est pas valide';
+
+
   static const String photoScreenTitle = 'Gallerie';
   static const String photoCreate = 'Ajouter une photo';
   static const String photoCreated = 'La photo à été créée avec succès !';

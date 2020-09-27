@@ -337,7 +337,6 @@ class _AddEditMemberState extends State<AddEditMember> {
         ),
         Container(
           padding: const EdgeInsets.only(top: 0, left: 16.0, right: 16.0, bottom: 56.0),
-          decoration: CustomDecorations.mainContent,
           child: Form(
             key: _formKey,
             autovalidate: false,
@@ -381,18 +380,21 @@ class _AddEditMemberState extends State<AddEditMember> {
         title: Text(AppString.profileEdit),
         actions: MediaQuery.of(context).orientation == Orientation.portrait ? null : actionMenu,
       ),
-      body: MediaQuery.of(context).orientation == Orientation.portrait
-          ? Stack(
-              alignment: Alignment.topCenter,
-              children: <Widget>[
-                listView,
-                SaveCancelBar(
-                  saveFunction: () => submitForm(_currMember),
-                  cancelFunction: () => Navigator.pop(context),
-                ),
-              ],
-            )
-          : listView,
+      body: Container(
+        decoration: CustomDecorations.mainContent,
+        child: MediaQuery.of(context).orientation == Orientation.portrait
+            ? Stack(
+                alignment: Alignment.topCenter,
+                children: <Widget>[
+                  listView,
+                  SaveCancelBar(
+                    saveFunction: () => submitForm(_currMember),
+                    cancelFunction: () => Navigator.pop(context),
+                  ),
+                ],
+              )
+            : listView,
+      ),
     );
   }
 }

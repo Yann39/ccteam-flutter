@@ -32,6 +32,8 @@ import 'package:chachatte_team/ui/main/edit_avatar.dart';
 import 'package:chachatte_team/ui/main/home.dart';
 import 'package:chachatte_team/ui/main/image_crop.dart';
 import 'package:chachatte_team/ui/members/add_edit_member.dart';
+import 'package:chachatte_team/ui/members/add_edit_record.dart';
+import 'package:chachatte_team/ui/members/member_chronos.dart';
 import 'package:chachatte_team/ui/members/member_detail.dart';
 import 'package:chachatte_team/ui/members/member_events.dart';
 import 'package:chachatte_team/ui/news/add_edit_news.dart';
@@ -101,27 +103,32 @@ class ChachatteTeamApp extends StatelessWidget {
         '/addEditEvent': (context) => AddEditEvent(event: ModalRoute.of(context).settings.arguments),
         '/addEditMember': (context) => AddEditMember(member: ModalRoute.of(context).settings.arguments),
         '/addEditPhoto': (context) => AddEditPhoto(photo: ModalRoute.of(context).settings.arguments),
+        '/addEditRecord': (context) => AddEditRecord(record: ModalRoute.of(context).settings.arguments),
         '/newsDetail': (context) => NewsDetail(),
         '/memberDetail': (context) => MemberDetail(member: ModalRoute.of(context).settings.arguments),
         '/memberEvents': (context) => MemberEvents(member: ModalRoute.of(context).settings.arguments),
+        '/memberChronos': (context) => MemberChronos(member: ModalRoute.of(context).settings.arguments),
         '/photoDetail': (context) => PhotoDetail(photo: ModalRoute.of(context).settings.arguments),
         '/trackDetail': (context) => TrackDetail(track: ModalRoute.of(context).settings.arguments),
       },
-      home: Consumer<LoginProvider>(builder: (context, loginProvider, child) {
-        switch (loginProvider.status) {
-          case AuthStatus.Initializing:
-            _log.info("Going to init page...");
-            return Loading();
-          case AuthStatus.Unauthenticated:
-          case AuthStatus.Authenticating:
-            _log.info("Going to login page...");
-            return Login();
-          case AuthStatus.Authenticated:
-            _log.info("Going to home page...");
-            return Home();
-        }
-        return Text("Unknown authentication status");
-      }),
+      home: Consumer<LoginProvider>(
+        builder: (context, loginProvider, child) {
+          switch (loginProvider.status) {
+            case AuthStatus.Initializing:
+              _log.info("Going to init page...");
+              return Loading();
+            case AuthStatus.Unauthenticated:
+            case AuthStatus.Authenticating:
+              _log.info("Going to login page...");
+              return Login();
+            //return LoginCotter();
+            case AuthStatus.Authenticated:
+              _log.info("Going to home page...");
+              return Home();
+          }
+          return Text("Unknown authentication status");
+        },
+      ),
       theme: ThemeData(
         primarySwatch: Colors.red,
         primaryColor: Colors.red[700],

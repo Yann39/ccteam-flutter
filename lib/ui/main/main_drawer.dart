@@ -149,7 +149,7 @@ class MainDrawer extends StatelessWidget {
                   trailing: Icon(Icons.arrow_right),
                   title: Text(AppString.myChronos),
                   onTap: () {
-                    Navigator.pop(context);
+                    Navigator.pushNamed(context, '/memberChronos', arguments: _loginProvider.loggedMember);
                   },
                 ),
                 Divider(),

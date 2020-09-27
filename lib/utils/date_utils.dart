@@ -58,8 +58,17 @@ class DateUtils {
   }
 
   /// format the specified [duration] (integer representing a number of milliseconds) as string
-  static String toLapTime(int duration) {
+  static String toLapTimeString(int duration) {
     if (duration == null) return null;
     return "${Duration(milliseconds: duration).inMinutes.remainder(60).toString().padLeft(2, '0')}'${Duration(milliseconds: duration).inSeconds.remainder(60).toString().padLeft(2, '0')}\"${Duration(milliseconds: duration).inMilliseconds.remainder(1000)}";
+  }
+
+  /// format the specified [lapTime] string to an integer representing the number of milliseconds
+  static int toLapTimeDuration(String lapTime) {
+    if (lapTime == null || lapTime.length == 0) return null;
+    final int minutes = int.parse(lapTime.substring(0, lapTime.indexOf('\'')));
+    final int seconds = int.parse(lapTime.substring(lapTime.indexOf('\'')+1, lapTime.indexOf('"')));
+    final int milliseconds = int.parse(lapTime.substring(lapTime.indexOf('"')+1));
+    return minutes*60000 + seconds*100 + milliseconds;
   }
 }

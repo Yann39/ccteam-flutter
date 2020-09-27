@@ -27,7 +27,7 @@ CREATE TABLE IF NOT EXISTS `members` (
   `active` boolean NOT NULL DEFAULT FALSE,
   `admin` boolean NOT NULL DEFAULT FALSE,
   `phone` varchar(13) NULL,
-  `bike` varchar(64) NULL,
+  `bike` varchar(128) NULL,
   `registration_date` datetime NOT NULL,
   `created_on` timestamp NOT NULL,
   `modified_on` timestamp NULL,
@@ -40,7 +40,7 @@ CREATE TABLE IF NOT EXISTS `tracks` (
   `name` varchar(128) NOT NULL,
   `distance` int NULL,
   `lap_record` int NULL,
-  `website` varchar(256) NULL,
+  `website` varchar(255) NULL,
   `latitude` decimal(10, 8) NOT NULL,
   `longitude` decimal(11, 8) NOT NULL,
   PRIMARY KEY (`id`)

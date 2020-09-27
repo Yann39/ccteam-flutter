@@ -1,0 +1,255 @@
+/*
+ * Copyright (c) 2019 by Yann39.
+ *
+ * This file is part of Chachatte Team application.
+ *
+ * Chachatte Team is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Chachatte Team is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Chachatte Team. If not, see <http://www.gnu.org/licenses/>.
+ */
+
+import 'package:chachatte_team/models/record.dart';
+import 'package:chachatte_team/models/track.dart';
+import 'package:chachatte_team/providers/record_provider.dart';
+import 'package:chachatte_team/providers/track_provider.dart';
+import 'package:chachatte_team/utils/constants.dart';
+import 'package:chachatte_team/utils/custom_decorations.dart';
+import 'package:chachatte_team/utils/custom_icons.dart';
+import 'package:chachatte_team/utils/date_utils.dart';
+import 'package:chachatte_team/utils/string_utils.dart';
+import 'package:chachatte_team/utils/strings.dart';
+import 'package:chachatte_team/widgets/save_cancel_bar.dart';
+import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
+
+class AddEditRecord extends StatefulWidget {
+  final Record record;
+
+  const AddEditRecord({Key key, this.record}) : super(key: key);
+
+  @override
+  State<StatefulWidget> createState() {
+    return _AddEditRecordState();
+  }
+}
+
+class _AddEditRecordState extends State<AddEditRecord> {
+  final GlobalKey<FormState> _formKey = new GlobalKey<FormState>();
+  final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
+  final TextEditingController _datePickerController = new TextEditingController();
+
+  // the record to be created
+  final Record _newRecord = new Record();
+
+  /// Initialize and display a Date picker related to the specified [controller] in the specified [context]
+  Future _chooseDate(BuildContext context, TextEditingController controller, DateTime defaultValue) async {
+    final DateTime currentDate = DateTime.now();
+    final TimeOfDay currentTime = TimeOfDay.now();
+
+    // define initial date and time from the specified default DateTime value if set
+    final DateTime initialDate = defaultValue ?? currentDate;
+    final TimeOfDay initialTime = defaultValue != null ? TimeOfDay.fromDateTime(defaultValue) : currentTime;
+
+    // show the date picker and await for the chosen date
+    final DateTime dateResult =
+        await showDatePicker(context: context, initialDate: initialDate, firstDate: DateTime(currentDate.year - 5), lastDate: DateTime(currentDate.year + 5));
+    if (dateResult == null) return;
+
+    // show the time picker and await for the chosen time
+    final TimeOfDay timeResult = await showTimePicker(context: context, initialTime: initialTime);
+    if (timeResult == null) return;
+
+    // build final date with time
+    final DateTime finalDateTime = DateTime(dateResult.year, dateResult.month, dateResult.day, timeResult.hour, timeResult.minute);
+
+    // notify the framework that the internal state of this object has changed
+    setState(() {
+      controller.text = DateFormat(DATE_FORMAT).format(finalDateTime);
+    });
+  }
+
+  /// Validate the form then submit data to backend
+  void submitForm(Record record) {
+    final FormState form = _formKey.currentState;
+
+    if (!form.validate()) {
+      _scaffoldKey.currentState.showSnackBar(SnackBar(backgroundColor: Colors.red, content: Text(AppString.formNotValid)));
+    } else {
+      // this invokes each onSaved event
+      form.save();
+
+      // submit data to backend, if id is set this is an update, else a creation
+      if (record.id != null) {
+        // update the news go back with a message, the result is awaited in caller
+        Provider.of<RecordProvider>(context, listen: false).updateRecord(record).then((value) {
+          Navigator.pop(context, AppString.recordUpdated);
+        }, onError: (error) {
+          Navigator.pop(context, AppString.recordUpdateFailed);
+        });
+      } else {
+        // create the record go back with a message, the result is awaited in caller
+        Provider.of<RecordProvider>(context, listen: false).createRecord(record).then((value) {
+          Navigator.pop(context, AppString.recordCreated);
+        }, onError: (error) {
+          Navigator.pop(context, AppString.recordCreationFailed);
+        });
+      }
+    }
+  }
+
+  Widget build(BuildContext context) {
+    RecordProvider _recordProvider = Provider.of<RecordProvider>(context, listen: true);
+    TrackProvider _trackProvider = Provider.of<TrackProvider>(context, listen: true);
+
+    // the current record to be edited
+    final Record _currRecord = widget.record != null ? widget.record : _newRecord;
+
+    final _dateField = GestureDetector(
+      onTap: () => _chooseDate(context, _datePickerController, _currRecord.recordDate),
+      child: AbsorbPointer(
+        child: TextFormField(
+          decoration: InputDecoration(
+            icon: const Icon(Icons.calendar_today),
+            hintText: AppString.recordDateHint,
+            labelText: AppString.recordDate,
+          ),
+          controller: _datePickerController,
+          keyboardType: TextInputType.datetime,
+          validator: (val) => DateUtils.isBeforeNow(val, DATE_FORMAT) ? (val.isEmpty ? AppString.recordDateMandatory : null) : AppString.recordDateNotValid,
+          onSaved: (val) => _currRecord.recordDate = DateFormat(DATE_FORMAT).parseStrict(val),
+        ),
+      ),
+    );
+
+    final _trackField = DropdownButtonFormField<Track>(
+      value: _trackProvider.selectedTrack,
+      decoration: const InputDecoration(
+        icon: const Icon(CustomIcons.track_sample),
+        hintText: AppString.eventTrackIdHint,
+        labelText: AppString.eventTrackId,
+      ),
+      items: _trackProvider.tracks.map((Track value) {
+        return DropdownMenuItem<Track>(
+          value: value,
+          child: Text(value.name),
+        );
+      }).toList(),
+      onChanged: (Track value) {
+        _trackProvider.selectTrack(value);
+      },
+      onSaved: (val) => _currRecord.track.id = val.id,
+      validator: (val) => val == null ? AppString.eventTrackIdMandatory : null,
+    );
+
+    final _lapTimeField = TextFormField(
+      decoration: const InputDecoration(
+        icon: const Icon(Icons.timer),
+        hintText: AppString.recordLapTimeHint,
+        labelText: AppString.recordLapTime,
+      ),
+      keyboardType: TextInputType.number,
+      maxLines: 1,
+      inputFormatters: <TextInputFormatter>[LengthLimitingTextInputFormatter(9), WhitelistingTextInputFormatter.digitsOnly, LapTimeTextInputFormatter()],
+      validator: (val) => val.isEmpty ? AppString.recordLapTimeMandatory : (StringUtils.isValidLapTime(val) ? null : AppString.recordLapTimeNotValid),
+      onSaved: (val) => _currRecord.lapTime = DateUtils.toLapTimeDuration(val),
+      initialValue: DateUtils.toLapTimeString(_currRecord.lapTime),
+    );
+
+    final listView = ListView(
+      children: <Widget>[
+        Container(
+          padding: const EdgeInsets.only(top: 0, left: 16.0, right: 16.0, bottom: 56.0),
+          decoration: CustomDecorations.mainContent,
+          child: Form(
+            key: _formKey,
+            autovalidate: false,
+            child: Column(
+              children: <Widget>[
+                _dateField,
+                _trackField,
+                _lapTimeField,
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+
+    final List<Widget> actionMenu = [
+      FlatButton(
+        child: Text(
+          AppString.cancel.toUpperCase(),
+          style: TextStyle(color: Colors.white),
+        ),
+        onPressed: () => Navigator.pop(context),
+      ),
+      FlatButton(
+        child: Text(
+          AppString.save.toUpperCase(),
+          style: TextStyle(color: Colors.white),
+        ),
+        onPressed: () => submitForm(_currRecord),
+      ),
+    ];
+
+    return Scaffold(
+      key: _scaffoldKey,
+      appBar: AppBar(
+        elevation: 0.0,
+        title: Text(AppString.recordEdit),
+        actions: MediaQuery.of(context).orientation == Orientation.portrait ? null : actionMenu,
+      ),
+      body: MediaQuery.of(context).orientation == Orientation.portrait
+          ? Stack(
+              alignment: Alignment.topCenter,
+              children: <Widget>[
+                listView,
+                SaveCancelBar(
+                  saveFunction: () => submitForm(_currRecord),
+                  cancelFunction: () => Navigator.pop(context),
+                ),
+              ],
+            )
+          : listView,
+    );
+  }
+}
+
+/// Input formatter class for lap times
+class LapTimeTextInputFormatter extends TextInputFormatter {
+  @override
+  TextEditingValue formatEditUpdate(TextEditingValue oldValue, TextEditingValue newValue) {
+    final int _newTextLength = newValue.text.length;
+    int _selectionIndex = newValue.selection.end;
+    int _usedSubstringIndex = 0;
+    final StringBuffer _newText = new StringBuffer();
+    // add a space after the 2nd character
+    if (_newTextLength >= 3) {
+      _newText.write(newValue.text.substring(0, _usedSubstringIndex = 2) + '\'');
+      if (newValue.selection.end >= 2) _selectionIndex++;
+    }
+    // add a space after the 4rd character
+    if (_newTextLength >= 4) {
+      _newText.write(newValue.text.substring(2, _usedSubstringIndex = 4) + '"');
+      if (newValue.selection.end >= 3) _selectionIndex++;
+    }
+    // then write following characters
+    if (_newTextLength >= _usedSubstringIndex) _newText.write(newValue.text.substring(_usedSubstringIndex));
+    return TextEditingValue(
+      text: _newText.toString(),
+      selection: TextSelection.collapsed(offset: _selectionIndex),
+    );
+  }
+}

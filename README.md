@@ -8,6 +8,7 @@ Flutter mobile application for the "Chachatte team" motorcycle racing club
 ![Home page screenshot](doc/news.png "Home page")
 ![Events page screenshot](doc/events.png "Events page")
 ![Members page screenshot](doc/members.png "Members page")
+![Tracks page screenshot](doc/tracks.png "Tracks page")
 ![Gallery page screenshot](doc/gallery.png "Gallery page")
 
 # Usage

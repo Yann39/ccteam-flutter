@@ -26,6 +26,7 @@ import 'package:chachatte_team/providers/event_provider.dart';
 import 'package:chachatte_team/providers/record_provider.dart';
 import 'package:chachatte_team/services/events_service.dart';
 import 'package:chachatte_team/ui/events/add_edit_event.dart';
+import 'package:chachatte_team/utils/app_utils.dart';
 import 'package:chachatte_team/utils/constants.dart';
 import 'package:chachatte_team/utils/custom_decorations.dart';
 import 'package:chachatte_team/utils/custom_icons.dart';
@@ -50,7 +51,6 @@ class TrackDetail extends StatefulWidget {
 }
 
 class _TrackDetailState extends State<TrackDetail> {
-
   /// Method that launches the Edit track screen and awaits the result from Navigator.pop
   _navigateToEditTrackScreen(BuildContext context, Track track) async {
     /*// Navigator.push returns a Future that will complete after we call Navigator.pop on the target screen
@@ -86,7 +86,7 @@ class _TrackDetailState extends State<TrackDetail> {
                   ),
                 ),
                 Text(
-                  DateUtils.toLapTime(rec.lapTime),
+                  DateUtils.toLapTimeString(rec.lapTime),
                   style: TextStyle(color: Colors.black.withOpacity(0.8)),
                   textAlign: TextAlign.center,
                 ),
@@ -167,7 +167,7 @@ class _TrackDetailState extends State<TrackDetail> {
     final EventProvider _eventProvider = Provider.of<EventProvider>(context, listen: true);
 
     return Scaffold(
-      appBar: AppBar(
+      /*appBar: AppBar(
         actions: <Widget>[
           Builder(
             builder: (context) => IconButton(
@@ -181,10 +181,187 @@ class _TrackDetailState extends State<TrackDetail> {
           icon: Icon(Icons.arrow_back),
           onPressed: () => Navigator.pop(context),
         ),
-      ),
+      ),*/
       body: Container(
-        decoration: CustomDecorations.mainContent,
-        child: ListView(
+          decoration: CustomDecorations.mainContent,
+          child: CustomScrollView(
+            slivers: <Widget>[
+              SliverAppBar(
+                pinned: true,
+                expandedHeight: 200,
+                flexibleSpace: FlexibleSpaceBar(
+                  title: Text(widget.track.name),
+                  background: Stack(
+                    alignment: Alignment.bottomLeft,
+                    fit: StackFit.expand,
+                    children: <Widget>[
+                      CachedNetworkImage(
+                        placeholder: (context, url) => Center(
+                          child: SizedBox(
+                            child: CircularProgressIndicator(),
+                            height: 20.0,
+                            width: 20.0,
+                          ),
+                        ),
+                        imageUrl: TrackUtils.trackCoverImageUrlFromName(widget.track.name),
+                        fit: BoxFit.fitWidth,
+                      ),
+                      DecoratedBox(
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment(0.0, 1.0),
+                            end: Alignment(0.0, -1.0),
+                            colors: <Color>[Colors.black.withOpacity(0.4), Colors.transparent],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              SliverPadding(padding: EdgeInsets.all(8.0), sliver: SliverList(delegate: SliverChildListDelegate(<Widget>[
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: <Widget>[
+                    Container(
+                      padding: EdgeInsets.all(8.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: <Widget>[
+                          Row(
+                            children: <Widget>[
+                              Expanded(
+                                flex: 1,
+                                child: Container(
+                                  height: 100,
+                                  margin: EdgeInsets.all(4.0),
+                                  padding: EdgeInsets.all(8.0),
+                                  decoration: CustomDecorations.cardLight,
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    children: <Widget>[
+                                      Icon(
+                                        Icons.timer,
+                                        size: 30,
+                                        color: Colors.red[700],
+                                      ),
+                                      Text(
+                                        AppString.lapRecord,
+                                        textAlign: TextAlign.center,
+                                      ),
+                                      Text(
+                                        DateUtils.toLapTimeString(widget.track.lapRecord),
+                                        textAlign: TextAlign.center,
+                                        maxLines: 2,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                              Expanded(
+                                flex: 1,
+                                child: Container(
+                                  height: 100,
+                                  margin: EdgeInsets.all(4.0),
+                                  padding: EdgeInsets.all(8.0),
+                                  decoration: CustomDecorations.cardLight,
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    children: <Widget>[
+                                      Icon(
+                                        Icons.straighten,
+                                        size: 30,
+                                        color: Colors.red[700],
+                                      ),
+                                      Text(
+                                        AppString.length,
+                                        textAlign: TextAlign.center,
+                                      ),
+                                      Text(
+                                        "${widget.track.distance}",
+                                        textAlign: TextAlign.center,
+                                        maxLines: 2,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                              Expanded(
+                                flex: 1,
+                                child: InkWell(
+                                  onTap: () => AppUtils.launchURL("geo:${widget.track.latitude},${widget.track.longitude}"),
+                                  child: Container(
+                                    height: 100,
+                                    margin: EdgeInsets.all(4.0),
+                                    padding: EdgeInsets.all(8.0),
+                                    decoration: CustomDecorations.cardLight,
+                                    child: Column(
+                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      children: <Widget>[
+                                        Icon(
+                                          Icons.place,
+                                          size: 30,
+                                          color: Colors.red[700],
+                                        ),
+                                        Text(
+                                          "${widget.track.latitude}",
+                                          textAlign: TextAlign.center,
+                                        ),
+                                        Text(
+                                          "${widget.track.longitude}",
+                                          textAlign: TextAlign.center,
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          Divider(color: Colors.white),
+                          SizedBox(height: 10),
+                          Row(
+                            children: <Widget>[
+                              Icon(Icons.description, size: 16, color: Colors.black.withOpacity(0.8)),
+                              SizedBox(width: 5.0),
+                              Text(
+                                AppString.trackEvents,
+                                textScaleFactor: 1.2,
+                                style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black.withOpacity(0.8)),
+                              ),
+                            ],
+                          ),
+                          SizedBox(height: 10),
+                          _eventsTable(_eventProvider),
+                          SizedBox(height: 10),
+                          Divider(color: Colors.white),
+                          SizedBox(height: 10),
+                          Row(
+                            children: <Widget>[
+                              Icon(Icons.group, size: 18, color: Colors.black.withOpacity(0.64)),
+                              SizedBox(width: 5.0),
+                              Text(
+                                AppString.chronos,
+                                textScaleFactor: 1.2,
+                                style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black.withOpacity(0.64)),
+                              ),
+                            ],
+                          ),
+                          SizedBox(height: 10),
+                          _recordsTable(_recordProvider),
+                        ],
+                      ),
+                    ),
+                    SizedBox(height: 400,)
+                  ],
+                ),
+              ]))),
+            ],
+          )
+
+          /*ListView(
           children: <Widget>[
             Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -362,8 +539,8 @@ class _TrackDetailState extends State<TrackDetail> {
               ],
             ),
           ],
-        ),
-      ),
+        ),*/
+          ),
     );
   }
 }

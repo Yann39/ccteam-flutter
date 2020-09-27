@@ -165,15 +165,16 @@ class _MemberDetailState extends State<MemberDetail> {
                   ),
                 ),
                 Text(
-                  DateUtils.toLapTime(rec.lapTime),
-                  style: TextStyle(color: Colors.black.withOpacity(0.8)),
-                  textAlign: TextAlign.center,
-                ),
-                Text(
                   DateUtils.convertToString(rec.recordDate, "dd/MM/yyyy"),
                   style: TextStyle(color: Colors.black.withOpacity(0.8)),
                   textAlign: TextAlign.center,
                 ),
+                Text(
+                    DateUtils.toLapTimeString(rec.lapTime),
+                    style: TextStyle(color: Colors.black.withOpacity(1), fontFamily: "AlarmClock", letterSpacing: -1),
+                    textScaleFactor: 1,
+                    textAlign: TextAlign.center,
+                  ),
                 SizedBox(
                     width: 10,
                     child: rec.conditions == "dry"
