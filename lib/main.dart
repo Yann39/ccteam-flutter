@@ -46,11 +46,12 @@ import 'package:chachatte_team/ui/tracks/track_detail.dart';
 import 'package:chachatte_team/ui/unauthenticated/forgot_password.dart';
 import 'package:chachatte_team/ui/unauthenticated/loading.dart';
 import 'package:chachatte_team/ui/unauthenticated/login.dart';
-import 'package:chachatte_team/ui/unauthenticated/register.dart';
 import 'package:chachatte_team/utils/enums.dart';
+import 'package:chachatte_team/utils/graphql_connection.dart';
 import 'package:chachatte_team/utils/strings.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:logging/logging.dart';
 import 'package:provider/provider.dart';
 
@@ -89,58 +90,60 @@ class ChachatteTeamApp extends StatelessWidget {
     // Initialize notifications plugin
     NotificationsService.initialize(context);
 
-    return MaterialApp(
-      title: AppString.applicationTitle,
-      initialRoute: '/',
-      routes: {
-        '/register': (context) => Register(),
-        '/forgotPassword': (context) => ForgotPassword(),
-        '/newsList': (context) => NewsList(),
-        '/imageCrop': (context) => ImageCrop(),
-        '/gallery': (context) => Gallery(title: ModalRoute.of(context).settings.arguments),
-        '/editAvatar': (context) => EditAvatar(member: ModalRoute.of(context).settings.arguments),
-        '/addEditNews': (context) => AddEditNews(news: (ModalRoute.of(context).settings.arguments as List)[0], title: (ModalRoute.of(context).settings.arguments as List)[1]),
-        '/addEditEvent': (context) => AddEditEvent(event: ModalRoute.of(context).settings.arguments),
-        '/addEditMember': (context) => AddEditMember(member: ModalRoute.of(context).settings.arguments),
-        '/addEditPhoto': (context) => AddEditPhoto(photo: ModalRoute.of(context).settings.arguments),
-        '/addEditRecord': (context) => AddEditRecord(record: ModalRoute.of(context).settings.arguments),
-        '/newsDetail': (context) => NewsDetail(),
-        '/memberDetail': (context) => MemberDetail(member: ModalRoute.of(context).settings.arguments),
-        '/memberEvents': (context) => MemberEvents(member: ModalRoute.of(context).settings.arguments),
-        '/memberChronos': (context) => MemberChronos(member: ModalRoute.of(context).settings.arguments),
-        '/photoDetail': (context) => PhotoDetail(photo: ModalRoute.of(context).settings.arguments),
-        '/trackDetail': (context) => TrackDetail(track: ModalRoute.of(context).settings.arguments),
-      },
-      home: Consumer<LoginProvider>(
-        builder: (context, loginProvider, child) {
-          switch (loginProvider.status) {
-            case AuthStatus.Initializing:
-              _log.info("Going to init page...");
-              return Loading();
-            case AuthStatus.Unauthenticated:
-            case AuthStatus.Authenticating:
-              _log.info("Going to login page...");
-              return Login();
-            //return LoginCotter();
-            case AuthStatus.Authenticated:
-              _log.info("Going to home page...");
-              return Home();
-          }
-          return Text("Unknown authentication status");
+    return GraphQLProvider(
+      client: GraphQLConnection().client,
+      child: MaterialApp(
+        title: AppString.applicationTitle,
+        initialRoute: '/',
+        routes: {
+          '/forgotPassword': (context) => ForgotPassword(),
+          '/newsList': (context) => NewsList(),
+          '/imageCrop': (context) => ImageCrop(),
+          '/gallery': (context) => Gallery(title: ModalRoute.of(context).settings.arguments),
+          '/editAvatar': (context) => EditAvatar(member: ModalRoute.of(context).settings.arguments),
+          '/addEditNews': (context) => AddEditNews(news: (ModalRoute.of(context).settings.arguments as List)[0], title: (ModalRoute.of(context).settings.arguments as List)[1]),
+          '/addEditEvent': (context) => AddEditEvent(event: ModalRoute.of(context).settings.arguments),
+          '/addEditMember': (context) => AddEditMember(member: ModalRoute.of(context).settings.arguments),
+          '/addEditPhoto': (context) => AddEditPhoto(photo: ModalRoute.of(context).settings.arguments),
+          '/addEditRecord': (context) => AddEditRecord(record: ModalRoute.of(context).settings.arguments),
+          '/newsDetail': (context) => NewsDetail(),
+          '/memberDetail': (context) => MemberDetail(member: ModalRoute.of(context).settings.arguments),
+          '/memberEvents': (context) => MemberEvents(member: ModalRoute.of(context).settings.arguments),
+          '/memberChronos': (context) => MemberChronos(member: ModalRoute.of(context).settings.arguments),
+          '/photoDetail': (context) => PhotoDetail(photo: ModalRoute.of(context).settings.arguments),
+          '/trackDetail': (context) => TrackDetail(track: ModalRoute.of(context).settings.arguments),
         },
+        home: Consumer<LoginProvider>(
+          builder: (context, loginProvider, child) {
+            switch (loginProvider.authStatus) {
+              case AuthStatus.Initializing:
+                _log.info("Going to init page...");
+                return Loading();
+              case AuthStatus.Unauthenticated:
+              case AuthStatus.Authenticating:
+                _log.info("Going to login page...");
+                return Login();
+              //return LoginCotter();
+              case AuthStatus.Authenticated:
+                _log.info("Going to home page...");
+                return Home();
+            }
+            return Text("Unknown authentication status");
+          },
+        ),
+        theme: ThemeData(
+          primarySwatch: Colors.red,
+          primaryColor: Colors.red[700],
+        ),
+        supportedLocales: [
+          const Locale('en', 'US'),
+          const Locale('fr', 'FR'),
+        ],
+        localizationsDelegates: [
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+        ],
       ),
-      theme: ThemeData(
-        primarySwatch: Colors.red,
-        primaryColor: Colors.red[700],
-      ),
-      supportedLocales: [
-        const Locale('en', 'US'),
-        const Locale('fr', 'FR'),
-      ],
-      localizationsDelegates: [
-        GlobalMaterialLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-      ],
     );
   }
 }

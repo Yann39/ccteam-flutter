@@ -27,6 +27,7 @@ class Member {
   String email;
   String password;
   String avatar;
+  String otp;
   bool active;
   bool admin;
   String phone;
@@ -42,6 +43,7 @@ class Member {
     this.email,
     this.password,
     this.avatar,
+    this.otp,
     this.active,
     this.admin,
     this.phone,
@@ -60,6 +62,7 @@ class Member {
       email: ${this.email},
       password: ${this.password},
       avatar: ${this.avatar},
+      otp: ${this.otp},
       active: ${this.active},
       admin: ${this.admin},
       phone: ${this.phone},
@@ -70,6 +73,31 @@ class Member {
     }""";
   }
 
+  Member.fromGraphQl(Map<String, dynamic> json)
+      : id = json['id'] != null ? int.parse(json['id']) : -1,
+        firstName = json['firstName'],
+        lastName = json['lastName'],
+        email = json['email'],
+        password = json['password'],
+        avatar = json['avatar'],
+        otp = json['otp'],
+        active = json['active'] != null && json['active'] == '1',
+        admin = json['admin'] != null && json['admin'] == '1',
+        phone = json['phone'],
+        bike = json['bike'],
+        registrationDate = json['registrationDate'] != null
+            ? new DateFormat("yyyy-MM-dd HH:mm:ss")
+            .parseStrict(json['registrationDate'])
+            : null,
+        createdOn = json['createdOn'] != null
+            ? new DateFormat("yyyy-MM-dd HH:mm:ss")
+            .parseStrict(json['createdOn'])
+            : null,
+        modifiedOn = json['modifiedOn'] != null
+            ? new DateFormat("yyyy-MM-dd HH:mm:ss")
+            .parseStrict(json['modifiedOn'])
+            : null;
+
   /// Convert [json] map to the corresponding object
   Member.fromJson(Map<String, dynamic> json)
       : id = json['id'] != null ? int.parse(json['id']) : -1,
@@ -78,13 +106,23 @@ class Member {
         email = json['email'],
         password = json['password'],
         avatar = json['avatar'],
+        otp = json['otp'],
         active = json['active'] != null && json['active'] == '1',
         admin = json['admin'] != null && json['admin'] == '1',
         phone = json['phone'],
         bike = json['bike'],
-        registrationDate = json['registration_date'] != null ? new DateFormat("yyyy-MM-dd HH:mm:ss").parseStrict(json['registration_date']) : null,
-        createdOn = json['created_on'] != null ? new DateFormat("yyyy-MM-dd HH:mm:ss").parseStrict(json['created_on']) : null,
-        modifiedOn = json['modified_on'] != null ? new DateFormat("yyyy-MM-dd HH:mm:ss").parseStrict(json['modified_on']) : null;
+        registrationDate = json['registration_date'] != null
+            ? new DateFormat("yyyy-MM-dd HH:mm:ss")
+                .parseStrict(json['registration_date'])
+            : null,
+        createdOn = json['created_on'] != null
+            ? new DateFormat("yyyy-MM-dd HH:mm:ss")
+                .parseStrict(json['created_on'])
+            : null,
+        modifiedOn = json['modified_on'] != null
+            ? new DateFormat("yyyy-MM-dd HH:mm:ss")
+                .parseStrict(json['modified_on'])
+            : null;
 
   /// Convert [member] object to the corresponding JSON map
   Map<String, dynamic> toJson() => {
@@ -94,11 +132,14 @@ class Member {
         "email": email,
         "password": password,
         "avatar": avatar,
+        "otp": otp,
         "active": active,
         "admin": admin,
         "phone": phone,
         "bike": bike,
-        "registration_date": registrationDate != null ? registrationDate.toIso8601String() : null,
+        "registration_date": registrationDate != null
+            ? registrationDate.toIso8601String()
+            : null,
         "created_on": createdOn != null ? createdOn.toIso8601String() : null,
         "modified_on": modifiedOn != null ? modifiedOn.toIso8601String() : null,
       };

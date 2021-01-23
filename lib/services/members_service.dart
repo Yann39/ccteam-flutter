@@ -20,20 +20,79 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:async/async.dart';
 import 'package:chachatte_team/models/member.dart';
 import 'package:chachatte_team/utils/constants.dart';
+import 'package:chachatte_team/utils/graphql_connection.dart';
+import 'package:gql/language.dart';
+import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:http/http.dart' as http;
+import 'package:logging/logging.dart';
 import 'package:path/path.dart';
 
 class MembersService {
+  Future<http.Response> checkAccount(Member member) {
+    return http.post(
+      API_ROOT_URL + API_CHECK_ACCOUNT_ENDPOINT,
+      headers: <String, String>{'Content-Type': 'application/json; charset=UTF-8'},
+      body: jsonEncode(<String, String>{'email': member.email}),
+    );
+  }
+
+  Future<http.Response> preRegister(Member member) {
+    return http.post(
+      API_ROOT_URL + API_PRE_REGISTER_ENDPOINT,
+      headers: <String, String>{'Content-Type': 'application/json; charset=UTF-8'},
+      body: jsonEncode(
+          <String, String>{'firstName': member.firstName, 'lastName': member.lastName, 'email': member.email}),
+    );
+  }
+
+  Future<http.Response> resendOtp(Member member) {
+    return http.post(
+      API_ROOT_URL + API_RESEND_OTP_ENDPOINT,
+      headers: <String, String>{'Content-Type': 'application/json; charset=UTF-8'},
+      body: jsonEncode(<String, String>{'email': member.email}),
+    );
+  }
+
+  Future<http.Response> confirmEmail(Member member) {
+    return http.post(
+      API_ROOT_URL + API_CONFIRM_EMAIL_ENDPOINT,
+      headers: <String, String>{'Content-Type': 'application/json; charset=UTF-8'},
+      body: jsonEncode(<String, String>{'email': member.email, 'otp': member.otp}),
+    );
+  }
+
+  Future<http.Response> completeRegistration(Member member) {
+    return http.post(
+      API_ROOT_URL + API_COMPLETE_REGISTRATION_ENDPOINT,
+      headers: <String, String>{'Content-Type': 'application/json; charset=UTF-8'},
+      body: jsonEncode(<String, String>{'email': member.email, 'password': member.password}),
+    );
+  }
+
+  /// Authenticate the user represented by the specified [email] and [password]
+  /// Call a REST API endpoint to authenticates user from the database
+  /// The response will contains the issued JWT token
+  Future<http.Response> authenticate(String email, String password) {
+    //final ioc = new HttpClient();
+    //ioc.badCertificateCallback = (X509Certificate cert, String host, int port) => true;
+    //final http = new IOClient(ioc);
+
+    return http.post(
+      API_ROOT_URL + API_AUTHENTICATE_ENDPOINT,
+      headers: <String, String>{'Content-Type': 'application/json; charset=UTF-8'},
+      body: jsonEncode(<String, String>{'email': email, 'password': password}),
+    );
+  }
+
   /// Fetch all members from the database
   /// Send a GET request to the Restful API
   /// Throw an exception if response status code is different from 200 or 404
   /// Return empty array if no data found (404)
   Future<List<Member>> fetchMembers() async {
     // call to API
-    final response = await http.get(API_ROOT_URL + API_GET_ALL_MEMBERS_ENDPOINT);
+    final response = await http.get(API_OLD_ROOT_URL + API_GET_ALL_MEMBERS_ENDPOINT);
 
     if (response.statusCode == 200) {
       // if the call to the server was successful, parse the JSON and return content
@@ -52,7 +111,8 @@ class MembersService {
   /// Throw an exception if response status code is different from 200
   Future<void> loginMember(Member member) async {
     // call to API
-    final response = await http.post(API_ROOT_URL + API_LOGIN_MEMBER_ENDPOINT, headers: {'Content-Type': 'application/json'}, body: json.encode(member.toJson()));
+    final response = await http.post(API_OLD_ROOT_URL + API_LOGIN_MEMBER_ENDPOINT,
+        headers: {'Content-Type': 'application/json'}, body: json.encode(member.toJson()));
 
     // handle server response code
     if (response.statusCode == 200) {
@@ -75,7 +135,7 @@ class MembersService {
   /// Throw an exception if response status code is different from 200
   Future<Member> getMemberById(int id) async {
     // call to API
-    final response = await http.post(API_ROOT_URL + API_GET_SINGLE_MEMBER_ENDPOINT + "?id=$id");
+    final response = await http.post(API_OLD_ROOT_URL + API_GET_SINGLE_MEMBER_ENDPOINT + "?id=$id");
 
     // handle server response code
     if (response.statusCode == 200) {
@@ -93,6 +153,52 @@ class MembersService {
   /// Send a POST request to the Restful API
   /// Throw an exception if response status code is different from 200
   Future<Member> getMemberByEmail(String email) async {
+    final String memberByEmailQuery = """
+      query MemberByEmail(\$email: String!) {
+        memberByEmail(email: \$email) {
+          firstName
+          lastName
+          email
+          phone
+          avatarUrl
+          bike
+          admin
+          registrationDate
+          createdOn
+          modifiedOn
+        }
+      }
+    """;
+
+    return GraphQLConnection()
+        .graphQLClient
+        .query(
+          QueryOptions(
+            documentNode: parseString(memberByEmailQuery),
+            variables: {'email': email},
+          ),
+        )
+        .then(
+      (result) {
+        if (result.hasException) {
+          // usually ClientException means invalid or expired token
+          if (result.exception.clientException != null) {
+            throw Exception(result.exception.clientException.message);
+          } else if (result.exception.graphqlErrors != null && result.exception.graphqlErrors.isNotEmpty) {
+            throw Exception(result.exception.graphqlErrors.first.message);
+          } else {
+            throw Exception(result.exception.toString());
+          }
+        } else {
+          return Member.fromGraphQl(result.data['memberByEmail']);
+        }
+      },
+      onError: (error) {
+        throw Exception(error);
+      },
+    );
+
+    /*
     // convert Member object to JSON string
     final String jsonString = "{\"email\":\"$email\"}";
 
@@ -113,6 +219,7 @@ class MembersService {
     } else {
       throw Exception('Unexpected server response');
     }
+    */
   }
 
   /// Search for members according to the specified [text]
@@ -123,7 +230,8 @@ class MembersService {
     final String urlParameters = "?s=${Uri.encodeComponent(text)}";
 
     // call to API
-    final response = await http.get(API_ROOT_URL + API_SEARCH_MEMBERS_ENDPOINT + urlParameters, headers: {'Content-Type': 'application/json'});
+    final response = await http.get(API_OLD_ROOT_URL + API_SEARCH_MEMBERS_ENDPOINT + urlParameters,
+        headers: {'Content-Type': 'application/json'});
 
     if (response.statusCode == 200) {
       // if the call to the server was successful, parse the JSON and return content
@@ -142,7 +250,8 @@ class MembersService {
   /// Throw an exception if response status code is different from 201
   Future<void> createMember(Member member) async {
     // call to API
-    final response = await http.post(API_ROOT_URL + API_CREATE_MEMBER_ENDPOINT, headers: {'Content-Type': 'application/json'}, body: member.toJson());
+    final response = await http.post(API_OLD_ROOT_URL + API_CREATE_MEMBER_ENDPOINT,
+        headers: {'Content-Type': 'application/json'}, body: member.toJson());
 
     // handle server response code
     if (response.statusCode == 201) {
@@ -161,7 +270,8 @@ class MembersService {
   /// Throw an exception if response status code is different from 200
   Future<void> updateMember(Member member) async {
     // call to API
-    final response = await http.post(API_ROOT_URL + API_UPDATE_MEMBER_ENDPOINT, headers: {'Content-Type': 'application/json'}, body: json.encode(member.toJson()));
+    final response = await http.post(API_OLD_ROOT_URL + API_UPDATE_MEMBER_ENDPOINT,
+        headers: {'Content-Type': 'application/json'}, body: json.encode(member.toJson()));
 
     // handle server response code
     if (response.statusCode == 200) {
@@ -178,7 +288,8 @@ class MembersService {
   /// Throw an exception if response status code is different from 204
   Future<void> deleteMember(Member member) async {
     // call to API
-    final response = await http.post(API_ROOT_URL + API_DELETE_MEMBER_ENDPOINT, headers: {'Content-Type': 'application/json'}, body: json.encode(member.toJson()));
+    final response = await http.post(API_OLD_ROOT_URL + API_DELETE_MEMBER_ENDPOINT,
+        headers: {'Content-Type': 'application/json'}, body: json.encode(member.toJson()));
 
     if (response.statusCode != 204) {
       throw Exception('Unexpected server response');
@@ -193,7 +304,8 @@ class MembersService {
     final String jsonString = '{email:$email}';
 
     // call to API
-    final response = await http.post(API_ROOT_URL + API_ASK_PASSWORD_MEMBER_ENDPOINT, headers: {'Content-Type': 'application/json'}, body: jsonString);
+    final response = await http.post(API_OLD_ROOT_URL + API_ASK_PASSWORD_MEMBER_ENDPOINT,
+        headers: {'Content-Type': 'application/json'}, body: jsonString);
 
     // handle server response code
     if (response.statusCode == 200) {
@@ -216,11 +328,12 @@ class MembersService {
   /// Throw an exception if response status code is different from 200
   /// Return the uploaded avatar relative path
   Future<String> uploadAvatar(File file, int memberId) async {
-    final http.ByteStream stream = new http.ByteStream(DelegatingStream.typed(file.openRead()));
+    final http.ByteStream stream = new http.ByteStream(Stream.castFrom(file.openRead()));
     final int length = await file.length();
-    final Uri uri = Uri.parse(API_ROOT_URL + API_UPLOAD_MEMBER_AVATAR_ENDPOINT);
+    final Uri uri = Uri.parse(API_OLD_ROOT_URL + API_UPLOAD_MEMBER_AVATAR_ENDPOINT);
     final http.MultipartRequest request = new http.MultipartRequest("POST", uri);
-    final http.MultipartFile multipartFile = new http.MultipartFile('avatar', stream, length, filename: basename(file.path));
+    final http.MultipartFile multipartFile =
+        new http.MultipartFile('avatar', stream, length, filename: basename(file.path));
     request.files.add(multipartFile);
 
     Map<String, String> params = new Map();
@@ -252,7 +365,8 @@ class MembersService {
     final String jsonString = '{\"memberId\":$memberId}';
 
     // call to API
-    final response = await http.post(API_ROOT_URL + API_DELETE_MEMBER_AVATAR_ENDPOINT, headers: {'Content-Type': 'application/json'}, body: jsonString);
+    final response = await http.post(API_OLD_ROOT_URL + API_DELETE_MEMBER_AVATAR_ENDPOINT,
+        headers: {'Content-Type': 'application/json'}, body: jsonString);
 
     // handle server response code
     if (response.statusCode == 200) {

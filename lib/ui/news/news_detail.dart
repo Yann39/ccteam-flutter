@@ -92,7 +92,7 @@ class NewsDetail extends StatelessWidget {
 
   Widget build(BuildContext context) {
     final NewsProvider _newsProvider = Provider.of<NewsProvider>(context, listen: true);
-    final isLiked = _newsProvider.currentNews.members.any((element) => element.id == Provider.of<LoginProvider>(context, listen: false).loggedMember.id);
+    final isLiked = _newsProvider.currentNews.likedMembers.any((element) => element.id == Provider.of<LoginProvider>(context, listen: false).loggedMember.id);
     print(isLiked);
     return Scaffold(
       //extendBodyBehindAppBar: true,

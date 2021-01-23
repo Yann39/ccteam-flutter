@@ -49,7 +49,7 @@ class _AddEditNewsState extends State<AddEditNews> {
   final TextEditingController _datePickerController = new TextEditingController();
 
   // the news to be created
-  final News _newNews = new News(members: []);
+  final News _newNews = new News(likedMembers: []);
 
   initState() {
     // set date picker text if set

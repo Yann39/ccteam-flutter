@@ -17,7 +17,18 @@
  * along with Chachatte Team. If not, see <http://www.gnu.org/licenses/>.
  */
 
-const String API_ROOT_URL = 'obfuscated';
+const String API_OLD_ROOT_URL = 'obfuscated';
+const String API_ROOT_URL = 'obfuscated'; // for mobile device HOME
+//const String API_ROOT_URL = 'obfuscated'; // for local emulator
+//const String API_ROOT_URL = 'obfuscated'; // for production
+
+const String API_CHECK_ACCOUNT_ENDPOINT = '/checkAccount';
+const String API_PRE_REGISTER_ENDPOINT = '/preRegister';
+const String API_RESEND_OTP_ENDPOINT = '/resendOtp';
+const String API_CONFIRM_EMAIL_ENDPOINT = '/confirmEmail';
+const String API_COMPLETE_REGISTRATION_ENDPOINT = '/completeRegistration';
+const String API_AUTHENTICATE_ENDPOINT = '/authenticate';
+
 const String SERVER_ROOT_PATH = 'obfuscated';
 const String SERVER_AVATAR_FOLDER = 'upload/avatars/';
 const String SERVER_TRACK_IMAGES_FOLDER = 'images/tracks/';

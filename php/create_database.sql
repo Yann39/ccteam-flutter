@@ -153,27 +153,10 @@ INSERT INTO `members` (`id`, `first_name`, `last_name`, `email`, `password`, `ac
 INSERT INTO `news` (`id`, `title`, `catch_line`, `content`, `news_date`, `created_on`, `created_by`, `modified_on`, `modified_by`) VALUES
 (1, 'Repas du club', 'Repas de club avec tartiflettre géante', NULL, '2018-05-30 23:17:12', '2018-06-01 11:50:41', 1, NULL, NULL),
 (2, 'Réunion de dèbut d''année', 'Réunion de dèbut d''année pour oganiser les roulages', NULL, '2018-05-30 23:31:44', '2018-06-01 00:35:07', 1, NULL, NULL),
-(3, 'Réunion pour organisation foire au 2 roues', 'Réunion pour organisation foire au 2 roues qui aura lieu de 21 mars 2020', NULL, '2018-06-01 00:01:36', '2018-06-01 00:35:07', 1, '2018-06-01 02:14:44', 1,
+(3, 'Réunion pour organisation foire au 2 roues', 'Réunion pour organisation foire au 2 roues qui aura lieu de 21 mars 2020', NULL, '2018-06-01 00:01:36', '2018-06-01 00:35:07', 1, NULL, NULL),
 (4, 'Annulation du roulage Alés fin d''année', 'Attention le roulage qui devait avoir lieu à Ales en fin d''année est annulé car le circuit est fermé suite au record du circuit battu par Yann', NULL, '2019-01-22 18:00:00', '2018-06-01 00:01:36', 1, NULL, NULL),
 (5, 'Essai de la nouvelle R1 à Barcelone', 'Essai de la nouvelle R1 à Barcelone sous la pluie', NULL, '2019-11-22 16:08:00', '2019-06-01 16:08:00', 1, NULL, NULL),
 (6, 'Soirée mousse chez Fred', 'Soirée mousse chez Fred avec DJ Fred et Arnold T', NULL, '2019-12-02 19:24:16', '2019-06-01 16:08:00', 1, NULL, NULL);
-
-INSERT INTO `events` (`id`, `title`, `description`, `start_date`, `end_date`, `track_id`, `organizer`, `price`, `created_on`, `created_by`, `modified_on`, `modified_by`) VALUES
-(1, 'Roulage Dijon', 'Roulage à Dijon-Prenois avec ActivBike', '2018-07-12 00:00:00', '2018-07-12 00:00:00', 2, 'ActivBike', 189, '2018-06-01 09:35:07', 1, NULL, NULL),
-(2, 'Roulage Vaison piste', 'Vaison avec Goret team comme d''habitude', '2018-08-02 00:00:00', '2018-08-02 00:00:00', 5, 'ActivBike', 90, '2018-02-08 14:30:29', 1, NULL, NULL),
-(3, 'Journée du club à Bresse', 'Journée du Club sur le circuit de Bresse. Tous les participants se verront rembourser 70€ (par chéque) pris sur le compte du club.', '2018-08-28 00:00:00', '2018-08-28 00:00:00', 1, 'Team Blatz', 125, '2018-04-20 17:14:27', 1, NULL, NULL),
-(4, 'Week-end à Alès', '', '2019-10-25 00:00:00', '2019-10-26 00:00:00', 1, 'ActivBike', 256, '2019-04-20 11:01:47', 1, NULL, NULL),
-(5, 'Roulage Magny-cours', '2 jours à Magny-cours avec TP55', '2019-08-28 00:00:00', '2019-08-29 00:00:00', 1, 'Team Performance 55', 340, '2020-05-13 22:43:26', 1, NULL, NULL),
-(6, 'Roulage Bresse', 'Premier roulage de l''année à Bresse avec ActivBike', '2020-05-09 00:00:00', '2019-05-09 00:00:00', 1, 'ActivBike', 140, '2020-05-22 13:20:45', 1, NULL, NULL),
-
-(7, 'Roulage La Ferté Gaucher', 'Roulage libre à Bresse avec Moto France Racing', '2019-04-21 00:00:00', '2019-04-21 00:00:00', 9, 'Moto France Racing', 90, '2019-03-01 12:00:00', 1, NULL, NULL),
-(8, 'Roulage Carole', 'Roulage libre à Carole avec CAM Racing Team', '2019-04-22 00:00:00', '2019-04-22 00:00:00', 8, 'CAM Racing Team', 109, '2019-03-01 12:00:00', 1, NULL, NULL),
-(9, 'Roulage Dijon-Prenois', 'Roulage libre à Dijon avec ActivBike', '2019-05-08 00:00:00', '2019-05-08 00:00:00', 2, 'ActivBike', 195, '2019-03-01 12:00:00', 1, NULL, NULL),
-(10, 'Roulage Bourbonnais', 'Roulage libre au Bourbonnais avec le moto club Fleur de Lys', '2019-06-15 00:00:00', '2019-06-15 00:00:00', 4, 'Moto club Fleur de Lys', 90, '2019-03-01 12:00:00', 1, NULL, NULL),
-(11, 'Roulage Magny-cours', 'Roulage libre à Magny-cours avec Box23', '2019-06-16 00:00:00', '2019-06-16 00:00:00', 3, 'Box23', 205, '2019-03-01 12:00:00', 1, NULL, NULL),
-(12, 'Roulage Bresse', 'Journée du Club sur le circuit de Bresse. Tous les participants se verront rembourser 70€ (par chéque) pris sur le compte du club.', '2019-07-06 00:00:00', '2019-07-06 00:00:00', 1, 'ActivBike', 140, '2019-03-01 12:00:00', 1, NULL, NULL),
-(13, 'Roulage Le Mans', 'Roulage libre au Mans avec H2S', '2019-07-22 00:00:00', '2019-07-23 00:00:00', 7, 'H2S', 340, '2019-03-01 12:00:00', 1, NULL, NULL),
-(14, 'Roulage Alès', 'Roulage libre à Alès avec ActivBike', '2019-10-27 00:00:00', '2019-10-28 00:00:00', 10, 'ActivBike', 254, '2019-03-01 12:00:00', 1, NULL, NULL);
 
 INSERT INTO `tracks` (`id`, `name`, `distance`, `lap_record`, `website`, `latitude`, `longitude`) VALUES
 (1, 'Bresse', 3000, 84330, 'https://www.circuitdebresse.com', 46.551431, 5.328642),
@@ -186,6 +169,22 @@ INSERT INTO `tracks` (`id`, `name`, `distance`, `lap_record`, `website`, `latitu
 (8, 'Carole', 2055, 59462, 'https://www.circuit-carole.com', 48.9787026, 2.5203949),
 (9, 'La Ferté-Gaucher', 3600, 107245, 'https://www.circuitslfg.fr', 48.7579086, 3.2811883),
 (10, 'Alès', 2500, 74679, 'http://www.pole-mecanique.fr', 44.1421587, 4.0682965);
+
+INSERT INTO `events` (`id`, `title`, `description`, `start_date`, `end_date`, `track_id`, `organizer`, `price`, `created_on`, `created_by`, `modified_on`, `modified_by`) VALUES
+(1, 'Roulage Dijon', 'Roulage à Dijon-Prenois avec ActivBike', '2018-07-12 00:00:00', '2018-07-12 00:00:00', 2, 'ActivBike', 189, '2018-06-01 09:35:07', 1, NULL, NULL),
+(2, 'Roulage Vaison piste', 'Vaison avec Goret team comme d''habitude', '2018-08-02 00:00:00', '2018-08-02 00:00:00', 5, 'ActivBike', 90, '2018-02-08 14:30:29', 1, NULL, NULL),
+(3, 'Journée du club à Bresse', 'Journée du Club sur le circuit de Bresse. Tous les participants se verront rembourser 70€ (par chéque) pris sur le compte du club.', '2018-08-28 00:00:00', '2018-08-28 00:00:00', 1, 'Team Blatz', 125, '2018-04-20 17:14:27', 1, NULL, NULL),
+(4, 'Week-end à Alès', '', '2019-10-25 00:00:00', '2019-10-26 00:00:00', 1, 'ActivBike', 256, '2019-04-20 11:01:47', 1, NULL, NULL),
+(5, 'Roulage Magny-cours', '2 jours à Magny-cours avec TP55', '2019-08-28 00:00:00', '2019-08-29 00:00:00', 1, 'Team Performance 55', 340, '2020-05-13 22:43:26', 1, NULL, NULL),
+(6, 'Roulage Bresse', 'Premier roulage de l''année à Bresse avec ActivBike', '2020-05-09 00:00:00', '2019-05-09 00:00:00', 1, 'ActivBike', 140, '2020-05-22 13:20:45', 1, NULL, NULL),
+(7, 'Roulage La Ferté Gaucher', 'Roulage libre à Bresse avec Moto France Racing', '2019-04-21 00:00:00', '2019-04-21 00:00:00', 9, 'Moto France Racing', 90, '2019-03-01 12:00:00', 1, NULL, NULL),
+(8, 'Roulage Carole', 'Roulage libre à Carole avec CAM Racing Team', '2019-04-22 00:00:00', '2019-04-22 00:00:00', 8, 'CAM Racing Team', 109, '2019-03-01 12:00:00', 1, NULL, NULL),
+(9, 'Roulage Dijon-Prenois', 'Roulage libre à Dijon avec ActivBike', '2019-05-08 00:00:00', '2019-05-08 00:00:00', 2, 'ActivBike', 195, '2019-03-01 12:00:00', 1, NULL, NULL),
+(10, 'Roulage Bourbonnais', 'Roulage libre au Bourbonnais avec le moto club Fleur de Lys', '2019-06-15 00:00:00', '2019-06-15 00:00:00', 4, 'Moto club Fleur de Lys', 90, '2019-03-01 12:00:00', 1, NULL, NULL),
+(11, 'Roulage Magny-cours', 'Roulage libre à Magny-cours avec Box23', '2019-06-16 00:00:00', '2019-06-16 00:00:00', 3, 'Box23', 205, '2019-03-01 12:00:00', 1, NULL, NULL),
+(12, 'Roulage Bresse', 'Journée du Club sur le circuit de Bresse. Tous les participants se verront rembourser 70€ (par chéque) pris sur le compte du club.', '2019-07-06 00:00:00', '2019-07-06 00:00:00', 1, 'ActivBike', 140, '2019-03-01 12:00:00', 1, NULL, NULL),
+(13, 'Roulage Le Mans', 'Roulage libre au Mans avec H2S', '2019-07-22 00:00:00', '2019-07-23 00:00:00', 7, 'H2S', 340, '2019-03-01 12:00:00', 1, NULL, NULL),
+(14, 'Roulage Alès', 'Roulage libre à Alès avec ActivBike', '2019-10-27 00:00:00', '2019-10-28 00:00:00', 10, 'ActivBike', 254, '2019-03-01 12:00:00', 1, NULL, NULL);
 
 INSERT INTO `galleries` (`id`, `title`, `description`, `created_on`, `modified_on`) VALUES
 (1, 'Divers', 'Gallerie par défaut', '2020-05-29 23:18:52', NULL),
@@ -216,5 +215,5 @@ INSERT INTO `news_members` (`id`, `news_id`, `member_id`, `created_on`) VALUES
 (3, 3, 1, '2018-04-20 17:14:27'),
 (4, 4, 8, '2017-11-18 10:42:55');
 
-INSERT INTO `news_members` (`id`, `track_id`, `member_id`, `lap_time`, `record_date`, `conditions`, `comments`, `created_on`) VALUES
+INSERT INTO `records` (`id`, `track_id`, `member_id`, `lap_time`, `record_date`, `conditions`, `comments`, `created_on`) VALUES
 (1, 1, 1, 134480, '2017-06-10', 'dry', null, '2020-04-18 21:37:17')

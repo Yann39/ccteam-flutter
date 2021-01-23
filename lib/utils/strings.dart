@@ -31,21 +31,33 @@ class AppString {
   static const String connect = 'Se connecter';
   static const String register = 'S\'inscrire';
   static const String send = 'Envoyer';
-  static const String valid = 'Valider';
+  static const String validate = 'Valider';
   static const String share = 'Partager';
   static const String like = 'J\'aime';
   static const String unlike = 'Je n\'aime plus';
+  static const String continue1 = 'Continuer';
+  static const String resendOtp = 'Renvoyer';
+  static const String verify = 'Vérifier';
+  static const String finish = 'Terminer';
 
   static const String confirmation = 'Confirmation';
   static const String identification = 'Identification';
   static const String registration = 'Inscription';
   static const String askNewPassword = 'Demande de nouveau mot de passe';
+  static const String infoLoginEmail = 'Nous utiliserons votre adresse e-mail pour vous identifier ou pour créer votre compte si vous n\'êtes pas encore inscrit.';
+  static const String noAccountWithEmail = 'Aucun compte n\'existe avec l\'adresse e-mail';
+  static const String infoRegister = 'Si vous souhaitez créer un compte, complétez le formulaire ci-dessous pour commencer le processus d\'inscription.';
+  static const String infoLoginOtp = 'Indiquez le code qui vous a été envoyé à l\'adresse';
+  static const String timeLeft = 'Temps restant';
+  static const String passcodeInfo = 'Veuillez définir un code vous permettant de sécuriser votre compte';
+  static const String confirmPasscodeInfo = 'Veuillez confirmer le code';
 
   static const String about = 'A propos';
   static const String contact = 'Contact';
   static const String logout = 'Se déconnecter';
   static const String galleries = 'Galleries';
 
+  static const String emailTitle = 'Adresse e-mail';
   static const String forgotPassword = 'Mot de passe oublié?';
   static const String alreadyHaveAccount = 'J\'ai déjà un compte';
   static const String loggingIn = 'Connexion en cours';
@@ -60,8 +72,13 @@ class AppString {
   static const String tabGallery = 'Gallerie';
 
   static const String loginEmailHint = 'Adresse e-mail';
+  static const String loginOtpHint = 'Code';
+  static const String loginOtpMandatory = 'Veuillez saisir le code à 6 chiffres reçu par e-mail';
   static const String loginPasswordHint = 'Mot de passe';
   static const String loginFailed = 'L\'dentification a échouée, vérifiez vos informations et assurez-vous que votre compte soit actif';
+
+  static const String codeHint = 'Code';
+  static const String codeMandatory = 'Le code est obligatoire';
 
   static const String registrationFirstNameHint = 'Votre prénom';
   static const String registrationLastNameHint = 'Votre nom';
@@ -105,10 +122,10 @@ class AppString {
   static const String memberDeletionFailed = 'Echec lors de la suppression du membre';
   static const String memberDeletionAreYouSure = 'Etes-vous sûr de vouloir supprimer ce membre ?';
   static const String memberFirstName = 'Prénom';
-  static const String memberFirstNameHint = 'Prénom du membre';
+  static const String memberFirstNameHint = 'Prénom';
   static const String memberFirstNameMandatory = 'Le prénom est obligatoire';
   static const String memberLastName = 'Nom';
-  static const String memberLastNameHint = 'Nom du membre';
+  static const String memberLastNameHint = 'Nom';
   static const String memberLastNameMandatory = 'Le nom est obligatoire';
   static const String memberEmail = 'E-mail';
   static const String memberEmailHint = 'Adresse e-mail du membre';

@@ -131,7 +131,7 @@ class NewsProvider extends ChangeNotifier {
   Future<void> likeNews(News news, Member member) async {
     await _newsService.likeNews(news.id, member.id).then((value) async {
       _log.fine("News ${news.title} liked by user ${member.email}");
-      _currentNews.members.add(member);
+      _currentNews.likedMembers.add(member);
       notifyListeners();
     }, onError: (error) {
       _log.warning("Error when liking news ${news.title} for user ${member.email} ($error)");
@@ -143,7 +143,7 @@ class NewsProvider extends ChangeNotifier {
   Future<void> unlikeNews(News news, Member member) async {
     await _newsService.unlikeNews(news.id, member.id).then((value) async {
       _log.fine("News ${news.title} unliked by user ${member.email}");
-      _currentNews.members.remove(member);
+      _currentNews.likedMembers.remove(member);
       notifyListeners();
     }, onError: (error) {
       _log.warning("Error when unliking news ${news.title} for user ${member.email} ($error)");

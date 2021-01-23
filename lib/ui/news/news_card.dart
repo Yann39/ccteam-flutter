@@ -67,7 +67,7 @@ class NewsCard extends StatelessWidget {
                   Icon(Icons.favorite_border, color: Colors.pink, size: 12.0),
                   SizedBox(width: 2.0),
                   Text(
-                    "${news.members.length}",
+                    "${news.likedMembers != null ? news.likedMembers.length : 0}",
                     softWrap: false,
                     textScaleFactor: 0.9,
                     style: TextStyle(color: Colors.white),

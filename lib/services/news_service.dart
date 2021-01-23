@@ -21,27 +21,72 @@ import 'dart:convert';
 
 import 'package:chachatte_team/models/news.dart';
 import 'package:chachatte_team/utils/constants.dart';
+import 'package:chachatte_team/utils/graphql_connection.dart';
+import 'package:graphql_flutter/graphql_flutter.dart';
+import 'package:gql/language.dart';
 import 'package:http/http.dart' as http;
+import 'package:logging/logging.dart';
 
 class NewsService {
-  /// Fetch all news from the database
-  /// Send a GET request to the Restful API
-  /// Throw an exception if response status code is different from 200 or 404
-  /// Return empty array if no data found (404)
-  Future<List<News>> fetchNews() async {
-    // call to API
-    final response = await http.get(API_ROOT_URL + API_GET_ALL_NEWS_ENDPOINT);
+  static final Logger _log = new Logger('NewsService');
 
-    if (response.statusCode == 200) {
-      // if the call to the server was successful, parse the JSON and return content
-      dynamic responseJson = json.decode(response.body);
-      return (responseJson['records'] as List).map((p) => News.fromJson(p)).toList();
-    } else if (response.statusCode == 404) {
-      // no data found, return empty array
-      return new List<News>();
-    } else {
-      throw Exception('Unexpected server response');
-    }
+  /// Fetch all news from the database
+  /// Send a request to the GraphQL endpoint
+  Future<List<News>> fetchNews() async {
+    _log.info("Getting all news from database...");
+
+    final String allNewsQuery = """
+      query GetNews() {
+        allNews() {
+          id
+          title
+          catchLine
+          content
+          newsDate
+          likedMembers {
+            firstName
+            lastName
+          }
+          createdOn
+          modifiedOn
+        }
+      }
+    """;
+
+    return GraphQLConnection().graphQLClient.query(QueryOptions(documentNode: parseString(allNewsQuery))).then(
+      (result) {
+        final List<News> news = new List();
+        if (result.hasException) {
+          // usually ClientException means invalid or expired token
+          if (result.exception.clientException != null) {
+            throw Exception(result.exception.clientException.message);
+          } else if (result.exception.graphqlErrors != null && result.exception.graphqlErrors.isNotEmpty) {
+            throw Exception(result.exception.graphqlErrors.first.message);
+          } else {
+            throw Exception(result.exception.toString());
+          }
+        } else {
+          dynamic newsList = result.data['allNews'];
+          if (newsList == null) {
+            // returned { "data": { "allNews": null } }
+            _log.info("GetNews returned null data");
+          } else if (newsList is Map<String, dynamic> && newsList.isEmpty) {
+            // returned { "data": { "allNews": [] } }
+            _log.info("GetNews returned empty data");
+          } else {
+            // returned at least one data, build object from JSON
+            for (dynamic oneNews in newsList) {
+              news.add(News.fromJson(oneNews));
+            }
+          }
+          return news;
+        }
+      },
+      onError: (error) {
+        _log.severe("Error while getting user events by status : $error");
+        throw Exception(error);
+      },
+    );
   }
 
   /// Get a news from the database given it [id]
