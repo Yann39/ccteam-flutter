@@ -21,6 +21,7 @@ import 'dart:ui';
 
 import 'package:chachatte_team/models/member.dart';
 import 'package:chachatte_team/providers/login_provider.dart';
+import 'package:chachatte_team/providers/timer_provider.dart';
 import 'package:chachatte_team/utils/enums.dart';
 import 'package:chachatte_team/utils/string_utils.dart';
 import 'package:chachatte_team/utils/strings.dart';
@@ -85,9 +86,10 @@ class _LoginState extends State<Login> {
       _form.save();
 
       // register user
-      Provider.of<LoginProvider>(context, listen: false).preRegisterMember(_newMember).then((value) {},
-          onError: (error) {
-            _log.severe(error.toString());
+      Provider.of<LoginProvider>(context, listen: false).preRegisterMember(_newMember).then((value) {
+        Provider.of<TimerProvider>(context, listen: false).startCountDown(600);
+      }, onError: (error) {
+        _log.severe(error.toString());
       });
     }
   }
@@ -95,7 +97,9 @@ class _LoginState extends State<Login> {
   /// Method that resend the OTP to the user according to information specified in the related form.
   /// The old OTP will be invalidated and the timer reset.
   _doResendOtp(BuildContext context) async {
-    Provider.of<LoginProvider>(context, listen: false).resendOtp(_newMember).then((value) {}, onError: (error) {
+    Provider.of<LoginProvider>(context, listen: false).resendOtp(_newMember).then((value) {
+      Provider.of<TimerProvider>(context, listen: false).startCountDown(600);
+    }, onError: (error) {
       _log.severe(error.toString());
     });
   }
@@ -114,6 +118,8 @@ class _LoginState extends State<Login> {
       // build and set OTP from collected digits
       _newMember.otp = "$_otpDigit0$_otpDigit1$_otpDigit2$_otpDigit3";
 
+      _log.info("OTP to be sent ${_newMember.otp}");
+
       // check OTP
       Provider.of<LoginProvider>(context, listen: false).confirmEmail(_newMember).then((value) {}, onError: (error) {
         _log.severe(error.toString());
@@ -128,14 +134,15 @@ class _LoginState extends State<Login> {
     if (Provider.of<LoginProvider>(context, listen: false).firstPassCode !=
         Provider.of<LoginProvider>(context, listen: false).secondPassCode) {
       _log.severe("Passcodes do not match");
+    } else {
+      // set password
+      _newMember.password = Provider.of<LoginProvider>(context, listen: false).secondPassCode;
+      // complete registration
+      Provider.of<LoginProvider>(context, listen: false).completeRegistration(_newMember).then((value) {},
+          onError: (error) {
+        _log.severe(error.toString());
+      });
     }
-    // set password
-    _newMember.password = Provider.of<LoginProvider>(context, listen: false).secondPassCode;
-    // complete registration
-    Provider.of<LoginProvider>(context, listen: false).completeRegistration(_newMember).then((value) {},
-        onError: (error) {
-          _log.severe(error.toString());
-    });
   }
 
   /// Method that log in the user according to the information specified in the related form.
@@ -149,13 +156,13 @@ class _LoginState extends State<Login> {
 
   /// Method that update the current login status to go to the previous step of the identification process.
   _goToPreviousStep() {
-    Provider.of<LoginProvider>(context, listen: false).goToPreviousStep();
+    Provider.of<LoginProvider>(context, listen: false).goToPreviousLoginStep();
   }
 
   /// Method that update the current login status to go to the confirm passcode step
   _goToConfirmPasscode() {
     _log.info("passcode is ${Provider.of<LoginProvider>(context, listen: false).firstPassCode}");
-    Provider.of<LoginProvider>(context, listen: false).goToLoginStatus(LoginStatus.ConfirmPasscodeStep);
+    Provider.of<LoginProvider>(context, listen: false).setLoginStatus(LoginStatus.ConfirmPasscodeStep);
   }
 
   /// A widget representing a digit of the OTP
@@ -174,16 +181,26 @@ class _LoginState extends State<Login> {
         style: TextStyle(fontWeight: FontWeight.bold),
         decoration: InputDecoration(border: InputBorder.none, counterText: ''),
         onChanged: (value) => {
-          if (value.isEmpty) _otpFocusNodes[digitId - 1].requestFocus() else _otpFocusNodes[digitId + 1].requestFocus()
+          if (value.isEmpty && digitId > 0)
+            _otpFocusNodes[digitId - 1].requestFocus()
+          else if (value.isNotEmpty && digitId < 3)
+            _otpFocusNodes[digitId + 1].requestFocus()
         },
         maxLines: 1,
         inputFormatters: [LengthLimitingTextInputFormatter(1)],
-        onSaved: (val) => digitId == 0
-            ? _otpDigit0 = val
-            : (digitId == 1
-                ? _otpDigit1 = val
-                : (digitId == 2 ? _otpDigit2 = val : (digitId == 3 ? _otpDigit3 = val : null))),
-        //initialValue: digitId == 0 ? _otpDigit0 : digitId == 1 ? _otpDigit1 : digitId == 2 ? _otpDigit2 : digitId == 3 ? _otpDigit3 : null,
+        onSaved: (val) => {
+          if (digitId == 0)
+            _otpDigit0 = val
+          else if (digitId == 1)
+            _otpDigit1 = val
+          else if (digitId == 2)
+            _otpDigit2 = val
+          else if (digitId == 3)
+            _otpDigit3 = val
+        },
+        initialValue: digitId == 0
+            ? _otpDigit0
+            : digitId == 1 ? _otpDigit1 : digitId == 2 ? _otpDigit2 : digitId == 3 ? _otpDigit3 : null,
       ),
       decoration: BoxDecoration(
         border: Border.all(color: Colors.blue[700], width: 2.0),
@@ -754,10 +771,7 @@ class _LoginState extends State<Login> {
                   "${AppString.timeLeft} : ",
                   style: TextStyle(fontSize: 14.0),
                 ),
-                CountDownTimer(
-                  startValue: 600,
-                  textStyle: TextStyle(fontSize: 14.0, fontWeight: FontWeight.bold),
-                ),
+                CountDownTimer(textStyle: TextStyle(fontSize: 14.0, fontWeight: FontWeight.bold)),
               ],
             ),
             SizedBox(height: 16.0),
@@ -883,9 +897,6 @@ class _LoginState extends State<Login> {
           break;
         case LoginStatus.PasscodeStep:
           return _passcodeForm;
-          break;
-        case LoginStatus.Done:
-          return null;
           break;
         default:
           return _emailForm;

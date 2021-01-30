@@ -149,13 +149,13 @@ class MembersService {
     }
   }
 
-  /// Get the member corresponding to the specified [email]
-  /// Send a POST request to the Restful API
-  /// Throw an exception if response status code is different from 200
+  /// Get the member corresponding to the specified [email].
+  /// Send a POST request to the GraphQL API.
   Future<Member> getMemberByEmail(String email) async {
     final String memberByEmailQuery = """
       query MemberByEmail(\$email: String!) {
         memberByEmail(email: \$email) {
+          id
           firstName
           lastName
           email
@@ -190,6 +190,10 @@ class MembersService {
             throw Exception(result.exception.toString());
           }
         } else {
+          // if member not found, memberByEmail will be null
+          if (result.data['memberByEmail'] == null) {
+            return null;
+          }
           return Member.fromGraphQl(result.data['memberByEmail']);
         }
       },

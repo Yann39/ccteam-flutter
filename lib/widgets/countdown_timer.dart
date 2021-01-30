@@ -1,58 +1,20 @@
-import 'dart:async';
-
+import 'package:chachatte_team/providers/timer_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
-class CountDownTimer extends StatefulWidget {
-  final int startValue; // the locale to use to render dates as strings
+class CountDownTimer extends StatelessWidget {
   final TextStyle textStyle;
 
-  CountDownTimer({
-    this.startValue = 600, this.textStyle,
-  });
-
-  @override
-  State<StatefulWidget> createState() {
-    return _CountDownTimerState(startValue);
-  }
-}
-
-class _CountDownTimerState extends State<CountDownTimer> {
-  Timer _timer;
-  int _currentValue;
-
-  _CountDownTimerState(int startValue) {
-    this._currentValue = startValue;
-    startTimer();
-  }
-
-  void startTimer() {
-    const oneSec = const Duration(seconds: 1);
-    _timer = new Timer.periodic(
-      oneSec,
-      (Timer timer) {
-        if (_currentValue == 0) {
-          setState(() {
-            timer.cancel();
-          });
-        } else {
-          setState(() {
-            _currentValue--;
-          });
-        }
-      },
-    );
-  }
-
-  @override
-  void dispose() {
-    _timer.cancel();
-    super.dispose();
-  }
+  const CountDownTimer({
+    Key key,
+    this.textStyle,
+  }) : super(key: key);
 
   Widget build(BuildContext context) {
+    final TimerProvider _timerProvider = Provider.of<TimerProvider>(context, listen: true);
     return Text(
-      "${Duration(milliseconds: _currentValue).inMinutes.remainder(60).toString().padLeft(2, '0')}:${Duration(milliseconds: _currentValue).inSeconds.remainder(60).toString().padLeft(2, '0')}",
-      style: widget.textStyle,
+      "${Duration(seconds: _timerProvider.currentValue).inMinutes.remainder(60).toString().padLeft(2, '0')}:${Duration(seconds: _timerProvider.currentValue).inSeconds.remainder(60).toString().padLeft(2, '0')}",
+      style: textStyle,
     );
   }
 }

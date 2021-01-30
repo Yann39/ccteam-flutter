@@ -25,6 +25,7 @@ import 'package:chachatte_team/providers/member_provider.dart';
 import 'package:chachatte_team/providers/news_provider.dart';
 import 'package:chachatte_team/providers/photo_provider.dart';
 import 'package:chachatte_team/providers/record_provider.dart';
+import 'package:chachatte_team/providers/timer_provider.dart';
 import 'package:chachatte_team/providers/track_provider.dart';
 import 'package:chachatte_team/services/notifications_service.dart';
 import 'package:chachatte_team/ui/events/add_edit_event.dart';
@@ -66,6 +67,7 @@ void main() {
     MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => LoginProvider()),
+        ChangeNotifierProvider(create: (_) => TimerProvider()),
         ChangeNotifierProvider(create: (_) => HomeProvider()),
         ChangeNotifierProvider(create: (_) => AvatarProvider()),
         ChangeNotifierProvider(create: (_) => NewsProvider()),
@@ -123,7 +125,6 @@ class ChachatteTeamApp extends StatelessWidget {
               case AuthStatus.Authenticating:
                 _log.info("Going to login page...");
                 return Login();
-              //return LoginCotter();
               case AuthStatus.Authenticated:
                 _log.info("Going to home page...");
                 return Home();

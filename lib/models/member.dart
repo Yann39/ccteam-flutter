@@ -67,9 +67,9 @@ class Member {
       admin: ${this.admin},
       phone: ${this.phone},
       bike: ${this.bike},
-      registrationDate: ${this.registrationDate != null ? this.registrationDate.toIso8601String() : ""},
-      createdOn: ${this.createdOn != null ? this.createdOn.toIso8601String() : ""},
-      modifiedOn: ${this.modifiedOn != null ? this.modifiedOn.toIso8601String() : ""},
+      registrationDate: ${this.registrationDate?.toIso8601String()},
+      createdOn: ${this.createdOn?.toIso8601String()},
+      modifiedOn: ${this.modifiedOn?.toIso8601String()},
     }""";
   }
 
@@ -86,17 +86,12 @@ class Member {
         phone = json['phone'],
         bike = json['bike'],
         registrationDate = json['registrationDate'] != null
-            ? new DateFormat("yyyy-MM-dd HH:mm:ss")
-            .parseStrict(json['registrationDate'])
+            ? DateFormat("yyyy-MM-dd HH:mm:ss", "fr").parseStrict(json['registrationDate'])
             : null,
-        createdOn = json['createdOn'] != null
-            ? new DateFormat("yyyy-MM-dd HH:mm:ss")
-            .parseStrict(json['createdOn'])
-            : null,
-        modifiedOn = json['modifiedOn'] != null
-            ? new DateFormat("yyyy-MM-dd HH:mm:ss")
-            .parseStrict(json['modifiedOn'])
-            : null;
+        createdOn =
+            json['createdOn'] != null ? DateFormat("yyyy-MM-dd HH:mm:ss", "fr").parseStrict(json['createdOn']) : null,
+        modifiedOn =
+            json['modifiedOn'] != null ? DateFormat("yyyy-MM-dd HH:mm:ss", "fr").parseStrict(json['modifiedOn']) : null;
 
   /// Convert [json] map to the corresponding object
   Member.fromJson(Map<String, dynamic> json)
@@ -112,16 +107,12 @@ class Member {
         phone = json['phone'],
         bike = json['bike'],
         registrationDate = json['registration_date'] != null
-            ? new DateFormat("yyyy-MM-dd HH:mm:ss")
-                .parseStrict(json['registration_date'])
+            ? DateFormat("yyyy-MM-dd HH:mm:ss", "fr").parseStrict(json['registration_date'])
             : null,
-        createdOn = json['created_on'] != null
-            ? new DateFormat("yyyy-MM-dd HH:mm:ss")
-                .parseStrict(json['created_on'])
-            : null,
+        createdOn =
+            json['created_on'] != null ? DateFormat("yyyy-MM-dd HH:mm:ss", "fr").parseStrict(json['created_on']) : null,
         modifiedOn = json['modified_on'] != null
-            ? new DateFormat("yyyy-MM-dd HH:mm:ss")
-                .parseStrict(json['modified_on'])
+            ? DateFormat("yyyy-MM-dd HH:mm:ss", "fr").parseStrict(json['modified_on'])
             : null;
 
   /// Convert [member] object to the corresponding JSON map
@@ -137,10 +128,8 @@ class Member {
         "admin": admin,
         "phone": phone,
         "bike": bike,
-        "registration_date": registrationDate != null
-            ? registrationDate.toIso8601String()
-            : null,
-        "created_on": createdOn != null ? createdOn.toIso8601String() : null,
-        "modified_on": modifiedOn != null ? modifiedOn.toIso8601String() : null,
+        "registration_date": registrationDate?.toIso8601String(),
+        "created_on": createdOn?.toIso8601String(),
+        "modified_on": modifiedOn?.toIso8601String(),
       };
 }
