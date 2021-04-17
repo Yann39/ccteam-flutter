@@ -49,12 +49,9 @@ class NewsList extends StatelessWidget {
   _navigateToNewsDetailScreen(BuildContext context, News news) async {
     // fetch the current news
     Provider.of<NewsProvider>(context, listen: false).fetchCurrentNews(news);
-    // fetch the news creator from its ID
-    //Provider.of<NewsProvider>(context, listen: false).fetchCreatedByMember(news.createdBy);
-    // fetch the news last modifier from its ID
-    //Provider.of<NewsProvider>(context, listen: false).fetchModifiedByMember(news.modifiedBy);
+
     // Navigator.push returns a Future that will complete after we call Navigator.pop on the target screen
-    final _result = await Navigator.pushNamed(context, '/newsDetail', arguments: news);
+    final _result = await Navigator.pushNamed(context, '/newsDetail');
 
     // after the target screen returns a result, hide any previous snack bars and show the new result
     if (_result != null) {

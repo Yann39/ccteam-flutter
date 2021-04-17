@@ -20,6 +20,7 @@
 import 'package:intl/intl.dart';
 
 /// Class representing a photo
+/// todo Add Gallery property ?
 class Photo {
   int id;
   String title;
@@ -44,8 +45,8 @@ class Photo {
       title: ${this.title},
       description: ${this.description},
       link: ${this.link},
-      createdOn: ${this.createdOn != null ? this.createdOn.toIso8601String() : ""},
-      modifiedOn: ${this.modifiedOn != null ? this.modifiedOn.toIso8601String() : ""},
+      createdOn: ${this.createdOn?.toIso8601String()},
+      modifiedOn: ${this.modifiedOn?.toIso8601String()},
     }""";
   }
 
@@ -55,8 +56,9 @@ class Photo {
         title = json['title'],
         description = json['description'],
         link = json['link'],
-        createdOn = json['created_on'] != null ? new DateFormat("yyyy-MM-dd HH:mm:ss").parseStrict(json['created_on']) : null,
-        modifiedOn = json['modified_on'] != null ? new DateFormat("yyyy-MM-dd HH:mm:ss").parseStrict(json['modified_on']) : null;
+        createdOn = json['createdOn'] != null ? DateFormat("yyyy-MM-dd HH:mm:ss").parseStrict(json['createdOn']) : null,
+        modifiedOn =
+            json['modifiedOn'] != null ? DateFormat("yyyy-MM-dd HH:mm:ss").parseStrict(json['modifiedOn']) : null;
 
   /// Convert [photo] object to the corresponding JSON map
   Map<String, dynamic> toJson() => {
@@ -64,7 +66,7 @@ class Photo {
         "title": title,
         "description": description,
         "link": link,
-        "created_on": createdOn,
-        "modified_on": modifiedOn,
+        "createdOn": createdOn?.toIso8601String(),
+        "modifiedOn": modifiedOn?.toIso8601String(),
       };
 }

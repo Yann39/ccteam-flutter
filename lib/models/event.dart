@@ -59,16 +59,16 @@ class Event {
       id: ${this.id},
       title: ${this.title},
       description: ${this.description},
-      startDate: ${this.startDate != null ? this.startDate.toIso8601String() : ""},
-      endDate: ${this.endDate != null ? this.endDate.toIso8601String() : ""},
-      track: ${this.track != null ? this.track.toString() : ""},
+      startDate: ${this.startDate?.toIso8601String()},
+      endDate: ${this.endDate?.toIso8601String()},
+      track: ${this.track?.toString()},
       organizer: ${this.organizer},
       price: ${this.price},
-      members: ${this.members != null ? this.members.map((i) => i.toString()) : ""},
-      createdOn: ${this.createdOn != null ? this.createdOn.toIso8601String() : ""},
-      createdBy: ${this.createdBy != null ? this.createdBy.toString() : ""},
-      modifiedOn: ${this.modifiedOn != null ? this.modifiedOn.toIso8601String() : ""},
-      modifiedBy: ${this.modifiedBy != null ? this.modifiedBy.toString() : ""},
+      members: ${this.members?.map((member) => member.toString())},
+      createdOn: ${this.createdOn?.toIso8601String()},
+      createdBy: ${this.createdBy?.toString()},
+      modifiedOn: ${this.modifiedOn?.toIso8601String()},
+      modifiedBy: ${this.modifiedBy?.toString()},
     }""";
   }
 
@@ -77,34 +77,36 @@ class Event {
       : id = json['id'] != null ? int.parse(json['id']) : -1,
         title = json['title'],
         description = json['description'],
-        startDate = json['start_date'] != null ? new DateFormat("yyyy-MM-dd HH:mm:ss").parseStrict(json['start_date']) : null,
-        endDate = json['end_date'] != null ? new DateFormat("yyyy-MM-dd HH:mm:ss").parseStrict(json['end_date']) : null,
+        startDate = json['startDate'] != null ? DateFormat("yyyy-MM-dd HH:mm:ss").parseStrict(json['startDate']) : null,
+        endDate = json['endDate'] != null ? DateFormat("yyyy-MM-dd HH:mm:ss").parseStrict(json['endDate']) : null,
         track = json['track'] != null ? Track.fromJson(json['track']) : null,
         organizer = json['organizer'],
-        price = json['price'] != null ? double.parse(json['price']) : null,
+        price = json['price'],
         members = json['members'] != null ? (json['members'] as List).map((i) => Member.fromJson(i)).toList() : null,
-        createdOn = json['created_on'] != null ? new DateFormat("yyyy-MM-dd HH:mm:ss").parseStrict(json['created_on']) : null,
-        createdBy = json['created_by'] != null ? Member.fromJson(json['created_by']) : null,
-        modifiedOn = json['modified_on'] != null ? new DateFormat("yyyy-MM-dd HH:mm:ss").parseStrict(json['modified_on']) : null,
-        modifiedBy = json['modified_by'] != null ? Member.fromJson(json['modified_by']) : null;
+        createdOn = json['createdOn'] != null ? DateFormat("yyyy-MM-dd HH:mm:ss").parseStrict(json['createdOn']) : null,
+        createdBy = json['createdBy'] != null ? Member.fromJson(json['createdBy']) : null,
+        modifiedOn =
+            json['modifiedOn'] != null ? DateFormat("yyyy-MM-dd HH:mm:ss").parseStrict(json['modifiedOn']) : null,
+        modifiedBy = json['modifiedBy'] != null ? Member.fromJson(json['modifiedBy']) : null;
 
   /// Convert [member] object to the corresponding JSON map
   Map<String, dynamic> toJson() => {
         "id": id,
         "title": title,
         "description": description,
-        "start_date": startDate,
-        "end_date": endDate,
-        "track": track != null ? track.toJson() : null,
+        "startDate": startDate?.toIso8601String(),
+        "endDate": endDate?.toIso8601String(),
+        "track": track?.toJson(),
         "organizer": organizer,
         "price": price,
-        "members": members != null ? members.map((i) => i.toJson()) : null,
-        "created_on": createdOn,
-        "created_by": createdBy != null ? createdBy.toJson() : null,
-        "modified_on": modifiedOn,
-        "modified_by": modifiedBy != null ? modifiedBy.toJson() : null,
+        "members": members?.map((i) => i.toJson()),
+        "createdOn": createdOn?.toIso8601String(),
+        "createdBy": createdBy?.toJson(),
+        "modifiedOn": modifiedOn?.toIso8601String(),
+        "modifiedBy": modifiedBy?.toJson(),
       };
 
+  /// Returns the event full date (begin - end) formatted as String
   String get fullDate {
     final DateFormat formatterDate = new DateFormat("dd MMM yyyy", "fr");
     // same day, display only one of the dates (i.e "24 Apr. 2020")

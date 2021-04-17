@@ -264,10 +264,10 @@ class _AddEditMemberState extends State<AddEditMember> {
             _drawerProvider.loadImage(null);
             Navigator.of(context).pushNamed('/editAvatar', arguments: _currMember);
           },
-          child: _currMember.avatar != null && _currMember.avatar.length > 0
+          child: _currMember.avatarUrl != null && _currMember.avatarUrl.length > 0
               ? CircleAvatar(
                   radius: 60,
-                  backgroundImage: NetworkImage("$SERVER_ROOT_PATH$SERVER_AVATAR_FOLDER${_currMember.avatar}"),
+                  backgroundImage: NetworkImage("$SERVER_ROOT_PATH$SERVER_AVATAR_FOLDER${_currMember.avatarUrl}"),
                 )
               : CircleAvatar(
                   radius: 60,

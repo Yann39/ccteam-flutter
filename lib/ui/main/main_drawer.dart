@@ -84,9 +84,9 @@ class MainDrawer extends StatelessWidget {
                   currentAccountPicture: Container(
                     decoration: ShapeDecoration(shape: CircleBorder(), color: Colors.white),
                     padding: EdgeInsets.all(2.0),
-                    child: _loginProvider.loggedMember.avatar != null && _loginProvider.loggedMember.avatar.length > 0 ? CircleAvatar(
+                    child: _loginProvider.loggedMember.avatarUrl != null && _loginProvider.loggedMember.avatarUrl.length > 0 ? CircleAvatar(
                       backgroundColor: Colors.blue[100],
-                      backgroundImage: NetworkImage("$SERVER_ROOT_PATH$SERVER_AVATAR_FOLDER${_loginProvider.loggedMember.avatar}"),
+                      backgroundImage: NetworkImage("$SERVER_ROOT_PATH$SERVER_AVATAR_FOLDER${_loginProvider.loggedMember.avatarUrl}"),
                     ) : CircleAvatar(
                       backgroundColor: Colors.blue[100],
                       child: ShaderMask(

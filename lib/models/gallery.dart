@@ -44,9 +44,9 @@ class Gallery {
       id: ${this.id},
       title: ${this.title},
       description: ${this.description},
-      createdOn: ${this.createdOn != null ? this.createdOn.toIso8601String() : ""},
-      modifiedOn: ${this.modifiedOn != null ? this.modifiedOn.toIso8601String() : ""},
-      photos: ${this.photos != null ? this.photos.map((i) => i.toString()) : ""},
+      createdOn: ${this.createdOn?.toIso8601String()},
+      modifiedOn: ${this.modifiedOn?.toIso8601String()},
+      photos: ${this.photos?.map((i) => i.toString())},
     }""";
   }
 
@@ -55,8 +55,8 @@ class Gallery {
       : id = json['id'] != null ? int.parse(json['id']) : -1,
         title = json['title'],
         description = json['description'],
-        createdOn = json['created_on'] != null ? new DateFormat("yyyy-MM-dd HH:mm:ss").parseStrict(json['created_on']) : null,
-        modifiedOn = json['modified_on'] != null ? new DateFormat("yyyy-MM-dd HH:mm:ss").parseStrict(json['modified_on']) : null,
+        createdOn = json['createdOn'] != null ? DateFormat("yyyy-MM-dd HH:mm:ss").parseStrict(json['createdOn']) : null,
+        modifiedOn = json['modifiedOn'] != null ? DateFormat("yyyy-MM-dd HH:mm:ss").parseStrict(json['modifiedOn']) : null,
         photos = json['photos'] != null ? (json['photos'] as List).map((i) => Photo.fromJson(i)).toList() : null;
 
   /// Convert [Gallery] object to the corresponding JSON map
@@ -64,8 +64,8 @@ class Gallery {
         "id": id,
         "title": title,
         "description": description,
-        "created_on": createdOn,
-        "modified_on": modifiedOn,
-        "photos": photos != null ? photos.map((i) => i.toJson()) : null,
+        "createdOn": createdOn?.toIso8601String(),
+        "modifiedOn": modifiedOn?.toIso8601String(),
+        "photos": photos?.map((i) => i.toJson()),
       };
 }

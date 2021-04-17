@@ -19,19 +19,22 @@
 
 import 'package:intl/intl.dart';
 
-/// Class representing a team member
+/// Class representing a member
+/// todo add Role attribute ?
 class Member {
   int id;
   String firstName;
   String lastName;
   String email;
   String password;
-  String avatar;
-  String otp;
-  bool active;
-  bool admin;
   String phone;
+  String avatarUrl;
   String bike;
+  bool active;
+  bool verified;
+  bool admin;
+  String otp;
+  DateTime otpDate;
   DateTime registrationDate;
   DateTime createdOn;
   DateTime modifiedOn;
@@ -42,12 +45,14 @@ class Member {
     this.lastName,
     this.email,
     this.password,
-    this.avatar,
-    this.otp,
-    this.active,
-    this.admin,
     this.phone,
+    this.avatarUrl,
     this.bike,
+    this.active,
+    this.verified,
+    this.admin,
+    this.otp,
+    this.otpDate,
     this.registrationDate,
     this.createdOn,
     this.modifiedOn,
@@ -61,75 +66,60 @@ class Member {
       lastName: ${this.lastName},
       email: ${this.email},
       password: ${this.password},
-      avatar: ${this.avatar},
-      otp: ${this.otp},
-      active: ${this.active},
-      admin: ${this.admin},
       phone: ${this.phone},
+      avatarUrl: ${this.avatarUrl},
       bike: ${this.bike},
+      active: ${this.active},
+      verified: ${this.verified},
+      admin: ${this.admin},
+      otp: ${this.otp},
+      otpDate: ${this.otpDate?.toIso8601String()},
       registrationDate: ${this.registrationDate?.toIso8601String()},
       createdOn: ${this.createdOn?.toIso8601String()},
       modifiedOn: ${this.modifiedOn?.toIso8601String()},
     }""";
   }
 
-  Member.fromGraphQl(Map<String, dynamic> json)
+  /// Convert [json] map to the corresponding object
+  Member.fromJson(Map<String, dynamic> json)
       : id = json['id'] != null ? int.parse(json['id']) : -1,
         firstName = json['firstName'],
         lastName = json['lastName'],
         email = json['email'],
         password = json['password'],
-        avatar = json['avatar'],
-        otp = json['otp'],
-        active = json['active'] != null && json['active'] == '1',
-        admin = json['admin'] != null && json['admin'] == '1',
         phone = json['phone'],
+        avatarUrl = json['avatarUrl'],
         bike = json['bike'],
+        active = json['active'] != null && json['active'] == '1',
+        verified = json['verified'] != null && json['verified'] == '1',
+        admin = json['admin'] != null && json['admin'] == '1',
+        otp = json['otp'],
+        otpDate = json['otpDate'] != null ? DateFormat("yyyy-MM-dd HH:mm:ss", "fr").parseStrict(json['otpDate']) : null,
         registrationDate = json['registrationDate'] != null
             ? DateFormat("yyyy-MM-dd HH:mm:ss", "fr").parseStrict(json['registrationDate'])
             : null,
         createdOn =
-            json['createdOn'] != null ? DateFormat("yyyy-MM-dd HH:mm:ss", "fr").parseStrict(json['createdOn']) : null,
+            json['created_on'] != null ? DateFormat("yyyy-MM-dd HH:mm:ss", "fr").parseStrict(json['createdOn']) : null,
         modifiedOn =
             json['modifiedOn'] != null ? DateFormat("yyyy-MM-dd HH:mm:ss", "fr").parseStrict(json['modifiedOn']) : null;
-
-  /// Convert [json] map to the corresponding object
-  Member.fromJson(Map<String, dynamic> json)
-      : id = json['id'] != null ? int.parse(json['id']) : -1,
-        firstName = json['first_name'],
-        lastName = json['last_name'],
-        email = json['email'],
-        password = json['password'],
-        avatar = json['avatar'],
-        otp = json['otp'],
-        active = json['active'] != null && json['active'] == '1',
-        admin = json['admin'] != null && json['admin'] == '1',
-        phone = json['phone'],
-        bike = json['bike'],
-        registrationDate = json['registration_date'] != null
-            ? DateFormat("yyyy-MM-dd HH:mm:ss", "fr").parseStrict(json['registration_date'])
-            : null,
-        createdOn =
-            json['created_on'] != null ? DateFormat("yyyy-MM-dd HH:mm:ss", "fr").parseStrict(json['created_on']) : null,
-        modifiedOn = json['modified_on'] != null
-            ? DateFormat("yyyy-MM-dd HH:mm:ss", "fr").parseStrict(json['modified_on'])
-            : null;
 
   /// Convert [member] object to the corresponding JSON map
   Map<String, dynamic> toJson() => {
         "id": id,
-        "first_name": firstName,
-        "last_name": lastName,
+        "firstName": firstName,
+        "lastName": lastName,
         "email": email,
         "password": password,
-        "avatar": avatar,
-        "otp": otp,
-        "active": active,
-        "admin": admin,
         "phone": phone,
+        "avatarUrl": avatarUrl,
         "bike": bike,
-        "registration_date": registrationDate?.toIso8601String(),
-        "created_on": createdOn?.toIso8601String(),
-        "modified_on": modifiedOn?.toIso8601String(),
+        "active": active,
+        "verified": verified,
+        "admin": admin,
+        "otp": otp,
+        "otpDate": otpDate?.toIso8601String(),
+        "registrationDate": registrationDate?.toIso8601String(),
+        "createdOn": createdOn?.toIso8601String(),
+        "modifiedOn": modifiedOn?.toIso8601String(),
       };
 }

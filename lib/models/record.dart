@@ -21,7 +21,7 @@ import 'package:chachatte_team/models/member.dart';
 import 'package:chachatte_team/models/track.dart';
 import 'package:intl/intl.dart';
 
-/// Class representing a member track record
+/// Class representing a member track lap record
 class Record {
   int id;
   Track track;
@@ -31,8 +31,19 @@ class Record {
   String conditions;
   String comments;
   DateTime createdOn;
+  DateTime modifiedOn;
 
-  Record({this.id, this.track, this.member, this.lapTime, this.recordDate, this.conditions, this.comments, this.createdOn});
+  Record({
+    this.id,
+    this.track,
+    this.member,
+    this.lapTime,
+    this.recordDate,
+    this.conditions,
+    this.comments,
+    this.createdOn,
+    this.modifiedOn,
+  });
 
   @override
   String toString() {
@@ -41,10 +52,11 @@ class Record {
       track: ${this.track.toString()},
       member: ${this.member.toString()},
       lapTime: ${this.lapTime},
-      recordDate: ${this.recordDate != null ? this.recordDate.toIso8601String() : ""},
+      recordDate: ${this.recordDate?.toIso8601String()},
       conditions: ${this.conditions},
       comments: ${this.comments},
-      createdOn: ${this.createdOn != null ? this.createdOn.toIso8601String() : ""},
+      createdOn: ${this.createdOn?.toIso8601String()},
+      modifiedOn: ${this.modifiedOn?.toIso8601String()},
     }""";
   }
 
@@ -53,21 +65,24 @@ class Record {
       : id = json['id'] != null ? int.parse(json['id']) : -1,
         track = Track.fromJson(json['track']),
         member = Member.fromJson(json['member']),
-        lapTime = json['lap_time'] != null ? int.parse(json['lap_time']) : null,
-        recordDate = json['record_date'] != null ? new DateFormat("yyyy-MM-dd").parseStrict(json['record_date']) : null,
+        lapTime = json['lapTime'] != null ? int.parse(json['lapTime']) : null,
+        recordDate = json['recordDate'] != null ? DateFormat("yyyy-MM-dd").parseStrict(json['recordDate']) : null,
         conditions = json['conditions'],
         comments = json['comments'],
-        createdOn = json['created_on'] != null ? new DateFormat("yyyy-MM-dd HH:mm:ss").parseStrict(json['created_on']) : null;
+        createdOn = json['createdOn'] != null ? DateFormat("yyyy-MM-dd HH:mm:ss").parseStrict(json['createdOn']) : null,
+        modifiedOn =
+            json['modifiedOn'] != null ? DateFormat("yyyy-MM-dd HH:mm:ss").parseStrict(json['modifiedOn']) : null;
 
   /// Convert [member] object to the corresponding JSON map
   Map<String, dynamic> toJson() => {
         "id": id,
-        "track": track.toJson(),
-        "member": member.toJson(),
-        "lap_time": lapTime,
-        "record_date": recordDate,
+        "track": track?.toJson(),
+        "member": member?.toJson(),
+        "lapTime": lapTime,
+        "recordDate": recordDate?.toIso8601String(),
         "conditions": conditions,
         "comments": comments,
-        "created_on": createdOn,
-      };
+        "createdOn": createdOn?.toIso8601String(),
+        "modifiedOn": createdOn?.toIso8601String(),
+  };
 }

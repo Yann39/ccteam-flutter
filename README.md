@@ -15,10 +15,10 @@ Flutter mobile application for the "Chachatte team" motorcycle racing club
 
 You must be an authorized member to use the application.
 
-# Dependencies 
+# Dependencies
 
 The following packages have been used :
- 
+
 - intl: for internationalization and localization
 - http: Future-based library for making HTTP requests
 - cupertino_icons: Cupertino icons fonts
@@ -31,6 +31,7 @@ The following packages have been used :
 # Features
 
 The application offers the following features :
+
 - Register and login members
 - Display member profiles
 - Create circuits
@@ -52,14 +53,11 @@ Only user e-mail is kept in shared preferences
 
 [General Public License (GPL) v3](https://www.gnu.org/licenses/gpl-3.0.en.html)
 
-This program is free software: you can redistribute it and/or modify it under the terms of the GNU
-General Public License as published by the Free Software Foundation, either version 3 of the
-License, or (at your option) any later version.
+This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either
+version 3 of the License, or (at your option) any later version.
 
-This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without
-even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
-General Public License for more details.
-    
-You should have received a copy of the GNU General Public License along with this program.  If not,
-see <http://www.gnu.org/licenses/>.
+This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+See the GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License along with this program. If not, see <http://www.gnu.org/licenses/>.
 

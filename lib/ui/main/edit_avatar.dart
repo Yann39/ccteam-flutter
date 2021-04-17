@@ -87,7 +87,7 @@ class EditAvatar extends StatelessWidget {
     if (value == ConfirmDialogAction.yes) {
       Provider.of<LoginProvider>(context, listen: false).deleteAvatar(member).then((value) {
         avatarProvider.loadImage(null);
-        member.avatar = null;
+        member.avatarUrl = null;
         // remove avatar from the members list so that the avatar is up to date in the team page
         Provider.of<MemberProvider>(context, listen: false).resetMemberAvatar(member);
       }, onError: (error) {
@@ -123,10 +123,10 @@ class EditAvatar extends StatelessWidget {
                         margin: EdgeInsets.symmetric(vertical: 24.0, horizontal: 24.0),
                         child: _avatarProvider.image != null
                             ? Image.file(_avatarProvider.image, alignment: Alignment.topCenter, fit: BoxFit.contain)
-                            : member.avatar != null && member.avatar.length > 0 ? Image(
+                            : member.avatarUrl != null && member.avatarUrl.length > 0 ? Image(
                                 alignment: Alignment.topCenter,
                                 fit: BoxFit.contain,
-                                image: NetworkImage("$SERVER_ROOT_PATH$SERVER_AVATAR_FOLDER${member.avatar}"),
+                                image: NetworkImage("$SERVER_ROOT_PATH$SERVER_AVATAR_FOLDER${member.avatarUrl}"),
                               ) : ShaderMask(
                           blendMode: BlendMode.srcATop,
                                 shaderCallback: (bounds) => LinearGradient(
@@ -200,7 +200,7 @@ class EditAvatar extends StatelessWidget {
                     ),
                   ],
                 ),
-                if (member.avatar != null)
+                if (member.avatarUrl != null)
                   FlatButton(
                     child: Text(AppString.initProfilePhoto),
                     onPressed: () => _showConfirmation(context, _avatarProvider, AppString.avatarResetAreYouSure),
