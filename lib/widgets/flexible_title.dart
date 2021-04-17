@@ -42,6 +42,7 @@ class FlexibleTitle extends StatelessWidget {
     return LayoutBuilder(builder: (context, constraints) {
       return Container(
         width: constraints.maxWidth,
+        height: 100,
         child: Padding(
           padding: EdgeInsets.only(left: leftPadding, bottom: bottomPadding),
           child: Text(text, maxLines: 2, overflow: TextOverflow.ellipsis),

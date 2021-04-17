@@ -20,6 +20,15 @@
 /// Class that holds string constants
 class AppString {
 
+  /// Format the specified [source] string according to the given [arguments].
+  /// Parameters in the source string must be numbered in the format {x} starting from 0.
+  /// Example : format('Hello {0}, your preferred color is {1}.', ['Bob', 'purple'])
+  static format(String source, List<String> arguments) {
+    int index = 0;
+    arguments.forEach((element) => source = source.replaceFirst("{$index++}", element));
+    return source;
+  }
+
   static const String applicationTitle = 'Chachatte team';
 
   static const String formNotValid = 'Le formulaire n\'est pas valide. Corrigez les erreurs puis essayer à nouveau.';
@@ -40,6 +49,7 @@ class AppString {
   static const String verify = 'Vérifier';
   static const String finish = 'Terminer';
 
+  static const String notDefined = 'Non-défini';
   static const String confirmation = 'Confirmation';
   static const String identification = 'Identification';
   static const String registration = 'Inscription';
@@ -273,5 +283,11 @@ class AppString {
   static const String lapRecord = 'Record du tour';
   static const String length = 'Longueur';
   static const String trackEvents = 'Roulages';
+
+  static const String errorEmailNotFoundInDatabase = 'Aucune donnée n\' a été trouvé pour l\'adresse e-mail {0}';
+  static const String errorTokenExpired = 'Votre session a expirée';
+  static const String errorTokenNotFound = 'Votre session n\'est pas valide';
+  static const String errorBadCredentials = 'Nom d\'utilisateur ou mot de passe incorrect';
+  static const String errorUnknown = 'Erreur inconnue : {0}';
 
 }

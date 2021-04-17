@@ -98,7 +98,7 @@ class _AddEditNewsState extends State<AddEditNews> {
 
       // submit data to backend, if id is set this is an update, else a creation
       if (news.id != null) {
-        news.modifiedBy = Provider.of<LoginProvider>(context, listen: false).loggedMember.id;
+        news.modifiedBy = Provider.of<LoginProvider>(context, listen: false).loggedMember;
         news.modifiedOn = DateTime.now();
         // update the news then go back with a message, the result is awaited in caller
         Provider.of<NewsProvider>(context, listen: false).updateNews(news).then((value) {
@@ -107,7 +107,7 @@ class _AddEditNewsState extends State<AddEditNews> {
           Navigator.pop(context, AppString.newsUpdateFailed);
         });
       } else {
-        news.createdBy = Provider.of<LoginProvider>(context, listen: false).loggedMember.id;
+        news.createdBy = Provider.of<LoginProvider>(context, listen: false).loggedMember;
         // create the news then go back with a message, the result is awaited in caller
         Provider.of<NewsProvider>(context, listen: false).createNews(news).then((value) {
           Navigator.pop(context, AppString.newsCreated);

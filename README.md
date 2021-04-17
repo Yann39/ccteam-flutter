@@ -41,6 +41,121 @@ The application offers the following features :
 
 # Technical details
 
+## Initialization (on application start)
+
+```mermaid
+graph LR
+start((Start)):::green --> checkUser{{checkUser}} --> result1{result}:::beige
+result1 -- Email and JWT are set --> getMember{{getMember}} --> result2{result}:::beige
+result1 -- Email is null --> email_step(Email screen):::salmon
+result1 -- JWT is null --> passcode_step(Passcode screen):::salmon
+result2 -- Member not found --> email_step
+result2 -- Expired JWT --> passcode_step
+result2 -- Member found --> eend((Logged)):::green
+getMember -. GraphQL API .- database[(members)]:::blue
+checkUser -.- preferences[(shared<br/>preferences)]:::violet
+
+classDef green fill:#080,stroke:#333,stroke-width:1px
+classDef salmon fill:#f96,stroke:#333,stroke-width:1px
+classDef beige fill:#db9,stroke:#333,stroke-width:1px
+classDef blue fill:#288,stroke:#333,stroke-width:1px
+classDef violet fill:#868,stroke:#333,stroke-width:1px
+```
+
+## E-mail screen
+
+```mermaid
+graph LR
+start((Start)):::green --> email_step(Email screen):::salmon --> checkAccount{{checkAccount}} --> result1{result}:::beige
+result1 -- Email not found --> register_step(Register screen):::salmon
+result1 -- Missing data --> email_step
+result1 -- "OTP sent (still valid)" --> otp_step(OTP screen):::salmon
+result1 -- "OTP sent (expired)" --> otp_step
+result1 -- Need password --> create_passcode_step(Create passcode screen):::salmon
+result1 -- Account OK --> passcode_step(Passcode screen):::salmon
+checkAccount -. REST API .- database[(members)]:::blue
+
+classDef green fill:#080,stroke:#333,stroke-width:1px
+classDef salmon fill:#f96,stroke:#333,stroke-width:1px
+classDef beige fill:#db9,stroke:#333,stroke-width:1px
+classDef blue fill:#288,stroke:#333,stroke-width:1px
+```
+
+## Register screen
+
+```mermaid
+graph LR
+start((Start)):::green --> register_step(Register screen):::salmon --> preRegisterMember{{preRegisterMember}} --> result1{result}:::beige
+result1 -- Missing data --> register_step
+result1 -- Email already exist --> register_step
+result1 -- "Success (OTP sent)" --> otp_step(OTP screen):::salmon
+result1 -- "Success (OTP not sent)" --> otp_step
+otp_step --> resendOtp{{resendOtp}} --> otp_step
+preRegisterMember -. REST API .- database[(members)]:::blue
+resendOtp -. REST API .- database[(members)]:::blue
+
+classDef green fill:#080,stroke:#333,stroke-width:1px
+classDef salmon fill:#f96,stroke:#333,stroke-width:1px
+classDef beige fill:#db9,stroke:#333,stroke-width:1px
+classDef blue fill:#288,stroke:#333,stroke-width:1px
+```
+
+## OTP screen
+
+```mermaid
+graph LR
+start((Start)):::green --> otp_step(OTP screen):::salmon --> resendOtp{{resendOtp}} --> otp_step
+otp_step --> confirmEmail{{confirmEmail}} --> result1{result}:::beige
+result1 -- Wrong OTP --> otp_step
+result1 -- Expired OTP --> otp_step
+result1 -- Missing OTP --> otp_step
+result1 -- Email not found --> otp_step
+result1 -- Success --> create_passcode_step(Create passcode screen):::salmon
+resendOtp -. REST API .- database[(members)]:::blue
+confirmEmail -. REST API .- database[(members)]:::blue
+
+classDef green fill:#080,stroke:#333,stroke-width:1px
+classDef salmon fill:#f96,stroke:#333,stroke-width:1px
+classDef beige fill:#db9,stroke:#333,stroke-width:1px
+classDef blue fill:#288,stroke:#333,stroke-width:1px
+```
+
+## Create passcode screen
+
+```mermaid
+graph LR
+start((Start)):::green --> create_passcode_step(Create passcode screen):::salmon --> confirm_passcode_step(Confirm passcode screen):::salmon --> completeRegistration{{completeRegistration}} --> result1{result}:::beige
+result1 -- Success --> passcode_step(Passcode screen):::salmon
+result1 -- Missing data --> confirm_passcode_step
+result1 -- Member not found --> confirm_passcode_step
+completeRegistration -. REST API .- database[(members)]:::blue
+
+classDef green fill:#080,stroke:#333,stroke-width:1px
+classDef salmon fill:#f96,stroke:#333,stroke-width:1px
+classDef beige fill:#db9,stroke:#333,stroke-width:1px
+classDef blue fill:#288,stroke:#333,stroke-width:1px
+```
+
+## Passcode screen
+
+```mermaid
+graph LR
+start((Start)):::green --> passcode_step(Passcode screen):::salmon --> loginMember{{loginMember}} --> result1{result}:::beige
+result1 -- Success --> getMember{{getMember}} --> result2{result}:::beige
+result1 -- Wrong credentials --> passcode_step
+result2 -- Member found --> eend((Logged)):::green
+result2 -- Member not found --> passcode_step
+loginMember -. REST API .- database[(members)]:::blue
+getMember -. GraphQL API .- database[(members)]:::blue
+
+classDef green fill:#080,stroke:#333,stroke-width:1px
+classDef salmon fill:#f96,stroke:#333,stroke-width:1px
+classDef beige fill:#db9,stroke:#333,stroke-width:1px
+classDef blue fill:#288,stroke:#333,stroke-width:1px
+```
+
+## Misc
+
 PHP API, uses PDO
 
 The application is connected to an external MariaDB database via REST web services.

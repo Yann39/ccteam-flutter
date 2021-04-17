@@ -26,18 +26,22 @@ import 'package:chachatte_team/utils/graphql_connection.dart';
 import 'package:gql/language.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:http/http.dart' as http;
-import 'package:logging/logging.dart';
 import 'package:path/path.dart';
 
 class MembersService {
-  Future<http.Response> checkAccount(Member member) {
+  /// Check the account associated to the specified member [email].
+  /// It returns a specific status code according to the account current status.
+  Future<http.Response> checkAccount(String email) {
     return http.post(
       API_ROOT_URL + API_CHECK_ACCOUNT_ENDPOINT,
       headers: <String, String>{'Content-Type': 'application/json; charset=UTF-8'},
-      body: jsonEncode(<String, String>{'email': member.email}),
+      body: jsonEncode(<String, String>{'email': email}),
     );
   }
 
+  /// Pre-register the specified [member] given its e-mail address, first name and last name.
+  /// It creates the account with minimal information, but the user will still need to
+  /// confirm its e-mail address and create a passcode to complete the registration process.
   Future<http.Response> preRegister(Member member) {
     return http.post(
       API_ROOT_URL + API_PRE_REGISTER_ENDPOINT,
@@ -47,6 +51,8 @@ class MembersService {
     );
   }
 
+  /// Send a new one-time password to the specified [member] e-mail address.
+  /// It is used in case user has not entered the OTP in the given time, or if he manually ask a new OTP.
   Future<http.Response> resendOtp(Member member) {
     return http.post(
       API_ROOT_URL + API_RESEND_OTP_ENDPOINT,
@@ -55,6 +61,8 @@ class MembersService {
     );
   }
 
+  /// Confirm the specified [member] e-mail address by checking the specified
+  /// one-time password which was sent on registration.
   Future<http.Response> confirmEmail(Member member) {
     return http.post(
       API_ROOT_URL + API_CONFIRM_EMAIL_ENDPOINT,
@@ -63,6 +71,7 @@ class MembersService {
     );
   }
 
+  /// Complete the registration for the specified [member] account, especially by setting the specified password.
   Future<http.Response> completeRegistration(Member member) {
     return http.post(
       API_ROOT_URL + API_COMPLETE_REGISTRATION_ENDPOINT,
@@ -71,14 +80,9 @@ class MembersService {
     );
   }
 
-  /// Authenticate the user represented by the specified [email] and [password]
-  /// Call a REST API endpoint to authenticates user from the database
-  /// The response will contains the issued JWT token
+  /// Authenticate the user according to the the specified [email] and [password].
+  /// The response will contains the issued JWT token.
   Future<http.Response> authenticate(String email, String password) {
-    //final ioc = new HttpClient();
-    //ioc.badCertificateCallback = (X509Certificate cert, String host, int port) => true;
-    //final http = new IOClient(ioc);
-
     return http.post(
       API_ROOT_URL + API_AUTHENTICATE_ENDPOINT,
       headers: <String, String>{'Content-Type': 'application/json; charset=UTF-8'},
@@ -86,71 +90,110 @@ class MembersService {
     );
   }
 
-  /// Fetch all members from the database
-  /// Send a GET request to the Restful API
-  /// Throw an exception if response status code is different from 200 or 404
-  /// Return empty array if no data found (404)
-  Future<List<Member>> fetchMembers() async {
-    // call to API
-    final response = await http.get(API_OLD_ROOT_URL + API_GET_ALL_MEMBERS_ENDPOINT);
+  /// Fetch all members from the database according to the specified text [filter].
+  /// Returns all records if [filter] is null or empty.
+  Future<List<Member>> fetchMembers(String filter) async {
+    final String membersFilteredQuery = """
+      query MembersFiltered(\$text: String) {
+        membersFiltered(text: \$text) {
+          id
+          firstName
+          lastName
+          email
+          avatarUrl
+          bike
+          admin
+        }
+      }
+    """;
 
-    if (response.statusCode == 200) {
-      // if the call to the server was successful, parse the JSON and return content
-      dynamic responseJson = json.decode(response.body);
-      return (responseJson['records'] as List).map((p) => Member.fromJson(p)).toList();
-    } else if (response.statusCode == 404) {
-      // no data found, return empty array
-      return new List<Member>();
-    } else {
-      throw Exception('Unexpected server response');
-    }
+    return GraphQLConnection()
+        .graphQLClient
+        .query(
+          QueryOptions(
+            documentNode: parseString(membersFilteredQuery),
+            variables: {'text': filter},
+          ),
+        )
+        .then(
+      (result) {
+        final List<Member> members = new List();
+        if (result.hasException) {
+          // usually ClientException means invalid or expired token
+          if (result.exception.clientException != null) {
+            throw Exception(result.exception.clientException.message);
+          } else if (result.exception.graphqlErrors != null && result.exception.graphqlErrors.isNotEmpty) {
+            throw Exception(result.exception.graphqlErrors.first.message);
+          } else {
+            throw Exception(result.exception.toString());
+          }
+        } else {
+          for (dynamic m in result.data['membersFiltered']) {
+            members.add(Member.fromJson(m));
+          }
+        }
+        return members;
+      },
+      onError: (error) {
+        throw Exception(error);
+      },
+    );
   }
 
-  /// Check if the specified [member] is allowed to log in
-  /// Send a POST request to the Restful API
-  /// Throw an exception if response status code is different from 200
-  Future<void> loginMember(Member member) async {
-    // call to API
-    final response = await http.post(API_OLD_ROOT_URL + API_LOGIN_MEMBER_ENDPOINT,
-        headers: {'Content-Type': 'application/json'}, body: json.encode(member.toJson()));
-
-    // handle server response code
-    if (response.statusCode == 200) {
-      return;
-    } else if (response.statusCode == 401) {
-      throw Exception('Wrong credentials');
-    } else if (response.statusCode == 403) {
-      throw Exception('Account is not activated');
-    } else if (response.statusCode == 404) {
-      throw Exception('No member found with the specified e-mail address');
-    } else if (response.statusCode == 400) {
-      throw Exception('Bad request, member has not been logged in');
-    } else {
-      throw Exception('Unexpected server response, member has not been logged in');
-    }
-  }
-
-  /// Get the member corresponding to the specified [id]
-  /// Send a POST request to the Restful API
-  /// Throw an exception if response status code is different from 200
+  /// Get a news from the database given its [id].
   Future<Member> getMemberById(int id) async {
-    // call to API
-    final response = await http.post(API_OLD_ROOT_URL + API_GET_SINGLE_MEMBER_ENDPOINT + "?id=$id");
+    final String memberByIdQuery = """
+      query MemberById(\$id: Int!) {
+        memberById(id: \$id) {
+          id
+          firstName
+          lastName
+          email
+          phone
+          avatarUrl
+          bike
+          admin
+          registrationDate
+          createdOn
+          modifiedOn
+        }
+      }
+    """;
 
-    // handle server response code
-    if (response.statusCode == 200) {
-      // if the call to the server was successful, parse the JSON and return content
-      dynamic responseJson = json.decode(response.body);
-      return Member.fromJson(responseJson);
-    } else if (response.statusCode == 404) {
-      throw Exception('No member found with the specified id');
-    } else {
-      throw Exception('Unexpected server response');
-    }
+    return GraphQLConnection()
+        .graphQLClient
+        .query(
+          QueryOptions(
+            documentNode: parseString(memberByIdQuery),
+            variables: {'id': id},
+          ),
+        )
+        .then(
+      (result) {
+        if (result.hasException) {
+          // usually ClientException means invalid or expired token
+          if (result.exception.clientException != null) {
+            throw Exception(result.exception.clientException.message);
+          } else if (result.exception.graphqlErrors != null && result.exception.graphqlErrors.isNotEmpty) {
+            throw Exception(result.exception.graphqlErrors.first.message);
+          } else {
+            throw Exception(result.exception.toString());
+          }
+        } else {
+          // if no member found, memberById will be null
+          if (result.data['memberById'] == null) {
+            return null;
+          }
+          return Member.fromJson(result.data['memberById']);
+        }
+      },
+      onError: (error) {
+        throw Exception(error);
+      },
+    );
   }
 
   /// Get the member corresponding to the specified [email].
-  /// Send a POST request to the GraphQL API.
   Future<Member> getMemberByEmail(String email) async {
     final String memberByEmailQuery = """
       query MemberByEmail(\$email: String!) {
@@ -194,59 +237,13 @@ class MembersService {
           if (result.data['memberByEmail'] == null) {
             return null;
           }
-          return Member.fromGraphQl(result.data['memberByEmail']);
+          return Member.fromJson(result.data['memberByEmail']);
         }
       },
       onError: (error) {
         throw Exception(error);
       },
     );
-
-    /*
-    // convert Member object to JSON string
-    final String jsonString = "{\"email\":\"$email\"}";
-
-    // call to API
-    final response = await http.post(API_ROOT_URL + API_GET_MEMBER_BY_EMAIL_ENDPOINT, headers: {'Content-Type': 'application/json'}, body: jsonString);
-
-    // handle server response code
-    if (response.statusCode == 200) {
-      // if the call to the server was successful, parse the JSON and return content
-      dynamic responseJson = json.decode(response.body);
-      return Member.fromJson(responseJson);
-    } else if (response.statusCode == 403) {
-      throw Exception('Account is not activated');
-    } else if (response.statusCode == 404) {
-      throw Exception('No member found with the specified e-mail address');
-    } else if (response.statusCode == 400) {
-      throw Exception('Bad request, missing email attribute');
-    } else {
-      throw Exception('Unexpected server response');
-    }
-    */
-  }
-
-  /// Search for members according to the specified [text]
-  /// Send a POST request to the Restful API
-  /// Throw an exception if response status code is different from 200
-  Future<List<Member>> searchMembers(String text) async {
-    // format text as URL parameter string
-    final String urlParameters = "?s=${Uri.encodeComponent(text)}";
-
-    // call to API
-    final response = await http.get(API_OLD_ROOT_URL + API_SEARCH_MEMBERS_ENDPOINT + urlParameters,
-        headers: {'Content-Type': 'application/json'});
-
-    if (response.statusCode == 200) {
-      // if the call to the server was successful, parse the JSON and return content
-      dynamic responseJson = json.decode(response.body);
-      return (responseJson['records'] as List).map((p) => Member.fromJson(p)).toList();
-    } else if (response.statusCode == 404) {
-      // no data found, return empty array
-      return new List<Member>();
-    } else {
-      throw Exception('Unexpected server response');
-    }
   }
 
   /// Create the specified [member] into the database

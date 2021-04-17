@@ -30,8 +30,11 @@ class MemberProvider extends ChangeNotifier {
   final Logger _log = new Logger('MemberProvider');
   final MembersService _membersService = new MembersService();
 
-  // current members list
+  // members list
   List<Member> _members = [];
+
+  // current members
+  Member _currentMember;
 
   // current loading status
   LoadingStatus _loadingStatus = LoadingStatus.notLoaded;
@@ -39,10 +42,12 @@ class MemberProvider extends ChangeNotifier {
   // constructor
   MemberProvider() {
     // as soon as it is instantiated, we fetch members
-    _fetchMembers();
+    fetchMembers(null);
   }
 
   UnmodifiableListView<Member> get members => UnmodifiableListView(_members);
+
+  Member get currentMember => _currentMember;
 
   LoadingStatus get loadingStatus => _loadingStatus;
 
@@ -54,11 +59,11 @@ class MemberProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Fetch the list of all members
-  void _fetchMembers() async {
+  /// Fetch the list of all members according to specified filter [text]
+  void fetchMembers(String text) async {
     _updateStatus(LoadingStatus.loading);
-    await _membersService.fetchMembers().then((value) async {
-      _log.fine("Members list retrieved successfully");
+    await _membersService.fetchMembers(text).then((value) async {
+      _log.fine("Members list of ${value.length} members retrieved successfully");
       _members = value;
       _updateStatus(LoadingStatus.loaded);
     }, onError: (error) {
@@ -69,11 +74,27 @@ class MemberProvider extends ChangeNotifier {
     });
   }
 
+  /// Fetch the specified [member]
+  Future<void> fetchCurrentMember(Member member) async {
+    _log.fine("Fetching member ${member.email}");
+    _updateStatus(LoadingStatus.loading);
+    await _membersService.getMemberById(member.id).then((value) async {
+      _log.fine("Member with ID ${member.id} retrieved successfully");
+      _currentMember = value;
+      _updateStatus(LoadingStatus.loaded);
+    }, onError: (error) {
+      _log.warning("Error when retrieving member ($error)");
+      _currentMember = null;
+      _updateStatus(LoadingStatus.notLoaded);
+      throw (error);
+    });
+  }
+
   /// Update the avatar of the specified [member] in the current member list
   void updateMemberAvatar(Member member) {
     // do the update only if member is in the current member list (list could has not been fetched yet or could be filtered)
     if (_members.any((m) => m.id == member.id)) {
-      _members.singleWhere((m) => m.id == member.id).avatar = member.avatar;
+      _members.singleWhere((m) => m.id == member.id).avatarUrl = member.avatarUrl;
       _log.info("Notifying listeners of MemberProvider");
       notifyListeners();
     }
@@ -83,25 +104,10 @@ class MemberProvider extends ChangeNotifier {
   void resetMemberAvatar(Member member) {
     // do the update only if member is in the current member list (list could has not been fetched yet or could be filtered)
     if (_members.any((m) => m.id == member.id)) {
-      _members.singleWhere((m) => m.id == member.id).avatar = null;
+      _members.singleWhere((m) => m.id == member.id).avatarUrl = null;
       _log.info("Notifying listeners of MemberProvider");
       notifyListeners();
     }
-  }
-
-  /// Search for members according to the specified [text]
-  void searchMembers(String text) async {
-    _updateStatus(LoadingStatus.loading);
-    await _membersService.searchMembers(text).then((value) async {
-      _log.fine("Members search list retrieved successfully");
-      _members = value;
-      _updateStatus(LoadingStatus.loaded);
-    }, onError: (error) {
-      _log.warning("Error when searching members ($error)");
-      _members = [];
-      _updateStatus(LoadingStatus.notLoaded);
-      throw (error);
-    });
   }
 
   /// Create the specified [member]
