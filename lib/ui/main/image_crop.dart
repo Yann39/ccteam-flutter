@@ -46,7 +46,7 @@ class ImageCrop extends StatelessWidget {
         backgroundColor: Colors.red[700],
         onPressed: () async {
           final crop = cropKey.currentState;
-          final croppedFile = await crop.cropCompleted(_drawerProvider.image, pictureQuality: 600);
+          final croppedFile = await crop.cropCompleted(_drawerProvider.image);
           _drawerProvider.loadImage(croppedFile);
           Navigator.pop(context);
         },

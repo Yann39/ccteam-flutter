@@ -17,17 +17,16 @@
  * along with Chachatte Team. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
-import 'package:http/io_client.dart';
 
 import 'constants.dart';
 
 class GraphQLConnection {
-  static final GraphQLConnection _graphQLSingleton = new GraphQLConnection._internal();
+  static final GraphQLConnection _graphQLSingleton =
+      new GraphQLConnection._internal();
 
   GraphQLClient _graphQLClient;
   ValueNotifier<GraphQLClient> _client;
@@ -38,14 +37,11 @@ class GraphQLConnection {
   }
 
   GraphQLConnection._internal() {
-    final ioc = new HttpClient();
+    /*final ioc = new HttpClient();
     ioc.badCertificateCallback = (X509Certificate cert, String host, int port) => true;
-    final http = new IOClient(ioc);
+    final http = new IOClient(ioc);*/
 
-    final HttpLink httpLink = HttpLink(
-      httpClient: http,
-      uri: API_ROOT_URL + API_GRAPHQL_ENDPOINT,
-    );
+    final HttpLink httpLink = HttpLink(API_ROOT_URL + API_GRAPHQL_ENDPOINT);
 
     final AuthLink authLink = AuthLink(
       getToken: () async => 'Bearer $_jwtToken',
@@ -54,7 +50,7 @@ class GraphQLConnection {
     final Link link = authLink.concat(httpLink);
 
     _graphQLClient = GraphQLClient(
-      cache: InMemoryCache(),
+      cache: GraphQLCache(store: InMemoryStore()),
       link: link,
     );
 

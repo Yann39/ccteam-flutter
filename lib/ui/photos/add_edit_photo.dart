@@ -48,7 +48,8 @@ class _AddEditPhotoState extends State<AddEditPhoto> {
     final FormState form = _formKey.currentState;
 
     if (!form.validate()) {
-      _scaffoldKey.currentState.showSnackBar(SnackBar(backgroundColor: Colors.red, content: Text(AppString.formNotValid)));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          backgroundColor: Colors.red, content: Text(AppString.formNotValid)));
     } else {
       // this invokes each onSaved photo
       form.save();
@@ -88,8 +89,8 @@ class _AddEditPhotoState extends State<AddEditPhoto> {
         child: Stack(
           children: <Widget>[
             Form(
+              autovalidateMode: AutovalidateMode.disabled,
               key: _formKey,
-              autovalidate: false,
               child: ListView(
                 padding: const EdgeInsets.symmetric(horizontal: 16.0),
                 children: <Widget>[
@@ -101,7 +102,8 @@ class _AddEditPhotoState extends State<AddEditPhoto> {
                     ),
                     maxLines: 1,
                     inputFormatters: [LengthLimitingTextInputFormatter(128)],
-                    validator: (val) => val.isEmpty ? AppString.photoTitleMandatory : null,
+                    validator: (val) =>
+                        val.isEmpty ? AppString.photoTitleMandatory : null,
                     onSaved: (val) => _currPhoto.title = val,
                     initialValue: _currPhoto.title,
                   ),
@@ -113,7 +115,9 @@ class _AddEditPhotoState extends State<AddEditPhoto> {
                     ),
                     maxLines: 1,
                     inputFormatters: [LengthLimitingTextInputFormatter(2048)],
-                    validator: (val) => val.isEmpty ? AppString.photoDescriptionMandatory : null,
+                    validator: (val) => val.isEmpty
+                        ? AppString.photoDescriptionMandatory
+                        : null,
                     onSaved: (val) => _currPhoto.description = val,
                     initialValue: _currPhoto.description,
                   ),
@@ -125,7 +129,8 @@ class _AddEditPhotoState extends State<AddEditPhoto> {
                     ),
                     maxLines: 1,
                     inputFormatters: [LengthLimitingTextInputFormatter(2048)],
-                    validator: (val) => val.isEmpty ? AppString.photoLinkMandatory : null,
+                    validator: (val) =>
+                        val.isEmpty ? AppString.photoLinkMandatory : null,
                     onSaved: (val) => _currPhoto.link = val,
                     initialValue: _currPhoto.link,
                   ),

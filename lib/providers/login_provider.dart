@@ -17,17 +17,21 @@
  * along with Chachatte Team. If not, see <http://www.gnu.org/licenses/>.
  */
 
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
 import 'package:chachatte_team/models/jwt_response.dart';
 import 'package:chachatte_team/models/member.dart';
+import 'package:chachatte_team/providers/news_list_provider.dart';
 import 'package:chachatte_team/services/members_service.dart';
+import 'package:chachatte_team/utils/custom_graphql_exception.dart';
 import 'package:chachatte_team/utils/enums.dart';
 import 'package:chachatte_team/utils/graphql_connection.dart';
 import 'package:chachatte_team/utils/strings.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
+import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:logging/logging.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -41,22 +45,29 @@ class LoginProvider extends ChangeNotifier {
   // current login process status
   LoginStatus _loginStatus = LoginStatus.EmailStep;
 
-  // current passCode being entered for login
+  // current passcode being entered for login
   String _loginPassCode;
 
-  // current passCode being created
+  // current passcode being created
   String _firstPassCode;
 
-  // current passCode being confirmed
+  // current passcode confirmation
   String _secondPassCode;
 
   // current error message
   String _errorMessage;
 
   // current email being enrolled
-  String email;
+  String _email;
+
+  // current first name entered when preregistering
   String firstName;
+
+  // current last name entered when preregistering
   String lastName;
+
+  // current OTP being entered when confirming e-mail
+  String otp;
 
   // current logged member
   Member _loggedMember;
@@ -86,6 +97,26 @@ class LoginProvider extends ChangeNotifier {
 
   String get errorMessage => _errorMessage;
 
+  String get email => _email;
+
+  set email(String email) => this._email = email;
+
+  set errorMessage(String errorMessage) => _setErrorMessage(errorMessage);
+
+  /// Set the current [passcode] used for login.
+  set loginPassCode(String passcode) {
+    _loginPassCode = passcode;
+    _log.info("Notifying listeners of LoginProvider");
+    notifyListeners();
+  }
+
+  /// Set the current [passcode] used in registration process.
+  set firstPassCode(String passcode) {
+    _firstPassCode = passcode;
+    _log.info("Notifying listeners of LoginProvider");
+    notifyListeners();
+  }
+
   /// Change the current authentication [status].
   void _setAuthStatus(AuthStatus status) {
     _authStatus = status;
@@ -94,7 +125,7 @@ class LoginProvider extends ChangeNotifier {
   }
 
   /// Change the current login [status].
-  void setLoginStatus(LoginStatus status) {
+  void _setLoginStatus(LoginStatus status) {
     // if we go to login passcode, always clear it first
     if (status == LoginStatus.PasscodeStep) {
       _loginPassCode = null;
@@ -104,30 +135,16 @@ class LoginProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Set the current [passcode] used for logging in.
-  void setLoginPassCode(String passcode) {
-    _loginPassCode = passcode;
-    _log.info("Notifying listeners of LoginProvider");
-    notifyListeners();
-  }
-
-  /// Set the current [passcode] used in registration process.
-  void setFirstPassCode(String passcode) {
-    _firstPassCode = passcode;
-    _log.info("Notifying listeners of LoginProvider");
-    notifyListeners();
-  }
-
-  /// Set the current [passcode] used in registration process (confirmation).
-  void setSecondPassCode(String passcode) {
-    _secondPassCode = passcode;
-    _log.info("Notifying listeners of LoginProvider");
-    notifyListeners();
-  }
-
   /// Set the current [error] message.
   void _setErrorMessage(String error) {
     _errorMessage = error;
+    _log.info("Notifying listeners of LoginProvider");
+    notifyListeners();
+  }
+
+  /// Clear the current error message
+  void clearErrorMessage() {
+    _errorMessage = null;
     _log.info("Notifying listeners of LoginProvider");
     notifyListeners();
   }
@@ -175,7 +192,7 @@ class LoginProvider extends ChangeNotifier {
     // no e-mail found in shared preferences, it means user have to identify
     if (_email == null) {
       _log.info("Email not found in shared preferences");
-      setLoginStatus(LoginStatus.EmailStep);
+      _setLoginStatus(LoginStatus.EmailStep);
       _setAuthStatus(AuthStatus.Unauthenticated);
       return;
     }
@@ -183,7 +200,7 @@ class LoginProvider extends ChangeNotifier {
     // no JWT token found in shared preferences, it means user have to authenticate
     if (_jwt == null) {
       _log.info("JWT token not found in shared preferences");
-      setLoginStatus(LoginStatus.PasscodeStep);
+      _setLoginStatus(LoginStatus.PasscodeStep);
       _setAuthStatus(AuthStatus.Unauthenticated);
       return;
     }
@@ -194,51 +211,53 @@ class LoginProvider extends ChangeNotifier {
     GraphQLConnection().jwtToken = _jwt;
 
     // retrieve full user from database, this will use and check the JWT token
-    await _membersService
-        .getMemberByEmail(_email)
-        .timeout(Duration(seconds: 5))
-        .then((value) {
-      // null value means member not found
-      if (value == null) {
-        _log.severe("Email found in shared preferences but member not found in the database !");
-        setLoginStatus(LoginStatus.PasscodeStep);
-        _setAuthStatus(AuthStatus.Unauthenticated);
-        _setErrorMessage(AppString.format(AppString.errorEmailNotFoundInDatabase, [_email]));
-      }
-      // user found
-      else {
-        _log.fine("User $_email found in database and JWT token verified, consider as logged in");
-        _loggedMember = value;
-        _setAuthStatus(AuthStatus.Authenticated);
-      }
+    await _membersService.getMemberByEmail(_email).timeout(Duration(seconds: 5)).then((value) {
+      _log.fine("User $_email found in database and JWT token verified, consider as logged in");
+      _loggedMember = value;
+      _setAuthStatus(AuthStatus.Authenticated);
     }, onError: (error) {
-      _log.severe("Email found in shared preferences but an error occurred while retrieving member from the database : $error");
-      // JWT token has expired
-      if (error.toString().contains("token_expired")) {
-        _prefs.remove('jwt');
-        setLoginStatus(LoginStatus.PasscodeStep);
+      _log.info("An error occurred while retrieving member from the database : $error");
+      if (error is CustomGraphQlException) {
+        _setLoginStatus(LoginStatus.PasscodeStep);
+        _setAuthStatus(AuthStatus.Unauthenticated);
+        // Member not found
+        if (error.code == "member_not_found") {
+          _setErrorMessage(AppString.format(AppString.errorEmailNotFoundInDatabase, [_email]));
+        }
+        // JWT token has expired
+        else if (error.code == "token_expired") {
+          _prefs.remove('jwt');
+          _setErrorMessage(AppString.errorTokenExpired);
+        }
+        // JWT token has wrong format and cannot be decoded
+        else if (error.code == "wrong_token_format") {
+          _setErrorMessage(AppString.errorTokenWrongFormat);
+        }
+        // JWT token has not been specified
+        else if (error.code == "no_token") {
+          _setErrorMessage(AppString.errorTokenNotFound);
+        }
+        // wrong credentials
+        else if (error.code == "bad_credentials") {
+          _setErrorMessage(AppString.errorBadCredentials);
+        }
+      } else if (error is NetworkException) {
+        // TODO here need an dedicated error page so that user does not try to re login
+        _setLoginStatus(LoginStatus.PasscodeStep);
         _setAuthStatus(AuthStatus.Unauthenticated);
         _setErrorMessage(AppString.errorTokenExpired);
-      }
-      // JWT token has not been specified
-      else if (error.toString().contains("no_token")) {
-        setLoginStatus(LoginStatus.PasscodeStep);
+      } else if (error is TimeoutException) {
+        // TODO here need an dedicated error page so that user does not try to re login
+        _setLoginStatus(LoginStatus.EmailStep);
         _setAuthStatus(AuthStatus.Unauthenticated);
-        _setErrorMessage(AppString.errorTokenNotFound);
+        _setErrorMessage(AppString.errorServerTimeOut);
       }
-      // Wrong credentials
-      else if (error.toString().contains("bad_credentials")) {
-        setLoginStatus(LoginStatus.PasscodeStep);
-        _setAuthStatus(AuthStatus.Unauthenticated);
-        _setErrorMessage(AppString.errorBadCredentials);
-      }
-      // Other error
+      // other error
       else {
-        _prefs.remove('email');
-        _prefs.remove('jwt');
-        setLoginStatus(LoginStatus.EmailStep);
+        _setLoginStatus(LoginStatus.EmailStep);
         _setAuthStatus(AuthStatus.Unauthenticated);
-        _setErrorMessage(AppString.format(AppString.errorUnknown, [error]));
+        _log.info("Error is ${error.toString()}");
+        _setErrorMessage(AppString.format(AppString.errorUnknown, [error.toString()]));
       }
     });
   }
@@ -247,78 +266,84 @@ class LoginProvider extends ChangeNotifier {
   /// It checks the registration status to know if we need to register, identify or login the user.
   Future<void> checkAccount(String email) async {
     _log.info("Checking account for user $email");
-    setLoginStatus(LoginStatus.Loading);
+    _setLoginStatus(LoginStatus.Loading);
 
-    this.email = email;
+    this._email = email;
 
-    await _membersService
-        .checkAccount(email)
-        .timeout(Duration(seconds: 5))
-        .then((response) async {
+    await _membersService.checkAccount(email).timeout(Duration(seconds: 5)).then((response) async {
+      // account has been found with password and is verified
       if (response.statusCode == 200) {
-        // account has been found with password and is verified
-        setLoginStatus(LoginStatus.PasscodeStep);
-      } else if (response.statusCode == 400) {
-        // e-mail address is missing in the request
-        setLoginStatus(LoginStatus.EmailStep);
-      } else if (response.statusCode == 404) {
-        // no account has been found for the specified e-mail address, propose new account
-        setLoginStatus(LoginStatus.EmailAndInfoStep);
-      } else if (response.statusCode == 302) {
-        // account exists, OTP has been sent and is still valid
-        setLoginStatus(LoginStatus.OtpStep);
-      } else if (response.statusCode == 417) {
-        // account exists, OTP has been sent but is not valid anymore
-        setLoginStatus(LoginStatus.OtpStep);
-      } else if (response.statusCode == 403) {
-        // account exist, OTP has been verified, but password has not been created
-        setLoginStatus(LoginStatus.CreatePasscodeStep);
-      } else {
-        _log.severe(
-            "Failed to check account for user $email : ${response.body}");
-        setLoginStatus(LoginStatus.EmailStep);
+        _setLoginStatus(LoginStatus.PasscodeStep);
+      }
+      // e-mail address is missing in the request
+      else if (response.statusCode == 400) {
+        _setLoginStatus(LoginStatus.EmailStep);
+      }
+      // no account has been found for the specified e-mail address, propose new account
+      else if (response.statusCode == 404) {
+        _setErrorMessage(AppString.loginNoAccountFound);
+        _setLoginStatus(LoginStatus.EmailStep);
+      }
+      // account exists, OTP has been sent and is still valid
+      else if (response.statusCode == 302) {
+        _setLoginStatus(LoginStatus.OtpStep);
+      }
+      // account exists, OTP has been sent but is not valid anymore
+      else if (response.statusCode == 417) {
+        _setLoginStatus(LoginStatus.OtpStep);
+      }
+      // account exist, OTP has been verified, but password has not been created
+      else if (response.statusCode == 403) {
+        _setLoginStatus(LoginStatus.CreatePasscodeStep);
+      }
+      // unexpected status code
+      else {
+        _log.severe("Failed to check account for user $email : ${response.body}");
+        _setLoginStatus(LoginStatus.EmailStep);
         throw Exception(
             "Une erreur s'est produite lors de la vérification de votre compte, si le problème persite, contactez un administrateur");
       }
     }, onError: (error) {
       _log.severe("Error while checking account for user $email : $error");
-      setLoginStatus(LoginStatus.EmailStep);
+      _setLoginStatus(LoginStatus.EmailStep);
       throw Exception(
           "Une erreur s'est produite lors de la vérification de votre compte, si le problème persite, contactez un administrateur");
     });
   }
 
-  /// pre-register a new member according to the specified [member] information.
+  /// pre-register a new member according to the specified member information.
   Future<void> preRegisterMember() async {
-    _log.info("Pre-registering user ${_loggedMember.email}");
+    _log.info("Pre-registering user ${this.firstName} ${this.lastName} ($_email)");
 
-    await _membersService
-        .preRegister(_loggedMember)
-        .timeout(Duration(seconds: 5))
-        .then((response) async {
+    await _membersService.preRegister(this.firstName, this.lastName, _email).timeout(Duration(seconds: 5)).then(
+        (response) async {
+      // member has been pre-registered successfully
       if (response.statusCode == 201) {
-        // member has been pre-registered successfully
-        setLoginStatus(LoginStatus.OtpStep);
-      } else if (response.statusCode == 400) {
-        // e-mail address, first name, or last name is missing from the request
-        setLoginStatus(LoginStatus.EmailAndInfoStep);
-      } else if (response.statusCode == 409) {
-        // e-mail address already exists
-        setLoginStatus(LoginStatus.EmailAndInfoStep);
-      } else if (response.statusCode == 207) {
-        // member successfully created but the confirmation e-mail failed to be sent
-        setLoginStatus(LoginStatus.OtpStep);
-      } else {
-        _log.severe(
-            "Failed to pre-register user ${_loggedMember.email} : ${response.body}");
-        setLoginStatus(LoginStatus.EmailAndInfoStep);
+        _setLoginStatus(LoginStatus.OtpStep);
+      }
+      // e-mail address, first name, or last name is missing from the request
+      else if (response.statusCode == 400) {
+        _setLoginStatus(LoginStatus.EmailAndInfoStep);
+      }
+      // e-mail address already exists
+      else if (response.statusCode == 409) {
+        _setErrorMessage(AppString.loginAccountEmailAlreadyExist);
+        _setLoginStatus(LoginStatus.EmailAndInfoStep);
+      }
+      // member successfully created but the confirmation e-mail failed to be sent
+      else if (response.statusCode == 207) {
+        _setLoginStatus(LoginStatus.OtpStep);
+      }
+      // unexpected status code
+      else {
+        _log.severe("Failed to pre-register user $_email : ${response.body}");
+        _setLoginStatus(LoginStatus.EmailAndInfoStep);
         throw Exception(
             "Une erreur s'est produite lors de l'inscription, si le problème persite, contactez un administrateur");
       }
     }, onError: (error) {
-      _log.severe(
-          "Error while pre-registering user ${_loggedMember.email} : $error");
-      setLoginStatus(LoginStatus.EmailAndInfoStep);
+      _log.severe("Error while pre-registering user $_email : $error");
+      _setLoginStatus(LoginStatus.EmailAndInfoStep);
       throw Exception(
           "Une erreur s'est produite lors de l'inscription, si le problème persite, contactez un administrateur");
     });
@@ -326,41 +351,39 @@ class LoginProvider extends ChangeNotifier {
 
   /// Resend the OTP to the user corresponding to the specified e-mail address.
   Future<void> resendOtp() async {
-    _log.info("Resending OTP to user ${_loggedMember.email}");
-    setLoginStatus(LoginStatus.Loading);
+    _log.info("Resending OTP to user $_email");
+    _setLoginStatus(LoginStatus.Loading);
 
-    await _membersService
-        .resendOtp(_loggedMember)
-        .timeout(Duration(seconds: 5))
-        .then((response) async {
+    await _membersService.resendOtp(_email).timeout(Duration(seconds: 5)).then((response) async {
+      // OTP has been resent successfully
       if (response.statusCode == 200) {
         // store the OTP sent date in the shared preferences for timer
         final SharedPreferences prefs = await SharedPreferences.getInstance();
-        prefs.setString(
-            'otpDate', DateTime.now().millisecondsSinceEpoch.toString());
-
-        // OTP has been resent successfully
-        setLoginStatus(LoginStatus.OtpStep);
-      } else if (response.statusCode == 400) {
-        // e-mail address is missing in the request
-        setLoginStatus(LoginStatus.OtpStep);
-      } else if (response.statusCode == 404) {
-        // no account has been found for the specified e-mail address
-        setLoginStatus(LoginStatus.OtpStep);
-      } else if (response.statusCode == 207) {
-        // the OTP has been successfully updated but the mail failed to be sent
-        setLoginStatus(LoginStatus.OtpStep);
-      } else {
-        _log.severe(
-            "Failed to resend OTP to user ${_loggedMember.email} : ${response.body}");
-        setLoginStatus(LoginStatus.OtpStep);
+        prefs.setString('otpDate', DateTime.now().millisecondsSinceEpoch.toString());
+        _setLoginStatus(LoginStatus.OtpStep);
+      }
+      // e-mail address is missing in the request
+      else if (response.statusCode == 400) {
+        _setLoginStatus(LoginStatus.OtpStep);
+      }
+      // no account has been found for the specified e-mail address
+      else if (response.statusCode == 404) {
+        _setLoginStatus(LoginStatus.OtpStep);
+      }
+      // the OTP has been successfully updated but the mail failed to be sent
+      else if (response.statusCode == 207) {
+        _setLoginStatus(LoginStatus.OtpStep);
+      }
+      // unexpected status code
+      else {
+        _log.severe("Failed to resend OTP to user $_email : ${response.body}");
+        _setLoginStatus(LoginStatus.OtpStep);
         throw Exception(
             "Une erreur s'est produite lors de l'envoi de votre code, si le problème persite, contactez un administrateur");
       }
     }, onError: (error) {
-      _log.severe(
-          "Error while resending OTP to user ${_loggedMember.email} : $error");
-      setLoginStatus(LoginStatus.OtpStep);
+      _log.severe("Error while resending OTP to user $_email : $error");
+      _setLoginStatus(LoginStatus.OtpStep);
       throw Exception(
           "Une erreur s'est produite lors de l'envoi de votre code, si le problème persite, contactez un administrateur");
     });
@@ -368,79 +391,92 @@ class LoginProvider extends ChangeNotifier {
 
   /// Confirm the user e-mail address according to specified OTP.
   Future<void> confirmEmail() async {
-    _log.info("Confirming e-mail of user ${_loggedMember.email}");
+    _log.info("Confirming e-mail of user $_email");
 
-    await _membersService
-        .confirmEmail(_loggedMember)
-        .timeout(Duration(seconds: 5))
-        .then((response) async {
+    await _membersService.confirmEmail(_email, otp).timeout(Duration(seconds: 5)).then((response) async {
+      // e-mail has been verified successfully
       if (response.statusCode == 202) {
-        // e-mail has been verified successfully
-        setLoginStatus(LoginStatus.CreatePasscodeStep);
-      } else if (response.statusCode == 400) {
-        // e-mail address or OTP is missing from the request
-        setLoginStatus(LoginStatus.OtpStep);
-      } else if (response.statusCode == 404) {
-        // e-mail address has not been found in the database
-        setLoginStatus(LoginStatus.OtpStep);
-      } else if (response.statusCode == 406) {
-        // the specified OTP has expired
-        setLoginStatus(LoginStatus.OtpStep);
-      } else if (response.statusCode == 401) {
-        // the specified OTP does not match the one from the database
-        setLoginStatus(LoginStatus.OtpStep);
-      } else {
-        _log.severe(
-            "Failed to confirm e-mail for user ${_loggedMember.email} : ${response.body}");
-        setLoginStatus(LoginStatus.OtpStep);
+        _setLoginStatus(LoginStatus.CreatePasscodeStep);
+      }
+      // e-mail address or OTP is missing from the request
+      else if (response.statusCode == 400) {
+        _setLoginStatus(LoginStatus.OtpStep);
+      }
+      // e-mail address has not been found in the database
+      else if (response.statusCode == 404) {
+        _setLoginStatus(LoginStatus.OtpStep);
+      }
+      // the specified OTP has expired
+      else if (response.statusCode == 406) {
+        _setLoginStatus(LoginStatus.OtpStep);
+      }
+      // the specified OTP does not match the one from the database
+      else if (response.statusCode == 401) {
+        _setLoginStatus(LoginStatus.OtpStep);
+      }
+      // unexpected status code
+      else {
+        _log.severe("Failed to confirm e-mail for user $_email : ${response.body}");
+        _setLoginStatus(LoginStatus.OtpStep);
         throw Exception(
             "Une erreur s'est produite lors de la vérification de votre code, si le problème persite, contactez un administrateur");
       }
     }, onError: (error) {
-      _log.severe(
-          "Error while confirming e-mail for user ${_loggedMember.email} : $error");
-      setLoginStatus(LoginStatus.OtpStep);
+      _log.severe("Error while confirming e-mail for user $_email : $error");
+      _setLoginStatus(LoginStatus.OtpStep);
       throw Exception(
           "Une erreur s'est produite lors de la vérification de votre code, si le problème persite, contactez un administrateur");
     });
   }
 
-  /// Complete user registration according to the specified [member] information.
+  /// Go to the confirm password screen.
+  void goToConfirmPassword() {
+    _log.info("Confirming e-mail of user $_email");
+    _setLoginStatus(LoginStatus.ConfirmPasscodeStep);
+  }
+
+  /// Go to the confirm password screen.
+  void goToRegister() {
+    _log.info("User clicked link to go to register page");
+    _setLoginStatus(LoginStatus.EmailAndInfoStep);
+  }
+
+  /// Complete user registration according to the specified member information.
   Future<void> completeRegistration() async {
-    _log.info("Completing registration of user ${_loggedMember.email}");
-    await _membersService
-        .completeRegistration(_loggedMember)
-        .timeout(Duration(seconds: 5))
-        .then((response) async {
+    _log.info("Completing registration of user $_email");
+    await _membersService.completeRegistration(_email, _firstPassCode).timeout(Duration(seconds: 5)).then(
+        (response) async {
+      // account has been created successfully
       if (response.statusCode == 200) {
-        // account has been created successfully
-        setLoginStatus(LoginStatus.PasscodeStep);
-      } else if (response.statusCode == 400) {
-        // e-mail address or password is missing from the request
-        setLoginStatus(LoginStatus.ConfirmPasscodeStep);
-      } else if (response.statusCode == 404) {
-        // member not found in the database
-        setLoginStatus(LoginStatus.ConfirmPasscodeStep);
-      } else {
-        _log.severe(
-            "Failed to complete registration for user ${_loggedMember.email} : ${response.body}");
-        setLoginStatus(LoginStatus.CreatePasscodeStep);
+        _setLoginStatus(LoginStatus.PasscodeStep);
+      }
+      // e-mail address or password is missing from the request
+      else if (response.statusCode == 400) {
+        _setLoginStatus(LoginStatus.ConfirmPasscodeStep);
+      }
+      // member not found in the database
+      else if (response.statusCode == 404) {
+        _setLoginStatus(LoginStatus.ConfirmPasscodeStep);
+      }
+      // unexpected status code
+      else {
+        _log.severe("Failed to complete registration for user $_email : ${response.body}");
+        _setLoginStatus(LoginStatus.CreatePasscodeStep);
         throw Exception(
             "Une erreur s'est produite lors de la création de votre compte, si le problème persite, contactez un administrateur");
       }
     }, onError: (error) {
-      _log.severe(
-          "Error while completing registration for user ${_loggedMember.email} : $error");
-      setLoginStatus(LoginStatus.CreatePasscodeStep);
+      _log.severe("Error while completing registration for user $_email : $error");
+      _setLoginStatus(LoginStatus.CreatePasscodeStep);
       throw Exception(
           "Une erreur s'est produite lors de la création de votre compte, si le problème persite, contactez un administrateur");
     });
   }
 
   /// Log in the specified [member] identified by email and password.
-  Future<void> loginMember() async {
+  Future<void> loginMember(String passcode) async {
     _setAuthStatus(AuthStatus.Authenticating);
-    setLoginStatus(LoginStatus.Loading);
+    _setLoginStatus(LoginStatus.Loading);
 
     // get email from user preferences
     String email;
@@ -452,22 +488,18 @@ class LoginProvider extends ChangeNotifier {
     // no email found in shared preferences, get current email from enrollment
     if (email == null) {
       _log.info("No email found in shared preferences");
-      email = this.email;
+      email = _email;
     }
 
     _log.info("Logging in user $email");
 
-    await _membersService
-        .authenticate(email, _loginPassCode)
-        .timeout(Duration(seconds: 5))
-        .then((response) async {
+    await _membersService.authenticate(email, passcode).timeout(Duration(seconds: 5)).then((response) async {
       // check response and get the JWT token
       if (response.statusCode == 200) {
         _log.info("User $email successfully authenticated and got a JWT token");
 
         // get and store JWT token
-        final JwtResponse jwt =
-            JwtResponse.fromJson(json.decode(response.body));
+        final JwtResponse jwt = JwtResponse.fromJson(json.decode(response.body));
         _jwtToken = jwt.jwtToken;
 
         // set the JWT token to be used for all future GraphQL queries
@@ -475,10 +507,7 @@ class LoginProvider extends ChangeNotifier {
         _log.info("JWT token set for member $email : $_jwtToken");
 
         // get the full member from the database
-        await _membersService
-            .getMemberByEmail(email)
-            .timeout(Duration(seconds: 5))
-            .then((m) async {
+        await _membersService.getMemberByEmail(email).timeout(Duration(seconds: 5)).then((m) async {
           _log.info("Member ${m.email} successfully retrieved from database");
 
           // store the user's e-mail and token in the shared preferences
@@ -488,27 +517,25 @@ class LoginProvider extends ChangeNotifier {
 
           _loggedMember = m;
           _setAuthStatus(AuthStatus.Authenticated);
-          setLoginStatus(LoginStatus.EmailStep);
+          _setLoginStatus(LoginStatus.EmailStep);
         }, onError: (error) {
-          _log.info(
-              "Member with e-mail $email not found in the database from app ($error)");
+          _log.info("Member with e-mail $email not found in the database from app ($error)");
           _loggedMember = null;
           _jwtToken = null;
           GraphQLConnection().jwtToken = null;
           _setAuthStatus(AuthStatus.Unauthenticated);
-          setLoginStatus(LoginStatus.PasscodeStep);
+          _setLoginStatus(LoginStatus.PasscodeStep);
           throw (error);
         });
       } else if (response.statusCode == 401) {
-        _log.info(
-            "Failed to authenticate member $email, wrong username or password");
+        _log.info("Failed to authenticate member $email, wrong username or password");
         _setAuthStatus(AuthStatus.Unauthenticated);
-        setLoginStatus(LoginStatus.PasscodeStep);
+        _setLoginStatus(LoginStatus.PasscodeStep);
         throw Exception("Nom d'utilisateur ou mot de passe incorrect");
       } else {
         _log.info("Failed to authenticate user $email : ${response.body}");
         _setAuthStatus(AuthStatus.Unauthenticated);
-        setLoginStatus(LoginStatus.PasscodeStep);
+        _setLoginStatus(LoginStatus.PasscodeStep);
         throw Exception("Erreur serveur : ${response.statusCode}");
       }
     }, onError: (error) {
@@ -517,20 +544,29 @@ class LoginProvider extends ChangeNotifier {
       _jwtToken = null;
       GraphQLConnection().jwtToken = null;
       _setAuthStatus(AuthStatus.Unauthenticated);
-      setLoginStatus(LoginStatus.PasscodeStep);
+      _setLoginStatus(LoginStatus.PasscodeStep);
       throw Exception("Erreur lors de l'authentification : $error");
     });
   }
 
   /// Log out the current member.
   Future<void> logoutMember() async {
-    _log.info("Logging out user ${_loggedMember.email}");
+    _log.info("Logging out user ${_loggedMember?.email}");
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     //prefs.remove('email');
     _loggedMember = null;
     _jwtToken = null;
     prefs.remove('jwt');
+    _setLoginStatus(LoginStatus.PasscodeStep);
     _setAuthStatus(AuthStatus.Unauthenticated);
+  }
+
+  void update(NewsListProvider newsListProvider) {
+    // Do some custom work based on myModel that may call `notifyListeners`
+    _log.info("Calling update");
+    if (newsListProvider.logout) {
+      logoutMember();
+    }
   }
 
   /// Ask for a new password.
@@ -553,8 +589,7 @@ class LoginProvider extends ChangeNotifier {
 
     final Member tmpMember = member;
 
-    await _membersService.uploadAvatar(avatar, tmpMember.id).then(
-        (value) async {
+    await _membersService.uploadAvatar(avatar, tmpMember.id).then((value) async {
       _log.fine("Avatar uploaded successfully");
 
       dynamic responseJson = json.decode(value);
@@ -576,8 +611,7 @@ class LoginProvider extends ChangeNotifier {
           notifyListeners();
         }
       }, onError: (error) {
-        _log.severe(
-            "Failed to update avatar for member ${tmpMember.email} ($error)");
+        _log.severe("Failed to update avatar for member ${tmpMember.email} ($error)");
         throw (error);
       });
     }, onError: (error) {
@@ -611,20 +645,12 @@ class LoginProvider extends ChangeNotifier {
         _log.info("Notifying listeners of LoginProvider");
         notifyListeners();
       }, onError: (error) {
-        _log.severe(
-            "Failed to delete avatar for member ${tmpMember.email} ($error)");
+        _log.severe("Failed to delete avatar for member ${tmpMember.email} ($error)");
         throw (error);
       });
     }, onError: (error) {
       _log.severe("Failed to delete avatar ($error)");
       throw (error);
     });
-  }
-
-  Future<void> getOtpDate() async {
-    // get the OTP sent date from the shared preferences for timer
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    DateTime otpDate =
-        DateTime.fromMillisecondsSinceEpoch(int.parse(prefs.get('otpDate')));
   }
 }

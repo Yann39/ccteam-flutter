@@ -21,15 +21,67 @@ import 'dart:convert';
 
 import 'package:chachatte_team/models/event.dart';
 import 'package:chachatte_team/models/news.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
 class NotificationsService {
   static BuildContext buildContext;
-  static final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
-  static final initializationSettingsAndroid = AndroidInitializationSettings('@mipmap/ic_launcher');
-  static final initializationSettingsIOS = IOSInitializationSettings();
-  static final initializationSettings = InitializationSettings(initializationSettingsAndroid, initializationSettingsIOS);
+  static final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+      FlutterLocalNotificationsPlugin();
+  static const AndroidInitializationSettings initializationSettingsAndroid =
+      AndroidInitializationSettings('@mipmap/ic_launcher');
+  static final IOSInitializationSettings initializationSettingsIOS =
+      IOSInitializationSettings(
+          onDidReceiveLocalNotification: onDidReceiveLocalNotification);
+  static final MacOSInitializationSettings initializationSettingsMacOS =
+      MacOSInitializationSettings();
+  static final InitializationSettings initializationSettings =
+      InitializationSettings(
+          android: initializationSettingsAndroid,
+          iOS: initializationSettingsIOS,
+          macOS: initializationSettingsMacOS);
+
+  /// Initialize the notifications plugin
+  /// This must be called before any other methods call of this class
+  static void initialize(BuildContext context) {
+    flutterLocalNotificationsPlugin.initialize(initializationSettings,
+        onSelectNotification: onSelectNotification);
+    buildContext = context;
+  }
+
+  static Future onDidReceiveLocalNotification(
+      int id, String title, String body, String payload) async {
+    // display a dialog with the notification details, tap ok to go to another page
+    showDialog(
+      context: buildContext,
+      builder: (BuildContext context) => CupertinoAlertDialog(
+        title: Text(title),
+        content: Text(body),
+        actions: [
+          CupertinoDialogAction(
+            isDefaultAction: true,
+            child: Text('Ok'),
+            onPressed: () async {
+              Navigator.of(context, rootNavigator: true).pop();
+              print("A notification has been clicked, payload is : $payload");
+              dynamic jsonData = json.decode(payload);
+              if (jsonData['type'] == 'news') {
+                print("Navigates to news detail from notification");
+                //await navigatorKey.currentState.pushNamed('/newsDetail', arguments: News.fromJson(jsonData['value']));
+                Navigator.pushNamed(buildContext, '/newsDetail');
+              } else if (jsonData['type'] == 'event') {
+                print("Navigates to event detail from notification");
+                //await ChachatteTeamApp.navigatorKey.currentState.pushNamed('/eventDetail', arguments: Event.fromJson(jsonData['value']));
+                Navigator.pushNamed(buildContext, '/eventDetail',
+                    arguments: Event.fromJson(jsonData['value']));
+              }
+            },
+          )
+        ],
+      ),
+    );
+  }
 
   /// Function to be executed when a notification is clicked
   /// It navigates to the right page depending on the specified [payload]
@@ -39,19 +91,13 @@ class NotificationsService {
     if (jsonData['type'] == 'news') {
       print("Navigates to news detail from notification");
       //await navigatorKey.currentState.pushNamed('/newsDetail', arguments: News.fromJson(jsonData['value']));
-      Navigator.pushNamed(buildContext, '/newsDetail', arguments: News.fromJson(jsonData['value']));
+      Navigator.pushNamed(buildContext, '/newsDetail');
     } else if (jsonData['type'] == 'event') {
       print("Navigates to event detail from notification");
       //await ChachatteTeamApp.navigatorKey.currentState.pushNamed('/eventDetail', arguments: Event.fromJson(jsonData['value']));
-      await Navigator.pushNamed(buildContext, '/eventDetail', arguments: Event.fromJson(jsonData['value']));
+      await Navigator.pushNamed(buildContext, '/eventDetail',
+          arguments: Event.fromJson(jsonData['value']));
     }
-  }
-
-  /// Initialize the notifications plugin
-  /// This must be called before any other methods call of this class
-  static void initialize(BuildContext context) {
-    flutterLocalNotificationsPlugin.initialize(initializationSettings, onSelectNotification: onSelectNotification);
-    buildContext = context;
   }
 
   /// Push a new notification instantly for the specified [news]
@@ -59,13 +105,15 @@ class NotificationsService {
     var androidPlatformChannelSpecifics = AndroidNotificationDetails(
       'news',
       'News push notifications',
-      'Push notifications for news',
-      importance: Importance.Max,
-      priority: Priority.High,
+      channelDescription: 'Push notifications for news',
+      importance: Importance.max,
+      priority: Priority.high,
       color: Colors.blue[700],
     );
     var iOSPlatformChannelSpecifics = IOSNotificationDetails();
-    var platformChannelSpecifics = NotificationDetails(androidPlatformChannelSpecifics, iOSPlatformChannelSpecifics);
+    var platformChannelSpecifics = NotificationDetails(
+        android: androidPlatformChannelSpecifics,
+        iOS: iOSPlatformChannelSpecifics);
 
     Map<String, dynamic> param = {
       "type": "news",
@@ -84,24 +132,27 @@ class NotificationsService {
   /// Schedule an event notification for the specified [event]
   /// The notification will be sent 6 hours before the event start date
   static Future scheduleEventNotification(Event event) async {
-    var scheduledNotificationDateTime = event.startDate.subtract(Duration(hours: 6));
+    var scheduledNotificationDateTime =
+        event.startDate.subtract(Duration(hours: 6));
     var androidPlatformChannelSpecifics = AndroidNotificationDetails(
       'track_events',
       'Track events push notifications',
-      'Push notifications for track events, 6 hours before the start of the event',
-      importance: Importance.Max,
-      priority: Priority.High,
+      channelDescription: 'Push notifications for track events, 6 hours before the start of the event',
+      importance: Importance.max,
+      priority: Priority.high,
       color: Colors.blue[700],
     );
     var iOSPlatformChannelSpecifics = IOSNotificationDetails();
-    var platformChannelSpecifics = NotificationDetails(androidPlatformChannelSpecifics, iOSPlatformChannelSpecifics);
+    var platformChannelSpecifics = NotificationDetails(
+        android: androidPlatformChannelSpecifics,
+        iOS: iOSPlatformChannelSpecifics);
 
     Map<String, dynamic> param = {
       "type": "event",
       "value": event != null ? event.toJson() : null,
     };
 
-    await flutterLocalNotificationsPlugin.schedule(
+    await flutterLocalNotificationsPlugin.zonedSchedule(
       event.id,
       'Événement prévu dans 6 heures !',
       event.title,
@@ -109,6 +160,8 @@ class NotificationsService {
       platformChannelSpecifics,
       payload: json.encode(param),
       androidAllowWhileIdle: true,
+      uiLocalNotificationDateInterpretation:
+          UILocalNotificationDateInterpretation.absoluteTime,
     );
   }
 }

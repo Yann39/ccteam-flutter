@@ -17,6 +17,7 @@
  * along with Chachatte Team. If not, see <http://www.gnu.org/licenses/>.
  */
 
+import 'package:chachatte_team/models/liked_news.dart';
 import 'package:chachatte_team/models/member.dart';
 import 'package:intl/intl.dart';
 
@@ -27,7 +28,7 @@ class News {
   String catchLine;
   String content;
   DateTime newsDate;
-  List<Member> likedMembers;
+  List<LikedNews> likedNews;
   DateTime createdOn;
   Member createdBy;
   DateTime modifiedOn;
@@ -39,7 +40,7 @@ class News {
     this.catchLine,
     this.content,
     this.newsDate,
-    this.likedMembers,
+    this.likedNews,
     this.createdOn,
     this.createdBy,
     this.modifiedOn,
@@ -54,7 +55,7 @@ class News {
       catchLine: ${this.catchLine},
       content: ${this.content},
       newsDate: ${this.newsDate?.toIso8601String()},
-      likedMembers: ${this.likedMembers?.map((i) => i.toString())},
+      likedNews: ${this.likedNews?.map((i) => i.toString())},
       createdOn: ${this.createdOn?.toIso8601String()},
       createdBy: ${this.createdBy?.toString()},
       modifiedOn: ${this.modifiedOn?.toIso8601String()},
@@ -69,8 +70,8 @@ class News {
         catchLine = json['catchLine'],
         content = json['content'],
         newsDate = json['newsDate'] != null ? DateFormat("yyyy-MM-dd HH:mm:ss").parseStrict(json['newsDate']) : null,
-        likedMembers = json['likedMembers'] != null
-            ? (json['likedMembers'] as List).map((i) => Member.fromJson(i)).toList()
+        likedNews = json['likedNews'] != null
+            ? (json['likedNews'] as List).map((i) => LikedNews.fromJson(i)).toList()
             : null,
         createdOn = json['createdOn'] != null ? DateFormat("yyyy-MM-dd HH:mm:ss").parseStrict(json['createdOn']) : null,
         createdBy = json['createdBy'] != null ? Member.fromJson(json['createdBy']) : null,
@@ -85,8 +86,7 @@ class News {
         "catchLine": catchLine,
         "content": content,
         "newsDate": newsDate?.toIso8601String(),
-        "likedMembers":
-            likedMembers != null && likedMembers.length > 0 ? '[${likedMembers.map((m) => m.toJson())}]' : null,
+        "likedNews": likedNews != null && likedNews.length > 0 ? '[${likedNews.map((ln) => ln.toJson())}]' : null,
         "createdOn": createdOn?.toIso8601String(),
         "createdBy": createdBy?.toJson(),
         "modifiedOn": modifiedOn?.toIso8601String(),

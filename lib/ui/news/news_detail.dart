@@ -17,31 +17,35 @@
  * along with Chachatte Team. If not, see <http://www.gnu.org/licenses/>.
  */
 
+import 'package:chachatte_team/models/member.dart';
 import 'package:chachatte_team/models/news.dart';
 import 'package:chachatte_team/providers/login_provider.dart';
+import 'package:chachatte_team/providers/news_detail_provider.dart';
+import 'package:chachatte_team/providers/news_list_provider.dart';
 import 'package:chachatte_team/providers/news_provider.dart';
 import 'package:chachatte_team/services/notifications_service.dart';
 import 'package:chachatte_team/utils/constants.dart';
 import 'package:chachatte_team/utils/custom_decorations.dart';
 import 'package:chachatte_team/utils/date_utils.dart';
+import 'package:chachatte_team/utils/enums.dart';
 import 'package:chachatte_team/utils/strings.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
+import 'package:logging/logging.dart';
 import 'package:provider/provider.dart';
 import 'package:share/share.dart';
 
 class NewsDetail extends StatelessWidget {
-
-  const NewsDetail({Key key}) : super(key: key);
+  final Logger _log = new Logger('NewsDetail');
 
   /// Method that launches the Edit New screen and awaits the result from Navigator.pop
   _navigateToEditNewsScreen(BuildContext context, News news) async {
     // Navigator.push returns a Future that will complete after we call Navigator.pop on the Add News screen
-    final _result = await Navigator.pushNamed(context, '/addEditNews', arguments: [news, AppString.newsEdit]);
+    final _result = await Navigator.pushNamed(context, '/addEditNews');
 
     // after the Edit New Screen returns a result, hide any previous snack bars and show the new result
     if (_result != null) {
-      Scaffold.of(context)
+      ScaffoldMessenger.of(context)
         ..removeCurrentSnackBar()
         ..showSnackBar(SnackBar(content: Text("$_result")));
     }
@@ -49,12 +53,19 @@ class NewsDetail extends StatelessWidget {
 
   /// Method to like a news
   _likeNews(BuildContext context, News news) async {
-    Provider.of<NewsProvider>(context, listen: false).likeNews(news, Provider.of<LoginProvider>(context, listen: false).loggedMember);
+    final Member member = Provider.of<LoginProvider>(context, listen: false).loggedMember;
+    Provider.of<NewsDetailProvider>(context, listen: false).likeNews(news, member);
+    // update news in the news list
+    Provider.of<NewsListProvider>(context, listen: false).updateNews(news);
   }
 
   /// Method to unlike a news
   _unlikeNews(BuildContext context, News news) async {
-    Provider.of<NewsProvider>(context, listen: false).unlikeNews(news, Provider.of<LoginProvider>(context, listen: false).loggedMember);
+    final Member member = Provider.of<LoginProvider>(context, listen: false).loggedMember;
+    Provider.of<NewsDetailProvider>(context, listen: false).unlikeNews(news, member);
+    // update news in the news list
+    news.likedNews.removeWhere((m) => m.id == member.id);
+    Provider.of<NewsListProvider>(context, listen: false).updateNews(news);
   }
 
   /// Display a confirmation popup when trying to delete a news
@@ -65,12 +76,14 @@ class NewsDetail extends StatelessWidget {
         title: Text(AppString.confirmation),
         content: Text(value),
         actions: <Widget>[
-          FlatButton(
+          TextButton(
             onPressed: () {
               // close this dialog
               Navigator.pop(context);
               // delete news
-              Provider.of<NewsProvider>(context, listen: false).deleteNews(Provider.of<NewsProvider>(context, listen: false).currentNews).then((value) {
+              Provider.of<NewsProvider>(context, listen: false)
+                  .deleteNews(Provider.of<NewsProvider>(context, listen: false).currentNews)
+                  .then((value) {
                 Navigator.pop(context, AppString.newsDeleted);
               }, onError: (error) {
                 Navigator.pop(context, AppString.newsDeletionFailed);
@@ -78,7 +91,7 @@ class NewsDetail extends StatelessWidget {
             },
             child: Text(AppString.confirm),
           ),
-          FlatButton(
+          TextButton(
             onPressed: () {
               // close this dialog
               Navigator.pop(context);
@@ -91,9 +104,15 @@ class NewsDetail extends StatelessWidget {
   }
 
   Widget build(BuildContext context) {
-    final NewsProvider _newsProvider = Provider.of<NewsProvider>(context, listen: true);
-    final isLiked = _newsProvider.currentNews.likedMembers.any((element) => element.id == Provider.of<LoginProvider>(context, listen: false).loggedMember.id);
-    print(isLiked);
+    _log.info("Building News detail...");
+
+    final NewsDetailProvider _newsDetailProvider = Provider.of<NewsDetailProvider>(context, listen: true);
+
+    // get if that news is liked for current logged member
+    final bool isLiked = _newsDetailProvider.currentNews?.likedNews
+            ?.any((element) => element.id == Provider.of<LoginProvider>(context, listen: false).loggedMember.id) ??
+        false;
+
     return Scaffold(
       //extendBodyBehindAppBar: true,
       appBar: AppBar(
@@ -105,13 +124,13 @@ class NewsDetail extends StatelessWidget {
               icon: Icon(Icons.notifications_active),
               onPressed: () =>
                   // send a push notification
-                  NotificationsService.pushInstantNewsNotification(_newsProvider.currentNews),
+                  NotificationsService.pushInstantNewsNotification(_newsDetailProvider.currentNews),
             ),
           ),
           Builder(
             builder: (context) => IconButton(
               icon: Icon(Icons.edit),
-              onPressed: () => _navigateToEditNewsScreen(context, _newsProvider.currentNews),
+              onPressed: () => _navigateToEditNewsScreen(context, _newsDetailProvider.currentNews),
             ),
           ),
           Builder(
@@ -127,126 +146,144 @@ class NewsDetail extends StatelessWidget {
           onPressed: () => Navigator.pop(context),
         ),
       ),
-      body: Container(
-        decoration: CustomDecorations.mainContent,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisAlignment: MainAxisAlignment.start,
-          children: <Widget>[
-            CustomPaint(
-              child: Container(
-                color: Colors.transparent,
-                height: 132,
-                padding: EdgeInsets.symmetric(vertical: 32.0, horizontal: 8.0),
-                width: double.infinity,
-              ),
-              painter: HeaderPainter(),
-            ),
-            Container(
-              color: Colors.transparent,
-              padding: EdgeInsets.only(left: 8.0, right: 8.0, bottom: 8.0),
+      body: _newsDetailProvider.loadingStatus == LoadingStatus.loaded
+          ? Container(
+              decoration: CustomDecorations.mainContent,
               child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.start,
                 children: <Widget>[
-                  if (_newsProvider.createdBy != null)
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      crossAxisAlignment: CrossAxisAlignment.center,
+                  CustomPaint(
+                    child: Container(
+                      color: Colors.transparent,
+                      height: 132,
+                      padding: EdgeInsets.symmetric(vertical: 32.0, horizontal: 8.0),
+                      width: double.infinity,
+                    ),
+                    painter: HeaderPainter(),
+                  ),
+                  Container(
+                    color: Colors.transparent,
+                    padding: EdgeInsets.only(left: 8.0, right: 8.0, bottom: 8.0),
+                    child: Column(
                       children: <Widget>[
-                        Icon(Icons.person, color: Colors.purple[700], size: 13.0),
-                        SizedBox(width: 2.0),
-                        Text(
-                          "${AppString.by} ${_newsProvider.createdBy.firstName} ${_newsProvider.createdBy.lastName}",
-                          textAlign: TextAlign.left,
+                        if (_newsDetailProvider.currentNews.createdBy != null)
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: <Widget>[
+                              Icon(Icons.person, color: Colors.purple[700], size: 13.0),
+                              SizedBox(width: 2.0),
+                              Text(
+                                "${AppString.by} ${_newsDetailProvider.currentNews.createdBy.firstName} ${_newsDetailProvider.currentNews.createdBy.lastName}",
+                                textAlign: TextAlign.left,
+                              ),
+                            ],
+                          ),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: <Widget>[
+                            Icon(Icons.access_time, color: Colors.red[700], size: 13.0),
+                            SizedBox(width: 2.0),
+                            Text(
+                              "${AppString.on} ${AppDateUtils.convertToString(_newsDetailProvider.currentNews.newsDate, DATE_FORMAT_TXT)}",
+                              textAlign: TextAlign.left,
+                            ),
+                          ],
                         ),
                       ],
                     ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: <Widget>[
-                      Icon(Icons.access_time, color: Colors.red[700], size: 13.0),
-                      SizedBox(width: 2.0),
-                      Text(
-                        "${AppString.on} ${DateUtils.convertToString(_newsProvider.currentNews.newsDate, DATE_FORMAT_TXT)}",
-                        textAlign: TextAlign.left,
-                      ),
-                    ],
+                  ),
+                  Divider(
+                    height: 8,
+                    color: Colors.purple,
+                    thickness: 2.0,
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Text(
+                      _newsDetailProvider.currentNews.title,
+                      textScaleFactor: 2,
+                      style: TextStyle(color: Colors.black87),
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Row(
+                      children: <Widget>[
+                        SizedBox(
+                          height: 20,
+                          child: ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              padding: EdgeInsets.symmetric(horizontal: 6.0),
+                              primary: Colors.blue[700],
+                            ),
+                            onPressed: () => {
+                              Share.share(_newsDetailProvider.currentNews.catchLine,
+                                  subject: _newsDetailProvider.currentNews.title)
+                            },
+                            child: Row(
+                              children: <Widget>[
+                                Icon(Icons.share, color: Colors.white, size: 13),
+                                SizedBox(width: 5),
+                                Text(
+                                  AppString.share,
+                                  style: TextStyle(color: Colors.white),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                        SizedBox(width: 8.0),
+                        SizedBox(
+                          height: 20,
+                          child: ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              padding: EdgeInsets.symmetric(horizontal: 6.0),
+                              primary: Colors.blue[700],
+                            ),
+                            onPressed: () => isLiked
+                                ? _unlikeNews(context, _newsDetailProvider.currentNews)
+                                : _likeNews(context, _newsDetailProvider.currentNews),
+                            child: Row(
+                              children: <Widget>[
+                                Icon(isLiked ? Icons.favorite : Icons.favorite_border,
+                                    color: isLiked ? Colors.pink : Colors.white, size: 13),
+                                SizedBox(width: 5),
+                                Text(
+                                  isLiked ? AppString.unlike : AppString.like,
+                                  style: TextStyle(color: Colors.white),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Flexible(
+                    child: Markdown(
+                      padding: EdgeInsets.all(8.0),
+                      data: _newsDetailProvider.currentNews.content,
+                    ),
                   ),
                 ],
               ),
-            ),
-            Divider(
-              height: 8,
-              color: Colors.purple,
-              thickness: 2.0,
-            ),
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Text(
-                _newsProvider.currentNews.title,
-                textScaleFactor: 2,
-                style: TextStyle(color: Colors.black87),
+            )
+          : Center(
+              child: SizedBox(
+                child: CircularProgressIndicator(),
+                height: 20.0,
+                width: 20.0,
               ),
             ),
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Row(
-                children: <Widget>[
-                  SizedBox(
-                    height: 20,
-                    child: RaisedButton(
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                      onPressed: () => {Share.share(_newsProvider.currentNews.catchLine, subject: _newsProvider.currentNews.title)},
-                      padding: EdgeInsets.symmetric(horizontal: 6.0),
-                      color: Colors.blue[700],
-                      child: Row(
-                        children: <Widget>[
-                          Icon(Icons.share, color: Colors.white, size: 13),
-                          SizedBox(width: 5),
-                          Text(
-                            AppString.share,
-                            style: TextStyle(color: Colors.white),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  SizedBox(width: 8.0),
-                  SizedBox(
-                    height: 20,
-                    child: RaisedButton(
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                      onPressed: () => isLiked ? _unlikeNews(context, _newsProvider.currentNews) : _likeNews(context, _newsProvider.currentNews),
-                      padding: EdgeInsets.symmetric(horizontal: 6.0),
-                      color: Colors.blue[700],
-                      child: Row(
-                        children: <Widget>[
-                          Icon(isLiked ? Icons.favorite : Icons.favorite_border, color: isLiked ? Colors.pink : Colors.white, size: 13),
-                          SizedBox(width: 5),
-                          Text(
-                            isLiked ? AppString.unlike : AppString.like,
-                            style: TextStyle(color: Colors.white),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            Flexible(
-              child: Markdown(
-                padding: EdgeInsets.all(8.0),
-                data: _newsProvider.currentNews.content,
-              ),
-            ),
-          ],
-        ),
-      ),
     );
   }
 }

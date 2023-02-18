@@ -17,21 +17,32 @@
  * along with Chachatte Team. If not, see <http://www.gnu.org/licenses/>.
  */
 
+
+const String TEST_INVALID_EMAIL = 'test_example';
+const String TEST_VALID_NO_ACCOUNT_EMAIL = 'test@example.com';
+const String TEST_VALID_ACCOUNT_EMAIL = 'obfuscated';
+const String TEST_USER_FIRST_NAME = 'John';
+const String TEST_USER_LAST_NAME = 'Doe';
+const String TEST_VALID_JWT = 'obfuscated';
+const String TEST_INVALID_JWT = 'aBcDeFgHijKlmNOpQrSTuVWxYz';
+
 const String API_OLD_ROOT_URL = 'obfuscated';
 const String API_ROOT_URL = 'obfuscated'; // for mobile device HOME
 //const String API_ROOT_URL = 'obfuscated'; // for local emulator
 //const String API_ROOT_URL = 'obfuscated'; // for production
+
 const String SERVER_ROOT_PATH = 'obfuscated';
 const String SERVER_AVATAR_FOLDER = 'upload/avatars/';
 const String SERVER_TRACK_IMAGES_FOLDER = 'images/tracks/';
 
 const String API_GRAPHQL_ENDPOINT = '/graphql';
-const String API_CHECK_ACCOUNT_ENDPOINT = '/checkAccount';
-const String API_PRE_REGISTER_ENDPOINT = '/preRegister';
-const String API_RESEND_OTP_ENDPOINT = '/resendOtp';
-const String API_CONFIRM_EMAIL_ENDPOINT = '/confirmEmail';
-const String API_COMPLETE_REGISTRATION_ENDPOINT = '/completeRegistration';
-const String API_AUTHENTICATE_ENDPOINT = '/authenticate';
+
+const String API_CHECK_ACCOUNT_ENDPOINT = '/rest/checkAccount';
+const String API_PRE_REGISTER_ENDPOINT = '/rest/preRegister';
+const String API_RESEND_OTP_ENDPOINT = '/rest/resendOtp';
+const String API_CONFIRM_EMAIL_ENDPOINT = '/rest/confirmEmail';
+const String API_COMPLETE_REGISTRATION_ENDPOINT = '/rest/completeRegistration';
+const String API_AUTHENTICATE_ENDPOINT = '/rest/authenticate';
 
 const String API_GET_ALL_NEWS_ENDPOINT = '/news/read.php';
 const String API_GET_SINGLE_NEWS_ENDPOINT = '/news/read_one.php';

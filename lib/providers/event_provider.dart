@@ -33,6 +33,9 @@ class EventProvider extends ChangeNotifier {
   // list of all events
   List<Event> _events = [];
 
+  // current event
+  Event _currentEvent;
+
   // list of events to be displayed when filtering per date
   List<Event> _calendarEvents = [];
 
@@ -56,7 +59,7 @@ class EventProvider extends ChangeNotifier {
 
   // constructor
   EventProvider() {
-    // as soon as it is instantiated, we fetch events
+    // as soon as it is instantiated, we fetch event list
     fetchEvents();
   }
 
@@ -69,6 +72,8 @@ class EventProvider extends ChangeNotifier {
   UnmodifiableListView<Event> get memberEvents => UnmodifiableListView(_memberEvents);
 
   UnmodifiableListView<Event> get trackEvents => UnmodifiableListView(_trackEvents);
+
+  Event get currentEvent => _currentEvent;
 
   int get eventModeSelectorIndex => _eventModeSelectorIndex;
 
@@ -105,6 +110,22 @@ class EventProvider extends ChangeNotifier {
     }, onError: (error) {
       _log.warning("Error when retrieving events list ($error)");
       _events = [];
+      _updateLoadingStatus(LoadingStatus.notLoaded);
+      throw (error);
+    });
+  }
+
+  /// Fetch the specified [event]
+  Future<void> fetchCurrentEvent(Event event) async {
+    _log.fine("Fetching event ${event.title}");
+    _updateLoadingStatus(LoadingStatus.loading);
+    await _eventsService.getEventById(event.id).then((value) async {
+      _log.fine("Event with ID ${event.id} retrieved successfully");
+      _currentEvent = value;
+      _updateLoadingStatus(LoadingStatus.loaded);
+    }, onError: (error) {
+      _log.warning("Error when retrieving event ($error)");
+      _currentEvent = null;
       _updateLoadingStatus(LoadingStatus.notLoaded);
       throw (error);
     });

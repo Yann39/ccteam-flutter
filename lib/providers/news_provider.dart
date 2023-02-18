@@ -19,9 +19,7 @@
 
 import 'dart:collection';
 
-import 'package:chachatte_team/models/member.dart';
 import 'package:chachatte_team/models/news.dart';
-import 'package:chachatte_team/services/members_service.dart';
 import 'package:chachatte_team/services/news_service.dart';
 import 'package:chachatte_team/utils/enums.dart';
 import 'package:flutter/foundation.dart';
@@ -30,7 +28,6 @@ import 'package:logging/logging.dart';
 class NewsProvider extends ChangeNotifier {
   final Logger _log = new Logger('NewsProvider');
   final NewsService _newsService = new NewsService();
-  final MembersService _membersService = new MembersService();
 
   // current news list
   List<News> _news = [];
@@ -38,30 +35,24 @@ class NewsProvider extends ChangeNotifier {
   // current news
   News _currentNews;
 
-  // news member creator
-  Member _createdBy;
-
-  // news member last modifier
-  Member _modifiedBy;
-
   // current loading status
   LoadingStatus _loadingStatus = LoadingStatus.notLoaded;
+
+  LoadingStatus _currentNewsLoadingStatus = LoadingStatus.notLoaded;
 
   // constructor
   NewsProvider() {
     // as soon as it is instantiated, we fetch all news
-    fetchNewsList();
+    //fetchNewsList();
   }
 
   UnmodifiableListView<News> get news => UnmodifiableListView(_news);
 
   News get currentNews => _currentNews;
 
-  Member get createdBy => _createdBy;
-
-  Member get modifiedBy => _modifiedBy;
-
   LoadingStatus get loadingStatus => _loadingStatus;
+
+  LoadingStatus get currentNewsLoadingStatus => _currentNewsLoadingStatus;
 
   /// Update the current loading status
   void _updateStatus(LoadingStatus status) {
@@ -70,8 +61,15 @@ class NewsProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Update the current news loading status
+  void _updateCurrentNewsStatus(LoadingStatus status) {
+    _currentNewsLoadingStatus = status;
+    _log.info("Notifying listeners of NewsProvider");
+    notifyListeners();
+  }
+
   /// Get the list of all news
-  Future<void> fetchNewsList() async {
+  /*Future<void> fetchNewsList() async {
     _updateStatus(LoadingStatus.loading);
     await _newsService.fetchNews().then((value) async {
       _log.fine("News list retrieved successfully");
@@ -84,69 +82,20 @@ class NewsProvider extends ChangeNotifier {
       throw (error);
     });
     return _news;
-  }
+  }*/
 
   /// Fetch the specified [news]
   Future<void> fetchCurrentNews(News news) async {
     _log.fine("Fetching news ${news.title}");
-    _currentNews = news;
-    notifyListeners();
-    fetchCreatedByMember(news.createdBy);
-    fetchModifiedByMember(news.modifiedBy);
-  }
-
-  /// Fetch the member corresponding to the specified [memberId] representing the news creator
-  void fetchCreatedByMember(int memberId) async {
-    _createdBy = null;
-    if (memberId == null) return null;
-    await _membersService.getMemberById(memberId).then((value) async {
-      _log.fine("News createdBy member retrieved successfully");
-      _createdBy = value;
-      notifyListeners();
+    _updateCurrentNewsStatus(LoadingStatus.loading);
+    await _newsService.getNewsById(news.id).then((value) async {
+      _log.fine("News with ID ${news.id} retrieved successfully");
+      _currentNews = value;
+      _updateCurrentNewsStatus(LoadingStatus.loaded);
     }, onError: (error) {
-      _log.warning("Error when retrieving news createdBy member ($error)");
-      _createdBy = null;
-      notifyListeners();
-      throw (error);
-    });
-  }
-
-  /// Fetch the member corresponding to the specified [memberId] representing the news last modifier
-  void fetchModifiedByMember(int memberId) async {
-    _modifiedBy = null;
-    if (memberId == null) return null;
-    await _membersService.getMemberById(memberId).then((value) async {
-      _log.fine("News modifiedBy member retrieved successfully");
-      _modifiedBy = value;
-      notifyListeners();
-    }, onError: (error) {
-      _log.warning("Error when retrieving news modifiedBy member ($error)");
-      _modifiedBy = null;
-      notifyListeners();
-      throw (error);
-    });
-  }
-
-  /// Like the specified [news] for the specified [member]
-  Future<void> likeNews(News news, Member member) async {
-    await _newsService.likeNews(news.id, member.id).then((value) async {
-      _log.fine("News ${news.title} liked by user ${member.email}");
-      _currentNews.likedMembers.add(member);
-      notifyListeners();
-    }, onError: (error) {
-      _log.warning("Error when liking news ${news.title} for user ${member.email} ($error)");
-      throw (error);
-    });
-  }
-
-  /// Unlike the specified [news] for the specified [member]
-  Future<void> unlikeNews(News news, Member member) async {
-    await _newsService.unlikeNews(news.id, member.id).then((value) async {
-      _log.fine("News ${news.title} unliked by user ${member.email}");
-      _currentNews.likedMembers.remove(member);
-      notifyListeners();
-    }, onError: (error) {
-      _log.warning("Error when unliking news ${news.title} for user ${member.email} ($error)");
+      _log.warning("Error when retrieving news ($error)");
+      _currentNews = null;
+      _updateCurrentNewsStatus(LoadingStatus.notLoaded);
       throw (error);
     });
   }

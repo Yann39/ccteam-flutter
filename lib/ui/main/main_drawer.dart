@@ -34,11 +34,12 @@ class MainDrawer extends StatelessWidget {
   /// Method that launches the Edit Member screen and awaits the result from Navigator.pop
   _navigateToEditMemberScreen(BuildContext context, Member member) async {
     // Navigator.push returns a Future that will complete after we call Navigator.pop on the target screen
-    final result = await Navigator.pushNamed(context, '/addEditMember', arguments: member);
+    final result =
+        await Navigator.pushNamed(context, '/addEditMember', arguments: member);
 
     // after the target screen returns a result, hide any previous snack bars and show the new result
     if (result != null) {
-      Scaffold.of(context)
+      ScaffoldMessenger.of(context)
         ..removeCurrentSnackBar()
         ..showSnackBar(SnackBar(content: Text("$result")));
     }
@@ -46,7 +47,8 @@ class MainDrawer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final LoginProvider _loginProvider = Provider.of<LoginProvider>(context, listen: false);
+    final LoginProvider _loginProvider =
+        Provider.of<LoginProvider>(context, listen: false);
 
     return Drawer(
       child: Container(
@@ -70,7 +72,8 @@ class MainDrawer extends StatelessWidget {
                     children: <Widget>[
                       Icon(Icons.person_outline, color: Colors.white, size: 12),
                       SizedBox(width: 5),
-                      Text("${_loginProvider.loggedMember.firstName} ${_loginProvider.loggedMember.lastName}"),
+                      Text(
+                          "${_loginProvider.loggedMember.firstName} ${_loginProvider.loggedMember.lastName}"),
                     ],
                   ),
                   accountEmail: Row(
@@ -82,23 +85,28 @@ class MainDrawer extends StatelessWidget {
                   ),
                   arrowColor: Colors.green,
                   currentAccountPicture: Container(
-                    decoration: ShapeDecoration(shape: CircleBorder(), color: Colors.white),
+                    decoration: ShapeDecoration(
+                        shape: CircleBorder(), color: Colors.white),
                     padding: EdgeInsets.all(2.0),
-                    child: _loginProvider.loggedMember.avatarUrl != null && _loginProvider.loggedMember.avatarUrl.length > 0 ? CircleAvatar(
-                      backgroundColor: Colors.blue[100],
-                      backgroundImage: NetworkImage("$SERVER_ROOT_PATH$SERVER_AVATAR_FOLDER${_loginProvider.loggedMember.avatarUrl}"),
-                    ) : CircleAvatar(
-                      backgroundColor: Colors.blue[100],
-                      child: ShaderMask(
-                        shaderCallback: (bounds) => LinearGradient(
-                          begin: const FractionalOffset(0.0, 0.0),
-                          end: const FractionalOffset(0.0, 1.0),
-                          stops: [0.0, 1.0],
-                          colors: [Colors.red[700], Colors.white],
-                        ).createShader(bounds),
-                        child: Icon(CustomIcons.pilot, size: 50),
-                      ),
-                    ),
+                    child: _loginProvider.loggedMember.avatarUrl != null &&
+                            _loginProvider.loggedMember.avatarUrl.length > 0
+                        ? CircleAvatar(
+                            backgroundColor: Colors.blue[100],
+                            backgroundImage: NetworkImage(
+                                "$SERVER_ROOT_PATH$SERVER_AVATAR_FOLDER${_loginProvider.loggedMember.avatarUrl}"),
+                          )
+                        : CircleAvatar(
+                            backgroundColor: Colors.blue[100],
+                            child: ShaderMask(
+                              shaderCallback: (bounds) => LinearGradient(
+                                begin: const FractionalOffset(0.0, 0.0),
+                                end: const FractionalOffset(0.0, 1.0),
+                                stops: [0.0, 1.0],
+                                colors: [Colors.red[700], Colors.white],
+                              ).createShader(bounds),
+                              child: Icon(CustomIcons.pilot, size: 50),
+                            ),
+                          ),
                   ),
                 ),
                 Container(
@@ -127,7 +135,8 @@ class MainDrawer extends StatelessWidget {
                   trailing: Icon(Icons.arrow_right),
                   title: Text(AppString.profile),
                   onTap: () {
-                    _navigateToEditMemberScreen(context, _loginProvider.loggedMember);
+                    _navigateToEditMemberScreen(
+                        context, _loginProvider.loggedMember);
                   },
                 ),
                 ListTile(
@@ -138,7 +147,8 @@ class MainDrawer extends StatelessWidget {
                   trailing: Icon(Icons.arrow_right),
                   title: Text(AppString.myTrackEvents),
                   onTap: () {
-                    Navigator.pushNamed(context, '/memberEvents', arguments: _loginProvider.loggedMember);
+                    Navigator.pushNamed(context, '/memberEvents',
+                        arguments: _loginProvider.loggedMember);
                   },
                 ),
                 ListTile(
@@ -149,7 +159,8 @@ class MainDrawer extends StatelessWidget {
                   trailing: Icon(Icons.arrow_right),
                   title: Text(AppString.myChronos),
                   onTap: () {
-                    Navigator.pushNamed(context, '/memberChronos', arguments: _loginProvider.loggedMember);
+                    Navigator.pushNamed(context, '/memberChronos',
+                        arguments: _loginProvider.loggedMember);
                   },
                 ),
                 Divider(),

@@ -23,10 +23,13 @@ import 'package:chachatte_team/providers/login_provider.dart';
 import 'package:chachatte_team/utils/enums.dart';
 import 'package:chachatte_team/utils/string_utils.dart';
 import 'package:chachatte_team/utils/strings.dart';
+import 'package:chachatte_team/widgets/chachatte_logo.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:logging/logging.dart';
 import 'package:provider/provider.dart';
+import 'package:top_snackbar_flutter/custom_snack_bar.dart';
+import 'package:top_snackbar_flutter/top_snack_bar.dart';
 
 class EmailForm extends StatefulWidget {
   @override
@@ -46,48 +49,37 @@ class _EmailFormState extends State<EmailForm> {
     final FormState _form = _emailFormKey.currentState;
 
     // validate the form
-    if (!_form.validate()) {
-      Scaffold.of(context).showSnackBar(SnackBar(
-          backgroundColor: Colors.red, content: Text(AppString.formNotValid)));
-    } else {
+    if (_form.validate()) {
       // this invokes each onSaved event
       _form.save();
 
       // check account
-      Provider.of<LoginProvider>(context, listen: false)
-          .checkAccount(_email)
-          .then((value) {}, onError: (error) {
+      Provider.of<LoginProvider>(context, listen: false).checkAccount(_email).then((value) {}, onError: (error) {
         _log.severe(error.toString());
       });
     }
   }
 
-  final _logo = Container(
-    padding: EdgeInsets.only(top: 36),
-    child: Image.asset(
-      'images/chachatte-team-banner.png',
-      fit: BoxFit.fitWidth,
-    ),
-  );
-
   Widget build(BuildContext context) {
-    final LoginProvider _loginProvider =
-        Provider.of<LoginProvider>(context, listen: false);
+    final LoginProvider _loginProvider = Provider.of<LoginProvider>(context, listen: false);
 
     _log.info("Building EmailForm...");
 
     final _emailField = TextFormField(
+      key: Key('loginEmailField'),
       keyboardType: TextInputType.emailAddress,
       keyboardAppearance: Brightness.dark,
       autofocus: false,
       decoration: InputDecoration(
         enabledBorder: OutlineInputBorder(),
         focusedBorder: OutlineInputBorder(),
-        errorBorder:
-            OutlineInputBorder(borderSide: BorderSide(color: Colors.red[700])),
+        errorBorder: OutlineInputBorder(
+          borderSide: BorderSide(color: Colors.red[700]),
+        ),
         focusedErrorBorder: OutlineInputBorder(),
-        disabledBorder:
-            OutlineInputBorder(borderSide: BorderSide(color: Colors.black26)),
+        disabledBorder: OutlineInputBorder(
+          borderSide: BorderSide(color: Colors.black26),
+        ),
         prefixIcon: Icon(Icons.mail, color: Colors.black87),
         hintText: AppString.loginEmailHint,
         hintStyle: TextStyle(color: Colors.black54),
@@ -95,56 +87,58 @@ class _EmailFormState extends State<EmailForm> {
       ),
       maxLines: 1,
       inputFormatters: [LengthLimitingTextInputFormatter(128)],
-      validator: (val) => val.isEmpty
-          ? AppString.memberEmailMandatory
-          : (StringUtils.isValidEmail(val)
-              ? null
-              : AppString.memberEmailNotValid),
+      validator: (val) {
+        if (val.isEmpty) {
+          return AppString.memberEmailMandatory;
+        } else if (!StringUtils.isValidEmail(val)) {
+          return AppString.memberEmailNotValid;
+        }
+        return null;
+      },
       onSaved: (val) => _email = val,
       initialValue: _email,
     );
 
-    final _emailContinueButton = Builder(
-      builder: (BuildContext context) {
-        return RaisedButton(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(4),
-          ),
-          onPressed: () {
-            _doCheckAccount(context);
-          },
-          padding: EdgeInsets.fromLTRB(16.0, 12.0, 16.0, 12.0),
-          color: Colors.blue[700],
-          child: _loginProvider.loginStatus == LoginStatus.Loading
-              ? SizedBox(
-                  child: CircularProgressIndicator(
-                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                    strokeWidth: 2.0,
-                  ),
-                  height: 14.0,
-                  width: 14.0,
-                )
-              : Text(
-                  AppString.continue1,
-                  style: TextStyle(color: Colors.white),
-                ),
-        );
+    final _emailContinueButton = ElevatedButton(
+      key: Key('emailContinueButton'),
+      style: ElevatedButton.styleFrom(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(4),
+        ),
+        padding: EdgeInsets.fromLTRB(16.0, 12.0, 16.0, 12.0),
+        primary: Colors.blue[700],
+      ),
+      onPressed: () {
+        _doCheckAccount(context);
       },
+      child: _loginProvider.loginStatus == LoginStatus.Loading
+          ? SizedBox(
+              child: CircularProgressIndicator(
+                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                strokeWidth: 2.0,
+              ),
+              height: 14.0,
+              width: 14.0,
+            )
+          : Text(
+              AppString.continue1,
+              style: TextStyle(color: Colors.white),
+            ),
     );
 
-    final _emailForm = Form(
+    return Form(
+      autovalidateMode: AutovalidateMode.disabled,
       key: _emailFormKey,
-      autovalidate: false,
       child: Padding(
         padding: EdgeInsets.only(left: 16.0, right: 16.0),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.start,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: <Widget>[
-            _logo,
+            ChachatteLogo(),
             SizedBox(height: 36.0),
             Text(
-              "Identification",
+              AppString.identification,
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
               textAlign: TextAlign.center,
             ),
@@ -157,11 +151,19 @@ class _EmailFormState extends State<EmailForm> {
             ),
             SizedBox(height: 32.0),
             _emailContinueButton,
+            TextButton(
+              key: Key('createAccountButton'),
+              onPressed: () {
+                _loginProvider.goToRegister();
+              },
+              child: Text(
+                AppString.createAccount,
+                style: TextStyle(color: Colors.black87),
+              ),
+            ),
           ],
         ),
       ),
     );
-
-    return _emailForm;
   }
 }

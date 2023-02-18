@@ -20,7 +20,7 @@
 import 'package:intl/intl.dart';
 
 /// class that holds date utility functions
-class DateUtils {
+class AppDateUtils {
   /// convert the specified [input] string to a DateTime object according to the specified [format]
   /// return null if the specified input string is not a valid date
   static DateTime convertToDate(String input, String format) {

@@ -27,6 +27,7 @@ The following packages have been used :
 - shared_preferences: to be able to use shared preferences
 - provider : state management pattern
 - logging : for logging
+- graphql_flutter : for GraphQL API calls
 
 # Features
 
@@ -48,7 +49,7 @@ graph LR
 start((Start)):::green --> checkUser{{checkUser}} --> result1{result}:::beige
 result1 -- Email and JWT are set --> getMember{{getMember}} --> result2{result}:::beige
 result1 -- Email is null --> email_step(Email screen):::salmon
-result1 -- JWT is null --> passcode_step(Passcode screen):::salmon
+result1 -- Email is set but JWT is null --> passcode_step(Passcode screen):::salmon
 result2 -- Member not found --> email_step
 result2 -- Expired JWT --> passcode_step
 result2 -- Member found --> eend((Logged)):::green
@@ -69,8 +70,8 @@ graph LR
 start((Start)):::green --> email_step(Email screen):::salmon --> checkAccount{{checkAccount}} --> result1{result}:::beige
 result1 -- Email not found --> register_step(Register screen):::salmon
 result1 -- Missing data --> email_step
-result1 -- "OTP sent (still valid)" --> otp_step(OTP screen):::salmon
-result1 -- "OTP sent (expired)" --> otp_step
+result1 -- OTP sent and still valid --> otp_step(OTP screen):::salmon
+result1 -- OTP sent but expired --> otp_step
 result1 -- Need password --> create_passcode_step(Create passcode screen):::salmon
 result1 -- Account OK --> passcode_step(Passcode screen):::salmon
 checkAccount -. REST API .- database[(members)]:::blue
@@ -176,3 +177,20 @@ See the GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+# Test
+
+To run integration test :
+
+```
+flutter drive --driver=test_driver/integration_test.dart --target=integration_test/login_test.dart
+```
+
+# todo
+
+- ajouter link dans Track pour lien vers le site web du circuit
+- attention si listes sur différentes pages utilse le meme provider tout est mis à jour ? (genre filtre des evenements)
+- liste prédéfinie de motos plus possibilité d'en ajouter
+- liste prédéfinie d'organisateurs + possibilité d'en créer
+- couleur datepicker
+- refactoring du php pour faire une seul requête sql plutôt que de récuprer les sous objets un par un
+- renvoyer vers page "maintenance" si serveur down

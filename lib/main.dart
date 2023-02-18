@@ -22,13 +22,18 @@ import 'package:chachatte_team/providers/event_provider.dart';
 import 'package:chachatte_team/providers/home_provider.dart';
 import 'package:chachatte_team/providers/login_provider.dart';
 import 'package:chachatte_team/providers/member_provider.dart';
+import 'package:chachatte_team/providers/news_creation_provider.dart';
+import 'package:chachatte_team/providers/news_detail_provider.dart';
+import 'package:chachatte_team/providers/news_list_provider.dart';
 import 'package:chachatte_team/providers/news_provider.dart';
+import 'package:chachatte_team/providers/passcode_provider.dart';
 import 'package:chachatte_team/providers/photo_provider.dart';
 import 'package:chachatte_team/providers/record_provider.dart';
 import 'package:chachatte_team/providers/timer_provider.dart';
 import 'package:chachatte_team/providers/track_provider.dart';
 import 'package:chachatte_team/services/notifications_service.dart';
 import 'package:chachatte_team/ui/events/add_edit_event.dart';
+import 'package:chachatte_team/ui/events/event_detail.dart';
 import 'package:chachatte_team/ui/main/edit_avatar.dart';
 import 'package:chachatte_team/ui/main/home.dart';
 import 'package:chachatte_team/ui/main/image_crop.dart';
@@ -38,7 +43,6 @@ import 'package:chachatte_team/ui/members/member_chronos.dart';
 import 'package:chachatte_team/ui/members/member_detail.dart';
 import 'package:chachatte_team/ui/members/member_events.dart';
 import 'package:chachatte_team/ui/news/add_edit_news.dart';
-import 'package:chachatte_team/ui/news/news.dart';
 import 'package:chachatte_team/ui/news/news_detail.dart';
 import 'package:chachatte_team/ui/photos/add_edit_photo.dart';
 import 'package:chachatte_team/ui/photos/gallery.dart';
@@ -55,6 +59,9 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:logging/logging.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:top_snackbar_flutter/custom_snack_bar.dart';
+import 'package:top_snackbar_flutter/top_snack_bar.dart';
 
 void main() {
   // logging configuration
@@ -70,12 +77,29 @@ void main() {
         ChangeNotifierProvider(create: (_) => TimerProvider()),
         ChangeNotifierProvider(create: (_) => HomeProvider()),
         ChangeNotifierProvider(create: (_) => AvatarProvider()),
-        ChangeNotifierProvider(create: (_) => NewsProvider()),
+        ChangeNotifierProvider(create: (_) => NewsListProvider()),
+        ChangeNotifierProxyProvider<LoginProvider, NewsListProvider>(
+          create: (context) => NewsListProvider(),
+          update: (context, loginProvider, newsListProvider) => newsListProvider..update(loginProvider),
+        ),
+        /*ChangeNotifierProxyProvider<NewsListProvider, LoginProvider>(
+          create: (_) => LoginProvider(),
+          update: (_, newsListProvider, loginProvider) => loginProvider..update(newsListProvider),
+          //lazy: false,
+        ),*/
+        /*ChangeNotifierProxyProvider<NewsListProvider, NewsDetailProvider>(
+          update: (context, newsListProvider, previousNews) => NewsDetailProvider(newsListProvider),
+          create: (BuildContext context) => NewsDetailProvider(),
+        ),*/
+        //ChangeNotifierProvider(create: (_) => NewsProvider()),
+        ChangeNotifierProvider(create: (_) => NewsCreationProvider()),
+        ChangeNotifierProvider(create: (_) => NewsDetailProvider()),
         ChangeNotifierProvider(create: (_) => EventProvider()),
         ChangeNotifierProvider(create: (_) => MemberProvider()),
         ChangeNotifierProvider(create: (_) => PhotoProvider()),
         ChangeNotifierProvider(create: (_) => TrackProvider()),
         ChangeNotifierProvider(create: (_) => RecordProvider()),
+        ChangeNotifierProvider(create: (_) => PasscodeProvider()),
       ],
       child: ChachatteTeamApp(),
     ),
@@ -89,7 +113,7 @@ class ChachatteTeamApp extends StatelessWidget {
   Widget build(BuildContext context) {
     _log.info("Building ChachatteTeamApp...");
 
-    // Initialize notifications plugin
+    // initialize notifications plugin
     NotificationsService.initialize(context);
 
     return GraphQLProvider(
@@ -99,17 +123,17 @@ class ChachatteTeamApp extends StatelessWidget {
         initialRoute: '/',
         routes: {
           '/forgotPassword': (context) => ForgotPassword(),
-          '/newsList': (context) => NewsList(),
           '/imageCrop': (context) => ImageCrop(),
           '/gallery': (context) => Gallery(title: ModalRoute.of(context).settings.arguments),
           '/editAvatar': (context) => EditAvatar(member: ModalRoute.of(context).settings.arguments),
-          '/addEditNews': (context) => AddEditNews(news: (ModalRoute.of(context).settings.arguments as List)[0], title: (ModalRoute.of(context).settings.arguments as List)[1]),
+          '/addEditNews': (context) => AddEditNews(),
           '/addEditEvent': (context) => AddEditEvent(event: ModalRoute.of(context).settings.arguments),
           '/addEditMember': (context) => AddEditMember(member: ModalRoute.of(context).settings.arguments),
           '/addEditPhoto': (context) => AddEditPhoto(photo: ModalRoute.of(context).settings.arguments),
           '/addEditRecord': (context) => AddEditRecord(record: ModalRoute.of(context).settings.arguments),
           '/newsDetail': (context) => NewsDetail(),
-          '/memberDetail': (context) => MemberDetail(member: ModalRoute.of(context).settings.arguments),
+          '/eventDetail': (context) => EventDetail(),
+          '/memberDetail': (context) => MemberDetail(),
           '/memberEvents': (context) => MemberEvents(member: ModalRoute.of(context).settings.arguments),
           '/memberChronos': (context) => MemberChronos(member: ModalRoute.of(context).settings.arguments),
           '/photoDetail': (context) => PhotoDetail(photo: ModalRoute.of(context).settings.arguments),
@@ -117,12 +141,27 @@ class ChachatteTeamApp extends StatelessWidget {
         },
         home: Consumer<LoginProvider>(
           builder: (context, loginProvider, child) {
+            // if an error message is set in the provider, display it in a dialog
+            if (loginProvider.errorMessage != null) {
+              // to prevent calling setState() during build
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                showTopSnackBar(
+                  context,
+                  CustomSnackBar.error(
+                    message: loginProvider.errorMessage,
+                    backgroundColor: Colors.red[700],
+                    textStyle: TextStyle(fontSize: 12),
+                  ),
+                );
+                loginProvider.clearErrorMessage();
+              });
+            }
             switch (loginProvider.authStatus) {
               case AuthStatus.Initializing:
-                _log.info("Going to init page...");
+              case AuthStatus.Authenticating:
+                _log.info("Going to loading page...");
                 return Loading();
               case AuthStatus.Unauthenticated:
-              case AuthStatus.Authenticating:
                 _log.info("Going to login page...");
                 return Login();
               case AuthStatus.Authenticated:
@@ -133,8 +172,19 @@ class ChachatteTeamApp extends StatelessWidget {
           },
         ),
         theme: ThemeData(
-          primarySwatch: Colors.red,
-          primaryColor: Colors.red[700],
+          primarySwatch: MaterialColor(0xFFD32F2F, {
+            50: Color(0xFFFFEBEE),
+            100: Color(0xFFFFCDD2),
+            200: Color(0xFFEF9A9A),
+            300: Color(0xFFE57373),
+            400: Color(0xFFEF5350),
+            500: Color(0xFFF44336),
+            600: Color(0xFFE53935),
+            700: Color(0xFFD32F2F),
+            800: Color(0xFFC62828),
+            900: Color(0xFFB71C1C),
+          }),
+          primaryColor: Colors.red[700], // main top bar and other stuff
         ),
         supportedLocales: [
           const Locale('en', 'US'),

@@ -36,7 +36,8 @@ import 'package:provider/provider.dart';
 /// Input formatter class for E.164 phone number
 class NumberTextInputFormatter extends TextInputFormatter {
   @override
-  TextEditingValue formatEditUpdate(TextEditingValue oldValue, TextEditingValue newValue) {
+  TextEditingValue formatEditUpdate(
+      TextEditingValue oldValue, TextEditingValue newValue) {
     final int _newTextLength = newValue.text.length;
     int _selectionIndex = newValue.selection.end;
     int _usedSubstringIndex = 0;
@@ -52,7 +53,8 @@ class NumberTextInputFormatter extends TextInputFormatter {
       if (newValue.selection.end >= 2) _selectionIndex += 1;
     }
     // then write following characters
-    if (_newTextLength >= _usedSubstringIndex) _newText.write(newValue.text.substring(_usedSubstringIndex));
+    if (_newTextLength >= _usedSubstringIndex)
+      _newText.write(newValue.text.substring(_usedSubstringIndex));
     return TextEditingValue(
       text: _newText.toString(),
       selection: TextSelection.collapsed(offset: _selectionIndex),
@@ -73,40 +75,53 @@ class AddEditMember extends StatefulWidget {
 
 class _AddEditMemberState extends State<AddEditMember> {
   final GlobalKey<FormState> _formKey = new GlobalKey<FormState>();
-  final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
-  final TextEditingController _datePickerController = new TextEditingController();
+  final TextEditingController _datePickerController =
+      new TextEditingController();
 
   // the member to be created with default password 1234
-  final Member _newMember = new Member(active: false, admin: false, password: '\$2y\$10\$MuLwPiQkTlcKEbGX6ztzAOxGlqK7ddglgDXcYBRBFDwkM.AQy63EK');
+  final Member _newMember = new Member(
+      active: false,
+      admin: false,
+      password:
+          '\$2y\$10\$MuLwPiQkTlcKEbGX6ztzAOxGlqK7ddglgDXcYBRBFDwkM.AQy63EK');
 
   initState() {
     // set date picker text if set
     if (widget.member != null) {
-      _datePickerController.text = DateUtils.convertToString(widget.member.registrationDate, DATE_FORMAT);
+      _datePickerController.text = AppDateUtils.convertToString(
+          widget.member.registrationDate, DATE_FORMAT);
     }
     return super.initState();
   }
 
   /// Initialize and display a Date picker related to the specified [controller] in the specified [context]
-  Future _chooseDate(BuildContext context, TextEditingController controller, DateTime defaultValue) async {
+  Future _chooseDate(BuildContext context, TextEditingController controller,
+      DateTime defaultValue) async {
     final DateTime currentDate = DateTime.now();
     final TimeOfDay currentTime = TimeOfDay.now();
 
     // define initial date and time from the specified default DateTime value if set
     final DateTime initialDate = defaultValue ?? currentDate;
-    final TimeOfDay initialTime = defaultValue != null ? TimeOfDay.fromDateTime(defaultValue) : currentTime;
+    final TimeOfDay initialTime = defaultValue != null
+        ? TimeOfDay.fromDateTime(defaultValue)
+        : currentTime;
 
     // show the date picker and await for the chosen date
-    final DateTime dateResult =
-        await showDatePicker(context: context, initialDate: initialDate, firstDate: DateTime(currentDate.year - 5), lastDate: DateTime(currentDate.year + 5));
+    final DateTime dateResult = await showDatePicker(
+        context: context,
+        initialDate: initialDate,
+        firstDate: DateTime(currentDate.year - 5),
+        lastDate: DateTime(currentDate.year + 5));
     if (dateResult == null) return;
 
     // show the time picker and await for the chosen time
-    final TimeOfDay timeResult = await showTimePicker(context: context, initialTime: initialTime);
+    final TimeOfDay timeResult =
+        await showTimePicker(context: context, initialTime: initialTime);
     if (timeResult == null) return;
 
     // build final date with time
-    final DateTime finalDateTime = DateTime(dateResult.year, dateResult.month, dateResult.day, timeResult.hour, timeResult.minute);
+    final DateTime finalDateTime = DateTime(dateResult.year, dateResult.month,
+        dateResult.day, timeResult.hour, timeResult.minute);
 
     // notify the framework that the internal state of this object has changed
     setState(() {
@@ -119,7 +134,8 @@ class _AddEditMemberState extends State<AddEditMember> {
     final FormState form = _formKey.currentState;
 
     if (!form.validate()) {
-      _scaffoldKey.currentState.showSnackBar(SnackBar(backgroundColor: Colors.red, content: Text(AppString.formNotValid)));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          backgroundColor: Colors.red, content: Text(AppString.formNotValid)));
     } else {
       // this invokes each onSaved event
       form.save();
@@ -127,14 +143,18 @@ class _AddEditMemberState extends State<AddEditMember> {
       // submit data to backend, if id is set this is an update, else a creation
       if (member.id != null) {
         // update the news go back with a message, the result is awaited in caller
-        Provider.of<MemberProvider>(context, listen: false).updateMember(member).then((value) {
+        Provider.of<MemberProvider>(context, listen: false)
+            .updateMember(member)
+            .then((value) {
           Navigator.pop(context, AppString.memberUpdated);
         }, onError: (error) {
           Navigator.pop(context, AppString.memberUpdateFailed);
         });
       } else {
         // create the news go back with a message, the result is awaited in caller
-        Provider.of<MemberProvider>(context, listen: false).createMember(member).then((value) {
+        Provider.of<MemberProvider>(context, listen: false)
+            .createMember(member)
+            .then((value) {
           Navigator.pop(context, AppString.memberCreated);
         }, onError: (error) {
           Navigator.pop(context, AppString.memberCreationFailed);
@@ -145,8 +165,10 @@ class _AddEditMemberState extends State<AddEditMember> {
 
   Widget build(BuildContext context) {
     // the current Member to be edited
-    final Member _currMember = widget.member != null ? widget.member : _newMember;
-    final AvatarProvider _drawerProvider = Provider.of<AvatarProvider>(context, listen: false);
+    final Member _currMember =
+        widget.member != null ? widget.member : _newMember;
+    final AvatarProvider _drawerProvider =
+        Provider.of<AvatarProvider>(context, listen: false);
 
     final firstNameField = TextFormField(
       decoration: const InputDecoration(
@@ -156,7 +178,8 @@ class _AddEditMemberState extends State<AddEditMember> {
       ),
       maxLines: 1,
       inputFormatters: [LengthLimitingTextInputFormatter(64)],
-      validator: (val) => val.isEmpty ? AppString.memberFirstNameMandatory : null,
+      validator: (val) =>
+          val.isEmpty ? AppString.memberFirstNameMandatory : null,
       onSaved: (val) => _currMember.firstName = val,
       initialValue: _currMember.firstName,
     );
@@ -169,7 +192,8 @@ class _AddEditMemberState extends State<AddEditMember> {
       ),
       maxLines: 1,
       inputFormatters: [LengthLimitingTextInputFormatter(64)],
-      validator: (val) => val.isEmpty ? AppString.memberLastNameMandatory : null,
+      validator: (val) =>
+          val.isEmpty ? AppString.memberLastNameMandatory : null,
       onSaved: (val) => _currMember.lastName = val,
       initialValue: _currMember.lastName,
     );
@@ -183,7 +207,11 @@ class _AddEditMemberState extends State<AddEditMember> {
       keyboardType: TextInputType.emailAddress,
       maxLines: 1,
       inputFormatters: [LengthLimitingTextInputFormatter(128)],
-      validator: (val) => val.isEmpty ? AppString.memberEmailMandatory : (StringUtils.isValidEmail(val) ? null : AppString.memberEmailNotValid),
+      validator: (val) => val.isEmpty
+          ? AppString.memberEmailMandatory
+          : (StringUtils.isValidEmail(val)
+              ? null
+              : AppString.memberEmailNotValid),
       onSaved: (val) => _currMember.email = val,
       initialValue: _currMember.email,
     );
@@ -196,14 +224,23 @@ class _AddEditMemberState extends State<AddEditMember> {
       ),
       keyboardType: TextInputType.phone,
       maxLines: 1,
-      inputFormatters: <TextInputFormatter>[LengthLimitingTextInputFormatter(13), WhitelistingTextInputFormatter.digitsOnly, NumberTextInputFormatter()],
-      validator: (val) => val.isEmpty ? AppString.memberPhoneMandatory : (StringUtils.isValidPhoneNumber(val) ? null : AppString.memberPhoneNotValid),
+      inputFormatters: <TextInputFormatter>[
+        LengthLimitingTextInputFormatter(13),
+        FilteringTextInputFormatter.digitsOnly,
+        NumberTextInputFormatter()
+      ],
+      validator: (val) => val.isEmpty
+          ? AppString.memberPhoneMandatory
+          : (StringUtils.isValidPhoneNumber(val)
+              ? null
+              : AppString.memberPhoneNotValid),
       onSaved: (val) => _currMember.phone = val,
       initialValue: _currMember.phone,
     );
 
     final registrationDateField = GestureDetector(
-      onTap: () => _chooseDate(context, _datePickerController, _currMember.registrationDate),
+      onTap: () => _chooseDate(
+          context, _datePickerController, _currMember.registrationDate),
       child: AbsorbPointer(
         child: TextFormField(
           decoration: InputDecoration(
@@ -213,8 +250,11 @@ class _AddEditMemberState extends State<AddEditMember> {
           ),
           controller: _datePickerController,
           keyboardType: TextInputType.datetime,
-          validator: (val) => DateUtils.isBeforeNow(val, DATE_FORMAT) ? (val.isEmpty ? AppString.memberRegistrationDateMandatory : null) : AppString.memberRegistrationDateNotValid,
-          onSaved: (val) => _currMember.registrationDate = DateFormat(DATE_FORMAT).parseStrict(val),
+          validator: (val) => AppDateUtils.isBeforeNow(val, DATE_FORMAT)
+              ? (val.isEmpty ? AppString.memberRegistrationDateMandatory : null)
+              : AppString.memberRegistrationDateNotValid,
+          onSaved: (val) => _currMember.registrationDate =
+              DateFormat(DATE_FORMAT).parseStrict(val),
         ),
       ),
     );
@@ -249,7 +289,10 @@ class _AddEditMemberState extends State<AddEditMember> {
     );*/
 
     final bikeField = TextFormField(
-      decoration: const InputDecoration(icon: const Icon(CustomIcons.motorbike), hintText: AppString.memberBikeHint, labelText: AppString.memberBike),
+      decoration: const InputDecoration(
+          icon: const Icon(CustomIcons.motorbike),
+          hintText: AppString.memberBikeHint,
+          labelText: AppString.memberBike),
       maxLines: 1,
       inputFormatters: [LengthLimitingTextInputFormatter(64)],
       validator: (val) => val.isEmpty ? AppString.memberBikeMandatory : null,
@@ -262,12 +305,15 @@ class _AddEditMemberState extends State<AddEditMember> {
         InkWell(
           onTap: () {
             _drawerProvider.loadImage(null);
-            Navigator.of(context).pushNamed('/editAvatar', arguments: _currMember);
+            Navigator.of(context)
+                .pushNamed('/editAvatar', arguments: _currMember);
           },
-          child: _currMember.avatarUrl != null && _currMember.avatarUrl.length > 0
+          child: _currMember.avatarUrl != null &&
+                  _currMember.avatarUrl.length > 0
               ? CircleAvatar(
                   radius: 60,
-                  backgroundImage: NetworkImage("$SERVER_ROOT_PATH$SERVER_AVATAR_FOLDER${_currMember.avatarUrl}"),
+                  backgroundImage: NetworkImage(
+                      "$SERVER_ROOT_PATH$SERVER_AVATAR_FOLDER${_currMember.avatarUrl}"),
                 )
               : CircleAvatar(
                   radius: 60,
@@ -280,7 +326,8 @@ class _AddEditMemberState extends State<AddEditMember> {
                       stops: [0.0, 1.0],
                       colors: [Colors.red[700], Colors.blue[700]],
                     ).createShader(bounds),
-                    child: Icon(CustomIcons.pilot, size: 75, color: Colors.white),
+                    child:
+                        Icon(CustomIcons.pilot, size: 75, color: Colors.white),
                   ),
                 ),
         ),
@@ -294,7 +341,8 @@ class _AddEditMemberState extends State<AddEditMember> {
             child: Icon(Icons.edit, size: 12),
             onPressed: () {
               _drawerProvider.loadImage(null);
-              Navigator.of(context).pushNamed('/editAvatar', arguments: _currMember);
+              Navigator.of(context)
+                  .pushNamed('/editAvatar', arguments: _currMember);
             },
           ),
         ),
@@ -327,7 +375,8 @@ class _AddEditMemberState extends State<AddEditMember> {
             Container(
               height: 120,
               width: 120,
-              decoration: ShapeDecoration(shape: CircleBorder(), color: Colors.blue[100]),
+              decoration: ShapeDecoration(
+                  shape: CircleBorder(), color: Colors.blue[100]),
               child: Padding(
                 padding: const EdgeInsets.all(6.0),
                 child: editableAvatar,
@@ -336,10 +385,11 @@ class _AddEditMemberState extends State<AddEditMember> {
           ],
         ),
         Container(
-          padding: const EdgeInsets.only(top: 0, left: 16.0, right: 16.0, bottom: 56.0),
+          padding: const EdgeInsets.only(
+              top: 0, left: 16.0, right: 16.0, bottom: 56.0),
           child: Form(
+            autovalidateMode: AutovalidateMode.disabled,
             key: _formKey,
-            autovalidate: false,
             child: Column(
               children: <Widget>[
                 firstNameField,
@@ -357,14 +407,14 @@ class _AddEditMemberState extends State<AddEditMember> {
     );
 
     final List<Widget> actionMenu = [
-      FlatButton(
+      TextButton(
         child: Text(
           AppString.cancel.toUpperCase(),
           style: TextStyle(color: Colors.white),
         ),
         onPressed: () => Navigator.pop(context),
       ),
-      FlatButton(
+      TextButton(
         child: Text(
           AppString.save.toUpperCase(),
           style: TextStyle(color: Colors.white),
@@ -374,11 +424,12 @@ class _AddEditMemberState extends State<AddEditMember> {
     ];
 
     return Scaffold(
-      key: _scaffoldKey,
       appBar: AppBar(
         elevation: 0.0,
         title: Text(AppString.profileEdit),
-        actions: MediaQuery.of(context).orientation == Orientation.portrait ? null : actionMenu,
+        actions: MediaQuery.of(context).orientation == Orientation.portrait
+            ? null
+            : actionMenu,
       ),
       body: Container(
         decoration: CustomDecorations.mainContent,

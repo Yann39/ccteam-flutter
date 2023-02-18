@@ -40,7 +40,8 @@ class PhotoDetail extends StatefulWidget {
   }
 }
 
-class _PhotoDetailState extends State<PhotoDetail> with SingleTickerProviderStateMixin {
+class _PhotoDetailState extends State<PhotoDetail>
+    with SingleTickerProviderStateMixin {
   AnimationController _controller;
   PageController _pageController;
   Animation<Offset> _flingAnimation;
@@ -53,8 +54,11 @@ class _PhotoDetailState extends State<PhotoDetail> with SingleTickerProviderStat
   @override
   void initState() {
     super.initState();
-    _currentPage = Provider.of<PhotoProvider>(context, listen: false).photos.indexOf(widget.photo);
-    _controller = AnimationController(vsync: this)..addListener(_handleFlingAnimation);
+    _currentPage = Provider.of<PhotoProvider>(context, listen: false)
+        .photos
+        .indexOf(widget.photo);
+    _controller = AnimationController(vsync: this)
+      ..addListener(_handleFlingAnimation);
     _pageController = PageController(initialPage: _currentPage);
   }
 
@@ -77,7 +81,8 @@ class _PhotoDetailState extends State<PhotoDetail> with SingleTickerProviderStat
   Offset _clampOffset(Offset offset) {
     final Size size = context.size;
     final Offset minOffset = Offset(size.width, size.height) * (1.0 - _scale);
-    return Offset(offset.dx.clamp(minOffset.dx, 0.0), offset.dy.clamp(minOffset.dy, 0.0));
+    return Offset(
+        offset.dx.clamp(minOffset.dx, 0.0), offset.dy.clamp(minOffset.dy, 0.0));
   }
 
   /// Handle scale start given the gesture [details]
@@ -105,7 +110,8 @@ class _PhotoDetailState extends State<PhotoDetail> with SingleTickerProviderStat
     if (magnitude < _kMinFlingVelocity) return;
     final Offset direction = details.velocity.pixelsPerSecond / magnitude;
     final double distance = (Offset.zero & context.size).shortestSide;
-    _flingAnimation = _controller.drive(Tween<Offset>(begin: _offset, end: _clampOffset(_offset + direction * distance)));
+    _flingAnimation = _controller.drive(Tween<Offset>(
+        begin: _offset, end: _clampOffset(_offset + direction * distance)));
     _controller
       ..value = 0.0
       ..fling(velocity: magnitude / 1000.0);
@@ -114,11 +120,12 @@ class _PhotoDetailState extends State<PhotoDetail> with SingleTickerProviderStat
   /// Method that launches the Edit New screen and awaits the result from Navigator.pop
   _navigateToEditPhotoScreen(BuildContext context, Photo photo) async {
     // Navigator.push returns a Future that will complete after we call Navigator.pop on the Add Photo Screen
-    final result = await Navigator.pushNamed(context, "/addEditPhoto", arguments: photo);
+    final result =
+        await Navigator.pushNamed(context, "/addEditPhoto", arguments: photo);
 
     // after the Edit New Screen returns a result, hide any previous snack bars and show the new result
     if (result != null) {
-      Scaffold.of(context)
+      ScaffoldMessenger.of(context)
         ..removeCurrentSnackBar()
         ..showSnackBar(SnackBar(content: Text("$result")));
     }
@@ -132,13 +139,13 @@ class _PhotoDetailState extends State<PhotoDetail> with SingleTickerProviderStat
         title: Text(AppString.confirmation),
         content: Text(value),
         actions: <Widget>[
-          FlatButton(
+          TextButton(
             onPressed: () {
               _dialogueResult(context, ConfirmDialogAction.yes, photo);
             },
             child: Text(AppString.confirm),
           ),
-          FlatButton(
+          TextButton(
             onPressed: () {
               _dialogueResult(context, ConfirmDialogAction.no, photo);
             },
@@ -150,18 +157,20 @@ class _PhotoDetailState extends State<PhotoDetail> with SingleTickerProviderStat
   }
 
   /// Handle result of the photo deletion confirmation dialog
-  void _dialogueResult(BuildContext context, ConfirmDialogAction value, Photo photo) {
+  void _dialogueResult(
+      BuildContext context, ConfirmDialogAction value, Photo photo) {
     if (value == ConfirmDialogAction.yes) {
       final PhotosService photosService = PhotosService();
       // delete photo
       photosService.deletePhoto(photo).then((value) {
-        Scaffold.of(context)
+        ScaffoldMessenger.of(context)
           ..removeCurrentSnackBar()
           ..showSnackBar(SnackBar(content: Text(AppString.photoDeleted)));
       }, onError: (error) {
-        Scaffold.of(context)
+        ScaffoldMessenger.of(context)
           ..removeCurrentSnackBar()
-          ..showSnackBar(SnackBar(content: Text(AppString.photoDeletionFailed)));
+          ..showSnackBar(
+              SnackBar(content: Text(AppString.photoDeletionFailed)));
       });
     }
     Navigator.pop(context);
@@ -175,11 +184,15 @@ class _PhotoDetailState extends State<PhotoDetail> with SingleTickerProviderStat
         actions: <Widget>[
           IconButton(
             icon: const Icon(Icons.edit),
-            onPressed: () => _navigateToEditPhotoScreen(context, _photoProvider.photos[_currentPage]),
+            onPressed: () => _navigateToEditPhotoScreen(
+                context, _photoProvider.photos[_currentPage]),
           ),
           IconButton(
             icon: const Icon(Icons.delete_forever),
-            onPressed: () => _showConfirmation(context, AppString.photoDeletionAreYouSure, _photoProvider.photos[_currentPage]),
+            onPressed: () => _showConfirmation(
+                context,
+                AppString.photoDeletionAreYouSure,
+                _photoProvider.photos[_currentPage]),
           )
         ],
         title: Text(AppString.detail),
@@ -215,7 +228,8 @@ class _PhotoDetailState extends State<PhotoDetail> with SingleTickerProviderStat
                   width: Curves.easeOut.transform(value) * 350,*/
                   child: Column(
                     children: <Widget>[
-                      Text("${_photoProvider.photos[index].title}", textScaleFactor: 1.6),
+                      Text("${_photoProvider.photos[index].title}",
+                          textScaleFactor: 1.6),
                       SizedBox(height: 12.0),
                       child,
                       SizedBox(height: 12.0),
@@ -225,22 +239,24 @@ class _PhotoDetailState extends State<PhotoDetail> with SingleTickerProviderStat
                 ),
               );
             },
-            child: /*ClipRRect(
+            child:
+                /*ClipRRect(
               borderRadius: BorderRadius.circular(8.0),
-              child:*/ GestureDetector(
-                onScaleStart: _handleOnScaleStart,
-                onScaleUpdate: _handleOnScaleUpdate,
-                onScaleEnd: _handleOnScaleEnd,
-                child: Transform(
-                  transform: Matrix4.identity()
-                    ..translate(_offset.dx, _offset.dy)
-                    ..scale(_scale),
-                  child: CachedNetworkImage(
-                    placeholder: (context, url) => CircularProgressIndicator(),
-                    imageUrl: _photoProvider.photos[index].link,
-                    fit: BoxFit.cover,
-                  ),
+              child:*/
+                GestureDetector(
+              onScaleStart: _handleOnScaleStart,
+              onScaleUpdate: _handleOnScaleUpdate,
+              onScaleEnd: _handleOnScaleEnd,
+              child: Transform(
+                transform: Matrix4.identity()
+                  ..translate(_offset.dx, _offset.dy)
+                  ..scale(_scale),
+                child: CachedNetworkImage(
+                  placeholder: (context, url) => CircularProgressIndicator(),
+                  imageUrl: _photoProvider.photos[index].link,
+                  fit: BoxFit.cover,
                 ),
+              ),
               //),
             ),
           ),

@@ -32,11 +32,12 @@ class Galleries extends StatelessWidget {
   /// Method that launches the Add Photo screen and awaits the result from Navigator.pop
   _navigateAndDisplaySelection(BuildContext context) async {
     // Navigator.push returns a Future that will complete after we call Navigator.pop on the Add News Screen
-    final result = await Navigator.push(context, MaterialPageRoute(builder: (context) => AddEditPhoto()));
+    final result = await Navigator.push(
+        context, MaterialPageRoute(builder: (context) => AddEditPhoto()));
 
     // after the Add Photo Screen returns a result, hide any previous snack bars and show the new result
     if (result != null) {
-      Scaffold.of(context)
+      ScaffoldMessenger.of(context)
         ..removeCurrentSnackBar()
         ..showSnackBar(SnackBar(content: Text("$result")));
     }
@@ -60,7 +61,10 @@ class Galleries extends StatelessWidget {
           child: GridView.builder(
             padding: EdgeInsets.all(4.0),
             gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: MediaQuery.of(context).orientation == Orientation.portrait ? 2 : 3,
+              crossAxisCount:
+                  MediaQuery.of(context).orientation == Orientation.portrait
+                      ? 2
+                      : 3,
               crossAxisSpacing: 4,
               mainAxisSpacing: 4,
               childAspectRatio: 1.3,
@@ -68,8 +72,10 @@ class Galleries extends StatelessWidget {
             itemCount: _photoProvider.galleries.length,
             itemBuilder: (BuildContext context, int index) => InkWell(
               onTap: () {
-                _photoProvider.fetchPhotosFromGallery(_photoProvider.galleries[index].id);
-                Navigator.pushNamed(context, "/gallery", arguments: _photoProvider.galleries[index].title);
+                _photoProvider
+                    .fetchPhotosFromGallery(_photoProvider.galleries[index].id);
+                Navigator.pushNamed(context, "/gallery",
+                    arguments: _photoProvider.galleries[index].title);
               },
               child: Stack(
                 alignment: Alignment.bottomCenter,
@@ -81,10 +87,14 @@ class Galleries extends StatelessWidget {
                           children: <Widget>[
                             Expanded(
                               child: Container(
-                                decoration: _photoProvider.galleries[index].photos.length > 0
+                                decoration: _photoProvider
+                                            .galleries[index].photos.length >
+                                        0
                                     ? BoxDecoration(
                                         image: DecorationImage(
-                                          image: CachedNetworkImageProvider(_photoProvider.galleries[index].photos[0].link),
+                                          image: CachedNetworkImageProvider(
+                                              _photoProvider.galleries[index]
+                                                  .photos[0].link),
                                           fit: BoxFit.cover,
                                         ),
                                       )
@@ -94,10 +104,14 @@ class Galleries extends StatelessWidget {
                             SizedBox(width: 2),
                             Expanded(
                               child: Container(
-                                decoration: _photoProvider.galleries[index].photos.length > 1
+                                decoration: _photoProvider
+                                            .galleries[index].photos.length >
+                                        1
                                     ? BoxDecoration(
                                         image: DecorationImage(
-                                          image: CachedNetworkImageProvider(_photoProvider.galleries[index].photos[1].link),
+                                          image: CachedNetworkImageProvider(
+                                              _photoProvider.galleries[index]
+                                                  .photos[1].link),
                                           fit: BoxFit.cover,
                                         ),
                                       )
@@ -113,10 +127,14 @@ class Galleries extends StatelessWidget {
                           children: <Widget>[
                             Expanded(
                               child: Container(
-                                decoration: _photoProvider.galleries[index].photos.length > 2
+                                decoration: _photoProvider
+                                            .galleries[index].photos.length >
+                                        2
                                     ? BoxDecoration(
                                         image: DecorationImage(
-                                          image: CachedNetworkImageProvider(_photoProvider.galleries[index].photos[2].link),
+                                          image: CachedNetworkImageProvider(
+                                              _photoProvider.galleries[index]
+                                                  .photos[2].link),
                                           fit: BoxFit.cover,
                                         ),
                                       )
@@ -126,10 +144,14 @@ class Galleries extends StatelessWidget {
                             SizedBox(width: 2),
                             Expanded(
                               child: Container(
-                                decoration: _photoProvider.galleries[index].photos.length > 3
+                                decoration: _photoProvider
+                                            .galleries[index].photos.length >
+                                        3
                                     ? BoxDecoration(
                                         image: DecorationImage(
-                                          image: CachedNetworkImageProvider(_photoProvider.galleries[index].photos[3].link),
+                                          image: CachedNetworkImageProvider(
+                                              _photoProvider.galleries[index]
+                                                  .photos[3].link),
                                           fit: BoxFit.cover,
                                         ),
                                       )
@@ -144,7 +166,9 @@ class Galleries extends StatelessWidget {
                   Container(
                     height: 20.0,
                     alignment: Alignment.center,
-                    decoration: BoxDecoration(shape: BoxShape.rectangle, color: Colors.black.withOpacity(0.5)),
+                    decoration: BoxDecoration(
+                        shape: BoxShape.rectangle,
+                        color: Colors.black.withOpacity(0.5)),
                     child: Text(
                       _photoProvider.galleries[index].title,
                       softWrap: false,

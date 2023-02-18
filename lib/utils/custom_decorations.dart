@@ -52,18 +52,30 @@ class CustomDecorations {
       stops: [0.0, 1.0],
     ),
     shape: BoxShape.rectangle,
-    borderRadius: BorderRadius.only(bottomLeft: Radius.circular(6.0), bottomRight: Radius.circular(6.0)),
+    borderRadius: BorderRadius.only(
+        bottomLeft: Radius.circular(6.0), bottomRight: Radius.circular(6.0)),
   );
 
   /// Decoration for light cards
   static BoxDecoration cardLight = BoxDecoration(
-      gradient: LinearGradient(
-        colors: [Colors.blue[100].withOpacity(0.5), Colors.blue[100]],
-        begin: Alignment.topLeft,
-        end: Alignment.bottomRight,
-        stops: [0.0, 1.0],
-      ),
-      shape: BoxShape.rectangle,
-      borderRadius: BorderRadius.circular(4.0),
-      border: Border.all(color: Colors.white, width: 1.0));
+    gradient: LinearGradient(
+      colors: [Colors.blue[100].withOpacity(0.5), Colors.blue[100]],
+      begin: Alignment.topLeft,
+      end: Alignment.bottomRight,
+      stops: [0.0, 1.0],
+    ),
+    shape: BoxShape.rectangle,
+    borderRadius: BorderRadius.circular(4.0),
+    border: Border.all(color: Colors.white, width: 1.0),
+  );
+
+  static BoxDecoration bluePurpleGradient = BoxDecoration(
+    gradient: LinearGradient(
+      colors: [Colors.blue[200], Colors.deepPurple[300]],
+      begin: const FractionalOffset(0.0, 0.0),
+      end: const FractionalOffset(0.0, 1.0),
+      tileMode: TileMode.clamp,
+    ),
+  );
+
 }

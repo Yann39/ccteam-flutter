@@ -17,10 +17,11 @@
  * along with Chachatte Team. If not, see <http://www.gnu.org/licenses/>.
  */
 
-enum AuthStatus { Initializing, Unauthenticated, Authenticating, Authenticated }
-enum LoginStatus { Loading, EmailStep, EmailAndInfoStep, OtpStep, CreatePasscodeStep, ConfirmPasscodeStep, PasscodeStep }
-enum OtpStatus { NotSent, Sent, Verified }
-enum LoadingStatus { notLoaded, loading, loaded }
-enum ConfirmDialogAction { yes, no }
-enum QuickActions { about, contact, logout }
-enum DialogType { info, success, warning, error }
+class CustomGraphQlException implements Exception {
+  String code;
+  String message;
+
+  CustomGraphQlException(this.code, this.message);
+
+  String toString() => 'CustomGraphQlException: code -> $code, message -> $message';
+}

@@ -34,11 +34,12 @@ class PhotoCard extends StatelessWidget {
   /// Method that launches the photo form screen and awaits the result from Navigator.pop
   void _navigateAndDisplaySelection(BuildContext context, Photo photo) async {
     // Navigator.push returns a Future that will complete after we call Navigator.pop on the photo form Screen
-    final result = await Navigator.push(context, MaterialPageRoute(builder: (context) => AddEditPhoto(photo: photo)));
+    final result = await Navigator.push(context,
+        MaterialPageRoute(builder: (context) => AddEditPhoto(photo: photo)));
 
     // after the photo form Screen returns a result, hide any previous snack bars and show the new result
     if (result != null) {
-      Scaffold.of(context)
+      ScaffoldMessenger.of(context)
         ..removeCurrentSnackBar()
         ..showSnackBar(SnackBar(content: Text("$result")));
     }
@@ -47,11 +48,12 @@ class PhotoCard extends StatelessWidget {
   /// Method that launches the Photo detail screen and awaits the result from Navigator.pop
   _navigateToPhotoDetailScreen(BuildContext context, Photo photo) async {
     // Navigator.push returns a Future that will complete after we call Navigator.pop on the target screen
-    final result = await Navigator.pushNamed(context, "/photoDetail", arguments: photo);
+    final result =
+        await Navigator.pushNamed(context, "/photoDetail", arguments: photo);
 
     // after the target screen returns a result, hide any previous snack bars and show the new result
     if (result != null) {
-      Scaffold.of(context)
+      ScaffoldMessenger.of(context)
         ..removeCurrentSnackBar()
         ..showSnackBar(SnackBar(content: Text("$result")));
     }
@@ -79,23 +81,23 @@ class PhotoCard extends StatelessWidget {
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
-            title: Text(AppString.confirmation),
-            content: Text(value),
-            actions: <Widget>[
-              FlatButton(
-                onPressed: () {
-                  _dialogueResult(context, ConfirmDialogAction.yes);
-                },
-                child: Text(AppString.confirm),
-              ),
-              FlatButton(
-                onPressed: () {
-                  _dialogueResult(context, ConfirmDialogAction.no);
-                },
-                child: Text(AppString.cancel),
-              ),
-            ],
+        title: Text(AppString.confirmation),
+        content: Text(value),
+        actions: <Widget>[
+          TextButton(
+            onPressed: () {
+              _dialogueResult(context, ConfirmDialogAction.yes);
+            },
+            child: Text(AppString.confirm),
           ),
+          TextButton(
+            onPressed: () {
+              _dialogueResult(context, ConfirmDialogAction.no);
+            },
+            child: Text(AppString.cancel),
+          ),
+        ],
+      ),
     );
   }
 
@@ -103,14 +105,17 @@ class PhotoCard extends StatelessWidget {
   void _dialogueResult(BuildContext context, ConfirmDialogAction value) {
     if (value == ConfirmDialogAction.yes) {
       // delete photo
-      Provider.of<PhotoProvider>(context, listen: false).deletePhoto(photo).then((value) {
-        Scaffold.of(context)
+      Provider.of<PhotoProvider>(context, listen: false)
+          .deletePhoto(photo)
+          .then((value) {
+        ScaffoldMessenger.of(context)
           ..removeCurrentSnackBar()
           ..showSnackBar(SnackBar(content: Text(AppString.photoDeleted)));
       }, onError: (error) {
-        Scaffold.of(context)
+        ScaffoldMessenger.of(context)
           ..removeCurrentSnackBar()
-          ..showSnackBar(SnackBar(content: Text(AppString.photoDeletionFailed)));
+          ..showSnackBar(
+              SnackBar(content: Text(AppString.photoDeletionFailed)));
       });
     }
     Navigator.pop(context);
@@ -125,7 +130,8 @@ class PhotoCard extends StatelessWidget {
         horizontal: 4.0,
       ),
       child: InkWell(
-        onTap: () => /*showPhoto(context),*/ _navigateToPhotoDetailScreen(context, photo),
+        onTap: () => /*showPhoto(context),*/ _navigateToPhotoDetailScreen(
+            context, photo),
         child: Hero(
           flightShuttleBuilder: (
             BuildContext flightContext,
@@ -154,7 +160,9 @@ class PhotoCard extends StatelessWidget {
                 child: Container(
                   height: 20.0,
                   alignment: Alignment.center,
-                  decoration: BoxDecoration(shape: BoxShape.rectangle, color: Colors.black.withOpacity(0.5)),
+                  decoration: BoxDecoration(
+                      shape: BoxShape.rectangle,
+                      color: Colors.black.withOpacity(0.5)),
                   child: Text(
                     photo.title,
                     softWrap: false,

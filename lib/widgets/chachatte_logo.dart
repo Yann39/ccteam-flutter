@@ -17,33 +17,17 @@
  * along with Chachatte Team. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import 'package:chachatte_team/utils/custom_decorations.dart';
 import 'package:flutter/material.dart';
-import 'package:logging/logging.dart';
 
-class Loading extends StatelessWidget {
-  final Logger _log = new Logger('Loading');
-
+/// Loading indicator widget
+class ChachatteLogo extends StatelessWidget {
+  @override
   Widget build(BuildContext context) {
-    _log.info("Building Loading...");
-
-    return Scaffold(
-      key: Key("loadingPage"),
-      body: Container(
-        decoration: CustomDecorations.bluePurpleGradient,
-        child: Column(
-          children: <Widget>[
-            Expanded(
-              child: Center(
-                child: SizedBox(
-                  child: CircularProgressIndicator(),
-                  height: 20.0,
-                  width: 20.0,
-                ),
-              ),
-            ),
-          ],
-        ),
+    return Container(
+      padding: EdgeInsets.only(top: 36),
+      child: Image.asset(
+        'images/chachatte-team-banner.png',
+        fit: BoxFit.fitWidth,
       ),
     );
   }

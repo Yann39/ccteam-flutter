@@ -48,15 +48,19 @@ class AppString {
   static const String resendOtp = 'Renvoyer';
   static const String verify = 'Vérifier';
   static const String finish = 'Terminer';
+  static const String createAccount = 'Créer un compte';
+  static const String enterPasscode = 'Saisissez votre passcode';
+  static const String useAnotherEmailAddress = 'Utiliser une autre adresse e-mail';
+  static const String emailAddressVerification = 'Vérification de l\'adresse e-mail';
+  static const String codeNotReceived = 'Code non reçu ?';
 
   static const String notDefined = 'Non-défini';
   static const String confirmation = 'Confirmation';
   static const String identification = 'Identification';
   static const String registration = 'Inscription';
   static const String askNewPassword = 'Demande de nouveau mot de passe';
-  static const String infoLoginEmail = 'Nous utiliserons votre adresse e-mail pour vous identifier ou pour créer votre compte si vous n\'êtes pas encore inscrit.';
-  static const String noAccountWithEmail = 'Aucun compte n\'existe avec l\'adresse e-mail';
-  static const String infoRegister = 'Si vous souhaitez créer un compte, complétez le formulaire ci-dessous pour commencer le processus d\'inscription.';
+  static const String infoLoginEmail = 'Pour vous connecter, indiquez l\'adresse e-mail liée à votre compte. Si vous n\'avez pas de compte, vous devez en créer un.';
+  static const String infoRegister = 'Complétez le formulaire ci-dessous pour commencer le processus d\'inscription. Un code vous sera envoyé afin de vérifier votre adresse e-mail.';
   static const String infoLoginOtp = 'Indiquez le code qui vous a été envoyé à l\'adresse';
   static const String timeLeft = 'Temps restant';
   static const String passcodeInfo = 'Veuillez définir un code vous permettant de sécuriser votre compte';
@@ -86,6 +90,8 @@ class AppString {
   static const String loginOtpMandatory = 'Veuillez saisir le code à 6 chiffres reçu par e-mail';
   static const String loginPasswordHint = 'Mot de passe';
   static const String loginFailed = 'L\'dentification a échouée, vérifiez vos informations et assurez-vous que votre compte soit actif';
+  static const String loginNoAccountFound = "Aucun compte trouvé avec l'adresse e-mail spécifiée";
+  static const String loginAccountEmailAlreadyExist = "Un compte existe déjà avec cette adresse e-mail";
 
   static const String codeHint = 'Code';
   static const String codeMandatory = 'Le code est obligatoire';
@@ -287,7 +293,10 @@ class AppString {
   static const String errorEmailNotFoundInDatabase = 'Aucune donnée n\' a été trouvé pour l\'adresse e-mail {0}';
   static const String errorTokenExpired = 'Votre session a expirée';
   static const String errorTokenNotFound = 'Votre session n\'est pas valide';
+  static const String errorTokenWrongFormat = 'Votre identifiant de session n\'est pas valide';
   static const String errorBadCredentials = 'Nom d\'utilisateur ou mot de passe incorrect';
   static const String errorUnknown = 'Erreur inconnue : {0}';
+  static const String errorServerTimeOut = 'Impossible de contacter le serveur pour vérifier votre identité. Veuillez vous assurer que vous êtes bien connecter à internet';
+
 
 }

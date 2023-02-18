@@ -23,6 +23,7 @@ import 'package:chachatte_team/providers/login_provider.dart';
 import 'package:chachatte_team/providers/timer_provider.dart';
 import 'package:chachatte_team/utils/enums.dart';
 import 'package:chachatte_team/utils/strings.dart';
+import 'package:chachatte_team/widgets/chachatte_logo.dart';
 import 'package:chachatte_team/widgets/countdown_timer.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -35,9 +36,17 @@ class OtpForm extends StatefulWidget {
 }
 
 class _OtpFormState extends State<OtpForm> {
-  final Logger _log = new Logger('OtpForm');
 
+  final Logger _log = new Logger('OtpForm');
   final GlobalKey<FormState> _otpFormKey = new GlobalKey<FormState>();
+
+  @override
+  void initState() {
+    super.initState();
+
+    // OTP should have been sent when reaching this form, start or resume countdown timer
+    Provider.of<TimerProvider>(context, listen: false).resumeOrStartCountDown(600);
+  }
 
   // OTP digits
   String _otpDigit0;
@@ -50,14 +59,15 @@ class _OtpFormState extends State<OtpForm> {
 
   /// Method that resend the OTP to the user according to information specified in the related form.
   /// The old OTP will be invalidated and the timer reset.
-  _doResendOtp(BuildContext context) async {
+  /*_doResendOtp(BuildContext context) async {
     Provider.of<LoginProvider>(context, listen: false).resendOtp().then(
         (value) {
-      Provider.of<TimerProvider>(context, listen: false).startCountDown(600);
+      // OTP resent, restart countdown timer
+      Provider.of<TimerProvider>(context, listen: false).startNewCountDown(600);
     }, onError: (error) {
       _log.severe(error.toString());
     });
-  }
+  }*/
 
   /// Method that check the OTP specified in the related form.
   /// It updates the login step status according to the result.
@@ -66,17 +76,17 @@ class _OtpFormState extends State<OtpForm> {
 
     // validate the form
     if (!_form.validate()) {
-      Scaffold.of(context).showSnackBar(SnackBar(
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
           backgroundColor: Colors.red, content: Text(AppString.formNotValid)));
     } else {
       _form.save();
 
       // build and set OTP from collected digits
-      Provider.of<LoginProvider>(context, listen: false).loggedMember.otp =
+      Provider.of<LoginProvider>(context, listen: false).otp =
           "$_otpDigit0$_otpDigit1$_otpDigit2$_otpDigit3";
 
       _log.info(
-          "OTP to be sent ${Provider.of<LoginProvider>(context, listen: false).loggedMember.otp}");
+          "OTP to be sent ${Provider.of<LoginProvider>(context, listen: false).otp}");
 
       // check OTP
       Provider.of<LoginProvider>(context, listen: false)
@@ -129,7 +139,11 @@ class _OtpFormState extends State<OtpForm> {
             ? _otpDigit0
             : digitId == 1
                 ? _otpDigit1
-                : digitId == 2 ? _otpDigit2 : digitId == 3 ? _otpDigit3 : null,
+                : digitId == 2
+                    ? _otpDigit2
+                    : digitId == 3
+                        ? _otpDigit3
+                        : null,
       ),
       decoration: BoxDecoration(
         border: Border.all(color: Colors.blue[700], width: 2.0),
@@ -138,19 +152,13 @@ class _OtpFormState extends State<OtpForm> {
     );
   }
 
-  final _logo = Container(
-    padding: EdgeInsets.only(top: 36),
-    child: Image.asset(
-      'images/chachatte-team-banner.png',
-      fit: BoxFit.fitWidth,
-    ),
-  );
-
   Widget build(BuildContext context) {
     final LoginProvider _loginProvider =
-        Provider.of<LoginProvider>(context, listen: false);
+    Provider.of<LoginProvider>(context, listen: false);
+    final TimerProvider _timerProvider =
+    Provider.of<TimerProvider>(context, listen: false);
 
-    _log.info("Building Login...");
+    _log.info("Building OtpForm...");
 
     final _otpField = Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -164,15 +172,17 @@ class _OtpFormState extends State<OtpForm> {
 
     final _otpVerifyButton = Builder(
       builder: (BuildContext context) {
-        return RaisedButton(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(4),
+        return ElevatedButton(
+          style: ElevatedButton.styleFrom(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(4),
+            ),
+            padding: EdgeInsets.fromLTRB(16.0, 12.0, 16.0, 12.0),
+            primary: Colors.blue[700],
           ),
           onPressed: () {
             _doCheckOtp(context);
           },
-          padding: EdgeInsets.fromLTRB(16.0, 12.0, 16.0, 12.0),
-          color: Colors.blue[700],
           child: _loginProvider.loginStatus == LoginStatus.Loading
               ? SizedBox(
                   child: CircularProgressIndicator(
@@ -190,12 +200,9 @@ class _OtpFormState extends State<OtpForm> {
       },
     );
 
-    final _resendOtpButton = Builder(
-      builder: (BuildContext context) {
-        return FlatButton(
-          padding: EdgeInsets.zero,
+    /*final _resendOtpButton = TextButton(
           onPressed: () {
-            _doResendOtp(context);
+            _doResendOtp();
           },
           child: _loginProvider.loginStatus == LoginStatus.Loading
               ? SizedBox(
@@ -210,13 +217,11 @@ class _OtpFormState extends State<OtpForm> {
                   AppString.resendOtp.toUpperCase(),
                   style: TextStyle(color: Colors.blue[900]),
                 ),
-        );
-      },
-    );
+    );*/
 
     final _backButton = Builder(
       builder: (BuildContext context) {
-        return FlatButton(
+        return TextButton(
           onPressed: () {
             _goToPreviousStep();
           },
@@ -229,8 +234,8 @@ class _OtpFormState extends State<OtpForm> {
     );
 
     final _otpForm = Form(
+      autovalidateMode: AutovalidateMode.disabled,
       key: _otpFormKey,
-      autovalidate: false,
       child: Padding(
         padding: EdgeInsets.only(left: 16.0, right: 16.0),
         child: Column(
@@ -238,10 +243,10 @@ class _OtpFormState extends State<OtpForm> {
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: <Widget>[
-            _logo,
+            ChachatteLogo(),
             SizedBox(height: 36.0),
             Text(
-              "Vérification de l'adresse e-mail",
+              AppString.emailAddressVerification,
               style: TextStyle(fontSize: 20.0, fontWeight: FontWeight.bold),
               textAlign: TextAlign.center,
             ),
@@ -253,8 +258,7 @@ class _OtpFormState extends State<OtpForm> {
                 children: <TextSpan>[
                   TextSpan(text: AppString.infoLoginOtp),
                   TextSpan(
-                      text:
-                          " ${_loginProvider.loggedMember.email}".toLowerCase(),
+                      text: " ${_loginProvider.email}".toLowerCase(),
                       style: TextStyle(fontWeight: FontWeight.bold)),
                 ],
               ),
@@ -278,8 +282,31 @@ class _OtpFormState extends State<OtpForm> {
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[
-                Text("Code non reçu ?"),
-                _resendOtpButton,
+                Text(AppString.codeNotReceived),
+                TextButton(
+                  onPressed: () {
+                    _loginProvider.resendOtp().then(
+                            (value) {
+                          // OTP resent, restart countdown timer
+                              _timerProvider.startNewCountDown(600);
+                        }, onError: (error) {
+                      _log.severe(error.toString());
+                    });
+                  },
+                  child: _loginProvider.loginStatus == LoginStatus.Loading
+                      ? SizedBox(
+                    child: CircularProgressIndicator(
+                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                      strokeWidth: 2.0,
+                    ),
+                    height: 14.0,
+                    width: 14.0,
+                  )
+                      : Text(
+                    AppString.resendOtp.toUpperCase(),
+                    style: TextStyle(color: Colors.blue[900]),
+                  ),
+                ),
               ],
             ),
             _otpVerifyButton,

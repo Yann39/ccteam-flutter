@@ -40,38 +40,43 @@ class EditAvatar extends StatelessWidget {
   const EditAvatar({Key key, this.member}) : super(key: key);
 
   /// Allow user to select an image from the gallery
-  Future _selectImageFromGallery(BuildContext context, AvatarProvider avatarProvider) async {
-    final File image = await ImagePicker.pickImage(source: ImageSource.gallery);
+  Future _selectImageFromGallery(
+      BuildContext context, AvatarProvider avatarProvider) async {
+    final PickedFile image =
+        await ImagePicker().getImage(source: ImageSource.gallery);
     if (image != null) {
-      avatarProvider.loadImage(image);
+      avatarProvider.loadImage(File(image.path));
       Navigator.of(context).pushNamed('/imageCrop');
     }
   }
 
   /// Allow user to select an image from the camera
-  Future _selectImageFromCamera(BuildContext context, AvatarProvider avatarProvider) async {
-    final File image = await ImagePicker.pickImage(source: ImageSource.camera);
+  Future _selectImageFromCamera(
+      BuildContext context, AvatarProvider avatarProvider) async {
+    final PickedFile image =
+        await ImagePicker().getImage(source: ImageSource.camera);
     if (image != null) {
-      avatarProvider.loadImage(image);
+      avatarProvider.loadImage(File(image.path));
       Navigator.of(context).pushNamed('/imageCrop');
     }
   }
 
   /// Display a confirmation popup when trying to reset an avatar
-  void _showConfirmation(BuildContext context, AvatarProvider avatarProvider, String value) {
+  void _showConfirmation(
+      BuildContext context, AvatarProvider avatarProvider, String value) {
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
         title: Text(AppString.confirmation),
         content: Text(value),
         actions: <Widget>[
-          FlatButton(
+          TextButton(
             onPressed: () {
               _dialogueResult(context, avatarProvider, ConfirmDialogAction.yes);
             },
             child: Text(AppString.confirm),
           ),
-          FlatButton(
+          TextButton(
             onPressed: () {
               _dialogueResult(context, avatarProvider, ConfirmDialogAction.no);
             },
@@ -83,17 +88,23 @@ class EditAvatar extends StatelessWidget {
   }
 
   /// Handle result of the avatar reset confirmation dialog
-  void _dialogueResult(BuildContext context, AvatarProvider avatarProvider, ConfirmDialogAction value) {
+  void _dialogueResult(BuildContext context, AvatarProvider avatarProvider,
+      ConfirmDialogAction value) {
     if (value == ConfirmDialogAction.yes) {
-      Provider.of<LoginProvider>(context, listen: false).deleteAvatar(member).then((value) {
+      Provider.of<LoginProvider>(context, listen: false)
+          .deleteAvatar(member)
+          .then((value) {
         avatarProvider.loadImage(null);
         member.avatarUrl = null;
         // remove avatar from the members list so that the avatar is up to date in the team page
-        Provider.of<MemberProvider>(context, listen: false).resetMemberAvatar(member);
+        Provider.of<MemberProvider>(context, listen: false)
+            .resetMemberAvatar(member);
       }, onError: (error) {
-        Scaffold.of(context)
+        ScaffoldMessenger.of(context)
           ..removeCurrentSnackBar()
-          ..showSnackBar(SnackBar(backgroundColor: Colors.red, content: Text(AppString.avatarDeleteFailed)));
+          ..showSnackBar(SnackBar(
+              backgroundColor: Colors.red,
+              content: Text(AppString.avatarDeleteFailed)));
       });
     }
     Navigator.pop(context);
@@ -120,23 +131,34 @@ class EditAvatar extends StatelessWidget {
                     AspectRatio(
                       aspectRatio: 1,
                       child: Container(
-                        margin: EdgeInsets.symmetric(vertical: 24.0, horizontal: 24.0),
+                        margin: EdgeInsets.symmetric(
+                            vertical: 24.0, horizontal: 24.0),
                         child: _avatarProvider.image != null
-                            ? Image.file(_avatarProvider.image, alignment: Alignment.topCenter, fit: BoxFit.contain)
-                            : member.avatarUrl != null && member.avatarUrl.length > 0 ? Image(
+                            ? Image.file(_avatarProvider.image,
                                 alignment: Alignment.topCenter,
-                                fit: BoxFit.contain,
-                                image: NetworkImage("$SERVER_ROOT_PATH$SERVER_AVATAR_FOLDER${member.avatarUrl}"),
-                              ) : ShaderMask(
-                          blendMode: BlendMode.srcATop,
-                                shaderCallback: (bounds) => LinearGradient(
-                                  begin: const FractionalOffset(0.0, 0.0),
-                                  end: const FractionalOffset(0.0, 1.0),
-                                  stops: [0.0, 1.0],
-                                  colors: [Colors.red[700], Colors.blue[700]],
-                                ).createShader(bounds),
-                                child: Icon(CustomIcons.pilot, size: 225, color: Colors.white),
-                              ),
+                                fit: BoxFit.contain)
+                            : member.avatarUrl != null &&
+                                    member.avatarUrl.length > 0
+                                ? Image(
+                                    alignment: Alignment.topCenter,
+                                    fit: BoxFit.contain,
+                                    image: NetworkImage(
+                                        "$SERVER_ROOT_PATH$SERVER_AVATAR_FOLDER${member.avatarUrl}"),
+                                  )
+                                : ShaderMask(
+                                    blendMode: BlendMode.srcATop,
+                                    shaderCallback: (bounds) => LinearGradient(
+                                      begin: const FractionalOffset(0.0, 0.0),
+                                      end: const FractionalOffset(0.0, 1.0),
+                                      stops: [0.0, 1.0],
+                                      colors: [
+                                        Colors.red[700],
+                                        Colors.blue[700]
+                                      ],
+                                    ).createShader(bounds),
+                                    child: Icon(CustomIcons.pilot,
+                                        size: 225, color: Colors.white),
+                                  ),
                       ),
                     ),
                     AspectRatio(
@@ -158,18 +180,21 @@ class EditAvatar extends StatelessWidget {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: <Widget>[
-                    RaisedButton(
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
+                    ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        padding: EdgeInsets.fromLTRB(16.0, 12.0, 16.0, 12.0),
+                        primary: Colors.blue[700],
                       ),
                       onPressed: () {
                         _selectImageFromGallery(context, _avatarProvider);
                       },
-                      padding: EdgeInsets.fromLTRB(16.0, 12.0, 16.0, 12.0),
-                      color: Colors.blue[700],
                       child: Row(
                         children: <Widget>[
-                          Icon(Icons.photo_library, color: Colors.white, size: 15),
+                          Icon(Icons.photo_library,
+                              color: Colors.white, size: 15),
                           SizedBox(width: 5),
                           Text(
                             AppString.gallery,
@@ -178,18 +203,21 @@ class EditAvatar extends StatelessWidget {
                         ],
                       ),
                     ),
-                    RaisedButton(
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
+                    ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        padding: EdgeInsets.fromLTRB(16.0, 12.0, 16.0, 12.0),
+                        primary: Colors.blue[700],
                       ),
                       onPressed: () {
                         _selectImageFromCamera(context, _avatarProvider);
                       },
-                      padding: EdgeInsets.fromLTRB(16.0, 12.0, 16.0, 12.0),
-                      color: Colors.blue[700],
                       child: Row(
                         children: <Widget>[
-                          Icon(Icons.photo_camera, color: Colors.white, size: 15),
+                          Icon(Icons.photo_camera,
+                              color: Colors.white, size: 15),
                           SizedBox(width: 5),
                           Text(
                             AppString.camera,
@@ -201,36 +229,45 @@ class EditAvatar extends StatelessWidget {
                   ],
                 ),
                 if (member.avatarUrl != null)
-                  FlatButton(
+                  TextButton(
                     child: Text(AppString.initProfilePhoto),
-                    onPressed: () => _showConfirmation(context, _avatarProvider, AppString.avatarResetAreYouSure),
+                    onPressed: () => _showConfirmation(context, _avatarProvider,
+                        AppString.avatarResetAreYouSure),
                   ),
                 if (_avatarProvider.image != null)
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: <Widget>[
-                      RaisedButton(
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
+                      ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          padding: EdgeInsets.fromLTRB(16.0, 12.0, 16.0, 12.0),
+                          primary: Colors.red[700],
                         ),
                         onPressed: () {
-                          _loginProvider.uploadAvatar(_avatarProvider.image, member).then((value) {
+                          _loginProvider
+                              .uploadAvatar(_avatarProvider.image, member)
+                              .then((value) {
                             // refresh member avatar in the members list so that the avatar is up to date in the team page
-                            Provider.of<MemberProvider>(context, listen: false).updateMemberAvatar(member);
+                            Provider.of<MemberProvider>(context, listen: false)
+                                .updateMemberAvatar(member);
                             Navigator.pop(context);
                           }, onError: (error) {
-                            Scaffold.of(context)
+                            ScaffoldMessenger.of(context)
                               ..removeCurrentSnackBar()
-                              ..showSnackBar(SnackBar(backgroundColor: Colors.red, content: Text(AppString.avatarUploadFailed)));
+                              ..showSnackBar(SnackBar(
+                                  backgroundColor: Colors.red,
+                                  content: Text(AppString.avatarUploadFailed)));
                           });
                         },
-                        padding: EdgeInsets.fromLTRB(16.0, 12.0, 16.0, 12.0),
-                        color: Colors.red[700],
                         child: Row(
                           children: <Widget>[
                             Icon(Icons.check, color: Colors.white, size: 15),
                             SizedBox(width: 5),
-                            Text(AppString.confirmChange, style: TextStyle(color: Colors.white)),
+                            Text(AppString.confirmChange,
+                                style: TextStyle(color: Colors.white)),
                           ],
                         ),
                       ),
@@ -254,9 +291,12 @@ class HolePainter extends CustomPainter {
     canvas.drawPath(
       Path.combine(
         PathOperation.difference,
-        Path()..addRect(Rect.fromLTWH(24, 24, size.width - 48, size.height - 48)),
         Path()
-          ..addOval(Rect.fromCircle(center: Offset(size.width / 2, (size.height) / 2), radius: (size.width - 48) / 2))
+          ..addRect(Rect.fromLTWH(24, 24, size.width - 48, size.height - 48)),
+        Path()
+          ..addOval(Rect.fromCircle(
+              center: Offset(size.width / 2, (size.height) / 2),
+              radius: (size.width - 48) / 2))
           ..close(),
       ),
       paint,

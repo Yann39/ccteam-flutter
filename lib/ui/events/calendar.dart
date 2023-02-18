@@ -41,7 +41,7 @@ class Calendar extends StatelessWidget {
 
     // after the target screen returns a result, hide any previous snack bars and show the new result
     if (_result != null) {
-      Scaffold.of(context)
+      ScaffoldMessenger.of(context)
         ..removeCurrentSnackBar()
         ..showSnackBar(SnackBar(content: Text("$_result")));
     }
@@ -52,11 +52,15 @@ class Calendar extends StatelessWidget {
     final _eventProvider = Provider.of<EventProvider>(context, listen: true);
 
     onSelect(date, calendarMode) {
-      _eventProvider.fetchDateEvents(date, calendarMode == CalendarMode.year ? "year" : "month");
+      _eventProvider.fetchDateEvents(
+          date, calendarMode == CalendarMode.year ? "year" : "month");
     }
 
-    final List<Event> _currEvents =
-        _eventProvider.eventModeSelectorIndex == 0 ? _eventProvider.events : _eventProvider.eventModeSelectorIndex == 1 ? _eventProvider.yearEvents : _eventProvider.calendarEvents;
+    final List<Event> _currEvents = _eventProvider.eventModeSelectorIndex == 0
+        ? _eventProvider.events
+        : _eventProvider.eventModeSelectorIndex == 1
+            ? _eventProvider.yearEvents
+            : _eventProvider.calendarEvents;
 
     return Scaffold(
       appBar: AppBar(
@@ -78,7 +82,8 @@ class Calendar extends StatelessWidget {
         child: Column(
           children: <Widget>[
             Container(
-              decoration: BoxDecoration(border: Border.all(color: Colors.red[700], width: 1)),
+              decoration: BoxDecoration(
+                  border: Border.all(color: Colors.red[700], width: 1)),
               child: Row(
                 children: <Widget>[
                   Expanded(
@@ -88,13 +93,21 @@ class Calendar extends StatelessWidget {
                         _eventProvider.changeEventModeSelectorIndex(0);
                       },
                       child: Container(
-                        padding: EdgeInsets.symmetric(horizontal: 6.0, vertical: 6.0),
+                        padding: EdgeInsets.symmetric(
+                            horizontal: 6.0, vertical: 6.0),
                         decoration: BoxDecoration(
-                            color: _eventProvider.eventModeSelectorIndex == 0 ? Colors.red[700] : Colors.white70,
-                            border: Border(right: BorderSide(color: Colors.red[700], width: 1))),
+                            color: _eventProvider.eventModeSelectorIndex == 0
+                                ? Colors.red[700]
+                                : Colors.white70,
+                            border: Border(
+                                right: BorderSide(
+                                    color: Colors.red[700], width: 1))),
                         child: Text(
                           AppString.all,
-                          style: TextStyle(color: _eventProvider.eventModeSelectorIndex == 0 ? Colors.white : Colors.black87),
+                          style: TextStyle(
+                              color: _eventProvider.eventModeSelectorIndex == 0
+                                  ? Colors.white
+                                  : Colors.black87),
                           textAlign: TextAlign.center,
                         ),
                       ),
@@ -108,13 +121,21 @@ class Calendar extends StatelessWidget {
                         _eventProvider.changeEventModeSelectorIndex(1);
                       },
                       child: Container(
-                        padding: EdgeInsets.symmetric(horizontal: 6.0, vertical: 6.0),
+                        padding: EdgeInsets.symmetric(
+                            horizontal: 6.0, vertical: 6.0),
                         decoration: BoxDecoration(
-                            color: _eventProvider.eventModeSelectorIndex == 1 ? Colors.red[700] : Colors.white70,
-                            border: Border(right: BorderSide(color: Colors.red[700], width: 1))),
+                            color: _eventProvider.eventModeSelectorIndex == 1
+                                ? Colors.red[700]
+                                : Colors.white70,
+                            border: Border(
+                                right: BorderSide(
+                                    color: Colors.red[700], width: 1))),
                         child: Text(
                           AppString.currentYear,
-                          style: TextStyle(color: _eventProvider.eventModeSelectorIndex == 1 ? Colors.white : Colors.black87),
+                          style: TextStyle(
+                              color: _eventProvider.eventModeSelectorIndex == 1
+                                  ? Colors.white
+                                  : Colors.black87),
                           textAlign: TextAlign.center,
                         ),
                       ),
@@ -127,13 +148,19 @@ class Calendar extends StatelessWidget {
                         _eventProvider.changeEventModeSelectorIndex(2);
                       },
                       child: Container(
-                        padding: EdgeInsets.symmetric(horizontal: 6.0, vertical: 6.0),
+                        padding: EdgeInsets.symmetric(
+                            horizontal: 6.0, vertical: 6.0),
                         decoration: BoxDecoration(
-                          color: _eventProvider.eventModeSelectorIndex == 2 ? Colors.red[700] : Colors.white70,
+                          color: _eventProvider.eventModeSelectorIndex == 2
+                              ? Colors.red[700]
+                              : Colors.white70,
                         ),
                         child: Text(
                           AppString.byDate,
-                          style: TextStyle(color: _eventProvider.eventModeSelectorIndex == 2 ? Colors.white : Colors.black87),
+                          style: TextStyle(
+                              color: _eventProvider.eventModeSelectorIndex == 2
+                                  ? Colors.white
+                                  : Colors.black87),
                           textAlign: TextAlign.center,
                         ),
                       ),
@@ -148,7 +175,8 @@ class Calendar extends StatelessWidget {
                   SizedBox(height: 8.0),
                   CalendarSelector(
                     onDateSelected: onSelect,
-                    eventsDates: Map.fromIterable(_eventProvider.events, key: (v) => v.title, value: (v) => v.startDate),
+                    eventsDates: Map.fromIterable(_eventProvider.events,
+                        key: (v) => v.title, value: (v) => v.startDate),
                     onlyMonthDays: false,
                     locale: "fr",
                     weekEndDayColor: Colors.blue[700],
@@ -169,7 +197,9 @@ class Calendar extends StatelessWidget {
                     separatorBuilder: (context, index) => SizedBox(height: 8.0),
                     itemCount: _currEvents.length,
                     itemBuilder: (context, index) {
-                      if (index > 0 && _currEvents[index].startDate.year < _currEvents[index - 1].startDate.year) {
+                      if (index > 0 &&
+                          _currEvents[index].startDate.year <
+                              _currEvents[index - 1].startDate.year) {
                         return Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: <Widget>[

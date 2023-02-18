@@ -21,27 +21,135 @@ import 'dart:convert';
 
 import 'package:chachatte_team/models/event.dart';
 import 'package:chachatte_team/utils/constants.dart';
+import 'package:chachatte_team/utils/graphql_connection.dart';
+import 'package:gql/language.dart';
+import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:http/http.dart' as http;
+import 'package:logging/logging.dart';
 
 class EventsService {
-  /// Fetch all events from the database
-  /// Send a GET request to the Restful API
-  /// Throw an exception if response status code is different from 200 or 404
-  /// Return empty array if no data found (404)
-  Future<List<Event>> fetchEvents() async {
-    // call to API
-    final response = await http.get(API_ROOT_URL + API_GET_ALL_EVENTS_ENDPOINT);
+  static final Logger _log = new Logger('EventsService');
 
-    if (response.statusCode == 200) {
-      // if the call to the server was successful, parse the JSON and return content
-      dynamic responseJson = json.decode(response.body);
-      return (responseJson['records'] as List).map((p) => Event.fromJson(p)).toList();
-    } else if (response.statusCode == 404) {
-      // no data found, return empty array
-      return new List<Event>();
-    } else {
-      throw Exception('Unexpected server response');
-    }
+  /// Fetch all events from the database
+  Future<List<Event>> fetchEvents() async {
+    _log.info("Getting all events from database...");
+
+    final String allEventQuery = """
+      query AllEvents() {
+        allEvents() {
+          id
+          title
+          startDate
+          endDate
+          track {
+            id
+            name
+          }
+          organizer
+          price
+          members {
+            id
+          }
+        }
+      }
+    """;
+
+    return GraphQLConnection()
+        .graphQLClient
+        .query(QueryOptions(document: parseString(allEventQuery)))
+        .then(
+      (result) {
+        final List<Event> events = [];
+        if (result.hasException) {
+          // usually ClientException means invalid or expired token
+          if (result.exception.linkException != null) {
+            throw Exception(result.exception.linkException.toString());
+          } else if (result.exception.graphqlErrors != null &&
+              result.exception.graphqlErrors.isNotEmpty) {
+            throw Exception(result.exception.graphqlErrors.first.message);
+          } else {
+            throw Exception(result.exception.toString());
+          }
+        } else {
+          dynamic eventList = result.data['allEvents'];
+          if (eventList == null) {
+            // returned { "data": { "allEvents": null } }
+            _log.info("allEvents returned null data");
+          } else if (eventList is Map<String, dynamic> && eventList.isEmpty) {
+            // returned { "data": { "allEvents": [] } }
+            _log.info("allEvents returned empty data");
+          } else {
+            // returned at least one data, build object from JSON
+            for (dynamic event in eventList) {
+              events.add(Event.fromJson(event));
+            }
+          }
+          return events;
+        }
+      },
+      onError: (error) {
+        _log.severe("Error while fetching event list : $error");
+        throw Exception(error);
+      },
+    );
+  }
+
+  /// Get an event from the database given its [id].
+  Future<Event> getEventById(int id) async {
+    final String eventByIdQuery = """
+      query EventById(\$id: Int!) {
+        eventById(id: \$id) {
+          id
+          title
+          description
+          startDate
+          endDate
+          track {
+            id
+            name
+          }
+          organizer
+          price
+          members {
+            firstName
+            lastName
+          }
+        }
+      }
+    """;
+
+    return GraphQLConnection()
+        .graphQLClient
+        .query(
+          QueryOptions(
+            document: parseString(eventByIdQuery),
+            variables: {'id': id},
+          ),
+        )
+        .then(
+      (result) {
+        if (result.hasException) {
+          // error encountered during execution such as network or cache errors, can also be invalid or expired token
+          if (result.exception.linkException != null) {
+            throw Exception(result.exception.linkException.toString());
+          } else if (result.exception.graphqlErrors != null &&
+              result.exception.graphqlErrors.isNotEmpty) {
+            throw Exception(result.exception.graphqlErrors.first.message);
+          } else {
+            throw Exception(result.exception.toString());
+          }
+        } else {
+          // if no event found, eventById will be null
+          if (result.data['eventById'] == null) {
+            return null;
+          }
+          return Event.fromJson(result.data['eventById']);
+        }
+      },
+      onError: (error) {
+        throw Exception(error);
+      },
+    );
   }
 
   /// Fetch all events for the specified [memberId] from the database
@@ -50,17 +158,21 @@ class EventsService {
   /// Return empty array if no data found (404)
   Future<List<Event>> fetchMemberEvents(int memberId) async {
     // call to API
-    final response = await http.get(API_ROOT_URL + API_GET_MEMBER_EVENTS_ENDPOINT + "?memberId=$memberId");
+    final response = await http.get(Uri.parse(
+        API_ROOT_URL + API_GET_MEMBER_EVENTS_ENDPOINT + "?memberId=$memberId"));
 
     if (response.statusCode == 200) {
       // if the call to the server was successful, parse the JSON and return content
       dynamic responseJson = json.decode(response.body);
-      return (responseJson['records'] as List).map((p) => Event.fromJson(p)).toList();
+      return (responseJson['records'] as List)
+          .map((p) => Event.fromJson(p))
+          .toList();
     } else if (response.statusCode == 404) {
       // no data found, return empty array
-      return new List<Event>();
+      return [];
     } else if (response.statusCode == 400) {
-      throw Exception('Bad request, check that parameter has been specified correctly');
+      throw Exception(
+          'Bad request, check that parameter has been specified correctly');
     } else {
       throw Exception('Unexpected server response');
     }
@@ -72,17 +184,21 @@ class EventsService {
   /// Return empty array if no data found (404)
   Future<List<Event>> fetchTrackEvents(int trackId) async {
     // call to API
-    final response = await http.get(API_ROOT_URL + API_GET_TRACK_EVENTS_ENDPOINT + "?trackId=$trackId");
+    final response = await http.get(Uri.parse(
+        API_ROOT_URL + API_GET_TRACK_EVENTS_ENDPOINT + "?trackId=$trackId"));
 
     if (response.statusCode == 200) {
       // if the call to the server was successful, parse the JSON and return content
       dynamic responseJson = json.decode(response.body);
-      return (responseJson['records'] as List).map((p) => Event.fromJson(p)).toList();
+      return (responseJson['records'] as List)
+          .map((p) => Event.fromJson(p))
+          .toList();
     } else if (response.statusCode == 404) {
       // no data found, return empty array
-      return new List<Event>();
+      return [];
     } else if (response.statusCode == 400) {
-      throw Exception('Bad request, check that parameter has been specified correctly');
+      throw Exception(
+          'Bad request, check that parameter has been specified correctly');
     } else {
       throw Exception('Unexpected server response');
     }
@@ -93,7 +209,10 @@ class EventsService {
   /// Throw an exception if response status code is different from 201
   Future<void> createEvent(Event event) async {
     // call to API
-    final response = await http.post(API_ROOT_URL + API_CREATE_EVENT_ENDPOINT, headers: {'Content-Type': 'application/json'}, body: event.toJson());
+    final response = await http.post(
+        Uri.parse(API_ROOT_URL + API_CREATE_EVENT_ENDPOINT),
+        headers: {'Content-Type': 'application/json'},
+        body: event.toJson());
 
     // handle server response code
     if (response.statusCode == 201) {
@@ -112,7 +231,10 @@ class EventsService {
   /// Throw an exception if response status code is different from 200
   Future<void> updateEvent(Event event) async {
     // call to API
-    final response = await http.post(API_ROOT_URL + API_UPDATE_EVENT_ENDPOINT, headers: {'Content-Type': 'application/json'}, body: event.toJson());
+    final response = await http.post(
+        Uri.parse(API_ROOT_URL + API_UPDATE_EVENT_ENDPOINT),
+        headers: {'Content-Type': 'application/json'},
+        body: event.toJson());
 
     // handle server response code
     if (response.statusCode == 200) {
@@ -129,7 +251,10 @@ class EventsService {
   /// Throw an exception if response status code is different from 204
   Future<void> deleteEvent(Event event) async {
     // call to API
-    final response = await http.post(API_ROOT_URL + API_DELETE_EVENT_ENDPOINT, headers: {'Content-Type': 'application/json'}, body: event.toJson());
+    final response = await http.post(
+        Uri.parse(API_ROOT_URL + API_DELETE_EVENT_ENDPOINT),
+        headers: {'Content-Type': 'application/json'},
+        body: event.toJson());
 
     if (response.statusCode != 204) {
       throw Exception('Unexpected server response');

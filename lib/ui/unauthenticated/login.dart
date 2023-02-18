@@ -17,8 +17,6 @@
  * along with Chachatte Team. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import 'dart:ui';
-
 import 'package:chachatte_team/providers/login_provider.dart';
 import 'package:chachatte_team/ui/unauthenticated/confirm_passcode_form.dart';
 import 'package:chachatte_team/ui/unauthenticated/create_passcode_form.dart';
@@ -26,6 +24,7 @@ import 'package:chachatte_team/ui/unauthenticated/email_form.dart';
 import 'package:chachatte_team/ui/unauthenticated/otp_form.dart';
 import 'package:chachatte_team/ui/unauthenticated/passcode_form.dart';
 import 'package:chachatte_team/ui/unauthenticated/register_form.dart';
+import 'package:chachatte_team/utils/custom_decorations.dart';
 import 'package:chachatte_team/utils/enums.dart';
 import 'package:flutter/material.dart';
 import 'package:logging/logging.dart';
@@ -74,14 +73,7 @@ class _LoginState extends State<Login> {
         FocusScope.of(context).requestFocus(FocusNode());
       },
       child: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Colors.blue[200], Colors.deepPurple[300]],
-            begin: const FractionalOffset(0.0, 0.0),
-            end: const FractionalOffset(0.0, 1.0),
-            tileMode: TileMode.clamp,
-          ),
-        ),
+        decoration: CustomDecorations.bluePurpleGradient,
         child: Scaffold(
           backgroundColor: Colors.transparent,
           body: SingleChildScrollView(

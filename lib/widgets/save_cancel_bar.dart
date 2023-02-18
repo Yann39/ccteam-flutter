@@ -22,7 +22,8 @@ import 'package:flutter/material.dart';
 
 /// Bottom action bar with cancel and save buttons, stuck to the bottom of the screen
 class SaveCancelBar extends StatelessWidget {
-  const SaveCancelBar({Key key, this.cancelFunction, this.saveFunction}) : super(key: key);
+  const SaveCancelBar({Key key, this.cancelFunction, this.saveFunction})
+      : super(key: key);
 
   final Function cancelFunction;
   final Function saveFunction;
@@ -41,7 +42,7 @@ class SaveCancelBar extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
             Expanded(
-              child: FlatButton(
+              child: TextButton(
                 child: Text(
                   AppString.cancel.toUpperCase(),
                   style: TextStyle(color: Colors.white),
@@ -50,7 +51,7 @@ class SaveCancelBar extends StatelessWidget {
               ),
             ),
             Expanded(
-              child: FlatButton(
+              child: TextButton(
                 child: Text(
                   AppString.save.toUpperCase(),
                   style: TextStyle(color: Colors.white),

@@ -18,12 +18,13 @@
  */
 
 import 'package:chachatte_team/models/event.dart';
-import 'package:chachatte_team/ui/events/event_detail.dart';
+import 'package:chachatte_team/providers/event_provider.dart';
 import 'package:chachatte_team/utils/custom_decorations.dart';
 import 'package:chachatte_team/utils/string_utils.dart';
 import 'package:chachatte_team/utils/track_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 
 class EventCard extends StatelessWidget {
   final Event event;
@@ -32,12 +33,16 @@ class EventCard extends StatelessWidget {
 
   /// Method that launches the Event detail screen and awaits the result from Navigator.pop
   _navigateToEventDetailScreen(BuildContext context, Event event) async {
+    // fetch the current event
+    Provider.of<EventProvider>(context, listen: false).fetchCurrentEvent(event);
+
     // Navigator.push returns a Future that will complete after we call Navigator.pop on the target screen
-    final result = await Navigator.push(context, MaterialPageRoute(builder: (context) => EventDetail(event: event)));
+    //final result = await Navigator.push(context, MaterialPageRoute(builder: (context) => EventDetail()));
+    final result = await Navigator.pushNamed(context, '/eventDetail');
 
     // after the target screen returns a result, hide any previous snack bars and show the new result
     if (result != null) {
-      Scaffold.of(context)
+      ScaffoldMessenger.of(context)
         ..removeCurrentSnackBar()
         ..showSnackBar(SnackBar(content: Text("$result")));
     }
@@ -64,7 +69,8 @@ class EventCard extends StatelessWidget {
                         ClipRRect(
                           borderRadius: BorderRadius.all(Radius.circular(8.0)),
                           child: Image.network(
-                            TrackUtils.trackCoverImageUrlFromName(event.track.name),
+                            TrackUtils.trackCoverImageUrlFromName(
+                                event.track.name),
                             width: 50,
                             //fit: BoxFit.fill,
                           ),
@@ -76,15 +82,24 @@ class EventCard extends StatelessWidget {
                                 quarterTurns: -1,
                                 child: Text(
                                   "${DateFormat('EEEE', 'fr').format(event.startDate).substring(0, 3)}",
-                                  style: TextStyle(color: Colors.white, height: 1),
+                                  style:
+                                      TextStyle(color: Colors.white, height: 1),
                                 ),
                               ),
                               Column(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 crossAxisAlignment: CrossAxisAlignment.center,
                                 children: <Widget>[
-                                  Text("${DateFormat('dd', 'fr').format(event.startDate)}", textScaleFactor: 1.5, style: TextStyle(color: Colors.white, height: 1)),
-                                  Text("${DateFormat('MMM', 'fr').format(event.startDate)}", textScaleFactor: 0.9, style: TextStyle(color: Colors.white, height: 0.8)),
+                                  Text(
+                                      "${DateFormat('dd', 'fr').format(event.startDate)}",
+                                      textScaleFactor: 1.5,
+                                      style: TextStyle(
+                                          color: Colors.white, height: 1)),
+                                  Text(
+                                      "${DateFormat('MMM', 'fr').format(event.startDate)}",
+                                      textScaleFactor: 0.9,
+                                      style: TextStyle(
+                                          color: Colors.white, height: 0.8)),
                                 ],
                               ),
                             ],
@@ -98,7 +113,9 @@ class EventCard extends StatelessWidget {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: <Widget>[
-                          Text(event.title, textScaleFactor: 1.2, style: TextStyle(color: Colors.white)),
+                          Text(event.title,
+                              textScaleFactor: 1.2,
+                              style: TextStyle(color: Colors.white)),
                           Divider(height: 12.0, color: Colors.white),
                           Expanded(
                             child: ListView(
@@ -109,26 +126,43 @@ class EventCard extends StatelessWidget {
                                   crossAxisAlignment: CrossAxisAlignment.center,
                                   children: <Widget>[
                                     Column(
-                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
                                       children: <Widget>[
-                                        Icon(Icons.location_on, size: 15, color: Colors.red[700]),
-                                        Text("${event.track.name}", textScaleFactor: 0.9, style: TextStyle(color: Colors.white)),
+                                        Icon(Icons.location_on,
+                                            size: 15, color: Colors.red[700]),
+                                        Text("${event.track.name}",
+                                            textScaleFactor: 0.9,
+                                            style:
+                                                TextStyle(color: Colors.white)),
                                       ],
                                     ),
                                     VerticalDivider(color: Colors.white),
                                     Column(
-                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
                                       children: <Widget>[
-                                        Icon(Icons.euro_symbol, size: 15, color: Colors.purple[700]),
-                                        Text("${StringUtils.formatPrice(event.price)}€", textScaleFactor: 0.9, style: TextStyle(color: Colors.white)),
+                                        Icon(Icons.euro_symbol,
+                                            size: 15,
+                                            color: Colors.purple[700]),
+                                        Text(
+                                            "${StringUtils.formatPrice(event.price)}€",
+                                            textScaleFactor: 0.9,
+                                            style:
+                                                TextStyle(color: Colors.white)),
                                       ],
                                     ),
                                     VerticalDivider(color: Colors.white),
                                     Column(
-                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
                                       children: <Widget>[
-                                        Icon(Icons.perm_contact_calendar, size: 15, color: Colors.teal[700]),
-                                        Text(event.organizer, textScaleFactor: 0.9, style: TextStyle(color: Colors.white)),
+                                        Icon(Icons.perm_contact_calendar,
+                                            size: 15, color: Colors.teal[700]),
+                                        Text(event.organizer,
+                                            textScaleFactor: 0.9,
+                                            style:
+                                                TextStyle(color: Colors.white)),
                                       ],
                                     ),
                                   ],
@@ -145,8 +179,15 @@ class EventCard extends StatelessWidget {
                         mainAxisAlignment: MainAxisAlignment.center,
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: <Widget>[
-                          Icon(event.members.length > 1 ? Icons.group : Icons.person, color: Colors.white, size: 18),
-                          Text("${event.members.length}", textScaleFactor: 0.8, style: TextStyle(color: Colors.white)),
+                          Icon(
+                              event.members.length > 1
+                                  ? Icons.group
+                                  : Icons.person,
+                              color: Colors.white,
+                              size: 18),
+                          Text("${event.members.length}",
+                              textScaleFactor: 0.8,
+                              style: TextStyle(color: Colors.white)),
                         ],
                       ),
                     ),
@@ -158,8 +199,12 @@ class EventCard extends StatelessWidget {
             Container(
               decoration: BoxDecoration(
                 shape: BoxShape.rectangle,
-                color: event.endDate.isAfter(DateTime.now()) ? Colors.green[700] : Colors.grey[600],
-                borderRadius: BorderRadius.only(topRight: Radius.circular(4.0), bottomRight: Radius.circular(4.0)),
+                color: event.endDate.isAfter(DateTime.now())
+                    ? Colors.green[700]
+                    : Colors.grey[600],
+                borderRadius: BorderRadius.only(
+                    topRight: Radius.circular(4.0),
+                    bottomRight: Radius.circular(4.0)),
               ),
               width: 5,
             ),

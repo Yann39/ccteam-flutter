@@ -71,19 +71,21 @@ class _ConfirmPasscodeFormState extends State<ConfirmPasscodeForm> {
     final LoginProvider _loginProvider =
         Provider.of<LoginProvider>(context, listen: false);
 
-    _log.info("Building Login...");
+    _log.info("Building ConfirmPasscodeForm...");
 
     final _passcodeCreateButton = Builder(
       builder: (BuildContext context) {
-        return RaisedButton(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(4),
+        return ElevatedButton(
+          style: ElevatedButton.styleFrom(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(4),
+            ),
+            padding: EdgeInsets.fromLTRB(16.0, 12.0, 16.0, 12.0),
+            primary: Colors.blue[700],
           ),
           onPressed: () {
             _doCompleteRegistration(context);
           },
-          padding: EdgeInsets.fromLTRB(16.0, 12.0, 16.0, 12.0),
-          color: Colors.blue[700],
           child: _loginProvider.loginStatus == LoginStatus.Loading
               ? SizedBox(
                   child: CircularProgressIndicator(
@@ -103,7 +105,7 @@ class _ConfirmPasscodeFormState extends State<ConfirmPasscodeForm> {
 
     final _backButton = Builder(
       builder: (BuildContext context) {
-        return FlatButton(
+        return TextButton(
           onPressed: () {
             _goToPreviousStep();
           },

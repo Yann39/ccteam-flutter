@@ -18,7 +18,8 @@
  */
 
 import 'package:chachatte_team/models/news.dart';
-import 'package:chachatte_team/providers/news_provider.dart';
+import 'package:chachatte_team/providers/news_detail_provider.dart';
+import 'package:chachatte_team/providers/news_list_provider.dart';
 import 'package:chachatte_team/ui/main/main_action_menu.dart';
 import 'package:chachatte_team/ui/main/main_drawer.dart';
 import 'package:chachatte_team/ui/news/news_card.dart';
@@ -35,35 +36,28 @@ class NewsList extends StatelessWidget {
   /// Navigates to the Add News screen and awaits the result from Navigator.pop
   _navigateToAddNewsScreen(BuildContext context) async {
     // Navigator.push returns a Future that will complete after we call Navigator.pop on the target screen
-    final _result = await Navigator.pushNamed(context, '/addEditNews', arguments: [null, AppString.newsCreate]);
+    final _result = await Navigator.pushNamed(context, '/addEditNews');
 
     // after the target screen returns a result, hide any previous snack bars and show the new result
     if (_result != null) {
-      Scaffold.of(context)
+      ScaffoldMessenger.of(context)
         ..removeCurrentSnackBar()
         ..showSnackBar(SnackBar(content: Text("$_result")));
     }
   }
 
-  /// Navigates to the News detail screen and awaits the result from Navigator.pop
+  /// Navigates to the detail screen of the specified [news].
   _navigateToNewsDetailScreen(BuildContext context, News news) async {
-    // fetch the current news
-    Provider.of<NewsProvider>(context, listen: false).fetchCurrentNews(news);
+    // fetch the news to get complete data
+    await Provider.of<NewsDetailProvider>(context, listen: false).fetchCurrentNews(news);
 
-    // Navigator.push returns a Future that will complete after we call Navigator.pop on the target screen
-    final _result = await Navigator.pushNamed(context, '/newsDetail');
-
-    // after the target screen returns a result, hide any previous snack bars and show the new result
-    if (_result != null) {
-      Scaffold.of(context)
-        ..removeCurrentSnackBar()
-        ..showSnackBar(SnackBar(content: Text("$_result")));
-    }
+    // navigate to news detail screen
+    Navigator.pushNamed(context, '/newsDetail');
   }
 
   Widget build(BuildContext context) {
     _log.info("Building News list...");
-    final _newsProvider = Provider.of<NewsProvider>(context, listen: true);
+    final NewsListProvider _newsListProvider = Provider.of<NewsListProvider>(context, listen: true);
 
     return Scaffold(
       appBar: AppBar(
@@ -121,25 +115,36 @@ class NewsList extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.center,
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: <Widget>[
-                      Icon(Icons.event_note, color: Colors.red[700], size: 18),
+                      /*Icon(Icons.event_note, color: Colors.red[700], size: 18),
                       SizedBox(width: 3),
-                      Text(AppString.news.toUpperCase(), style: TextStyle(color: Colors.black87, fontSize: 15, fontWeight: FontWeight.bold)),
-                      //Text(AppString.news, style: TextStyle(color: Colors.black87, fontSize: 16, fontFamily: 'Barbatrick', letterSpacing: 2)),
+                      Text(
+                        AppString.news.toUpperCase(),
+                        style: TextStyle(color: Colors.black87, fontSize: 15, fontWeight: FontWeight.bold),
+                      ),*/
+                      Text(
+                        AppString.news,
+                        style: TextStyle(
+                          color: Colors.black87,
+                          fontSize: 16,
+                          fontFamily: 'Barbatrick',
+                          letterSpacing: 2,
+                        ),
+                      ),
                     ],
                   ),
                 ),
                 Expanded(
                   child: RefreshIndicator(
-                    onRefresh: () => _newsProvider.fetchNewsList(),
+                    onRefresh: () => _newsListProvider.fetchNewsList(),
                     child: LoadingContent(
-                      loadingStatus: _newsProvider.loadingStatus,
+                      loadingStatus: _newsListProvider.loadingStatus,
                       emptyText: AppString.newsEmpty,
                       child: ListView.builder(
-                        itemCount: _newsProvider.news.length,
+                        itemCount: _newsListProvider.news.length,
                         itemBuilder: (context, index) {
                           return InkWell(
-                            child: NewsCard(_newsProvider.news[index], index),
-                            onTap: () => _navigateToNewsDetailScreen(context, _newsProvider.news[index]),
+                            child: NewsCard(index),
+                            onTap: () => _navigateToNewsDetailScreen(context, _newsListProvider.news[index]),
                           );
                         },
                       ),

@@ -35,10 +35,7 @@ class Home extends StatelessWidget {
   // list of pages of the bottom navigation bar
   final List<Widget> _children = [NewsList(), Calendar(), Team(), Tracks(), Galleries()];
 
-  // this should be called for at least one locale before any date formatting methods are called
-  //initializeDateFormatting();
-
-  /// handle tabs clicks
+  /// handle tab click
   void onTabTapped(int index, BuildContext context) {
     Provider.of<HomeProvider>(context, listen: false).setCurrentIndex(index);
   }
@@ -53,32 +50,33 @@ class Home extends StatelessWidget {
       bottomNavigationBar: BottomNavigationBar(
         onTap: (int index) => _homeProvider.setCurrentIndex(index),
         currentIndex: _homeProvider.currentIndex,
-        fixedColor: Colors.red[700],
         type: BottomNavigationBarType.shifting,
+        selectedLabelStyle: TextStyle(color: Colors.white),
+        unselectedLabelStyle: TextStyle(color: Colors.white),
         items: [
           BottomNavigationBarItem(
             icon: Icon(Icons.home, color: Colors.white),
-            title: Text(AppString.tabHome, style: TextStyle(color: Colors.white)),
+            label: AppString.tabHome,
             backgroundColor: Colors.red[700],
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.event, color: Colors.white),
-            title: Text(AppString.tabCalendar, style: TextStyle(color: Colors.white)),
+            label: AppString.tabCalendar,
             backgroundColor: Colors.red[700],
           ),
           BottomNavigationBarItem(
             icon: Icon(CustomIcons.group_helmet, color: Colors.white),
-            title: Text(AppString.tabTeam, style: TextStyle(color: Colors.white)),
+            label: AppString.tabTeam,
             backgroundColor: Colors.red[700],
           ),
           BottomNavigationBarItem(
-            icon: Icon(CustomIcons.track_sample, color: Colors.white, size: 20,),
-            title: Text(AppString.tabTracks, style: TextStyle(color: Colors.white)),
+            icon: Icon(CustomIcons.track_sample, color: Colors.white, size: 20),
+            label: AppString.tabTracks,
             backgroundColor: Colors.red[700],
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.photo_album, color: Colors.white),
-            title: Text(AppString.tabGallery, style: TextStyle(color: Colors.white)),
+            label: AppString.tabGallery,
             backgroundColor: Colors.red[700],
           )
         ],

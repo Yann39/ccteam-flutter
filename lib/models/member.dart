@@ -82,7 +82,7 @@ class Member {
 
   /// Convert [json] map to the corresponding object
   Member.fromJson(Map<String, dynamic> json)
-      : id = json['id'] != null ? int.parse(json['id']) : -1,
+      : id = json['id'] != null ? int.parse(json['id']) : null,
         firstName = json['firstName'],
         lastName = json['lastName'],
         email = json['email'],

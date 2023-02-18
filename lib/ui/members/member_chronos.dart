@@ -43,7 +43,8 @@ class _MemberChronosState extends State<MemberChronos> {
   @override
   void initState() {
     super.initState();
-    Provider.of<RecordProvider>(context, listen: false).fetchMemberRecords(widget.member.id);
+    Provider.of<RecordProvider>(context, listen: false)
+        .fetchMemberRecords(widget.member.id);
   }
 
   /// Method that launches the Add Record screen and awaits the result from Navigator.pop
@@ -53,26 +54,36 @@ class _MemberChronosState extends State<MemberChronos> {
 
     // after the target screen returns a result, hide any previous snack bars and show the new result
     if (_result != null) {
-      Scaffold.of(context)
+      ScaffoldMessenger.of(context)
         ..removeCurrentSnackBar()
         ..showSnackBar(SnackBar(content: Text("$_result")));
     }
   }
 
   Widget _recordsTable(RecordProvider recordProvider) {
-    if (recordProvider.memberRecords != null && recordProvider.memberRecords.length > 0) {
+    if (recordProvider.memberRecords != null &&
+        recordProvider.memberRecords.length > 0) {
       return Container(
         decoration: CustomDecorations.cardLight,
         child: Table(
-          columnWidths: {0: FlexColumnWidth(3), 1: FlexColumnWidth(2), 2: FlexColumnWidth(2), 3: FlexColumnWidth(1)},
+          columnWidths: {
+            0: FlexColumnWidth(3),
+            1: FlexColumnWidth(2),
+            2: FlexColumnWidth(2),
+            3: FlexColumnWidth(1)
+          },
           defaultVerticalAlignment: TableCellVerticalAlignment.middle,
-          border:
-              TableBorder(horizontalInside: BorderSide(color: Colors.black.withOpacity(0.3), width: 1), verticalInside: BorderSide(color: Colors.black.withOpacity(0.3), width: 1)),
+          border: TableBorder(
+              horizontalInside:
+                  BorderSide(color: Colors.black.withOpacity(0.3), width: 1),
+              verticalInside:
+                  BorderSide(color: Colors.black.withOpacity(0.3), width: 1)),
           children: [
             for (Record rec in recordProvider.memberRecords)
               TableRow(children: [
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 12.0),
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 8.0, vertical: 12.0),
                   child: Text(
                     rec.track.name,
                     style: TextStyle(color: Colors.black.withOpacity(0.8)),
@@ -81,20 +92,22 @@ class _MemberChronosState extends State<MemberChronos> {
                   ),
                 ),
                 Text(
-                  DateUtils.toLapTimeString(rec.lapTime),
+                  AppDateUtils.toLapTimeString(rec.lapTime),
                   style: TextStyle(color: Colors.black.withOpacity(0.8)),
                   textAlign: TextAlign.center,
                 ),
                 Text(
-                  DateUtils.convertToString(rec.recordDate, "dd/MM/yyyy"),
+                  AppDateUtils.convertToString(rec.recordDate, "dd/MM/yyyy"),
                   style: TextStyle(color: Colors.black.withOpacity(0.8)),
                   textAlign: TextAlign.center,
                 ),
                 SizedBox(
                     width: 10,
                     child: rec.conditions == "dry"
-                        ? Icon(Icons.wb_sunny, color: Colors.black.withOpacity(0.6), size: 15)
-                        : Icon(CustomIcons.rain, color: Colors.black.withOpacity(0.6), size: 15))
+                        ? Icon(Icons.wb_sunny,
+                            color: Colors.black.withOpacity(0.6), size: 15)
+                        : Icon(CustomIcons.rain,
+                            color: Colors.black.withOpacity(0.6), size: 15))
               ])
           ],
         ),
@@ -109,7 +122,8 @@ class _MemberChronosState extends State<MemberChronos> {
   }
 
   Widget build(BuildContext context) {
-    final RecordProvider _recordProvider = Provider.of<RecordProvider>(context, listen: true);
+    final RecordProvider _recordProvider =
+        Provider.of<RecordProvider>(context, listen: true);
 
     return Scaffold(
       appBar: AppBar(
@@ -127,7 +141,8 @@ class _MemberChronosState extends State<MemberChronos> {
             //_recordsTable(_recordProvider),
             Expanded(
               child: RefreshIndicator(
-                onRefresh: () => _recordProvider.fetchMemberRecords(widget.member.id),
+                onRefresh: () =>
+                    _recordProvider.fetchMemberRecords(widget.member.id),
                 child: LoadingContent(
                   emptyText: AppString.eventsNotFound,
                   loadingStatus: _recordProvider.loadingStatus,
@@ -152,7 +167,8 @@ class _MemberChronosState extends State<MemberChronos> {
                                     //Icon(Icons.location_on, size: 16, color: Colors.deepPurple),
                                     //SizedBox(width: 5.0),
                                     Text(
-                                      _recordProvider.memberRecords[index].track.name,
+                                      _recordProvider
+                                          .memberRecords[index].track.name,
                                       textScaleFactor: 1.3,
                                       style: TextStyle(color: Colors.white),
                                     ),
@@ -163,20 +179,26 @@ class _MemberChronosState extends State<MemberChronos> {
                                 ),
                                 Row(
                                   children: <Widget>[
-                                    Icon(Icons.event, size: 16, color: Colors.teal[700]),
+                                    Icon(Icons.event,
+                                        size: 16, color: Colors.teal[700]),
                                     SizedBox(width: 5.0),
                                     Text(
-                                      DateUtils.convertToString(_recordProvider.memberRecords[index].recordDate, 'dd MMM yyyy'),
+                                      AppDateUtils.convertToString(
+                                          _recordProvider
+                                              .memberRecords[index].recordDate,
+                                          'dd MMM yyyy'),
                                       style: TextStyle(color: Colors.white),
                                     ),
                                   ],
                                 ),
                                 Row(
                                   children: <Widget>[
-                                    Icon(CustomIcons.motorbike, size: 16, color: Colors.deepPurple),
+                                    Icon(CustomIcons.motorbike,
+                                        size: 16, color: Colors.deepPurple),
                                     SizedBox(width: 5.0),
                                     Text(
-                                      _recordProvider.memberRecords[index].member.bike,
+                                      _recordProvider
+                                          .memberRecords[index].member.bike,
                                       style: TextStyle(color: Colors.white),
                                     ),
                                   ],
@@ -184,15 +206,19 @@ class _MemberChronosState extends State<MemberChronos> {
                               ],
                             ),
                             Container(
-                              padding: EdgeInsets.symmetric(horizontal: 4.0, vertical: 0.0),
+                              padding: EdgeInsets.symmetric(
+                                  horizontal: 4.0, vertical: 0.0),
                               decoration: BoxDecoration(
                                 shape: BoxShape.rectangle,
                                 borderRadius: BorderRadius.circular(4.0),
                                 border: Border.all(color: Colors.white),
                               ),
                               child: Text(
-                                DateUtils.toLapTimeString(_recordProvider.memberRecords[index].lapTime),
-                                style: TextStyle(fontFamily: "AlarmClock", color: Colors.white),
+                                AppDateUtils.toLapTimeString(_recordProvider
+                                    .memberRecords[index].lapTime),
+                                style: TextStyle(
+                                    fontFamily: "AlarmClock",
+                                    color: Colors.white),
                                 textScaleFactor: 1.6,
                               ),
                             ),

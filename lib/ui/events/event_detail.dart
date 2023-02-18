@@ -19,6 +19,7 @@
 
 import 'package:chachatte_team/models/event.dart';
 import 'package:chachatte_team/models/member.dart';
+import 'package:chachatte_team/providers/event_provider.dart';
 import 'package:chachatte_team/services/events_service.dart';
 import 'package:chachatte_team/ui/events/add_edit_event.dart';
 import 'package:chachatte_team/utils/constants.dart';
@@ -30,40 +31,35 @@ import 'package:chachatte_team/utils/strings.dart';
 import 'package:chachatte_team/utils/track_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/painting.dart';
+import 'package:provider/provider.dart';
 
-class EventDetail extends StatefulWidget {
-  final Event event;
+class EventDetail extends StatelessWidget {
+  const EventDetail({Key key}) : super(key: key);
 
-  const EventDetail({Key key, this.event}) : super(key: key);
-
-  @override
-  State<StatefulWidget> createState() {
-    return _EventDetailState();
-  }
-}
-
-class _EventDetailState extends State<EventDetail> {
   /// Method that launches the Edit event screen and awaits the result from Navigator.pop
   _navigateToEditEventScreen(BuildContext context, Event event) async {
     // Navigator.push returns a Future that will complete after we call Navigator.pop on the target screen
-    final result = await Navigator.push(context, MaterialPageRoute(builder: (context) => AddEditEvent(event: event)));
+    final result = await Navigator.push(context,
+        MaterialPageRoute(builder: (context) => AddEditEvent(event: event)));
 
     // after the target screen returns a result, hide any previous snack bars and show the new result
     if (result != null) {
-      Scaffold.of(context)
+      ScaffoldMessenger.of(context)
         ..removeCurrentSnackBar()
         ..showSnackBar(SnackBar(content: Text("$result")));
     }
   }
 
   /// Method that launches the Member detail screen and awaits the result from Navigator.pop
-  void _navigateToMemberDetailScreen(BuildContext context, Member member) async {
+  void _navigateToMemberDetailScreen(
+      BuildContext context, Member member) async {
     // Navigator.push returns a Future that will complete after we call Navigator.pop on the target screen
-    final _result = await Navigator.pushNamed(context, '/memberDetail', arguments: member);
+    final _result =
+        await Navigator.pushNamed(context, '/memberDetail', arguments: member);
 
     // after the target screen returns a result, hide any previous snack bars and show the result
     if (_result != null) {
-      Scaffold.of(context)
+      ScaffoldMessenger.of(context)
         ..removeCurrentSnackBar()
         ..showSnackBar(SnackBar(content: Text("$_result")));
     }
@@ -77,13 +73,13 @@ class _EventDetailState extends State<EventDetail> {
         title: Text(AppString.confirmation),
         content: Text(value),
         actions: <Widget>[
-          FlatButton(
+          TextButton(
             onPressed: () {
               _dialogueResult(context, ConfirmDialogAction.yes);
             },
             child: Text(AppString.confirm),
           ),
-          FlatButton(
+          TextButton(
             onPressed: () {
               _dialogueResult(context, ConfirmDialogAction.no);
             },
@@ -99,299 +95,398 @@ class _EventDetailState extends State<EventDetail> {
     if (value == ConfirmDialogAction.yes) {
       final EventsService eventsService = new EventsService();
       // delete event
-      eventsService.deleteEvent(widget.event).then((value) {
-        Scaffold.of(context)
+      eventsService
+          .deleteEvent(
+              Provider.of<EventProvider>(context, listen: false).currentEvent)
+          .then((value) {
+        ScaffoldMessenger.of(context)
           ..removeCurrentSnackBar()
           ..showSnackBar(SnackBar(content: Text(AppString.eventDeleted)));
       }, onError: (error) {
-        Scaffold.of(context)
+        ScaffoldMessenger.of(context)
           ..removeCurrentSnackBar()
-          ..showSnackBar(SnackBar(content: Text(AppString.eventDeletionFailed)));
+          ..showSnackBar(
+              SnackBar(content: Text(AppString.eventDeletionFailed)));
       });
     }
     Navigator.pop(context);
   }
 
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        actions: <Widget>[
-          Builder(
-            builder: (context) => IconButton(
-              icon: Icon(Icons.edit),
-              onPressed: () => _navigateToEditEventScreen(context, widget.event),
-            ),
-          ),
-          IconButton(
-            icon: Icon(Icons.delete_forever),
-            onPressed: () => _showConfirmation(context, AppString.eventDeletionAreYouSure),
-          )
-        ],
-        title: Text(AppString.eventDetailScreenTitle),
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back),
-          onPressed: () => Navigator.pop(context),
-        ),
-      ),
-      body: Container(
-        decoration: CustomDecorations.mainContent,
-        child: ListView(
-          children: <Widget>[
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: <Widget>[
-                Container(
-                  alignment: Alignment.center,
-                  height: 132,
-                  padding: EdgeInsets.all(16.0),
-                  decoration: BoxDecoration(
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.blue[300],
-                        spreadRadius: 1,
-                        blurRadius: 2,
-                      ),
-                    ],
-                    image: DecorationImage(
-                      fit: BoxFit.fill,
-                      image: AssetImage("images/finish_flag.png"),
-                      colorFilter: ColorFilter.mode(Colors.black.withOpacity(0.05), BlendMode.dstATop),
-                    ),
-                    gradient: LinearGradient(
-                      colors: [Colors.blue[300], Colors.blue[500]],
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                    ),
-                  ),
-                  child: Text(
-                    "${widget.event.title}",
-                    textScaleFactor: 2,
-                    style: TextStyle(color: Colors.white),
-                    maxLines: 3,
-                    overflow: TextOverflow.ellipsis,
+    final EventProvider _eventProvider =
+        Provider.of<EventProvider>(context, listen: true);
+
+    return _eventProvider.loadingStatus == LoadingStatus.loading
+        ? Text("Loading")
+        : Scaffold(
+            appBar: AppBar(
+              actions: <Widget>[
+                Builder(
+                  builder: (context) => IconButton(
+                    icon: Icon(Icons.edit),
+                    onPressed: () => _navigateToEditEventScreen(
+                        context, _eventProvider.currentEvent),
                   ),
                 ),
-                Container(
-                  padding: EdgeInsets.all(8.0),
-                  child: Column(
+                IconButton(
+                  icon: Icon(Icons.delete_forever),
+                  onPressed: () => _showConfirmation(
+                      context, AppString.eventDeletionAreYouSure),
+                )
+              ],
+              title: Text(AppString.eventDetailScreenTitle),
+              leading: IconButton(
+                icon: Icon(Icons.arrow_back),
+                onPressed: () => Navigator.pop(context),
+              ),
+            ),
+            body: Container(
+              decoration: CustomDecorations.mainContent,
+              child: ListView(
+                children: <Widget>[
+                  Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: <Widget>[
-                      Row(
-                        children: <Widget>[
-                          Expanded(
-                            flex: 1,
-                            child: Container(
-                              height: 100,
-                              margin: EdgeInsets.all(4.0),
-                              padding: EdgeInsets.all(8.0),
-                              decoration: BoxDecoration(
-                                border: Border.all(color: Colors.white, width: 1.0),
-                                borderRadius: BorderRadius.all(Radius.circular(4.0)),
-                                color: Colors.blue[100],
-                                boxShadow: [
-                                  BoxShadow(color: Colors.black.withOpacity(0.1), spreadRadius: 0.5, blurRadius: 0.5, offset: Offset(2, 2)),
-                                ],
-                              ),
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                children: <Widget>[
-                                  Icon(
-                                    Icons.event,
-                                    size: 38,
-                                    color: Colors.blue[700],
-                                  ),
-                                  Text(
-                                    widget.event.fullDate,
-                                    textAlign: TextAlign.center,
-                                    maxLines: 2,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ],
-                              ),
+                      Container(
+                        alignment: Alignment.center,
+                        height: 132,
+                        padding: EdgeInsets.all(16.0),
+                        decoration: BoxDecoration(
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.blue[300],
+                              spreadRadius: 1,
+                              blurRadius: 2,
                             ),
+                          ],
+                          image: DecorationImage(
+                            fit: BoxFit.fill,
+                            image: AssetImage("images/finish_flag.png"),
+                            colorFilter: ColorFilter.mode(
+                                Colors.black.withOpacity(0.05),
+                                BlendMode.dstATop),
                           ),
-                          Expanded(
-                            flex: 1,
-                            child: Container(
-                              height: 100,
-                              margin: EdgeInsets.all(4.0),
-                              padding: EdgeInsets.all(8.0),
-                              decoration: BoxDecoration(
-                                border: Border.all(color: Colors.white, width: 1.0),
-                                borderRadius: BorderRadius.all(Radius.circular(4.0)),
-                                color: Colors.blue[100],
-                                boxShadow: [
-                                  BoxShadow(color: Colors.black.withOpacity(0.1), spreadRadius: 0.5, blurRadius: 0.5, offset: Offset(2, 2)),
-                                ],
-                              ),
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                children: <Widget>[
-                                  Icon(
-                                    Icons.euro_symbol,
-                                    size: 38,
-                                    color: Colors.purple[700],
-                                  ),
-                                  Text(
-                                    "${StringUtils.formatPrice(widget.event.price)}",
-                                    textAlign: TextAlign.center,
-                                    maxLines: 2,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ],
-                              ),
-                            ),
+                          gradient: LinearGradient(
+                            colors: [Colors.blue[300], Colors.blue[500]],
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
                           ),
-                          Expanded(
-                            flex: 1,
-                            child: Container(
-                              height: 100,
-                              margin: EdgeInsets.all(4.0),
-                              padding: EdgeInsets.all(8.0),
-                              decoration: BoxDecoration(
-                                border: Border.all(color: Colors.white, width: 1.0),
-                                borderRadius: BorderRadius.all(Radius.circular(4.0)),
-                                color: Colors.blue[100],
-                                boxShadow: [
-                                  BoxShadow(color: Colors.black.withOpacity(0.1), spreadRadius: 0.5, blurRadius: 0.5, offset: Offset(2, 2)),
-                                ],
-                              ),
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                children: <Widget>[
-                                  Icon(TrackUtils.trackIconFromName(widget.event.track.name), size: 38, color: Colors.red[700]),
-                                  Text(
-                                    widget.event.track.name,
-                                    textAlign: TextAlign.center,
-                                    maxLines: 2,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                          Expanded(
-                            flex: 1,
-                            child: Container(
-                              height: 100,
-                              margin: EdgeInsets.all(4.0),
-                              padding: EdgeInsets.all(8.0),
-                              decoration: BoxDecoration(
-                                border: Border.all(color: Colors.white, width: 1.0),
-                                borderRadius: BorderRadius.all(Radius.circular(4.0)),
-                                color: Colors.blue[100],
-                                boxShadow: [
-                                  BoxShadow(color: Colors.black.withOpacity(0.1), spreadRadius: 0.5, blurRadius: 0.5, offset: Offset(2, 2)),
-                                ],
-                              ),
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                children: <Widget>[
-                                  Icon(Icons.perm_contact_calendar, size: 38, color: Colors.teal[700]),
-                                  Text(
-                                    widget.event.organizer,
-                                    textAlign: TextAlign.center,
-                                    maxLines: 2,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ],
+                        ),
+                        child: Text(
+                          _eventProvider.currentEvent?.title ?? "",
+                          textScaleFactor: 2,
+                          style: TextStyle(color: Colors.white),
+                          maxLines: 3,
+                          overflow: TextOverflow.ellipsis,
+                        ),
                       ),
-                      Divider(color: Colors.white),
-                      SizedBox(height: 10),
-                      Row(
-                        children: <Widget>[
-                          Icon(Icons.description, size: 16, color: Colors.black.withOpacity(0.64)),
-                          SizedBox(width: 5.0),
-                          Text(
-                            AppString.description,
-                            textScaleFactor: 1.2,
-                            style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black.withOpacity(0.64)),
-                          ),
-                        ],
-                      ),
-                      SizedBox(height: 10),
-                      Text(widget.event.description),
-                      SizedBox(height: 10),
-                      Divider(color: Colors.white),
-                      SizedBox(height: 10),
-                      Row(
-                        children: <Widget>[
-                          Icon(Icons.group, size: 18, color: Colors.black.withOpacity(0.64)),
-                          SizedBox(width: 5.0),
-                          Text(
-                            AppString.participants,
-                            textScaleFactor: 1.2,
-                            style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black.withOpacity(0.64)),
-                          ),
-                        ],
-                      ),
-                      SizedBox(height: 10),
-                      widget.event.members.length > 0
-                          ? SizedBox(
-                              height: 140,
-                              child: ListView.builder(
-                                scrollDirection: Axis.horizontal,
-                                itemCount: widget.event.members.length,
-                                itemBuilder: (BuildContext context, int index) {
-                                  return Column(
-                                    children: <Widget>[
-                                      InkWell(
-                                        onTap: () => _navigateToMemberDetailScreen(context, widget.event.members[index]),
-                                        child: Container(
-                                          width: 80,
-                                          height: 80,
-                                          padding: EdgeInsets.all(2.0),
-                                          margin: EdgeInsets.symmetric(horizontal: 12.0),
-                                          decoration: ShapeDecoration(shape: CircleBorder(), color: Colors.white70),
-                                          child: widget.event.members[index].avatar != null && widget.event.members[index].avatar.length > 0
-                                              ? CircleAvatar(
-                                                  backgroundColor: Colors.blue[100],
-                                                  backgroundImage: NetworkImage("$SERVER_ROOT_PATH$SERVER_AVATAR_FOLDER${widget.event.members[index].avatar}"),
-                                                )
-                                              : CircleAvatar(
-                                                  backgroundColor: Colors.blue[100],
-                                                  child: ShaderMask(
-                                                    shaderCallback: (bounds) => LinearGradient(
-                                                      begin: const FractionalOffset(0.0, 0.0),
-                                                      end: const FractionalOffset(0.0, 1.0),
-                                                      stops: [0.0, 1.0],
-                                                      colors: [Colors.red[300], Colors.white],
-                                                    ).createShader(bounds),
-                                                    child: Icon(CustomIcons.pilot, size: 50),
-                                                  ),
-                                                ),
+                      Container(
+                        padding: EdgeInsets.all(8.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: <Widget>[
+                            Row(
+                              children: <Widget>[
+                                Expanded(
+                                  flex: 1,
+                                  child: Container(
+                                    height: 100,
+                                    margin: EdgeInsets.all(4.0),
+                                    padding: EdgeInsets.all(8.0),
+                                    decoration: BoxDecoration(
+                                      border: Border.all(
+                                          color: Colors.white, width: 1.0),
+                                      borderRadius: BorderRadius.all(
+                                          Radius.circular(4.0)),
+                                      color: Colors.blue[100],
+                                      boxShadow: [
+                                        BoxShadow(
+                                            color:
+                                                Colors.black.withOpacity(0.1),
+                                            spreadRadius: 0.5,
+                                            blurRadius: 0.5,
+                                            offset: Offset(2, 2)),
+                                      ],
+                                    ),
+                                    child: Column(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: <Widget>[
+                                        Icon(
+                                          Icons.event,
+                                          size: 38,
+                                          color: Colors.blue[700],
                                         ),
-                                      ),
-                                      SizedBox(height: 5.0),
-                                      Container(
-                                        width: 80,
-                                        child: Text(
-                                          "${widget.event.members[index].firstName} ${widget.event.members[index].lastName}",
-                                          overflow: TextOverflow.ellipsis,
-                                          maxLines: 2,
+                                        Text(
+                                          _eventProvider
+                                                  .currentEvent?.fullDate ??
+                                              "",
                                           textAlign: TextAlign.center,
+                                          maxLines: 2,
+                                          overflow: TextOverflow.ellipsis,
                                         ),
-                                      ),
-                                    ],
-                                  );
-                                },
-                              ),
-                            )
-                          : Text(AppString.noParticipant),
-                      SizedBox(height: 10),
-                      Divider(color: Colors.white),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                                Expanded(
+                                  flex: 1,
+                                  child: Container(
+                                    height: 100,
+                                    margin: EdgeInsets.all(4.0),
+                                    padding: EdgeInsets.all(8.0),
+                                    decoration: BoxDecoration(
+                                      border: Border.all(
+                                          color: Colors.white, width: 1.0),
+                                      borderRadius: BorderRadius.all(
+                                          Radius.circular(4.0)),
+                                      color: Colors.blue[100],
+                                      boxShadow: [
+                                        BoxShadow(
+                                            color:
+                                                Colors.black.withOpacity(0.1),
+                                            spreadRadius: 0.5,
+                                            blurRadius: 0.5,
+                                            offset: Offset(2, 2)),
+                                      ],
+                                    ),
+                                    child: Column(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: <Widget>[
+                                        Icon(
+                                          Icons.euro_symbol,
+                                          size: 38,
+                                          color: Colors.purple[700],
+                                        ),
+                                        Text(
+                                          StringUtils.formatPrice(_eventProvider.currentEvent?.price) ?? "",
+                                          textAlign: TextAlign.center,
+                                          maxLines: 2,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                                Expanded(
+                                  flex: 1,
+                                  child: Container(
+                                    height: 100,
+                                    margin: EdgeInsets.all(4.0),
+                                    padding: EdgeInsets.all(8.0),
+                                    decoration: BoxDecoration(
+                                      border: Border.all(
+                                          color: Colors.white, width: 1.0),
+                                      borderRadius: BorderRadius.all(
+                                          Radius.circular(4.0)),
+                                      color: Colors.blue[100],
+                                      boxShadow: [
+                                        BoxShadow(
+                                            color:
+                                                Colors.black.withOpacity(0.1),
+                                            spreadRadius: 0.5,
+                                            blurRadius: 0.5,
+                                            offset: Offset(2, 2)),
+                                      ],
+                                    ),
+                                    child: Column(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: <Widget>[
+                                        Icon(
+                                            TrackUtils.trackIconFromName(
+                                                _eventProvider
+                                                    .currentEvent?.track?.name),
+                                            size: 38,
+                                            color: Colors.red[700]),
+                                        Text(
+                                          _eventProvider
+                                                  .currentEvent?.track?.name ??
+                                              "",
+                                          textAlign: TextAlign.center,
+                                          maxLines: 2,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                                Expanded(
+                                  flex: 1,
+                                  child: Container(
+                                    height: 100,
+                                    margin: EdgeInsets.all(4.0),
+                                    padding: EdgeInsets.all(8.0),
+                                    decoration: BoxDecoration(
+                                      border: Border.all(
+                                          color: Colors.white, width: 1.0),
+                                      borderRadius: BorderRadius.all(
+                                          Radius.circular(4.0)),
+                                      color: Colors.blue[100],
+                                      boxShadow: [
+                                        BoxShadow(
+                                            color:
+                                                Colors.black.withOpacity(0.1),
+                                            spreadRadius: 0.5,
+                                            blurRadius: 0.5,
+                                            offset: Offset(2, 2)),
+                                      ],
+                                    ),
+                                    child: Column(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: <Widget>[
+                                        Icon(Icons.perm_contact_calendar,
+                                            size: 38, color: Colors.teal[700]),
+                                        Text(
+                                          _eventProvider.currentEvent?.organizer ?? "",
+                                          textAlign: TextAlign.center,
+                                          maxLines: 2,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            Divider(color: Colors.white),
+                            SizedBox(height: 10),
+                            Row(
+                              children: <Widget>[
+                                Icon(Icons.description,
+                                    size: 16,
+                                    color: Colors.black.withOpacity(0.64)),
+                                SizedBox(width: 5.0),
+                                Text(
+                                  AppString.description,
+                                  textScaleFactor: 1.2,
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.black.withOpacity(0.64)),
+                                ),
+                              ],
+                            ),
+                            SizedBox(height: 10),
+                            Text(_eventProvider.currentEvent?.description ?? ""),
+                            SizedBox(height: 10),
+                            Divider(color: Colors.white),
+                            SizedBox(height: 10),
+                            Row(
+                              children: <Widget>[
+                                Icon(Icons.group,
+                                    size: 18,
+                                    color: Colors.black.withOpacity(0.64)),
+                                SizedBox(width: 5.0),
+                                Text(
+                                  AppString.participants,
+                                  textScaleFactor: 1.2,
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.black.withOpacity(0.64)),
+                                ),
+                              ],
+                            ),
+                            SizedBox(height: 10),
+                            (_eventProvider.currentEvent?.members?.length ?? 0) > 0
+                                ? SizedBox(
+                                    height: 140,
+                                    child: ListView.builder(
+                                      scrollDirection: Axis.horizontal,
+                                      itemCount: _eventProvider
+                                          .currentEvent.members.length,
+                                      itemBuilder:
+                                          (BuildContext context, int index) {
+                                        return Column(
+                                          children: <Widget>[
+                                            InkWell(
+                                              onTap: () =>
+                                                  _navigateToMemberDetailScreen(
+                                                      context,
+                                                      _eventProvider
+                                                          .currentEvent
+                                                          .members[index]),
+                                              child: Container(
+                                                width: 80,
+                                                height: 80,
+                                                padding: EdgeInsets.all(2.0),
+                                                margin: EdgeInsets.symmetric(
+                                                    horizontal: 12.0),
+                                                decoration: ShapeDecoration(
+                                                    shape: CircleBorder(),
+                                                    color: Colors.white70),
+                                                child: _eventProvider
+                                                                .currentEvent
+                                                                .members[index]
+                                                                .avatarUrl !=
+                                                            null &&
+                                                        _eventProvider
+                                                                .currentEvent
+                                                                .members[index]
+                                                                .avatarUrl
+                                                                .length >
+                                                            0
+                                                    ? CircleAvatar(
+                                                        backgroundColor:
+                                                            Colors.blue[100],
+                                                        backgroundImage:
+                                                            NetworkImage(
+                                                                "$SERVER_ROOT_PATH$SERVER_AVATAR_FOLDER${_eventProvider.currentEvent.members[index].avatarUrl}"),
+                                                      )
+                                                    : CircleAvatar(
+                                                        backgroundColor:
+                                                            Colors.blue[100],
+                                                        child: ShaderMask(
+                                                          shaderCallback:
+                                                              (bounds) =>
+                                                                  LinearGradient(
+                                                            begin:
+                                                                const FractionalOffset(
+                                                                    0.0, 0.0),
+                                                            end:
+                                                                const FractionalOffset(
+                                                                    0.0, 1.0),
+                                                            stops: [0.0, 1.0],
+                                                            colors: [
+                                                              Colors.red[300],
+                                                              Colors.white
+                                                            ],
+                                                          ).createShader(
+                                                                      bounds),
+                                                          child: Icon(
+                                                              CustomIcons.pilot,
+                                                              size: 50),
+                                                        ),
+                                                      ),
+                                              ),
+                                            ),
+                                            SizedBox(height: 5.0),
+                                            Container(
+                                              width: 80,
+                                              child: Text(
+                                                "${_eventProvider.currentEvent.members[index].firstName} ${_eventProvider.currentEvent.members[index].lastName}",
+                                                overflow: TextOverflow.ellipsis,
+                                                maxLines: 2,
+                                                textAlign: TextAlign.center,
+                                              ),
+                                            ),
+                                          ],
+                                        );
+                                      },
+                                    ),
+                                  )
+                                : Text(AppString.noParticipant),
+                            SizedBox(height: 10),
+                            Divider(color: Colors.white),
+                          ],
+                        ),
+                      ),
                     ],
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ],
-        ),
-      ),
-    );
+          );
   }
 }

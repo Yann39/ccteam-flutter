@@ -21,62 +21,66 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:chachatte_team/models/member.dart';
+import 'package:chachatte_team/utils/app_utils.dart';
 import 'package:chachatte_team/utils/constants.dart';
+import 'package:chachatte_team/utils/custom_graphql_exception.dart';
 import 'package:chachatte_team/utils/graphql_connection.dart';
 import 'package:gql/language.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:http/http.dart' as http;
+import 'package:logging/logging.dart';
 import 'package:path/path.dart';
 
 class MembersService {
+  final Logger _log = new Logger('MembersService');
+
   /// Check the account associated to the specified member [email].
   /// It returns a specific status code according to the account current status.
   Future<http.Response> checkAccount(String email) {
     return http.post(
-      API_ROOT_URL + API_CHECK_ACCOUNT_ENDPOINT,
+      Uri.parse(API_ROOT_URL + API_CHECK_ACCOUNT_ENDPOINT),
       headers: <String, String>{'Content-Type': 'application/json; charset=UTF-8'},
       body: jsonEncode(<String, String>{'email': email}),
     );
   }
 
-  /// Pre-register the specified [member] given its e-mail address, first name and last name.
+  /// Pre-register a member given its e-mail address, first name and last name.
   /// It creates the account with minimal information, but the user will still need to
   /// confirm its e-mail address and create a passcode to complete the registration process.
-  Future<http.Response> preRegister(Member member) {
+  Future<http.Response> preRegister(String firstName, String lastName, String email) {
     return http.post(
-      API_ROOT_URL + API_PRE_REGISTER_ENDPOINT,
+      Uri.parse(API_ROOT_URL + API_PRE_REGISTER_ENDPOINT),
       headers: <String, String>{'Content-Type': 'application/json; charset=UTF-8'},
-      body: jsonEncode(
-          <String, String>{'firstName': member.firstName, 'lastName': member.lastName, 'email': member.email}),
+      body: jsonEncode(<String, String>{'firstName': firstName, 'lastName': lastName, 'email': email}),
     );
   }
 
-  /// Send a new one-time password to the specified [member] e-mail address.
+  /// Send a new one-time password to the specified member e-mail address.
   /// It is used in case user has not entered the OTP in the given time, or if he manually ask a new OTP.
-  Future<http.Response> resendOtp(Member member) {
+  Future<http.Response> resendOtp(String email) {
     return http.post(
-      API_ROOT_URL + API_RESEND_OTP_ENDPOINT,
+      Uri.parse(API_ROOT_URL + API_RESEND_OTP_ENDPOINT),
       headers: <String, String>{'Content-Type': 'application/json; charset=UTF-8'},
-      body: jsonEncode(<String, String>{'email': member.email}),
+      body: jsonEncode(<String, String>{'email': email}),
     );
   }
 
-  /// Confirm the specified [member] e-mail address by checking the specified
+  /// Confirm the specified member e-mail address by checking the specified
   /// one-time password which was sent on registration.
-  Future<http.Response> confirmEmail(Member member) {
+  Future<http.Response> confirmEmail(String email, String otp) {
     return http.post(
-      API_ROOT_URL + API_CONFIRM_EMAIL_ENDPOINT,
+      Uri.parse(API_ROOT_URL + API_CONFIRM_EMAIL_ENDPOINT),
       headers: <String, String>{'Content-Type': 'application/json; charset=UTF-8'},
-      body: jsonEncode(<String, String>{'email': member.email, 'otp': member.otp}),
+      body: jsonEncode(<String, String>{'email': email, 'otp': otp}),
     );
   }
 
-  /// Complete the registration for the specified [member] account, especially by setting the specified password.
-  Future<http.Response> completeRegistration(Member member) {
+  /// Complete the registration for the specified member account, especially by setting the specified password.
+  Future<http.Response> completeRegistration(String email, String passcode) {
     return http.post(
-      API_ROOT_URL + API_COMPLETE_REGISTRATION_ENDPOINT,
+      Uri.parse(API_ROOT_URL + API_COMPLETE_REGISTRATION_ENDPOINT),
       headers: <String, String>{'Content-Type': 'application/json; charset=UTF-8'},
-      body: jsonEncode(<String, String>{'email': member.email, 'password': member.password}),
+      body: jsonEncode(<String, String>{'email': email, 'password': passcode}),
     );
   }
 
@@ -84,7 +88,7 @@ class MembersService {
   /// The response will contains the issued JWT token.
   Future<http.Response> authenticate(String email, String password) {
     return http.post(
-      API_ROOT_URL + API_AUTHENTICATE_ENDPOINT,
+      Uri.parse(API_ROOT_URL + API_AUTHENTICATE_ENDPOINT),
       headers: <String, String>{'Content-Type': 'application/json; charset=UTF-8'},
       body: jsonEncode(<String, String>{'email': email, 'password': password}),
     );
@@ -111,22 +115,15 @@ class MembersService {
         .graphQLClient
         .query(
           QueryOptions(
-            documentNode: parseString(membersFilteredQuery),
+            document: parseString(membersFilteredQuery),
             variables: {'text': filter},
           ),
         )
         .then(
       (result) {
-        final List<Member> members = new List();
+        final List<Member> members = [];
         if (result.hasException) {
-          // usually ClientException means invalid or expired token
-          if (result.exception.clientException != null) {
-            throw Exception(result.exception.clientException.message);
-          } else if (result.exception.graphqlErrors != null && result.exception.graphqlErrors.isNotEmpty) {
-            throw Exception(result.exception.graphqlErrors.first.message);
-          } else {
-            throw Exception(result.exception.toString());
-          }
+          throw AppUtils.handleGraphQlException(result);
         } else {
           for (dynamic m in result.data['membersFiltered']) {
             members.add(Member.fromJson(m));
@@ -140,7 +137,7 @@ class MembersService {
     );
   }
 
-  /// Get a news from the database given its [id].
+  /// Get a member from the database given its [id].
   Future<Member> getMemberById(int id) async {
     final String memberByIdQuery = """
       query MemberById(\$id: Int!) {
@@ -164,25 +161,18 @@ class MembersService {
         .graphQLClient
         .query(
           QueryOptions(
-            documentNode: parseString(memberByIdQuery),
+            document: parseString(memberByIdQuery),
             variables: {'id': id},
           ),
         )
         .then(
       (result) {
         if (result.hasException) {
-          // usually ClientException means invalid or expired token
-          if (result.exception.clientException != null) {
-            throw Exception(result.exception.clientException.message);
-          } else if (result.exception.graphqlErrors != null && result.exception.graphqlErrors.isNotEmpty) {
-            throw Exception(result.exception.graphqlErrors.first.message);
-          } else {
-            throw Exception(result.exception.toString());
-          }
+          throw AppUtils.handleGraphQlException(result);
         } else {
           // if no member found, memberById will be null
           if (result.data['memberById'] == null) {
-            return null;
+            throw CustomGraphQlException("member_not_found", "Member not found");
           }
           return Member.fromJson(result.data['memberById']);
         }
@@ -197,7 +187,7 @@ class MembersService {
   Future<Member> getMemberByEmail(String email) async {
     final String memberByEmailQuery = """
       query MemberByEmail(\$email: String!) {
-        memberByEmail(email: \$email) {
+        getMemberByEmail(email: \$email) {
           id
           firstName
           lastName
@@ -207,6 +197,13 @@ class MembersService {
           bike
           admin
           registrationDate
+          likedNews {
+            id
+            news {
+              id
+              title
+            }
+          }
           createdOn
           modifiedOn
         }
@@ -217,27 +214,20 @@ class MembersService {
         .graphQLClient
         .query(
           QueryOptions(
-            documentNode: parseString(memberByEmailQuery),
+            document: parseString(memberByEmailQuery),
             variables: {'email': email},
           ),
         )
         .then(
       (result) {
         if (result.hasException) {
-          // usually ClientException means invalid or expired token
-          if (result.exception.clientException != null) {
-            throw Exception(result.exception.clientException.message);
-          } else if (result.exception.graphqlErrors != null && result.exception.graphqlErrors.isNotEmpty) {
-            throw Exception(result.exception.graphqlErrors.first.message);
-          } else {
-            throw Exception(result.exception.toString());
-          }
+          throw AppUtils.handleGraphQlException(result);
         } else {
           // if member not found, memberByEmail will be null
-          if (result.data['memberByEmail'] == null) {
-            return null;
+          if (result.data['getMemberByEmail'] == null) {
+            throw CustomGraphQlException("member_not_found", "Member not found");
           }
-          return Member.fromJson(result.data['memberByEmail']);
+          return Member.fromJson(result.data['getMemberByEmail']);
         }
       },
       onError: (error) {
@@ -246,12 +236,12 @@ class MembersService {
     );
   }
 
-  /// Create the specified [member] into the database
-  /// Send a POST request to the Restful API
-  /// Throw an exception if response status code is different from 201
+  /// Create the specified [member] into the database.
+  /// Send a POST request to the Restful API.
+  /// Throw an exception if response status code is different from 201.
   Future<void> createMember(Member member) async {
     // call to API
-    final response = await http.post(API_OLD_ROOT_URL + API_CREATE_MEMBER_ENDPOINT,
+    final response = await http.post(Uri.parse(API_OLD_ROOT_URL + API_CREATE_MEMBER_ENDPOINT),
         headers: {'Content-Type': 'application/json'}, body: member.toJson());
 
     // handle server response code
@@ -266,12 +256,12 @@ class MembersService {
     }
   }
 
-  /// Update the specified [member] into the database
-  /// Send a POST request to the Restful API
-  /// Throw an exception if response status code is different from 200
+  /// Update the specified [member] into the database.
+  /// Send a POST request to the Restful API.
+  /// Throw an exception if response status code is different from 200.
   Future<void> updateMember(Member member) async {
     // call to API
-    final response = await http.post(API_OLD_ROOT_URL + API_UPDATE_MEMBER_ENDPOINT,
+    final response = await http.post(Uri.parse(API_OLD_ROOT_URL + API_UPDATE_MEMBER_ENDPOINT),
         headers: {'Content-Type': 'application/json'}, body: json.encode(member.toJson()));
 
     // handle server response code
@@ -284,12 +274,12 @@ class MembersService {
     }
   }
 
-  /// Delete specified [member] from the database
-  /// Send a POST request to the Restful API
-  /// Throw an exception if response status code is different from 204
+  /// Delete specified [member] from the database.
+  /// Send a POST request to the Restful API.
+  /// Throw an exception if response status code is different from 204.
   Future<void> deleteMember(Member member) async {
     // call to API
-    final response = await http.post(API_OLD_ROOT_URL + API_DELETE_MEMBER_ENDPOINT,
+    final response = await http.post(Uri.parse(API_OLD_ROOT_URL + API_DELETE_MEMBER_ENDPOINT),
         headers: {'Content-Type': 'application/json'}, body: json.encode(member.toJson()));
 
     if (response.statusCode != 204) {
@@ -297,15 +287,15 @@ class MembersService {
     }
   }
 
-  /// Ask for a password reset for the account related to the specified [email]
-  /// Send a POST request to the Restful API
-  /// Throw an exception if response status code is different from 201
+  /// Ask for a password reset for the account related to the specified [email].
+  /// Send a POST request to the Restful API.
+  /// Throw an exception if response status code is different from 201.
   Future<void> askPassword(String email) async {
     // convert Member object to JSON string
     final String jsonString = '{email:$email}';
 
     // call to API
-    final response = await http.post(API_OLD_ROOT_URL + API_ASK_PASSWORD_MEMBER_ENDPOINT,
+    final response = await http.post(Uri.parse(API_OLD_ROOT_URL + API_ASK_PASSWORD_MEMBER_ENDPOINT),
         headers: {'Content-Type': 'application/json'}, body: jsonString);
 
     // handle server response code
@@ -324,10 +314,10 @@ class MembersService {
     }
   }
 
-  /// Upload the specified avatar [file] for the specified [memberId]
-  /// Send a POST request to the Restful API
-  /// Throw an exception if response status code is different from 200
-  /// Return the uploaded avatar relative path
+  /// Upload the specified avatar [file] for the specified [memberId].
+  /// Send a POST request to the Restful API.
+  /// Throw an exception if response status code is different from 200.
+  /// Return the uploaded avatar relative path.
   Future<String> uploadAvatar(File file, int memberId) async {
     final http.ByteStream stream = new http.ByteStream(Stream.castFrom(file.openRead()));
     final int length = await file.length();
@@ -358,15 +348,15 @@ class MembersService {
     }
   }
 
-  /// Delete avatar for the specified [memberId]
-  /// Send a POST request to the Restful API
-  /// Throw an exception if response status code is different from 200
+  /// Delete avatar for the specified [memberId].
+  /// Send a POST request to the Restful API.
+  /// Throw an exception if response status code is different from 200.
   Future<void> deleteAvatar(int memberId) async {
     // convert Member object to JSON string
     final String jsonString = '{\"memberId\":$memberId}';
 
     // call to API
-    final response = await http.post(API_OLD_ROOT_URL + API_DELETE_MEMBER_AVATAR_ENDPOINT,
+    final response = await http.post(Uri.parse(API_OLD_ROOT_URL + API_DELETE_MEMBER_AVATAR_ENDPOINT),
         headers: {'Content-Type': 'application/json'}, body: jsonString);
 
     // handle server response code

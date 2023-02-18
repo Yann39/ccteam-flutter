@@ -20,10 +20,10 @@
 import 'dart:ui';
 
 import 'package:chachatte_team/providers/login_provider.dart';
-import 'package:chachatte_team/providers/timer_provider.dart';
 import 'package:chachatte_team/utils/enums.dart';
 import 'package:chachatte_team/utils/string_utils.dart';
 import 'package:chachatte_team/utils/strings.dart';
+import 'package:chachatte_team/widgets/chachatte_logo.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:logging/logging.dart';
@@ -45,18 +45,13 @@ class _RegisterFormState extends State<RegisterForm> {
     final FormState _form = _preRegisterFormKey.currentState;
 
     // validate the form
-    if (!_form.validate()) {
-      Scaffold.of(context).showSnackBar(SnackBar(
-          backgroundColor: Colors.red, content: Text(AppString.formNotValid)));
-    } else {
+    if (_form.validate()) {
       _form.save();
 
-      // register user
+      // pre-register user
       Provider.of<LoginProvider>(context, listen: false)
           .preRegisterMember()
-          .then((value) {
-        Provider.of<TimerProvider>(context, listen: false).startCountDown(600);
-      }, onError: (error) {
+          .then((value) {}, onError: (error) {
         _log.severe(error.toString());
       });
     }
@@ -67,32 +62,27 @@ class _RegisterFormState extends State<RegisterForm> {
     Provider.of<LoginProvider>(context, listen: false).goToPreviousLoginStep();
   }
 
-  final _logo = Container(
-    padding: EdgeInsets.only(top: 36),
-    child: Image.asset(
-      'images/chachatte-team-banner.png',
-      fit: BoxFit.fitWidth,
-    ),
-  );
-
   Widget build(BuildContext context) {
     final LoginProvider _loginProvider =
         Provider.of<LoginProvider>(context, listen: false);
 
-    _log.info("Building Login...");
+    _log.info("Building RegisterForm...");
 
     final _firstNameField = TextFormField(
+      key: Key('registerFormFirstNameField'),
       keyboardType: TextInputType.text,
       keyboardAppearance: Brightness.dark,
       autofocus: false,
       decoration: InputDecoration(
         enabledBorder: OutlineInputBorder(),
         focusedBorder: OutlineInputBorder(),
-        errorBorder:
-            OutlineInputBorder(borderSide: BorderSide(color: Colors.red[700])),
+        errorBorder: OutlineInputBorder(
+          borderSide: BorderSide(color: Colors.red[700]),
+        ),
         focusedErrorBorder: OutlineInputBorder(),
-        disabledBorder:
-            OutlineInputBorder(borderSide: BorderSide(color: Colors.black26)),
+        disabledBorder: OutlineInputBorder(
+          borderSide: BorderSide(color: Colors.black26),
+        ),
         prefixIcon: Icon(Icons.person, color: Colors.black87),
         hintText: AppString.memberFirstNameHint,
         hintStyle: TextStyle(color: Colors.black54),
@@ -107,17 +97,20 @@ class _RegisterFormState extends State<RegisterForm> {
     );
 
     final _lastNameField = TextFormField(
+      key: Key('registerFormLastNameField'),
       keyboardType: TextInputType.text,
       keyboardAppearance: Brightness.dark,
       autofocus: false,
       decoration: InputDecoration(
         enabledBorder: OutlineInputBorder(),
         focusedBorder: OutlineInputBorder(),
-        errorBorder:
-            OutlineInputBorder(borderSide: BorderSide(color: Colors.red[700])),
+        errorBorder: OutlineInputBorder(
+          borderSide: BorderSide(color: Colors.red[700]),
+        ),
         focusedErrorBorder: OutlineInputBorder(),
-        disabledBorder:
-            OutlineInputBorder(borderSide: BorderSide(color: Colors.black26)),
+        disabledBorder: OutlineInputBorder(
+          borderSide: BorderSide(color: Colors.black26),
+        ),
         prefixIcon: Icon(Icons.person, color: Colors.black87),
         hintText: AppString.memberLastNameHint,
         hintStyle: TextStyle(color: Colors.black54),
@@ -132,17 +125,20 @@ class _RegisterFormState extends State<RegisterForm> {
     );
 
     final _emailField = TextFormField(
+      key: Key('registerFormEmailField'),
       keyboardType: TextInputType.emailAddress,
       keyboardAppearance: Brightness.dark,
       autofocus: false,
       decoration: InputDecoration(
         enabledBorder: OutlineInputBorder(),
         focusedBorder: OutlineInputBorder(),
-        errorBorder:
-            OutlineInputBorder(borderSide: BorderSide(color: Colors.red[700])),
+        errorBorder: OutlineInputBorder(
+          borderSide: BorderSide(color: Colors.red[700]),
+        ),
         focusedErrorBorder: OutlineInputBorder(),
-        disabledBorder:
-            OutlineInputBorder(borderSide: BorderSide(color: Colors.black26)),
+        disabledBorder: OutlineInputBorder(
+          borderSide: BorderSide(color: Colors.black26),
+        ),
         prefixIcon: Icon(Icons.mail, color: Colors.black87),
         hintText: AppString.loginEmailHint,
         hintStyle: TextStyle(color: Colors.black54),
@@ -150,86 +146,73 @@ class _RegisterFormState extends State<RegisterForm> {
       ),
       maxLines: 1,
       inputFormatters: [LengthLimitingTextInputFormatter(128)],
-      validator: (val) => val.isEmpty
-          ? AppString.memberEmailMandatory
-          : (StringUtils.isValidEmail(val)
-              ? null
-              : AppString.memberEmailNotValid),
+      validator: (val) {
+        if (val.isEmpty) {
+          return AppString.memberEmailMandatory;
+        } else if (!StringUtils.isValidEmail(val)) {
+          return AppString.memberEmailNotValid;
+        }
+        return null;
+      },
       onSaved: (val) => _loginProvider.email = val,
       initialValue: _loginProvider.email,
     );
 
-    final _preRegisterButton = Builder(
-      builder: (BuildContext context) {
-        return RaisedButton(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(4),
-          ),
-          onPressed: () {
-            _doPreRegisterUser(context);
-          },
-          padding: EdgeInsets.fromLTRB(16.0, 12.0, 16.0, 12.0),
-          color: Colors.blue[700],
-          child: _loginProvider.loginStatus == LoginStatus.Loading
-              ? SizedBox(
-                  child: CircularProgressIndicator(
-                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                    strokeWidth: 2.0,
-                  ),
-                  height: 14.0,
-                  width: 14.0,
-                )
-              : Text(
-                  AppString.register,
-                  style: TextStyle(color: Colors.white),
-                ),
-        );
+    final _preRegisterButton = ElevatedButton(
+      key: Key('registerFormRegisterButton'),
+      style: ElevatedButton.styleFrom(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(4),
+        ),
+        padding: EdgeInsets.fromLTRB(16.0, 12.0, 16.0, 12.0),
+        primary: Colors.blue[700],
+      ),
+      onPressed: () {
+        _doPreRegisterUser(context);
       },
+      child: _loginProvider.loginStatus == LoginStatus.Loading
+          ? SizedBox(
+              child: CircularProgressIndicator(
+                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                strokeWidth: 2.0,
+              ),
+              height: 14.0,
+              width: 14.0,
+            )
+          : Text(
+              AppString.register,
+              style: TextStyle(color: Colors.white),
+            ),
     );
 
-    final _backButton = Builder(
-      builder: (BuildContext context) {
-        return FlatButton(
-          onPressed: () {
-            _goToPreviousStep();
-          },
-          child: Text(
-            AppString.back,
-            style: TextStyle(color: Colors.blue[900]),
-          ),
-        );
+    final _backButton = TextButton(
+      onPressed: () {
+        _goToPreviousStep();
       },
+      child: Text(
+        AppString.back,
+        style: TextStyle(color: Colors.blue[900]),
+      ),
     );
 
-    final _preRegisterForm = Form(
+    return Form(
+      autovalidateMode: AutovalidateMode.disabled,
       key: _preRegisterFormKey,
-      autovalidate: false,
       child: Padding(
         padding: EdgeInsets.only(left: 16.0, right: 16.0),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.start,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: <Widget>[
-            _logo,
+            ChachatteLogo(),
             SizedBox(height: 36.0),
             Text(
-              "Inscription",
+              AppString.registration,
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
               textAlign: TextAlign.center,
             ),
             SizedBox(height: 32.0),
-            RichText(
-              text: TextSpan(
-                style: TextStyle(fontSize: 15.0, color: Colors.black),
-                children: <TextSpan>[
-                  TextSpan(text: AppString.noAccountWithEmail),
-                  TextSpan(
-                      text: " ${_loginProvider.email}".toLowerCase(),
-                      style: TextStyle(fontWeight: FontWeight.bold)),
-                  TextSpan(text: ". ${AppString.infoRegister}"),
-                ],
-              ),
-            ),
+            Text(AppString.infoRegister),
             SizedBox(height: 32.0),
             _firstNameField,
             SizedBox(height: 8.0),
@@ -243,7 +226,5 @@ class _RegisterFormState extends State<RegisterForm> {
         ),
       ),
     );
-
-    return _preRegisterForm;
   }
 }

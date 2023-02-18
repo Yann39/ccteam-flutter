@@ -19,6 +19,7 @@
 
 import 'package:chachatte_team/models/news.dart';
 import 'package:chachatte_team/providers/login_provider.dart';
+import 'package:chachatte_team/providers/news_creation_provider.dart';
 import 'package:chachatte_team/providers/news_provider.dart';
 import 'package:chachatte_team/services/notifications_service.dart';
 import 'package:chachatte_team/utils/constants.dart';
@@ -32,10 +33,8 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 class AddEditNews extends StatefulWidget {
-  final News news;
-  final String title;
 
-  const AddEditNews({Key key, this.news, this.title}) : super(key: key);
+  const AddEditNews({Key key}) : super(key: key);
 
   @override
   State<StatefulWidget> createState() {
@@ -48,37 +47,43 @@ class _AddEditNewsState extends State<AddEditNews> {
   final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
   final TextEditingController _datePickerController = new TextEditingController();
 
-  // the news to be created
-  final News _newNews = new News(likedMembers: []);
-
   initState() {
     // set date picker text if set
-    if (widget.news != null) {
-      _datePickerController.text = DateUtils.convertToString(widget.news.newsDate, DATE_FORMAT);
+    if (Provider.of<NewsCreationProvider>(context, listen: false).news != null) {
+      _datePickerController.text =
+          AppDateUtils.convertToString(Provider.of<NewsCreationProvider>(context, listen: false).news.newsDate, DATE_FORMAT);
     }
     return super.initState();
   }
 
   /// Initialize and display a Date picker related to the specified [controller] in the specified [context]
-  Future _chooseDate(BuildContext context, TextEditingController controller, DateTime defaultValue) async {
+  Future _chooseDate(BuildContext context, TextEditingController controller,
+      DateTime defaultValue) async {
     final DateTime _currentDate = DateTime.now();
     final TimeOfDay _currentTime = TimeOfDay.now();
 
     // define initial date and time from the specified default DateTime value if set
     final DateTime _initialDate = defaultValue ?? _currentDate;
-    final TimeOfDay _initialTime = defaultValue != null ? TimeOfDay.fromDateTime(defaultValue) : _currentTime;
+    final TimeOfDay _initialTime = defaultValue != null
+        ? TimeOfDay.fromDateTime(defaultValue)
+        : _currentTime;
 
     // show the date picker and await for the chosen date
-    final DateTime _dateResult =
-        await showDatePicker(context: context, initialDate: _initialDate, firstDate: DateTime(_currentDate.year - 5), lastDate: DateTime(_currentDate.year + 5));
+    final DateTime _dateResult = await showDatePicker(
+        context: context,
+        initialDate: _initialDate,
+        firstDate: DateTime(_currentDate.year - 5),
+        lastDate: DateTime(_currentDate.year + 5));
     if (_dateResult == null) return;
 
     // show the time picker and await for the chosen time
-    final TimeOfDay _timeResult = await showTimePicker(context: context, initialTime: _initialTime);
+    final TimeOfDay _timeResult =
+        await showTimePicker(context: context, initialTime: _initialTime);
     if (_timeResult == null) return;
 
     // build final date with time
-    final DateTime finalDateTime = DateTime(_dateResult.year, _dateResult.month, _dateResult.day, _timeResult.hour, _timeResult.minute);
+    final DateTime finalDateTime = DateTime(_dateResult.year, _dateResult.month,
+        _dateResult.day, _timeResult.hour, _timeResult.minute);
 
     // notify the framework that the internal state of this object has changed
     setState(() {
@@ -91,25 +96,30 @@ class _AddEditNewsState extends State<AddEditNews> {
     final FormState _form = _formKey.currentState;
 
     if (!_form.validate()) {
-      _scaffoldKey.currentState.showSnackBar(SnackBar(backgroundColor: Colors.red, content: Text(AppString.formNotValid)));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          backgroundColor: Colors.red, content: Text(AppString.formNotValid)));
     } else {
       // this invokes each onSaved event
       _form.save();
 
       // submit data to backend, if id is set this is an update, else a creation
       if (news.id != null) {
-        news.modifiedBy = Provider.of<LoginProvider>(context, listen: false).loggedMember;
+        news.modifiedBy =
+            Provider.of<LoginProvider>(context, listen: false).loggedMember;
         news.modifiedOn = DateTime.now();
         // update the news then go back with a message, the result is awaited in caller
-        Provider.of<NewsProvider>(context, listen: false).updateNews(news).then((value) {
+        Provider.of<NewsProvider>(context, listen: false).updateNews(news).then(
+            (value) {
           Navigator.pop(context, AppString.newsUpdated);
         }, onError: (error) {
           Navigator.pop(context, AppString.newsUpdateFailed);
         });
       } else {
-        news.createdBy = Provider.of<LoginProvider>(context, listen: false).loggedMember;
+        news.createdBy =
+            Provider.of<LoginProvider>(context, listen: false).loggedMember;
         // create the news then go back with a message, the result is awaited in caller
-        Provider.of<NewsProvider>(context, listen: false).createNews(news).then((value) {
+        Provider.of<NewsProvider>(context, listen: false).createNews(news).then(
+            (value) {
           Navigator.pop(context, AppString.newsCreated);
           // send a push notification
           NotificationsService.pushInstantNewsNotification(news);
@@ -121,21 +131,21 @@ class _AddEditNewsState extends State<AddEditNews> {
   }
 
   Widget build(BuildContext context) {
-    // the current News to be edited
-    final News _currNews = widget.news != null ? widget.news : _newNews;
+    final _newsCreationProvider =
+    Provider.of<NewsCreationProvider>(context, listen: true);
 
     return Scaffold(
       key: _scaffoldKey,
       appBar: AppBar(
-        title: Text(widget.title),
+        title: Text(AppString.newsCreate),
       ),
       body: Container(
         decoration: CustomDecorations.mainContent,
         child: Stack(
           children: <Widget>[
             Form(
+              autovalidateMode: AutovalidateMode.disabled,
               key: _formKey,
-              autovalidate: false,
               child: ListView(
                 padding: const EdgeInsets.symmetric(horizontal: 16.0),
                 children: <Widget>[
@@ -147,9 +157,10 @@ class _AddEditNewsState extends State<AddEditNews> {
                     ),
                     maxLines: 1,
                     inputFormatters: [LengthLimitingTextInputFormatter(128)],
-                    validator: (val) => val.isEmpty ? AppString.newsTitleMandatory : null,
-                    onSaved: (val) => _currNews.title = val,
-                    initialValue: _currNews.title,
+                    validator: (val) =>
+                        val.isEmpty ? AppString.newsTitleMandatory : null,
+                    onSaved: (val) => _newsCreationProvider.news.title = val,
+                    initialValue: _newsCreationProvider.news.title,
                   ),
                   TextFormField(
                     decoration: const InputDecoration(
@@ -159,9 +170,10 @@ class _AddEditNewsState extends State<AddEditNews> {
                     ),
                     maxLines: 2,
                     inputFormatters: [LengthLimitingTextInputFormatter(512)],
-                    validator: (val) => val.isEmpty ? AppString.newsContentMandatory : null,
-                    onSaved: (val) => _currNews.catchLine = val,
-                    initialValue: _currNews.catchLine,
+                    validator: (val) =>
+                        val.isEmpty ? AppString.newsContentMandatory : null,
+                    onSaved: (val) => _newsCreationProvider.news.catchLine = val,
+                    initialValue: _newsCreationProvider.news.catchLine,
                   ),
                   TextFormField(
                     decoration: const InputDecoration(
@@ -171,12 +183,14 @@ class _AddEditNewsState extends State<AddEditNews> {
                     ),
                     maxLines: 5,
                     inputFormatters: [LengthLimitingTextInputFormatter(8128)],
-                    validator: (val) => val.isEmpty ? AppString.newsContentMandatory : null,
-                    onSaved: (val) => _currNews.content = val,
-                    initialValue: _currNews.content,
+                    validator: (val) =>
+                        val.isEmpty ? AppString.newsContentMandatory : null,
+                    onSaved: (val) => _newsCreationProvider.news.content = val,
+                    initialValue: _newsCreationProvider.news.content,
                   ),
                   GestureDetector(
-                    onTap: () => _chooseDate(context, _datePickerController, _currNews.newsDate),
+                    onTap: () => _chooseDate(
+                        context, _datePickerController, _newsCreationProvider.news.newsDate),
                     child: AbsorbPointer(
                       child: TextFormField(
                         decoration: InputDecoration(
@@ -186,9 +200,14 @@ class _AddEditNewsState extends State<AddEditNews> {
                         ),
                         controller: _datePickerController,
                         keyboardType: TextInputType.datetime,
-                        validator: (val) =>
-                            _currNews.id == null && !DateUtils.isBeforeNow(val, DATE_FORMAT) ? AppString.newsDateMustBeFuture : (val.isEmpty ? AppString.newsDateMandatory : null),
-                        onSaved: (val) => _currNews.newsDate = DateFormat(DATE_FORMAT).parseStrict(val),
+                        validator: (val) => _newsCreationProvider.news.id == null &&
+                                !AppDateUtils.isBeforeNow(val, DATE_FORMAT)
+                            ? AppString.newsDateMustBeFuture
+                            : (val.isEmpty
+                                ? AppString.newsDateMandatory
+                                : null),
+                        onSaved: (val) => _newsCreationProvider.news.newsDate =
+                            DateFormat(DATE_FORMAT).parseStrict(val),
                       ),
                     ),
                   ),
@@ -196,7 +215,7 @@ class _AddEditNewsState extends State<AddEditNews> {
               ),
             ),
             SaveCancelBar(
-              saveFunction: () => submitForm(_currNews),
+              saveFunction: () => submitForm(_newsCreationProvider.news),
               cancelFunction: () => Navigator.pop(context),
             ),
           ],

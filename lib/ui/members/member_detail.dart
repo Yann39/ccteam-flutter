@@ -39,9 +39,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 class MemberDetail extends StatefulWidget {
-  final Member member;
-
-  const MemberDetail({Key key, this.member}) : super(key: key);
+  const MemberDetail({Key key}) : super(key: key);
 
   @override
   State<StatefulWidget> createState() {
@@ -62,23 +60,23 @@ class _MemberDetailState extends State<MemberDetail> {
   void initState() {
     super.initState();
     _scrollController = ScrollController()..addListener(() => setState(() {}));
-    Provider.of<RecordProvider>(context, listen: false).fetchMemberRecords(widget.member.id);
-    Provider.of<EventProvider>(context, listen: false).fetchMemberEvents(widget.member.id);
   }
 
   /// Display or hide the Sliver app bar title depending on the scroll offset
   bool get _showTitle {
-    return _scrollController.hasClients && _scrollController.offset > _expandedHeight - kToolbarHeight;
+    return _scrollController.hasClients &&
+        _scrollController.offset > _expandedHeight - kToolbarHeight;
   }
 
   /// Method that launches the Edit Member screen and awaits the result from Navigator.pop
   void _navigateToEditMemberScreen(BuildContext context, Member member) async {
     // Navigator.push returns a Future that will complete after we call Navigator.pop on the target screen
-    final _result = await Navigator.pushNamed(context, '/addEditMember', arguments: member);
+    final _result =
+        await Navigator.pushNamed(context, '/addEditMember', arguments: member);
 
     // after the target screen returns a result, hide any previous snack bars and show the result
     if (_result != null) {
-      Scaffold.of(context)
+      ScaffoldMessenger.of(context)
         ..removeCurrentSnackBar()
         ..showSnackBar(SnackBar(content: Text("$_result")));
     }
@@ -87,15 +85,18 @@ class _MemberDetailState extends State<MemberDetail> {
   /// Method that launches the Track detail screen and awaits the result from Navigator.pop
   void _navigateToTrackDetailScreen(BuildContext context, Track track) async {
     // todo Maybe better to do it in detail screen init method instead of each time here ?
-    Provider.of<RecordProvider>(context, listen: false).fetchTrackRecords(track.id);
-    Provider.of<EventProvider>(context, listen: false).fetchTrackEvents(track.id);
+    Provider.of<RecordProvider>(context, listen: false)
+        .fetchTrackRecords(track.id);
+    Provider.of<EventProvider>(context, listen: false)
+        .fetchTrackEvents(track.id);
 
     // Navigator.push returns a Future that will complete after we call Navigator.pop on the target screen
-    final _result = await Navigator.pushNamed(context, '/trackDetail', arguments: track);
+    final _result =
+        await Navigator.pushNamed(context, '/trackDetail', arguments: track);
 
     // after the target screen returns a result, hide any previous snack bars and show the result
     if (_result != null) {
-      Scaffold.of(context)
+      ScaffoldMessenger.of(context)
         ..removeCurrentSnackBar()
         ..showSnackBar(SnackBar(content: Text("$_result")));
     }
@@ -109,13 +110,13 @@ class _MemberDetailState extends State<MemberDetail> {
         title: Text(AppString.confirmation),
         content: Text(value),
         actions: <Widget>[
-          FlatButton(
+          TextButton(
             onPressed: () {
               _dialogueResult(context, ConfirmDialogAction.yes);
             },
             child: Text(AppString.confirm),
           ),
-          FlatButton(
+          TextButton(
             onPressed: () {
               _dialogueResult(context, ConfirmDialogAction.no);
             },
@@ -130,33 +131,47 @@ class _MemberDetailState extends State<MemberDetail> {
   void _dialogueResult(BuildContext context, ConfirmDialogAction value) {
     if (value == ConfirmDialogAction.yes) {
       // delete member
-      Provider.of<MemberProvider>(context, listen: false).deleteMember(widget.member).then((value) {
-        Scaffold.of(context)
+      Provider.of<MemberProvider>(context, listen: false)
+          .deleteMember(
+              Provider.of<MemberProvider>(context, listen: false).currentMember)
+          .then((value) {
+        ScaffoldMessenger.of(context)
           ..removeCurrentSnackBar()
           ..showSnackBar(SnackBar(content: Text(AppString.memberDeleted)));
       }, onError: (error) {
-        Scaffold.of(context)
+        ScaffoldMessenger.of(context)
           ..removeCurrentSnackBar()
-          ..showSnackBar(SnackBar(content: Text(AppString.memberDeletionFailed)));
+          ..showSnackBar(
+              SnackBar(content: Text(AppString.memberDeletionFailed)));
       });
     }
     Navigator.pop(context);
   }
 
   Widget _recordsTable(RecordProvider recordProvider) {
-    if (recordProvider.memberRecords != null && recordProvider.memberRecords.length > 0) {
+    if (recordProvider.memberRecords != null &&
+        recordProvider.memberRecords.length > 0) {
       return Container(
         decoration: CustomDecorations.cardLight,
         child: Table(
-          columnWidths: {0: FlexColumnWidth(3), 1: FlexColumnWidth(2), 2: FlexColumnWidth(2), 3: FlexColumnWidth(1)},
+          columnWidths: {
+            0: FlexColumnWidth(3),
+            1: FlexColumnWidth(2),
+            2: FlexColumnWidth(2),
+            3: FlexColumnWidth(1)
+          },
           defaultVerticalAlignment: TableCellVerticalAlignment.middle,
-          border:
-              TableBorder(horizontalInside: BorderSide(color: Colors.black.withOpacity(0.3), width: 1), verticalInside: BorderSide(color: Colors.black.withOpacity(0.3), width: 1)),
+          border: TableBorder(
+              horizontalInside:
+                  BorderSide(color: Colors.black.withOpacity(0.3), width: 1),
+              verticalInside:
+                  BorderSide(color: Colors.black.withOpacity(0.3), width: 1)),
           children: [
             for (Record rec in recordProvider.memberRecords)
               TableRow(children: [
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 12.0),
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 8.0, vertical: 12.0),
                   child: Text(
                     rec.track.name,
                     style: TextStyle(color: Colors.black.withOpacity(0.8)),
@@ -165,21 +180,26 @@ class _MemberDetailState extends State<MemberDetail> {
                   ),
                 ),
                 Text(
-                  DateUtils.convertToString(rec.recordDate, "dd/MM/yyyy"),
+                  AppDateUtils.convertToString(rec.recordDate, "dd/MM/yyyy"),
                   style: TextStyle(color: Colors.black.withOpacity(0.8)),
                   textAlign: TextAlign.center,
                 ),
                 Text(
-                    DateUtils.toLapTimeString(rec.lapTime),
-                    style: TextStyle(color: Colors.black.withOpacity(1), fontFamily: "AlarmClock", letterSpacing: -1),
-                    textScaleFactor: 1,
-                    textAlign: TextAlign.center,
-                  ),
+                  AppDateUtils.toLapTimeString(rec.lapTime),
+                  style: TextStyle(
+                      color: Colors.black.withOpacity(1),
+                      fontFamily: "AlarmClock",
+                      letterSpacing: -1),
+                  textScaleFactor: 1,
+                  textAlign: TextAlign.center,
+                ),
                 SizedBox(
                     width: 10,
                     child: rec.conditions == "dry"
-                        ? Icon(Icons.wb_sunny, color: Colors.black.withOpacity(0.6), size: 15)
-                        : Icon(CustomIcons.rain, color: Colors.black.withOpacity(0.6), size: 15))
+                        ? Icon(Icons.wb_sunny,
+                            color: Colors.black.withOpacity(0.6), size: 15)
+                        : Icon(CustomIcons.rain,
+                            color: Colors.black.withOpacity(0.6), size: 15))
               ])
           ],
         ),
@@ -194,7 +214,8 @@ class _MemberDetailState extends State<MemberDetail> {
   }
 
   Widget _eventsTimeline(EventProvider eventProvider) {
-    if (eventProvider.memberEvents != null && eventProvider.memberEvents.length > 0) {
+    if (eventProvider.memberEvents != null &&
+        eventProvider.memberEvents.length > 0) {
       return SizedBox(
         height: 142,
         child: ListView.builder(
@@ -202,8 +223,14 @@ class _MemberDetailState extends State<MemberDetail> {
           itemCount: eventProvider.memberEvents.length,
           itemBuilder: (BuildContext context, int index) {
             // if list view is not large enough, add padding so it fills the whole screen width
-            final double pad =
-                index >= eventProvider.memberEvents.length - 1 ? max(MediaQuery.of(context).size.width - ((_eventCardSize + 16) * eventProvider.memberEvents.length) - 16, 0) : 0.0;
+            final double pad = index >= eventProvider.memberEvents.length - 1
+                ? max(
+                    MediaQuery.of(context).size.width -
+                        ((_eventCardSize + 16) *
+                            eventProvider.memberEvents.length) -
+                        16,
+                    0)
+                : 0.0;
             return Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
@@ -213,7 +240,8 @@ class _MemberDetailState extends State<MemberDetail> {
                       padding: EdgeInsets.only(top: 36.0),
                       margin: EdgeInsets.only(right: pad),
                       child: InkWell(
-                        onTap: () => _navigateToTrackDetailScreen(context, eventProvider.memberEvents[index].track),
+                        onTap: () => _navigateToTrackDetailScreen(
+                            context, eventProvider.memberEvents[index].track),
                         child: Container(
                           decoration: CustomDecorations.cardLight,
                           width: _eventCardSize,
@@ -224,7 +252,8 @@ class _MemberDetailState extends State<MemberDetail> {
                             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                             children: <Widget>[
                               Icon(
-                                TrackUtils.trackIconFromName(eventProvider.memberEvents[index].track.name),
+                                TrackUtils.trackIconFromName(eventProvider
+                                    .memberEvents[index].track.name),
                                 size: 30,
                                 color: Colors.red[700],
                               ),
@@ -256,7 +285,8 @@ class _MemberDetailState extends State<MemberDetail> {
                         color: Colors.red[700],
                       ),
                     ),
-                    if (eventProvider.memberEvents.length > 1 && index != eventProvider.memberEvents.length - 1)
+                    if (eventProvider.memberEvents.length > 1 &&
+                        index != eventProvider.memberEvents.length - 1)
                       Positioned(
                         top: 6.0,
                         left: _eventCardSize,
@@ -280,11 +310,13 @@ class _MemberDetailState extends State<MemberDetail> {
                                 decoration: BoxDecoration(
                                   color: Colors.red[700],
                                   shape: BoxShape.rectangle,
-                                  borderRadius: BorderRadius.only(topLeft: Radius.circular(6.0), topRight: Radius.circular(6.0)),
+                                  borderRadius: BorderRadius.only(
+                                      topLeft: Radius.circular(6.0),
+                                      topRight: Radius.circular(6.0)),
                                 ),
                                 child: Center(
                                   child: Text(
-                                    "${DateUtils.convertToString(eventProvider.memberEvents[index].startDate, "MMM yy")}",
+                                    "${AppDateUtils.convertToString(eventProvider.memberEvents[index].startDate, "MMM yy")}",
                                     textScaleFactor: 0.75,
                                     style: TextStyle(color: Colors.white),
                                   ),
@@ -295,7 +327,7 @@ class _MemberDetailState extends State<MemberDetail> {
                                   decoration: CustomDecorations.cardBody,
                                   child: Center(
                                     child: Text(
-                                      "${DateUtils.convertToString(eventProvider.memberEvents[index].startDate, "dd")}",
+                                      "${AppDateUtils.convertToString(eventProvider.memberEvents[index].startDate, "dd")}",
                                       style: TextStyle(color: Colors.white),
                                     ),
                                   ),
@@ -323,8 +355,12 @@ class _MemberDetailState extends State<MemberDetail> {
   }
 
   Widget build(BuildContext context) {
-    final RecordProvider _recordProvider = Provider.of<RecordProvider>(context, listen: true);
-    final EventProvider _eventProvider = Provider.of<EventProvider>(context, listen: true);
+    final MemberProvider _memberProvider =
+        Provider.of<MemberProvider>(context, listen: true);
+    final RecordProvider _recordProvider =
+        Provider.of<RecordProvider>(context, listen: true);
+    final EventProvider _eventProvider =
+        Provider.of<EventProvider>(context, listen: true);
 
     final _motoInfo = MergeSemantics(
       child: Padding(
@@ -336,10 +372,11 @@ class _MemberDetailState extends State<MemberDetail> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
-                  Text(AppString.moto, style: TextStyle(color: Colors.red[700])),
+                  Text(AppString.moto,
+                      style: TextStyle(color: Colors.red[700])),
                   Container(
                     child: Text(
-                      "${widget.member.bike}",
+                      "${_memberProvider.currentMember?.bike}",
                       style: TextStyle(color: Colors.black.withOpacity(0.8)),
                       textScaleFactor: 1.1,
                     ),
@@ -349,7 +386,8 @@ class _MemberDetailState extends State<MemberDetail> {
             ),
             SizedBox(
               width: 72.0,
-              child: Icon(CustomIcons.motorbike, color: Colors.red[700].withOpacity(0.8)),
+              child: Icon(CustomIcons.motorbike,
+                  color: Colors.red[700].withOpacity(0.8)),
             )
           ],
         ),
@@ -366,10 +404,11 @@ class _MemberDetailState extends State<MemberDetail> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
-                  Text(AppString.mobile, style: TextStyle(color: Colors.red[700])),
+                  Text(AppString.mobile,
+                      style: TextStyle(color: Colors.red[700])),
                   Container(
                     child: Text(
-                      "${widget.member.phone}",
+                      "${_memberProvider.currentMember.phone}",
                       style: TextStyle(color: Colors.black.withOpacity(0.8)),
                       textScaleFactor: 1.1,
                     ),
@@ -383,7 +422,8 @@ class _MemberDetailState extends State<MemberDetail> {
                     icon: Icon(Icons.phone),
                     color: Colors.green,
                     onPressed: () {
-                      AppUtils.launchURL("tel:${widget.member.phone}");
+                      AppUtils.launchURL(
+                          "tel:${_memberProvider.currentMember.phone}");
                     })),
             SizedBox(
                 width: 72.0,
@@ -391,7 +431,8 @@ class _MemberDetailState extends State<MemberDetail> {
                     icon: Icon(Icons.sms),
                     color: Colors.blue,
                     onPressed: () {
-                      AppUtils.launchURL("sms:${widget.member.phone}");
+                      AppUtils.launchURL(
+                          "sms:${_memberProvider.currentMember.phone}");
                     }))
           ],
         ),
@@ -408,10 +449,11 @@ class _MemberDetailState extends State<MemberDetail> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
-                  Text(AppString.email, style: TextStyle(color: Colors.red[700])),
+                  Text(AppString.email,
+                      style: TextStyle(color: Colors.red[700])),
                   Container(
                     child: Text(
-                      "${widget.member.email}",
+                      "${_memberProvider.currentMember.email}",
                       style: TextStyle(color: Colors.black.withOpacity(0.8)),
                       textScaleFactor: 1.1,
                     ),
@@ -425,7 +467,8 @@ class _MemberDetailState extends State<MemberDetail> {
                     icon: Icon(Icons.mail),
                     color: Colors.purple.withOpacity(0.6),
                     onPressed: () {
-                      AppUtils.launchURL("mailto:${widget.member.email}");
+                      AppUtils.launchURL(
+                          "mailto:${_memberProvider.currentMember.email}");
                     }))
           ],
         ),
@@ -443,7 +486,9 @@ class _MemberDetailState extends State<MemberDetail> {
               expandedHeight: _expandedHeight,
               title: _showTitle
                   ? Text(
-                      widget.member.firstName + ' ' + widget.member.lastName,
+                      _memberProvider.currentMember.firstName +
+                          ' ' +
+                          _memberProvider.currentMember.lastName,
                       overflow: TextOverflow.ellipsis,
                     )
                   : null,
@@ -451,7 +496,9 @@ class _MemberDetailState extends State<MemberDetail> {
                   ? null
                   : FlexibleSpaceBar(
                       title: FlexibleTitle(
-                        text: widget.member.firstName + ' ' + widget.member.lastName,
+                        text: _memberProvider.currentMember.firstName +
+                            ' ' +
+                            _memberProvider.currentMember.lastName,
                         padding: EdgeInsets.only(left: 84, bottom: 44),
                       ),
                       background: Stack(
@@ -466,7 +513,8 @@ class _MemberDetailState extends State<MemberDetail> {
                                 width: 20.0,
                               ),
                             ),
-                            imageUrl: 'https://images.freeimages.com/images/small-previews/e71/frog-1371919.jpg',
+                            imageUrl:
+                                'https://images.freeimages.com/images/small-previews/e71/frog-1371919.jpg',
                             fit: BoxFit.fitWidth,
                           ),
                           DecoratedBox(
@@ -474,7 +522,10 @@ class _MemberDetailState extends State<MemberDetail> {
                               gradient: LinearGradient(
                                 begin: Alignment(0.0, 1.0),
                                 end: Alignment(0.0, -1.0),
-                                colors: <Color>[Colors.black.withOpacity(0.4), Colors.transparent],
+                                colors: <Color>[
+                                  Colors.black.withOpacity(0.4),
+                                  Colors.transparent
+                                ],
                               ),
                             ),
                           ),
@@ -482,25 +533,37 @@ class _MemberDetailState extends State<MemberDetail> {
                             bottom: 15,
                             left: 15,
                             child: Container(
-                              decoration: ShapeDecoration(shape: CircleBorder(), color: Colors.white),
+                              decoration: ShapeDecoration(
+                                  shape: CircleBorder(), color: Colors.white),
                               padding: EdgeInsets.all(3.0),
-                              child: widget.member.avatar != null && widget.member.avatar.length > 0
+                              child: _memberProvider.currentMember.avatarUrl !=
+                                          null &&
+                                      _memberProvider
+                                              .currentMember.avatarUrl.length >
+                                          0
                                   ? CircleAvatar(
                                       radius: 50,
-                                      backgroundImage: NetworkImage("$SERVER_ROOT_PATH$SERVER_AVATAR_FOLDER${widget.member.avatar}"),
+                                      backgroundImage: NetworkImage(
+                                          "$SERVER_ROOT_PATH$SERVER_AVATAR_FOLDER${_memberProvider.currentMember.avatarUrl}"),
                                     )
                                   : CircleAvatar(
                                       radius: 50,
                                       backgroundColor: Colors.blue[100],
                                       child: ShaderMask(
                                         blendMode: BlendMode.srcATop,
-                                        shaderCallback: (bounds) => LinearGradient(
-                                          begin: const FractionalOffset(0.0, 0.0),
+                                        shaderCallback: (bounds) =>
+                                            LinearGradient(
+                                          begin:
+                                              const FractionalOffset(0.0, 0.0),
                                           end: const FractionalOffset(0.0, 1.0),
                                           stops: [0.0, 1.0],
-                                          colors: [Colors.red[700], Colors.blue[700]],
+                                          colors: [
+                                            Colors.red[700],
+                                            Colors.blue[700]
+                                          ],
                                         ).createShader(bounds),
-                                        child: Icon(CustomIcons.pilot, size: 75),
+                                        child:
+                                            Icon(CustomIcons.pilot, size: 75),
                                       ),
                                     ),
                             ),
@@ -511,11 +574,13 @@ class _MemberDetailState extends State<MemberDetail> {
               actions: <Widget>[
                 IconButton(
                   icon: const Icon(Icons.edit),
-                  onPressed: () => _navigateToEditMemberScreen(context, widget.member),
+                  onPressed: () => _navigateToEditMemberScreen(
+                      context, _memberProvider.currentMember),
                 ),
                 IconButton(
                   icon: const Icon(Icons.delete_forever),
-                  onPressed: () => _showConfirmation(context, AppString.memberDeletionAreYouSure),
+                  onPressed: () => _showConfirmation(
+                      context, AppString.memberDeletionAreYouSure),
                 )
               ],
             ),
@@ -526,18 +591,26 @@ class _MemberDetailState extends State<MemberDetail> {
                   <Widget>[
                     ConstrainedBox(
                       // set minimum height : screen height - app bar height - status bar height - padding
-                      constraints: BoxConstraints(minHeight: MediaQuery.of(context).size.height - kToolbarHeight - MediaQuery.of(context).padding.top - 16),
+                      constraints: BoxConstraints(
+                          minHeight: MediaQuery.of(context).size.height -
+                              kToolbarHeight -
+                              MediaQuery.of(context).padding.top -
+                              16),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: <Widget>[
                           Row(
                             children: <Widget>[
-                              Icon(Icons.person, size: 16, color: Colors.black.withOpacity(0.8)),
+                              Icon(Icons.person,
+                                  size: 16,
+                                  color: Colors.black.withOpacity(0.8)),
                               SizedBox(width: 5.0),
                               Text(
                                 AppString.personalInformation,
                                 textScaleFactor: 1.2,
-                                style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black.withOpacity(0.8)),
+                                style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.black.withOpacity(0.8)),
                               ),
                             ],
                           ),
@@ -548,9 +621,13 @@ class _MemberDetailState extends State<MemberDetail> {
                             child: Column(
                               children: <Widget>[
                                 _motoInfo,
-                                Divider(color: Colors.black.withOpacity(0.8), height: 5),
+                                Divider(
+                                    color: Colors.black.withOpacity(0.8),
+                                    height: 5),
                                 _mobileInfo,
-                                Divider(color: Colors.black.withOpacity(0.8), height: 5),
+                                Divider(
+                                    color: Colors.black.withOpacity(0.8),
+                                    height: 5),
                                 _emailInfo,
                               ],
                             ),
@@ -558,12 +635,16 @@ class _MemberDetailState extends State<MemberDetail> {
                           SizedBox(height: 15),
                           Row(
                             children: <Widget>[
-                              Icon(Icons.event, size: 16, color: Colors.black.withOpacity(0.8)),
+                              Icon(Icons.event,
+                                  size: 16,
+                                  color: Colors.black.withOpacity(0.8)),
                               SizedBox(width: 5.0),
                               Text(
                                 AppString.rides,
                                 textScaleFactor: 1.2,
-                                style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black.withOpacity(0.8)),
+                                style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.black.withOpacity(0.8)),
                               ),
                             ],
                           ),
@@ -572,12 +653,16 @@ class _MemberDetailState extends State<MemberDetail> {
                           SizedBox(height: 10),
                           Row(
                             children: <Widget>[
-                              Icon(Icons.timer, size: 16, color: Colors.black.withOpacity(0.8)),
+                              Icon(Icons.timer,
+                                  size: 16,
+                                  color: Colors.black.withOpacity(0.8)),
                               SizedBox(width: 5.0),
                               Text(
                                 AppString.chronos,
                                 textScaleFactor: 1.2,
-                                style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black.withOpacity(0.8)),
+                                style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.black.withOpacity(0.8)),
                               ),
                             ],
                           ),

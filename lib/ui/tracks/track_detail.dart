@@ -19,19 +19,14 @@
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:chachatte_team/models/event.dart';
-import 'package:chachatte_team/models/member.dart';
 import 'package:chachatte_team/models/record.dart';
 import 'package:chachatte_team/models/track.dart';
 import 'package:chachatte_team/providers/event_provider.dart';
 import 'package:chachatte_team/providers/record_provider.dart';
-import 'package:chachatte_team/services/events_service.dart';
-import 'package:chachatte_team/ui/events/add_edit_event.dart';
 import 'package:chachatte_team/utils/app_utils.dart';
-import 'package:chachatte_team/utils/constants.dart';
 import 'package:chachatte_team/utils/custom_decorations.dart';
 import 'package:chachatte_team/utils/custom_icons.dart';
 import 'package:chachatte_team/utils/date_utils.dart';
-import 'package:chachatte_team/utils/enums.dart';
 import 'package:chachatte_team/utils/string_utils.dart';
 import 'package:chachatte_team/utils/strings.dart';
 import 'package:chachatte_team/utils/track_utils.dart';
@@ -65,19 +60,29 @@ class _TrackDetailState extends State<TrackDetail> {
   }
 
   Widget _recordsTable(RecordProvider recordProvider) {
-    if (recordProvider.trackRecords != null && recordProvider.trackRecords.length > 0) {
+    if (recordProvider.trackRecords != null &&
+        recordProvider.trackRecords.length > 0) {
       return Container(
         decoration: CustomDecorations.cardLight,
         child: Table(
-          columnWidths: {0: FlexColumnWidth(3), 1: FlexColumnWidth(2), 2: FlexColumnWidth(2), 3: FlexColumnWidth(1)},
+          columnWidths: {
+            0: FlexColumnWidth(3),
+            1: FlexColumnWidth(2),
+            2: FlexColumnWidth(2),
+            3: FlexColumnWidth(1)
+          },
           defaultVerticalAlignment: TableCellVerticalAlignment.middle,
-          border:
-              TableBorder(horizontalInside: BorderSide(color: Colors.black.withOpacity(0.3), width: 1), verticalInside: BorderSide(color: Colors.black.withOpacity(0.3), width: 1)),
+          border: TableBorder(
+              horizontalInside:
+                  BorderSide(color: Colors.black.withOpacity(0.3), width: 1),
+              verticalInside:
+                  BorderSide(color: Colors.black.withOpacity(0.3), width: 1)),
           children: [
             for (Record rec in recordProvider.trackRecords)
               TableRow(children: [
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 12.0),
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 8.0, vertical: 12.0),
                   child: Text(
                     "${rec.member.firstName} ${rec.member.lastName}",
                     style: TextStyle(color: Colors.black.withOpacity(0.8)),
@@ -86,20 +91,22 @@ class _TrackDetailState extends State<TrackDetail> {
                   ),
                 ),
                 Text(
-                  DateUtils.toLapTimeString(rec.lapTime),
+                  AppDateUtils.toLapTimeString(rec.lapTime),
                   style: TextStyle(color: Colors.black.withOpacity(0.8)),
                   textAlign: TextAlign.center,
                 ),
                 Text(
-                  DateUtils.convertToString(rec.recordDate, "dd/MM/yyyy"),
+                  AppDateUtils.convertToString(rec.recordDate, "dd/MM/yyyy"),
                   style: TextStyle(color: Colors.black.withOpacity(0.8)),
                   textAlign: TextAlign.center,
                 ),
                 SizedBox(
                     width: 10,
                     child: rec.conditions == "dry"
-                        ? Icon(Icons.wb_sunny, color: Colors.black.withOpacity(0.6), size: 15)
-                        : Icon(CustomIcons.rain, color: Colors.black.withOpacity(0.6), size: 15))
+                        ? Icon(Icons.wb_sunny,
+                            color: Colors.black.withOpacity(0.6), size: 15)
+                        : Icon(CustomIcons.rain,
+                            color: Colors.black.withOpacity(0.6), size: 15))
               ])
           ],
         ),
@@ -114,19 +121,29 @@ class _TrackDetailState extends State<TrackDetail> {
   }
 
   Widget _eventsTable(EventProvider eventProvider) {
-    if (eventProvider.trackEvents != null && eventProvider.trackEvents.length > 0) {
+    if (eventProvider.trackEvents != null &&
+        eventProvider.trackEvents.length > 0) {
       return Container(
         decoration: CustomDecorations.cardLight,
         child: Table(
-          columnWidths: {0: FlexColumnWidth(3), 1: FlexColumnWidth(2), 2: FlexColumnWidth(1), 3: FlexColumnWidth(1)},
+          columnWidths: {
+            0: FlexColumnWidth(3),
+            1: FlexColumnWidth(2),
+            2: FlexColumnWidth(1),
+            3: FlexColumnWidth(1)
+          },
           defaultVerticalAlignment: TableCellVerticalAlignment.middle,
-          border:
-              TableBorder(horizontalInside: BorderSide(color: Colors.black.withOpacity(0.3), width: 1), verticalInside: BorderSide(color: Colors.black.withOpacity(0.3), width: 1)),
+          border: TableBorder(
+              horizontalInside:
+                  BorderSide(color: Colors.black.withOpacity(0.3), width: 1),
+              verticalInside:
+                  BorderSide(color: Colors.black.withOpacity(0.3), width: 1)),
           children: [
             for (Event ev in eventProvider.trackEvents)
               TableRow(children: [
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 12.0),
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 8.0, vertical: 12.0),
                   child: Text(
                     ev.fullDate,
                     style: TextStyle(color: Colors.black.withOpacity(0.8)),
@@ -163,8 +180,10 @@ class _TrackDetailState extends State<TrackDetail> {
   }
 
   Widget build(BuildContext context) {
-    final RecordProvider _recordProvider = Provider.of<RecordProvider>(context, listen: true);
-    final EventProvider _eventProvider = Provider.of<EventProvider>(context, listen: true);
+    final RecordProvider _recordProvider =
+        Provider.of<RecordProvider>(context, listen: true);
+    final EventProvider _eventProvider =
+        Provider.of<EventProvider>(context, listen: true);
 
     return Scaffold(
       /*appBar: AppBar(
@@ -203,7 +222,8 @@ class _TrackDetailState extends State<TrackDetail> {
                             width: 20.0,
                           ),
                         ),
-                        imageUrl: TrackUtils.trackCoverImageUrlFromName(widget.track.name),
+                        imageUrl: TrackUtils.trackCoverImageUrlFromName(
+                            widget.track.name),
                         fit: BoxFit.fitWidth,
                       ),
                       DecoratedBox(
@@ -211,7 +231,10 @@ class _TrackDetailState extends State<TrackDetail> {
                           gradient: LinearGradient(
                             begin: Alignment(0.0, 1.0),
                             end: Alignment(0.0, -1.0),
-                            colors: <Color>[Colors.black.withOpacity(0.4), Colors.transparent],
+                            colors: <Color>[
+                              Colors.black.withOpacity(0.4),
+                              Colors.transparent
+                            ],
                           ),
                         ),
                       ),
@@ -219,145 +242,163 @@ class _TrackDetailState extends State<TrackDetail> {
                   ),
                 ),
               ),
-              SliverPadding(padding: EdgeInsets.all(8.0), sliver: SliverList(delegate: SliverChildListDelegate(<Widget>[
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: <Widget>[
-                    Container(
-                      padding: EdgeInsets.all(8.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: <Widget>[
-                          Row(
+              SliverPadding(
+                  padding: EdgeInsets.all(8.0),
+                  sliver: SliverList(
+                      delegate: SliverChildListDelegate(<Widget>[
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: <Widget>[
+                        Container(
+                          padding: EdgeInsets.all(8.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
                             children: <Widget>[
-                              Expanded(
-                                flex: 1,
-                                child: Container(
-                                  height: 100,
-                                  margin: EdgeInsets.all(4.0),
-                                  padding: EdgeInsets.all(8.0),
-                                  decoration: CustomDecorations.cardLight,
-                                  child: Column(
-                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                    children: <Widget>[
-                                      Icon(
-                                        Icons.timer,
-                                        size: 30,
-                                        color: Colors.red[700],
+                              Row(
+                                children: <Widget>[
+                                  Expanded(
+                                    flex: 1,
+                                    child: Container(
+                                      height: 100,
+                                      margin: EdgeInsets.all(4.0),
+                                      padding: EdgeInsets.all(8.0),
+                                      decoration: CustomDecorations.cardLight,
+                                      child: Column(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
+                                        children: <Widget>[
+                                          Icon(
+                                            Icons.timer,
+                                            size: 30,
+                                            color: Colors.red[700],
+                                          ),
+                                          Text(
+                                            AppString.lapRecord,
+                                            textAlign: TextAlign.center,
+                                          ),
+                                          Text(
+                                            AppDateUtils.toLapTimeString(
+                                                widget.track.lapRecord),
+                                            textAlign: TextAlign.center,
+                                            maxLines: 2,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ],
                                       ),
-                                      Text(
-                                        AppString.lapRecord,
-                                        textAlign: TextAlign.center,
-                                      ),
-                                      Text(
-                                        DateUtils.toLapTimeString(widget.track.lapRecord),
-                                        textAlign: TextAlign.center,
-                                        maxLines: 2,
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                              Expanded(
-                                flex: 1,
-                                child: Container(
-                                  height: 100,
-                                  margin: EdgeInsets.all(4.0),
-                                  padding: EdgeInsets.all(8.0),
-                                  decoration: CustomDecorations.cardLight,
-                                  child: Column(
-                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                    children: <Widget>[
-                                      Icon(
-                                        Icons.straighten,
-                                        size: 30,
-                                        color: Colors.red[700],
-                                      ),
-                                      Text(
-                                        AppString.length,
-                                        textAlign: TextAlign.center,
-                                      ),
-                                      Text(
-                                        "${widget.track.distance}",
-                                        textAlign: TextAlign.center,
-                                        maxLines: 2,
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                              Expanded(
-                                flex: 1,
-                                child: InkWell(
-                                  onTap: () => AppUtils.launchURL("geo:${widget.track.latitude},${widget.track.longitude}"),
-                                  child: Container(
-                                    height: 100,
-                                    margin: EdgeInsets.all(4.0),
-                                    padding: EdgeInsets.all(8.0),
-                                    decoration: CustomDecorations.cardLight,
-                                    child: Column(
-                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                      children: <Widget>[
-                                        Icon(
-                                          Icons.place,
-                                          size: 30,
-                                          color: Colors.red[700],
-                                        ),
-                                        Text(
-                                          "${widget.track.latitude}",
-                                          textAlign: TextAlign.center,
-                                        ),
-                                        Text(
-                                          "${widget.track.longitude}",
-                                          textAlign: TextAlign.center,
-                                        ),
-                                      ],
                                     ),
                                   ),
-                                ),
+                                  Expanded(
+                                    flex: 1,
+                                    child: Container(
+                                      height: 100,
+                                      margin: EdgeInsets.all(4.0),
+                                      padding: EdgeInsets.all(8.0),
+                                      decoration: CustomDecorations.cardLight,
+                                      child: Column(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
+                                        children: <Widget>[
+                                          Icon(
+                                            Icons.straighten,
+                                            size: 30,
+                                            color: Colors.red[700],
+                                          ),
+                                          Text(
+                                            AppString.length,
+                                            textAlign: TextAlign.center,
+                                          ),
+                                          Text(
+                                            "${widget.track.distance}",
+                                            textAlign: TextAlign.center,
+                                            maxLines: 2,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                  Expanded(
+                                    flex: 1,
+                                    child: InkWell(
+                                      onTap: () => AppUtils.launchURL(
+                                          "geo:${widget.track.latitude},${widget.track.longitude}"),
+                                      child: Container(
+                                        height: 100,
+                                        margin: EdgeInsets.all(4.0),
+                                        padding: EdgeInsets.all(8.0),
+                                        decoration: CustomDecorations.cardLight,
+                                        child: Column(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceBetween,
+                                          children: <Widget>[
+                                            Icon(
+                                              Icons.place,
+                                              size: 30,
+                                              color: Colors.red[700],
+                                            ),
+                                            Text(
+                                              "${widget.track.latitude}",
+                                              textAlign: TextAlign.center,
+                                            ),
+                                            Text(
+                                              "${widget.track.longitude}",
+                                              textAlign: TextAlign.center,
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
                               ),
+                              Divider(color: Colors.white),
+                              SizedBox(height: 10),
+                              Row(
+                                children: <Widget>[
+                                  Icon(Icons.description,
+                                      size: 16,
+                                      color: Colors.black.withOpacity(0.8)),
+                                  SizedBox(width: 5.0),
+                                  Text(
+                                    AppString.trackEvents,
+                                    textScaleFactor: 1.2,
+                                    style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.black.withOpacity(0.8)),
+                                  ),
+                                ],
+                              ),
+                              SizedBox(height: 10),
+                              _eventsTable(_eventProvider),
+                              SizedBox(height: 10),
+                              Divider(color: Colors.white),
+                              SizedBox(height: 10),
+                              Row(
+                                children: <Widget>[
+                                  Icon(Icons.group,
+                                      size: 18,
+                                      color: Colors.black.withOpacity(0.64)),
+                                  SizedBox(width: 5.0),
+                                  Text(
+                                    AppString.chronos,
+                                    textScaleFactor: 1.2,
+                                    style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.black.withOpacity(0.64)),
+                                  ),
+                                ],
+                              ),
+                              SizedBox(height: 10),
+                              _recordsTable(_recordProvider),
                             ],
                           ),
-                          Divider(color: Colors.white),
-                          SizedBox(height: 10),
-                          Row(
-                            children: <Widget>[
-                              Icon(Icons.description, size: 16, color: Colors.black.withOpacity(0.8)),
-                              SizedBox(width: 5.0),
-                              Text(
-                                AppString.trackEvents,
-                                textScaleFactor: 1.2,
-                                style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black.withOpacity(0.8)),
-                              ),
-                            ],
-                          ),
-                          SizedBox(height: 10),
-                          _eventsTable(_eventProvider),
-                          SizedBox(height: 10),
-                          Divider(color: Colors.white),
-                          SizedBox(height: 10),
-                          Row(
-                            children: <Widget>[
-                              Icon(Icons.group, size: 18, color: Colors.black.withOpacity(0.64)),
-                              SizedBox(width: 5.0),
-                              Text(
-                                AppString.chronos,
-                                textScaleFactor: 1.2,
-                                style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black.withOpacity(0.64)),
-                              ),
-                            ],
-                          ),
-                          SizedBox(height: 10),
-                          _recordsTable(_recordProvider),
-                        ],
-                      ),
+                        ),
+                        SizedBox(
+                          height: 400,
+                        )
+                      ],
                     ),
-                    SizedBox(height: 400,)
-                  ],
-                ),
-              ]))),
+                  ]))),
             ],
           )
 

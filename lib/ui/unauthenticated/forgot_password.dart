@@ -35,7 +35,8 @@ class ForgotPassword extends StatefulWidget {
 }
 
 class _ForgotPassword extends State<ForgotPassword> {
-  final GlobalKey<FormState> _forgotPasswordFormKey = new GlobalKey<FormState>();
+  final GlobalKey<FormState> _forgotPasswordFormKey =
+      new GlobalKey<FormState>();
   final Logger _log = new Logger('ForgotPassword');
 
   String _email;
@@ -46,13 +47,16 @@ class _ForgotPassword extends State<ForgotPassword> {
 
     // validate the form
     if (!_form.validate()) {
-      Scaffold.of(context).showSnackBar(SnackBar(backgroundColor: Colors.red, content: Text(AppString.formNotValid)));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          backgroundColor: Colors.red, content: Text(AppString.formNotValid)));
     } else {
       // this invokes each onSaved event
       _form.save();
 
       // submit data to backend then display a message
-      Provider.of<LoginProvider>(context, listen: false).askPassword(_email).then((value) {
+      Provider.of<LoginProvider>(context, listen: false)
+          .askPassword(_email)
+          .then((value) {
         Navigator.pop(context, "");
       }, onError: (error) {
         Navigator.pop(context, "");
@@ -61,7 +65,7 @@ class _ForgotPassword extends State<ForgotPassword> {
   }
 
   Widget build(BuildContext context) {
-    _log.info("Building ForgotPassword");
+    _log.info("Building ForgotPassword...");
 
     final _logo = Container(
       padding: EdgeInsets.only(top: 36),
@@ -105,8 +109,10 @@ class _ForgotPassword extends State<ForgotPassword> {
         autofocus: false,
         style: TextStyle(color: Colors.white),
         decoration: InputDecoration(
-          enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.white)),
-          focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.white)),
+          enabledBorder:
+              OutlineInputBorder(borderSide: BorderSide(color: Colors.white)),
+          focusedBorder:
+              OutlineInputBorder(borderSide: BorderSide(color: Colors.white)),
           prefixIcon: Icon(Icons.mail, color: Colors.white),
           hintText: AppString.loginEmailHint,
           hintStyle: TextStyle(color: Colors.grey[400]),
@@ -114,21 +120,27 @@ class _ForgotPassword extends State<ForgotPassword> {
         ),
         maxLines: 1,
         inputFormatters: [LengthLimitingTextInputFormatter(128)],
-        validator: (val) => val.isEmpty ? AppString.memberEmailMandatory : (StringUtils.isValidEmail(val) ? null : AppString.memberEmailNotValid),
+        validator: (val) => val.isEmpty
+            ? AppString.memberEmailMandatory
+            : (StringUtils.isValidEmail(val)
+                ? null
+                : AppString.memberEmailNotValid),
         onSaved: (val) => _email = val,
         initialValue: _email,
       ),
     );
 
-    final _cancelButton = RaisedButton(
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(8),
+    final _cancelButton = ElevatedButton(
+      style: ElevatedButton.styleFrom(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(8),
+        ),
+        padding: EdgeInsets.fromLTRB(16.0, 12.0, 16.0, 12.0),
+        primary: Colors.grey[700],
       ),
       onPressed: () {
         Navigator.pop(context);
       },
-      padding: EdgeInsets.fromLTRB(16.0, 12.0, 16.0, 12.0),
-      color: Colors.grey[700],
       child: Text(
         AppString.cancel,
         style: TextStyle(color: Colors.white),
@@ -137,15 +149,17 @@ class _ForgotPassword extends State<ForgotPassword> {
 
     final _sendButton = Builder(
       builder: (BuildContext context) {
-        return RaisedButton(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8),
+        return ElevatedButton(
+          style: ElevatedButton.styleFrom(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8),
+            ),
+            padding: EdgeInsets.fromLTRB(16.0, 12.0, 16.0, 12.0),
+            primary: Colors.red[700],
           ),
           onPressed: () {
             _doResetPassword(context);
           },
-          padding: EdgeInsets.fromLTRB(16.0, 12.0, 16.0, 12.0),
-          color: Colors.red[700],
           child: Text(
             AppString.send,
             style: TextStyle(color: Colors.white),
@@ -177,8 +191,8 @@ class _ForgotPassword extends State<ForgotPassword> {
               Center(
                 child: SingleChildScrollView(
                   child: Form(
+                    autovalidateMode: AutovalidateMode.disabled,
                     key: _forgotPasswordFormKey,
-                    autovalidate: false,
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       crossAxisAlignment: CrossAxisAlignment.center,

@@ -43,8 +43,10 @@ class _MemberEventsState extends State<MemberEvents> {
   @override
   void initState() {
     super.initState();
-    Provider.of<RecordProvider>(context, listen: false).fetchMemberRecords(widget.member.id);
-    Provider.of<EventProvider>(context, listen: false).fetchMemberEventsByStatus(widget.member.id);
+    Provider.of<RecordProvider>(context, listen: false)
+        .fetchMemberRecords(widget.member.id);
+    Provider.of<EventProvider>(context, listen: false)
+        .fetchMemberEventsByStatus(widget.member.id);
   }
 
   /// Method that launches the Add Event screen and awaits the result from Navigator.pop
@@ -54,7 +56,7 @@ class _MemberEventsState extends State<MemberEvents> {
 
     // after the target screen returns a result, hide any previous snack bars and show the new result
     if (_result != null) {
-      Scaffold.of(context)
+      ScaffoldMessenger.of(context)
         ..removeCurrentSnackBar()
         ..showSnackBar(SnackBar(content: Text("$_result")));
     }
@@ -68,13 +70,13 @@ class _MemberEventsState extends State<MemberEvents> {
         title: Text(AppString.confirmation),
         content: Text(value),
         actions: <Widget>[
-          FlatButton(
+          TextButton(
             onPressed: () {
               _dialogueResult(context, ConfirmDialogAction.yes);
             },
             child: Text(AppString.confirm),
           ),
-          FlatButton(
+          TextButton(
             onPressed: () {
               _dialogueResult(context, ConfirmDialogAction.no);
             },
@@ -89,21 +91,25 @@ class _MemberEventsState extends State<MemberEvents> {
   void _dialogueResult(BuildContext context, ConfirmDialogAction value) {
     if (value == ConfirmDialogAction.yes) {
       // delete member
-      Provider.of<MemberProvider>(context, listen: false).deleteMember(widget.member).then((value) {
-        Scaffold.of(context)
+      Provider.of<MemberProvider>(context, listen: false)
+          .deleteMember(widget.member)
+          .then((value) {
+        ScaffoldMessenger.of(context)
           ..removeCurrentSnackBar()
           ..showSnackBar(SnackBar(content: Text(AppString.memberDeleted)));
       }, onError: (error) {
-        Scaffold.of(context)
+        ScaffoldMessenger.of(context)
           ..removeCurrentSnackBar()
-          ..showSnackBar(SnackBar(content: Text(AppString.memberDeletionFailed)));
+          ..showSnackBar(
+              SnackBar(content: Text(AppString.memberDeletionFailed)));
       });
     }
     Navigator.pop(context);
   }
 
   Widget build(BuildContext context) {
-    final EventProvider _eventProvider = Provider.of<EventProvider>(context, listen: true);
+    final EventProvider _eventProvider =
+        Provider.of<EventProvider>(context, listen: true);
 
     final _search = SizedBox(
       height: 50,
@@ -154,11 +160,16 @@ class _MemberEventsState extends State<MemberEvents> {
                 scrollDirection: Axis.vertical,
                 itemCount: _eventProvider.memberEvents.length,
                 itemBuilder: (BuildContext context, int index) {
-                  if (index == 0 || (index > 0 && _eventProvider.memberEvents[index].startDate.year < _eventProvider.memberEvents[index - 1].startDate.year)) {
+                  if (index == 0 ||
+                      (index > 0 &&
+                          _eventProvider.memberEvents[index].startDate.year <
+                              _eventProvider
+                                  .memberEvents[index - 1].startDate.year)) {
                     return Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: <Widget>[
-                        Text("${_eventProvider.memberEvents[index].startDate.year}"),
+                        Text(
+                            "${_eventProvider.memberEvents[index].startDate.year}"),
                         SizedBox(height: 4.0),
                         EventCard(_eventProvider.memberEvents[index]),
                       ],

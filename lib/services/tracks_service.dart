@@ -30,15 +30,18 @@ class TracksService {
   /// Return empty array if no data found (404)
   Future<List<Track>> fetchTracks() async {
     // call to API
-    final response = await http.get(API_ROOT_URL + API_GET_ALL_TRACKS_ENDPOINT);
+    final response =
+        await http.get(Uri.parse(API_ROOT_URL + API_GET_ALL_TRACKS_ENDPOINT));
 
     if (response.statusCode == 200) {
       // if the call to the server was successful, parse the JSON and return content
       dynamic responseJson = json.decode(response.body);
-      return (responseJson['records'] as List).map((p) => Track.fromJson(p)).toList();
+      return (responseJson['records'] as List)
+          .map((p) => Track.fromJson(p))
+          .toList();
     } else if (response.statusCode == 404) {
       // no data found, return empty array
-      return new List<Track>();
+      return [];
     } else {
       throw Exception('Unexpected server response');
     }
@@ -52,15 +55,19 @@ class TracksService {
     final String urlParameters = "?s=${Uri.encodeComponent(text)}";
 
     // call to API
-    final response = await http.get(API_ROOT_URL + API_SEARCH_TRACKS_ENDPOINT + urlParameters, headers: {'Content-Type': 'application/json'});
+    final response = await http.get(
+        Uri.parse(API_ROOT_URL + API_SEARCH_TRACKS_ENDPOINT + urlParameters),
+        headers: {'Content-Type': 'application/json'});
 
     if (response.statusCode == 200) {
       // if the call to the server was successful, parse the JSON and return content
       dynamic responseJson = json.decode(response.body);
-      return (responseJson['records'] as List).map((p) => Track.fromJson(p)).toList();
+      return (responseJson['records'] as List)
+          .map((p) => Track.fromJson(p))
+          .toList();
     } else if (response.statusCode == 404) {
       // no data found, return empty array
-      return new List<Track>();
+      return [];
     } else {
       throw Exception('Unexpected server response');
     }
@@ -71,7 +78,10 @@ class TracksService {
   /// Throw an exception if response status code is different from 201
   Future<void> createTrack(Track track) async {
     // call to API
-    final response = await http.post(API_ROOT_URL + API_CREATE_TRACK_ENDPOINT, headers: {'Content-Type': 'application/json'}, body: track.toJson());
+    final response = await http.post(
+        Uri.parse(API_ROOT_URL + API_CREATE_TRACK_ENDPOINT),
+        headers: {'Content-Type': 'application/json'},
+        body: track.toJson());
 
     // handle server response code
     if (response.statusCode == 201) {
@@ -90,7 +100,10 @@ class TracksService {
   /// Throw an exception if response status code is different from 200
   Future<void> updateTrack(Track track) async {
     // call to API
-    final response = await http.post(API_ROOT_URL + API_UPDATE_TRACK_ENDPOINT, headers: {'Content-Type': 'application/json'}, body: track.toJson());
+    final response = await http.post(
+        Uri.parse(API_ROOT_URL + API_UPDATE_TRACK_ENDPOINT),
+        headers: {'Content-Type': 'application/json'},
+        body: track.toJson());
 
     // handle server response code
     if (response.statusCode == 200) {
@@ -107,7 +120,10 @@ class TracksService {
   /// Throw an exception if response status code is different from 204
   Future<void> deleteTrack(Track track) async {
     // call to API
-    final response = await http.post(API_ROOT_URL + API_DELETE_TRACK_ENDPOINT, headers: {'Content-Type': 'application/json'}, body: track.toJson());
+    final response = await http.post(
+        Uri.parse(API_ROOT_URL + API_DELETE_TRACK_ENDPOINT),
+        headers: {'Content-Type': 'application/json'},
+        body: track.toJson());
 
     if (response.statusCode != 204) {
       throw Exception('Unexpected server response');

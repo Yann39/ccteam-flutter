@@ -18,21 +18,32 @@
  */
 
 import 'package:chachatte_team/models/news.dart';
+import 'package:chachatte_team/providers/login_provider.dart';
+import 'package:chachatte_team/providers/news_list_provider.dart';
 import 'package:chachatte_team/utils/constants.dart';
 import 'package:chachatte_team/utils/custom_decorations.dart';
 import 'package:chachatte_team/utils/custom_icons.dart';
 import 'package:chachatte_team/utils/date_utils.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class NewsCard extends StatelessWidget {
-  final News news;
   final int index;
 
-  NewsCard(this.news, this.index);
+  NewsCard(this.index);
 
   @override
   Widget build(BuildContext context) {
-    final Color _color = index % 3 == 0 ? Colors.red[900] : index % 3 == 1 ? Colors.green[600] : Colors.blue[600];
+    final NewsListProvider _newsListProvider = Provider.of<NewsListProvider>(context, listen: true);
+    final LoginProvider _loginProvider = Provider.of<LoginProvider>(context, listen: false);
+
+    final News news = _newsListProvider.news[index];
+
+    final Color _color = index % 3 == 0
+        ? Colors.red[900]
+        : index % 3 == 1
+            ? Colors.green[600]
+            : Colors.blue[600];
 
     return Container(
       height: 76.0,
@@ -64,10 +75,16 @@ class NewsCard extends StatelessWidget {
               ),
               Row(
                 children: <Widget>[
-                  Icon(Icons.favorite_border, color: Colors.pink, size: 12.0),
+                  Icon(
+                    news.likedNews.any((element) => element.member.email == _loginProvider.email)
+                        ? Icons.favorite
+                        : Icons.favorite_border,
+                    color: Colors.pink,
+                    size: 12.0,
+                  ),
                   SizedBox(width: 2.0),
                   Text(
-                    "${news.likedMembers != null ? news.likedMembers.length : 0}",
+                    "${news.likedNews != null ? news.likedNews.length : 0}",
                     softWrap: false,
                     textScaleFactor: 0.9,
                     style: TextStyle(color: Colors.white),
@@ -76,7 +93,6 @@ class NewsCard extends StatelessWidget {
                   ),
                 ],
               ),
-              //Text("News", textScaleFactor: 0.6, style: TextStyle(color: _color, fontFamily: 'Barbatrick', letterSpacing: 1)),
             ],
           ),
           SizedBox(width: 8.0),
@@ -85,9 +101,17 @@ class NewsCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[
-                Text(news.title, textScaleFactor: 1.2, style: TextStyle(color: Colors.white), maxLines: 1, overflow: TextOverflow.ellipsis),
+                Text(news.title,
+                    textScaleFactor: 1.2,
+                    style: TextStyle(color: Colors.white),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis),
                 SizedBox(height: 4.0),
-                Text(news.catchLine, textScaleFactor: 0.9, style: TextStyle(color: Colors.white), maxLines: 1, overflow: TextOverflow.ellipsis),
+                Text(news.catchLine,
+                    textScaleFactor: 0.9,
+                    style: TextStyle(color: Colors.white),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis),
                 SizedBox(height: 4.0),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.start,
@@ -96,7 +120,7 @@ class NewsCard extends StatelessWidget {
                     Icon(Icons.access_time, color: Colors.lime, size: 12.0),
                     SizedBox(width: 2.0),
                     Text(
-                      DateUtils.convertToString(news.newsDate, DATE_FORMAT),
+                      AppDateUtils.convertToString(news.newsDate, DATE_FORMAT),
                       softWrap: false,
                       textScaleFactor: 0.9,
                       style: TextStyle(color: Colors.white),
