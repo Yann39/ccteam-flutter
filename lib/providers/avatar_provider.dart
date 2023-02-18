@@ -26,7 +26,7 @@ import 'package:logging/logging.dart';
 class AvatarProvider extends ChangeNotifier {
   final Logger _log = new Logger('AvatarProvider');
 
-  // chosen image file which may be set as avatar
+  // chosen image file representing the avatar
   File _image;
 
   File get image => _image;

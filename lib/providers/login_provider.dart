@@ -177,6 +177,18 @@ class LoginProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Go to the confirm password screen.
+  void goToConfirmPassword() {
+    _log.info("Confirming e-mail of user $_email");
+    _setLoginStatus(LoginStatus.ConfirmPasscodeStep);
+  }
+
+  /// Go to the confirm password screen.
+  void goToRegister() {
+    _log.info("User clicked link to go to register page");
+    _setLoginStatus(LoginStatus.EmailAndInfoStep);
+  }
+
   /// Check if the user needs to authenticate.
   /// Used to be called on app start.
   /// If email is found in shared preferences and exists in the database, user will be consider as logged in.
@@ -427,18 +439,6 @@ class LoginProvider extends ChangeNotifier {
       throw Exception(
           "Une erreur s'est produite lors de la vérification de votre code, si le problème persite, contactez un administrateur");
     });
-  }
-
-  /// Go to the confirm password screen.
-  void goToConfirmPassword() {
-    _log.info("Confirming e-mail of user $_email");
-    _setLoginStatus(LoginStatus.ConfirmPasscodeStep);
-  }
-
-  /// Go to the confirm password screen.
-  void goToRegister() {
-    _log.info("User clicked link to go to register page");
-    _setLoginStatus(LoginStatus.EmailAndInfoStep);
   }
 
   /// Complete user registration according to the specified member information.

@@ -102,13 +102,14 @@ class _AddEditNewsState extends State<AddEditNews> {
       // this invokes each onSaved event
       _form.save();
 
+
       // submit data to backend, if id is set this is an update, else a creation
       if (news.id != null) {
         news.modifiedBy =
             Provider.of<LoginProvider>(context, listen: false).loggedMember;
         news.modifiedOn = DateTime.now();
         // update the news then go back with a message, the result is awaited in caller
-        Provider.of<NewsProvider>(context, listen: false).updateNews(news).then(
+        Provider.of<NewsCreationProvider>(context, listen: false).updateNews().then(
             (value) {
           Navigator.pop(context, AppString.newsUpdated);
         }, onError: (error) {
@@ -118,7 +119,8 @@ class _AddEditNewsState extends State<AddEditNews> {
         news.createdBy =
             Provider.of<LoginProvider>(context, listen: false).loggedMember;
         // create the news then go back with a message, the result is awaited in caller
-        Provider.of<NewsProvider>(context, listen: false).createNews(news).then(
+        Provider.of<NewsCreationProvider>(context, listen: false).setNewsToEdit(news);
+        Provider.of<NewsCreationProvider>(context, listen: false).createNews().then(
             (value) {
           Navigator.pop(context, AppString.newsCreated);
           // send a push notification

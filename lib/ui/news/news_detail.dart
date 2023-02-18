@@ -20,6 +20,7 @@
 import 'package:chachatte_team/models/member.dart';
 import 'package:chachatte_team/models/news.dart';
 import 'package:chachatte_team/providers/login_provider.dart';
+import 'package:chachatte_team/providers/news_creation_provider.dart';
 import 'package:chachatte_team/providers/news_detail_provider.dart';
 import 'package:chachatte_team/providers/news_list_provider.dart';
 import 'package:chachatte_team/providers/news_provider.dart';
@@ -41,6 +42,7 @@ class NewsDetail extends StatelessWidget {
   /// Method that launches the Edit New screen and awaits the result from Navigator.pop
   _navigateToEditNewsScreen(BuildContext context, News news) async {
     // Navigator.push returns a Future that will complete after we call Navigator.pop on the Add News screen
+    Provider.of<NewsCreationProvider>(context, listen: false).setNewsToEdit(news);
     final _result = await Navigator.pushNamed(context, '/addEditNews');
 
     // after the Edit New Screen returns a result, hide any previous snack bars and show the new result

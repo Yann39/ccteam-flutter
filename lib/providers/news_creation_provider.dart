@@ -48,7 +48,7 @@ class NewsCreationProvider extends ChangeNotifier {
     _news = news;
   }
 
-  /// Get the list of all news
+  /// Create the news
   Future<void> createNews() async {
     _updateStatus(LoadingStatus.loading);
     await _newsService.createNews(news).then((value) async {
@@ -57,6 +57,20 @@ class NewsCreationProvider extends ChangeNotifier {
       _updateStatus(LoadingStatus.loaded);
     }, onError: (error) {
       _log.warning("Error when creating news ($error)");
+      _news = null;
+      _updateStatus(LoadingStatus.notLoaded);
+      throw (error);
+    });
+  }
+
+  /// Update the news
+  Future<void> updateNews() async {
+    await _newsService.updateNews(news).then((value) {
+      _log.fine("News successfully updated : ${news.title}");
+      _news = value;
+      _updateStatus(LoadingStatus.loaded);
+    }, onError: (error) {
+      _log.warning("Error when updating news ($error)");
       _news = null;
       _updateStatus(LoadingStatus.notLoaded);
       throw (error);

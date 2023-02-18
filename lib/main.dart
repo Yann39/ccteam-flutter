@@ -25,7 +25,6 @@ import 'package:chachatte_team/providers/member_provider.dart';
 import 'package:chachatte_team/providers/news_creation_provider.dart';
 import 'package:chachatte_team/providers/news_detail_provider.dart';
 import 'package:chachatte_team/providers/news_list_provider.dart';
-import 'package:chachatte_team/providers/news_provider.dart';
 import 'package:chachatte_team/providers/passcode_provider.dart';
 import 'package:chachatte_team/providers/photo_provider.dart';
 import 'package:chachatte_team/providers/record_provider.dart';
@@ -59,7 +58,6 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:logging/logging.dart';
 import 'package:provider/provider.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:top_snackbar_flutter/custom_snack_bar.dart';
 import 'package:top_snackbar_flutter/top_snack_bar.dart';
 
@@ -146,7 +144,7 @@ class ChachatteTeamApp extends StatelessWidget {
               // to prevent calling setState() during build
               WidgetsBinding.instance.addPostFrameCallback((_) {
                 showTopSnackBar(
-                  context,
+                  Overlay.of(context),
                   CustomSnackBar.error(
                     message: loginProvider.errorMessage,
                     backgroundColor: Colors.red[700],

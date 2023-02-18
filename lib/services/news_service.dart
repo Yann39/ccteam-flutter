@@ -319,7 +319,7 @@ class NewsService {
 
     final MutationOptions mutationOptions = new MutationOptions(
       document: parseString(newNewsMutation),
-      variables: {'title': news.title, 'catchLine': news.catchLine, 'content': news.content, 'newsDate': news.newsDate, 'memberId': news.createdBy},
+      variables: {'title': news.title, 'catchLine': news.catchLine, 'content': news.content, 'newsDate': news.newsDate.toIso8601String(), 'memberId': news.createdBy.id},
       fetchPolicy: FetchPolicy.noCache,
     );
 
@@ -343,12 +343,12 @@ class NewsService {
   /// Update the specified [news] into the database
   /// Send a POST request to the Restful API
   /// Throw an exception if response status code is different from 200
-  Future<void> updateNews(News news) async {
+  Future<News> updateNews(News news) async {
     _log.info("Updating news ${news.title}...");
 
-    final String newNewsMutation = """
+    final String editNewsMutation = """
       mutation UpdateNews(\$newsId: Long!, \$title: String!, \$catchLine: String!, \$content: String!, \$newsDate: String!, \$memberId: Long!) {
-        newNews(
+        updateNews(
             newsId: \$newsId
             title: \$title
             catchLine: \$catchLine
@@ -384,8 +384,8 @@ class NewsService {
     """;
 
     final MutationOptions mutationOptions = new MutationOptions(
-      document: parseString(newNewsMutation),
-      variables: {'newsId': news.id, 'title': news.title, 'catchLine': news.catchLine, 'content': news.content, 'newsDate': news.newsDate, 'memberId': news.modifiedBy},
+      document: parseString(editNewsMutation),
+      variables: {'newsId': news.id, 'title': news.title, 'catchLine': news.catchLine, 'content': news.content, 'newsDate': news.newsDate.toIso8601String(), 'memberId': news.modifiedBy.id},
       fetchPolicy: FetchPolicy.noCache,
     );
 
@@ -402,23 +402,9 @@ class NewsService {
       }
     } else {
       _log.info("Query result value : ${result.data}");
-      return News.fromJson(result.data['newNews']);
+      return News.fromJson(result.data['updateNews']);
     }
   }
-  /*Future<void> updateNews(News news) async {
-    // call to API
-    final response = await http.post(Uri.parse(API_ROOT_URL + API_UPDATE_NEWS_ENDPOINT),
-        headers: {'Content-Type': 'application/json'}, body: json.encode(news.toJson()));
-
-    // handle server response code
-    if (response.statusCode == 200) {
-      return;
-    } else if (response.statusCode == 503) {
-      throw Exception('Failed to update the news');
-    } else {
-      throw Exception('Unexpected server response, news has not been updated');
-    }
-  }*/
 
   /// Delete specified [news] from the database
   /// Send a POST request to the Restful API

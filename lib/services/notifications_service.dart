@@ -27,31 +27,34 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
 class NotificationsService {
   static BuildContext buildContext;
-  static final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
-      FlutterLocalNotificationsPlugin();
-  static const AndroidInitializationSettings initializationSettingsAndroid =
-      AndroidInitializationSettings('@mipmap/ic_launcher');
-  static final IOSInitializationSettings initializationSettingsIOS =
-      IOSInitializationSettings(
-          onDidReceiveLocalNotification: onDidReceiveLocalNotification);
-  static final MacOSInitializationSettings initializationSettingsMacOS =
-      MacOSInitializationSettings();
-  static final InitializationSettings initializationSettings =
-      InitializationSettings(
-          android: initializationSettingsAndroid,
-          iOS: initializationSettingsIOS,
-          macOS: initializationSettingsMacOS);
+
+  static final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
+
+  static const AndroidInitializationSettings initializationSettingsAndroid = AndroidInitializationSettings('app_icon');
+
+  static final DarwinInitializationSettings initializationSettingsDarwin =
+      DarwinInitializationSettings(onDidReceiveLocalNotification: onDidReceiveLocalNotification);
+
+  static final LinuxInitializationSettings initializationSettingsLinux =
+      LinuxInitializationSettings(defaultActionName: 'Open notification');
+
+  static final InitializationSettings initializationSettings = InitializationSettings(
+      android: initializationSettingsAndroid,
+      iOS: initializationSettingsDarwin,
+      macOS: initializationSettingsDarwin,
+      linux: initializationSettingsLinux);
 
   /// Initialize the notifications plugin
   /// This must be called before any other methods call of this class
-  static void initialize(BuildContext context) {
-    flutterLocalNotificationsPlugin.initialize(initializationSettings,
-        onSelectNotification: onSelectNotification);
+  static Future<void> initialize(BuildContext context) async {
+    // initialise the plugin. app_icon needs to be a added as a drawable resource to the Android head project
+    await flutterLocalNotificationsPlugin.initialize(initializationSettings,
+        onDidReceiveNotificationResponse: onDidReceiveNotificationResponse);
+
     buildContext = context;
   }
 
-  static Future onDidReceiveLocalNotification(
-      int id, String title, String body, String payload) async {
+  static void onDidReceiveLocalNotification(int id, String title, String body, String payload) async {
     // display a dialog with the notification details, tap ok to go to another page
     showDialog(
       context: buildContext,
@@ -73,8 +76,7 @@ class NotificationsService {
               } else if (jsonData['type'] == 'event') {
                 print("Navigates to event detail from notification");
                 //await ChachatteTeamApp.navigatorKey.currentState.pushNamed('/eventDetail', arguments: Event.fromJson(jsonData['value']));
-                Navigator.pushNamed(buildContext, '/eventDetail',
-                    arguments: Event.fromJson(jsonData['value']));
+                Navigator.pushNamed(buildContext, '/eventDetail', arguments: Event.fromJson(jsonData['value']));
               }
             },
           )
@@ -85,9 +87,9 @@ class NotificationsService {
 
   /// Function to be executed when a notification is clicked
   /// It navigates to the right page depending on the specified [payload]
-  static Future onSelectNotification(String payload) async {
-    print("A notification has been clicked, payload is : $payload");
-    dynamic jsonData = json.decode(payload);
+  static void onDidReceiveNotificationResponse(NotificationResponse notificationResponse) async {
+    print("A notification has been clicked, payload is : $notificationResponse.payload");
+    dynamic jsonData = json.decode(notificationResponse.payload);
     if (jsonData['type'] == 'news') {
       print("Navigates to news detail from notification");
       //await navigatorKey.currentState.pushNamed('/newsDetail', arguments: News.fromJson(jsonData['value']));
@@ -95,27 +97,23 @@ class NotificationsService {
     } else if (jsonData['type'] == 'event') {
       print("Navigates to event detail from notification");
       //await ChachatteTeamApp.navigatorKey.currentState.pushNamed('/eventDetail', arguments: Event.fromJson(jsonData['value']));
-      await Navigator.pushNamed(buildContext, '/eventDetail',
-          arguments: Event.fromJson(jsonData['value']));
+      await Navigator.pushNamed(buildContext, '/eventDetail', arguments: Event.fromJson(jsonData['value']));
     }
   }
 
   /// Push a new notification instantly for the specified [news]
-  static Future pushInstantNewsNotification(News news) async {
-    var androidPlatformChannelSpecifics = AndroidNotificationDetails(
-      'news',
-      'News push notifications',
-      channelDescription: 'Push notifications for news',
-      importance: Importance.max,
-      priority: Priority.high,
-      color: Colors.blue[700],
-    );
-    var iOSPlatformChannelSpecifics = IOSNotificationDetails();
-    var platformChannelSpecifics = NotificationDetails(
-        android: androidPlatformChannelSpecifics,
-        iOS: iOSPlatformChannelSpecifics);
+  static void pushInstantNewsNotification(News news) async {
+    final AndroidNotificationDetails androidNotificationDetails = AndroidNotificationDetails(
+        'news', 'News push notifications',
+        channelDescription: 'Push notifications for news',
+        importance: Importance.max,
+        priority: Priority.high,
+        color: Colors.blue[700],
+        ticker: 'ticker');
 
-    Map<String, dynamic> param = {
+    final NotificationDetails notificationDetails = NotificationDetails(android: androidNotificationDetails);
+
+    final Map<String, dynamic> param = {
       "type": "news",
       "value": news != null ? news.toJson() : null,
     };
@@ -124,17 +122,16 @@ class NotificationsService {
       news.id,
       news.title,
       news.catchLine,
-      platformChannelSpecifics,
+      notificationDetails,
       payload: json.encode(param),
     );
   }
 
   /// Schedule an event notification for the specified [event]
   /// The notification will be sent 6 hours before the event start date
-  static Future scheduleEventNotification(Event event) async {
-    var scheduledNotificationDateTime =
-        event.startDate.subtract(Duration(hours: 6));
-    var androidPlatformChannelSpecifics = AndroidNotificationDetails(
+  static void scheduleEventNotification(Event event) async {
+    final DateTime scheduledNotificationDateTime = event.startDate.subtract(Duration(hours: 6));
+    final AndroidNotificationDetails androidNotificationDetails = AndroidNotificationDetails(
       'track_events',
       'Track events push notifications',
       channelDescription: 'Push notifications for track events, 6 hours before the start of the event',
@@ -142,12 +139,10 @@ class NotificationsService {
       priority: Priority.high,
       color: Colors.blue[700],
     );
-    var iOSPlatformChannelSpecifics = IOSNotificationDetails();
-    var platformChannelSpecifics = NotificationDetails(
-        android: androidPlatformChannelSpecifics,
-        iOS: iOSPlatformChannelSpecifics);
 
-    Map<String, dynamic> param = {
+    final NotificationDetails notificationDetails = NotificationDetails(android: androidNotificationDetails);
+
+    final Map<String, dynamic> param = {
       "type": "event",
       "value": event != null ? event.toJson() : null,
     };
@@ -157,11 +152,10 @@ class NotificationsService {
       'Événement prévu dans 6 heures !',
       event.title,
       scheduledNotificationDateTime,
-      platformChannelSpecifics,
+      notificationDetails,
       payload: json.encode(param),
       androidAllowWhileIdle: true,
-      uiLocalNotificationDateInterpretation:
-          UILocalNotificationDateInterpretation.absoluteTime,
+      uiLocalNotificationDateInterpretation: UILocalNotificationDateInterpretation.absoluteTime,
     );
   }
 }
