@@ -23,7 +23,7 @@ import 'dart:io';
 
 import 'package:chachatte_team/models/jwt_response.dart';
 import 'package:chachatte_team/models/member.dart';
-import 'package:chachatte_team/providers/news_list_provider.dart';
+import 'package:chachatte_team/providers/message_provider.dart';
 import 'package:chachatte_team/services/members_service.dart';
 import 'package:chachatte_team/utils/custom_graphql_exception.dart';
 import 'package:chachatte_team/utils/enums.dart';
@@ -39,6 +39,8 @@ class LoginProvider extends ChangeNotifier {
   final Logger _log = new Logger('LoginProvider');
   final MembersService _membersService = new MembersService();
 
+  MessageProvider _messageProvider;
+
   // current authentication status
   AuthStatus _authStatus = AuthStatus.Unauthenticated;
 
@@ -53,9 +55,6 @@ class LoginProvider extends ChangeNotifier {
 
   // current passcode confirmation
   String _secondPassCode;
-
-  // current error message
-  String _errorMessage;
 
   // current email being enrolled
   String _email;
@@ -95,13 +94,9 @@ class LoginProvider extends ChangeNotifier {
 
   String get jwtToken => _jwtToken;
 
-  String get errorMessage => _errorMessage;
-
   String get email => _email;
 
   set email(String email) => this._email = email;
-
-  set errorMessage(String errorMessage) => _setErrorMessage(errorMessage);
 
   /// Set the current [passcode] used for login.
   set loginPassCode(String passcode) {
@@ -131,20 +126,6 @@ class LoginProvider extends ChangeNotifier {
       _loginPassCode = null;
     }
     _loginStatus = status;
-    _log.info("Notifying listeners of LoginProvider");
-    notifyListeners();
-  }
-
-  /// Set the current [error] message.
-  void _setErrorMessage(String error) {
-    _errorMessage = error;
-    _log.info("Notifying listeners of LoginProvider");
-    notifyListeners();
-  }
-
-  /// Clear the current error message
-  void clearErrorMessage() {
-    _errorMessage = null;
     _log.info("Notifying listeners of LoginProvider");
     notifyListeners();
   }
@@ -196,7 +177,7 @@ class LoginProvider extends ChangeNotifier {
     _log.info("Checking user...");
     _setAuthStatus(AuthStatus.Initializing);
 
-    // read shared preference
+    // read shared preference to get any e-mail and JWT
     final SharedPreferences _prefs = await SharedPreferences.getInstance();
     final String _email = _prefs.getString('email');
     final String _jwt = _prefs.getString('jwt');
@@ -234,49 +215,43 @@ class LoginProvider extends ChangeNotifier {
         _setAuthStatus(AuthStatus.Unauthenticated);
         // Member not found
         if (error.code == "member_not_found") {
-          _setErrorMessage(AppString.format(AppString.errorEmailNotFoundInDatabase, [_email]));
+          _messageProvider.setMessage(
+              AppString.format(AppString.errorEmailNotFoundInDatabase, [_email]), MessageType.ERROR);
         }
         // JWT token has expired
         else if (error.code == "token_expired") {
           _prefs.remove('jwt');
-          _setErrorMessage(AppString.errorTokenExpired);
+          _messageProvider.setMessage(AppString.errorTokenExpired, MessageType.INFO);
         }
         // JWT token has wrong format and cannot be decoded
         else if (error.code == "wrong_token_format") {
-          _setErrorMessage(AppString.errorTokenWrongFormat);
+          _messageProvider.setMessage(AppString.errorTokenWrongFormat, MessageType.ERROR);
         }
         // JWT token has not been specified
         else if (error.code == "no_token") {
-          _setErrorMessage(AppString.errorTokenNotFound);
+          _messageProvider.setMessage(AppString.errorTokenNotFound, MessageType.ERROR);
         }
         // wrong credentials
         else if (error.code == "bad_credentials") {
-          _setErrorMessage(AppString.errorBadCredentials);
+          _messageProvider.setMessage(AppString.errorBadCredentials, MessageType.ERROR);
         }
-      } else if (error is NetworkException) {
-        // TODO here need an dedicated error page so that user does not try to re login
-        _setLoginStatus(LoginStatus.PasscodeStep);
-        _setAuthStatus(AuthStatus.Unauthenticated);
-        _setErrorMessage(AppString.errorTokenExpired);
       } else if (error is TimeoutException) {
-        // TODO here need an dedicated error page so that user does not try to re login
-        _setLoginStatus(LoginStatus.EmailStep);
         _setAuthStatus(AuthStatus.Unauthenticated);
-        _setErrorMessage(AppString.errorServerTimeOut);
+        _messageProvider.setMessage(AppString.errorServerTimeOut, MessageType.ERROR);
       }
       // other error
       else {
         _setLoginStatus(LoginStatus.EmailStep);
         _setAuthStatus(AuthStatus.Unauthenticated);
         _log.info("Error is ${error.toString()}");
-        _setErrorMessage(AppString.format(AppString.errorUnknown, [error.toString()]));
+        _messageProvider.setMessage(AppString.format(AppString.errorUnknown, [error.toString()]), MessageType.ERROR);
       }
     });
   }
 
-  /// Check the specified member account.
+  /// Check the specified member account from the given e-mail address.
   /// It checks the registration status to know if we need to register, identify or login the user.
-  Future<void> checkAccount(String email) async {
+  Future<void> checkAccountEmail(String email) async {
     _log.info("Checking account for user $email");
     _setLoginStatus(LoginStatus.Loading);
 
@@ -290,11 +265,12 @@ class LoginProvider extends ChangeNotifier {
       // e-mail address is missing in the request
       else if (response.statusCode == 400) {
         _setLoginStatus(LoginStatus.EmailStep);
+        _messageProvider.setMessage(AppString.loginEmailMissing, MessageType.ERROR);
       }
       // no account has been found for the specified e-mail address, propose new account
       else if (response.statusCode == 404) {
-        _setErrorMessage(AppString.loginNoAccountFound);
         _setLoginStatus(LoginStatus.EmailStep);
+        _messageProvider.setMessage(AppString.loginNoAccountFound, MessageType.ERROR);
       }
       // account exists, OTP has been sent and is still valid
       else if (response.statusCode == 302) {
@@ -312,20 +288,23 @@ class LoginProvider extends ChangeNotifier {
       else {
         _log.severe("Failed to check account for user $email : ${response.body}");
         _setLoginStatus(LoginStatus.EmailStep);
-        throw Exception(
-            "Une erreur s'est produite lors de la vérification de votre compte, si le problème persite, contactez un administrateur");
+        _messageProvider.setMessage(AppString.checkAccountUnexpectedResponse, MessageType.ERROR);
       }
     }, onError: (error) {
       _log.severe("Error while checking account for user $email : $error");
       _setLoginStatus(LoginStatus.EmailStep);
-      throw Exception(
-          "Une erreur s'est produite lors de la vérification de votre compte, si le problème persite, contactez un administrateur");
+      if (error is TimeoutException) {
+        _messageProvider.setMessage(AppString.errorServerTimeOut, MessageType.ERROR);
+      } else {
+        _messageProvider.setMessage(AppString.checkAccountError, MessageType.ERROR);
+      }
     });
   }
 
   /// pre-register a new member according to the specified member information.
   Future<void> preRegisterMember() async {
     _log.info("Pre-registering user ${this.firstName} ${this.lastName} ($_email)");
+    _setLoginStatus(LoginStatus.Loading);
 
     await _membersService.preRegister(this.firstName, this.lastName, _email).timeout(Duration(seconds: 5)).then(
         (response) async {
@@ -339,25 +318,28 @@ class LoginProvider extends ChangeNotifier {
       }
       // e-mail address already exists
       else if (response.statusCode == 409) {
-        _setErrorMessage(AppString.loginAccountEmailAlreadyExist);
+        _messageProvider.setMessage(AppString.loginAccountEmailAlreadyExist, MessageType.ERROR);
         _setLoginStatus(LoginStatus.EmailAndInfoStep);
       }
       // member successfully created but the confirmation e-mail failed to be sent
       else if (response.statusCode == 207) {
         _setLoginStatus(LoginStatus.OtpStep);
+        _messageProvider.setMessage(AppString.preRegisterConfirmationEmailNotSent, MessageType.WARNING);
       }
       // unexpected status code
       else {
         _log.severe("Failed to pre-register user $_email : ${response.body}");
         _setLoginStatus(LoginStatus.EmailAndInfoStep);
-        throw Exception(
-            "Une erreur s'est produite lors de l'inscription, si le problème persite, contactez un administrateur");
+        _messageProvider.setMessage(AppString.preRegisterUnexpectedResponse, MessageType.ERROR);
       }
     }, onError: (error) {
       _log.severe("Error while pre-registering user $_email : $error");
       _setLoginStatus(LoginStatus.EmailAndInfoStep);
-      throw Exception(
-          "Une erreur s'est produite lors de l'inscription, si le problème persite, contactez un administrateur");
+      if (error is TimeoutException) {
+        _messageProvider.setMessage(AppString.errorServerTimeOut, MessageType.ERROR);
+      } else {
+        _messageProvider.setMessage(AppString.preRegisterError, MessageType.ERROR);
+      }
     });
   }
 
@@ -531,7 +513,7 @@ class LoginProvider extends ChangeNotifier {
         _log.info("Failed to authenticate member $email, wrong username or password");
         _setAuthStatus(AuthStatus.Unauthenticated);
         _setLoginStatus(LoginStatus.PasscodeStep);
-        throw Exception("Nom d'utilisateur ou mot de passe incorrect");
+        throw Exception("Passcode incorrect");
       } else {
         _log.info("Failed to authenticate user $email : ${response.body}");
         _setAuthStatus(AuthStatus.Unauthenticated);
@@ -561,12 +543,8 @@ class LoginProvider extends ChangeNotifier {
     _setAuthStatus(AuthStatus.Unauthenticated);
   }
 
-  void update(NewsListProvider newsListProvider) {
-    // Do some custom work based on myModel that may call `notifyListeners`
-    _log.info("Calling update");
-    if (newsListProvider.logout) {
-      logoutMember();
-    }
+  void update(MessageProvider messageProvider) {
+    _messageProvider = messageProvider;
   }
 
   /// Ask for a new password.

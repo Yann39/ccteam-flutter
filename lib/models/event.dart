@@ -82,7 +82,7 @@ class Event {
         track = json['track'] != null ? Track.fromJson(json['track']) : null,
         organizer = json['organizer'],
         price = json['price'],
-        members = json['members'] != null ? (json['members'] as List).map((i) => Member.fromJson(i)).toList() : null,
+        members = json['members'] != null ? (json['members'] as List).map((i) => Member.fromJson(i)).toList() : [],
         createdOn = json['createdOn'] != null ? DateFormat("yyyy-MM-dd HH:mm:ss").parseStrict(json['createdOn']) : null,
         createdBy = json['createdBy'] != null ? Member.fromJson(json['createdBy']) : null,
         modifiedOn =

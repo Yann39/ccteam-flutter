@@ -20,31 +20,67 @@
 import 'dart:convert';
 
 import 'package:chachatte_team/models/track.dart';
+import 'package:chachatte_team/utils/app_utils.dart';
 import 'package:chachatte_team/utils/constants.dart';
+import 'package:chachatte_team/utils/graphql_connection.dart';
+import 'package:gql/language.dart';
+import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:http/http.dart' as http;
+import 'package:logging/logging.dart';
 
 class TracksService {
-  /// Fetch all tracks from the database
-  /// Send a GET request to the Restful API
-  /// Throw an exception if response status code is different from 200 or 404
-  /// Return empty array if no data found (404)
-  Future<List<Track>> fetchTracks() async {
-    // call to API
-    final response =
-        await http.get(Uri.parse(API_ROOT_URL + API_GET_ALL_TRACKS_ENDPOINT));
+  static final Logger _log = new Logger('TracksService');
 
-    if (response.statusCode == 200) {
-      // if the call to the server was successful, parse the JSON and return content
-      dynamic responseJson = json.decode(response.body);
-      return (responseJson['records'] as List)
-          .map((p) => Track.fromJson(p))
-          .toList();
-    } else if (response.statusCode == 404) {
-      // no data found, return empty array
-      return [];
-    } else {
-      throw Exception('Unexpected server response');
-    }
+  /// Fetch all tracks from the database.
+  Future<List<Track>> fetchTracks() async {
+    _log.info("Getting all tracks from database...");
+
+    final String allNewsQuery = """
+      query GetAllTracks() {
+        getAllTracks() {
+          id
+          name
+          distance
+          lapRecord
+          website
+          latitude
+          longitude 
+        }
+      }
+    """;
+
+    return GraphQLConnection()
+        .graphQLClient
+        .query(
+          QueryOptions(
+            document: parseString(allNewsQuery),
+            fetchPolicy: FetchPolicy.noCache,
+          ),
+        )
+        .then(
+      (result) {
+        final List<Track> tracks = [];
+        if (result.hasException) {
+          throw AppUtils.handleGraphQlException(result);
+        } else {
+          dynamic trackList = result.data['getAllTracks'];
+          if (trackList == null) {
+            _log.info("getAllTracks returned null data");
+          } else if (trackList is Map<String, dynamic> && trackList.isEmpty) {
+            _log.info("getAllTracks returned empty data");
+          } else {
+            for (dynamic oneTrack in trackList) {
+              tracks.add(Track.fromJson(oneTrack));
+            }
+          }
+          return tracks;
+        }
+      },
+      onError: (error) {
+        _log.severe("Error while fetching track list : $error");
+        throw Exception(error);
+      },
+    );
   }
 
   /// Search for tracks according to the specified [text]
@@ -55,16 +91,13 @@ class TracksService {
     final String urlParameters = "?s=${Uri.encodeComponent(text)}";
 
     // call to API
-    final response = await http.get(
-        Uri.parse(API_ROOT_URL + API_SEARCH_TRACKS_ENDPOINT + urlParameters),
+    final response = await http.get(Uri.parse(API_ROOT_URL + API_SEARCH_TRACKS_ENDPOINT + urlParameters),
         headers: {'Content-Type': 'application/json'});
 
     if (response.statusCode == 200) {
       // if the call to the server was successful, parse the JSON and return content
       dynamic responseJson = json.decode(response.body);
-      return (responseJson['records'] as List)
-          .map((p) => Track.fromJson(p))
-          .toList();
+      return (responseJson['records'] as List).map((p) => Track.fromJson(p)).toList();
     } else if (response.statusCode == 404) {
       // no data found, return empty array
       return [];
@@ -78,10 +111,8 @@ class TracksService {
   /// Throw an exception if response status code is different from 201
   Future<void> createTrack(Track track) async {
     // call to API
-    final response = await http.post(
-        Uri.parse(API_ROOT_URL + API_CREATE_TRACK_ENDPOINT),
-        headers: {'Content-Type': 'application/json'},
-        body: track.toJson());
+    final response = await http.post(Uri.parse(API_ROOT_URL + API_CREATE_TRACK_ENDPOINT),
+        headers: {'Content-Type': 'application/json'}, body: track.toJson());
 
     // handle server response code
     if (response.statusCode == 201) {
@@ -100,10 +131,8 @@ class TracksService {
   /// Throw an exception if response status code is different from 200
   Future<void> updateTrack(Track track) async {
     // call to API
-    final response = await http.post(
-        Uri.parse(API_ROOT_URL + API_UPDATE_TRACK_ENDPOINT),
-        headers: {'Content-Type': 'application/json'},
-        body: track.toJson());
+    final response = await http.post(Uri.parse(API_ROOT_URL + API_UPDATE_TRACK_ENDPOINT),
+        headers: {'Content-Type': 'application/json'}, body: track.toJson());
 
     // handle server response code
     if (response.statusCode == 200) {
@@ -120,10 +149,8 @@ class TracksService {
   /// Throw an exception if response status code is different from 204
   Future<void> deleteTrack(Track track) async {
     // call to API
-    final response = await http.post(
-        Uri.parse(API_ROOT_URL + API_DELETE_TRACK_ENDPOINT),
-        headers: {'Content-Type': 'application/json'},
-        body: track.toJson());
+    final response = await http.post(Uri.parse(API_ROOT_URL + API_DELETE_TRACK_ENDPOINT),
+        headers: {'Content-Type': 'application/json'}, body: track.toJson());
 
     if (response.statusCode != 204) {
       throw Exception('Unexpected server response');

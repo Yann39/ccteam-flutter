@@ -32,7 +32,7 @@ import 'package:logging/logging.dart';
 import 'package:path/path.dart';
 
 class MembersService {
-  final Logger _log = new Logger('MembersService');
+  static final Logger _log = new Logger('MembersService');
 
   /// Check the account associated to the specified member [email].
   /// It returns a specific status code according to the account current status.
@@ -97,9 +97,11 @@ class MembersService {
   /// Fetch all members from the database according to the specified text [filter].
   /// Returns all records if [filter] is null or empty.
   Future<List<Member>> fetchMembers(String filter) async {
+    _log.info("Getting all members from database...");
+
     final String membersFilteredQuery = """
-      query MembersFiltered(\$text: String) {
-        membersFiltered(text: \$text) {
+      query GetMembersFiltered(\$text: String) {
+        getMembersFiltered(text: \$text) {
           id
           firstName
           lastName
@@ -125,11 +127,18 @@ class MembersService {
         if (result.hasException) {
           throw AppUtils.handleGraphQlException(result);
         } else {
-          for (dynamic m in result.data['membersFiltered']) {
-            members.add(Member.fromJson(m));
+          dynamic memberList = result.data['getMembersFiltered'];
+          if (memberList == null) {
+            _log.info("getMembersFiltered returned null data");
+          } else if (memberList is Map<String, dynamic> && memberList.isEmpty) {
+            _log.info("getMembersFiltered returned empty data");
+          } else {
+            for (dynamic member in memberList) {
+              members.add(Member.fromJson(member));
+            }
           }
+          return members;
         }
-        return members;
       },
       onError: (error) {
         throw Exception(error);
@@ -139,9 +148,11 @@ class MembersService {
 
   /// Get a member from the database given its [id].
   Future<Member> getMemberById(int id) async {
+    _log.info("Getting member $id from database...");
+
     final String memberByIdQuery = """
-      query MemberById(\$id: Int!) {
-        memberById(id: \$id) {
+      query GetMemberById(\$id: Long!) {
+        getMemberById(id: \$id) {
           id
           firstName
           lastName
@@ -170,11 +181,10 @@ class MembersService {
         if (result.hasException) {
           throw AppUtils.handleGraphQlException(result);
         } else {
-          // if no member found, memberById will be null
-          if (result.data['memberById'] == null) {
+          if (result.data['getMemberById'] == null) {
             throw CustomGraphQlException("member_not_found", "Member not found");
           }
-          return Member.fromJson(result.data['memberById']);
+          return Member.fromJson(result.data['getMemberById']);
         }
       },
       onError: (error) {
@@ -185,8 +195,10 @@ class MembersService {
 
   /// Get the member corresponding to the specified [email].
   Future<Member> getMemberByEmail(String email) async {
+    _log.info("Getting member $email from database...");
+
     final String memberByEmailQuery = """
-      query MemberByEmail(\$email: String!) {
+      query GetMemberByEmail(\$email: String!) {
         getMemberByEmail(email: \$email) {
           id
           firstName
@@ -223,7 +235,6 @@ class MembersService {
         if (result.hasException) {
           throw AppUtils.handleGraphQlException(result);
         } else {
-          // if member not found, memberByEmail will be null
           if (result.data['getMemberByEmail'] == null) {
             throw CustomGraphQlException("member_not_found", "Member not found");
           }

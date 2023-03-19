@@ -17,19 +17,20 @@
  * along with Chachatte Team. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import 'dart:ui';
+import 'dart:async';
 
 import 'package:chachatte_team/providers/login_provider.dart';
+import 'package:chachatte_team/providers/message_provider.dart';
+import 'package:chachatte_team/utils/app_utils.dart';
 import 'package:chachatte_team/utils/enums.dart';
 import 'package:chachatte_team/utils/string_utils.dart';
 import 'package:chachatte_team/utils/strings.dart';
 import 'package:chachatte_team/widgets/chachatte_logo.dart';
+import 'package:chachatte_team/widgets/loading_button_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:logging/logging.dart';
 import 'package:provider/provider.dart';
-import 'package:top_snackbar_flutter/custom_snack_bar.dart';
-import 'package:top_snackbar_flutter/top_snack_bar.dart';
 
 class EmailForm extends StatefulWidget {
   @override
@@ -53,10 +54,8 @@ class _EmailFormState extends State<EmailForm> {
       // this invokes each onSaved event
       _form.save();
 
-      // check account
-      Provider.of<LoginProvider>(context, listen: false).checkAccount(_email).then((value) {}, onError: (error) {
-        _log.severe(error.toString());
-      });
+      // check account, this will update login status and change page
+      Provider.of<LoginProvider>(context, listen: false).checkAccountEmail(_email);
     }
   }
 
@@ -106,24 +105,18 @@ class _EmailFormState extends State<EmailForm> {
           borderRadius: BorderRadius.circular(4),
         ),
         padding: EdgeInsets.fromLTRB(16.0, 12.0, 16.0, 12.0),
-        primary: Colors.blue[700],
+        backgroundColor: Colors.blue[700],
       ),
       onPressed: () {
         _doCheckAccount(context);
       },
-      child: _loginProvider.loginStatus == LoginStatus.Loading
-          ? SizedBox(
-              child: CircularProgressIndicator(
-                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                strokeWidth: 2.0,
-              ),
-              height: 14.0,
-              width: 14.0,
-            )
-          : Text(
-              AppString.continue1,
-              style: TextStyle(color: Colors.white),
-            ),
+      child: LoadingButtonText(
+        loaderCondition: _loginProvider.loginStatus == LoginStatus.Loading,
+        text: Text(
+          AppString.continue1,
+          style: TextStyle(color: Colors.white),
+        ),
+      ),
     );
 
     return Form(

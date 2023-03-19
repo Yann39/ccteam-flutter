@@ -18,6 +18,7 @@
  */
 
 import 'package:chachatte_team/models/news.dart';
+import 'package:chachatte_team/providers/news_creation_provider.dart';
 import 'package:chachatte_team/providers/news_detail_provider.dart';
 import 'package:chachatte_team/providers/news_list_provider.dart';
 import 'package:chachatte_team/ui/main/main_action_menu.dart';
@@ -33,23 +34,19 @@ import 'package:provider/provider.dart';
 class NewsList extends StatelessWidget {
   final Logger _log = new Logger('NewsList');
 
-  /// Navigates to the Add News screen and awaits the result from Navigator.pop
+  /// Navigate to the news creation form screen to create a new news.
   _navigateToAddNewsScreen(BuildContext context) async {
-    // Navigator.push returns a Future that will complete after we call Navigator.pop on the target screen
-    final _result = await Navigator.pushNamed(context, '/addEditNews');
+    // set a new news to be created
+    Provider.of<NewsCreationProvider>(context, listen: false).setNewsToEdit(new News());
 
-    // after the target screen returns a result, hide any previous snack bars and show the new result
-    if (_result != null) {
-      ScaffoldMessenger.of(context)
-        ..removeCurrentSnackBar()
-        ..showSnackBar(SnackBar(content: Text("$_result")));
-    }
+    // navigate to the news creation form screen
+    Navigator.pushNamed(context, '/addEditNews');
   }
 
-  /// Navigates to the detail screen of the specified [news].
+  /// Navigate to the detail screen of the specified [news].
   _navigateToNewsDetailScreen(BuildContext context, News news) async {
     // fetch the news to get complete data
-    await Provider.of<NewsDetailProvider>(context, listen: false).fetchCurrentNews(news);
+    Provider.of<NewsDetailProvider>(context, listen: false).fetchNews(news);
 
     // navigate to news detail screen
     Navigator.pushNamed(context, '/newsDetail');
@@ -111,26 +108,14 @@ class NewsList extends StatelessWidget {
               children: <Widget>[
                 Container(
                   padding: EdgeInsets.all(8),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: <Widget>[
-                      /*Icon(Icons.event_note, color: Colors.red[700], size: 18),
-                      SizedBox(width: 3),
-                      Text(
-                        AppString.news.toUpperCase(),
-                        style: TextStyle(color: Colors.black87, fontSize: 15, fontWeight: FontWeight.bold),
-                      ),*/
-                      Text(
-                        AppString.news,
-                        style: TextStyle(
-                          color: Colors.black87,
-                          fontSize: 16,
-                          fontFamily: 'Barbatrick',
-                          letterSpacing: 2,
-                        ),
-                      ),
-                    ],
+                  child: Text(
+                    AppString.news,
+                    style: TextStyle(
+                      color: Colors.black87,
+                      fontSize: 16,
+                      fontFamily: 'Barbatrick',
+                      letterSpacing: 2,
+                    ),
                   ),
                 ),
                 Expanded(
@@ -140,11 +125,11 @@ class NewsList extends StatelessWidget {
                       loadingStatus: _newsListProvider.loadingStatus,
                       emptyText: AppString.newsEmpty,
                       child: ListView.builder(
-                        itemCount: _newsListProvider.news.length,
+                        itemCount: _newsListProvider.newsList.length,
                         itemBuilder: (context, index) {
                           return InkWell(
                             child: NewsCard(index),
-                            onTap: () => _navigateToNewsDetailScreen(context, _newsListProvider.news[index]),
+                            onTap: () => _navigateToNewsDetailScreen(context, _newsListProvider.newsList[index]),
                           );
                         },
                       ),

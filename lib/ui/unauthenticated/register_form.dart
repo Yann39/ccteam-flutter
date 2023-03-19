@@ -17,13 +17,15 @@
  * along with Chachatte Team. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import 'dart:ui';
+import 'dart:async';
 
 import 'package:chachatte_team/providers/login_provider.dart';
+import 'package:chachatte_team/providers/message_provider.dart';
 import 'package:chachatte_team/utils/enums.dart';
 import 'package:chachatte_team/utils/string_utils.dart';
 import 'package:chachatte_team/utils/strings.dart';
 import 'package:chachatte_team/widgets/chachatte_logo.dart';
+import 'package:chachatte_team/widgets/loading_button_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:logging/logging.dart';
@@ -48,11 +50,20 @@ class _RegisterFormState extends State<RegisterForm> {
     if (_form.validate()) {
       _form.save();
 
+      final MessageProvider _messageProvider = Provider.of<MessageProvider>(context, listen: false);
+      final LoginProvider _loginProvider = Provider.of<LoginProvider>(context, listen: false);
+
       // pre-register user
-      Provider.of<LoginProvider>(context, listen: false)
-          .preRegisterMember()
-          .then((value) {}, onError: (error) {
-        _log.severe(error.toString());
+      _loginProvider.preRegisterMember().then((value) {}, onError: (error) {
+        if (error is TimeoutException) {
+          _messageProvider.setMessage(
+              "Impossible de contacter le serveur, vérifiez votre connection internet. Si le problème persite, contactez un administrateur",
+              MessageType.ERROR);
+        } else {
+          _messageProvider.setMessage(
+              "Une erreur inattendue est survenue lors de l'inscription, veuillez vérifier vos données puis essayer à nouveau. Si le problème persite, contactez un administrateur",
+              MessageType.ERROR);
+        }
       });
     }
   }
@@ -63,8 +74,7 @@ class _RegisterFormState extends State<RegisterForm> {
   }
 
   Widget build(BuildContext context) {
-    final LoginProvider _loginProvider =
-        Provider.of<LoginProvider>(context, listen: false);
+    final LoginProvider _loginProvider = Provider.of<LoginProvider>(context, listen: false);
 
     _log.info("Building RegisterForm...");
 
@@ -90,8 +100,7 @@ class _RegisterFormState extends State<RegisterForm> {
       ),
       maxLines: 1,
       inputFormatters: [LengthLimitingTextInputFormatter(64)],
-      validator: (val) =>
-          val.isEmpty ? AppString.memberFirstNameMandatory : null,
+      validator: (val) => val.isEmpty ? AppString.memberFirstNameMandatory : null,
       onSaved: (val) => _loginProvider.firstName = val,
       initialValue: _loginProvider.firstName,
     );
@@ -118,8 +127,7 @@ class _RegisterFormState extends State<RegisterForm> {
       ),
       maxLines: 1,
       inputFormatters: [LengthLimitingTextInputFormatter(64)],
-      validator: (val) =>
-          val.isEmpty ? AppString.memberLastNameMandatory : null,
+      validator: (val) => val.isEmpty ? AppString.memberLastNameMandatory : null,
       onSaved: (val) => _loginProvider.lastName = val,
       initialValue: _loginProvider.lastName,
     );
@@ -165,24 +173,18 @@ class _RegisterFormState extends State<RegisterForm> {
           borderRadius: BorderRadius.circular(4),
         ),
         padding: EdgeInsets.fromLTRB(16.0, 12.0, 16.0, 12.0),
-        primary: Colors.blue[700],
+        backgroundColor: Colors.blue[700],
       ),
       onPressed: () {
         _doPreRegisterUser(context);
       },
-      child: _loginProvider.loginStatus == LoginStatus.Loading
-          ? SizedBox(
-              child: CircularProgressIndicator(
-                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                strokeWidth: 2.0,
-              ),
-              height: 14.0,
-              width: 14.0,
-            )
-          : Text(
-              AppString.register,
-              style: TextStyle(color: Colors.white),
-            ),
+      child: LoadingButtonText(
+        loaderCondition: _loginProvider.loginStatus == LoginStatus.Loading,
+        text: Text(
+          AppString.register,
+          style: TextStyle(color: Colors.white),
+        ),
+      ),
     );
 
     final _backButton = TextButton(

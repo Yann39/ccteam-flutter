@@ -22,6 +22,7 @@ import 'package:chachatte_team/providers/event_provider.dart';
 import 'package:chachatte_team/providers/home_provider.dart';
 import 'package:chachatte_team/providers/login_provider.dart';
 import 'package:chachatte_team/providers/member_provider.dart';
+import 'package:chachatte_team/providers/message_provider.dart';
 import 'package:chachatte_team/providers/news_creation_provider.dart';
 import 'package:chachatte_team/providers/news_detail_provider.dart';
 import 'package:chachatte_team/providers/news_list_provider.dart';
@@ -58,8 +59,6 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:logging/logging.dart';
 import 'package:provider/provider.dart';
-import 'package:top_snackbar_flutter/custom_snack_bar.dart';
-import 'package:top_snackbar_flutter/top_snack_bar.dart';
 
 void main() {
   // logging configuration
@@ -71,33 +70,42 @@ void main() {
   runApp(
     MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (_) => LoginProvider()),
-        ChangeNotifierProvider(create: (_) => TimerProvider()),
-        ChangeNotifierProvider(create: (_) => HomeProvider()),
-        ChangeNotifierProvider(create: (_) => AvatarProvider()),
-        ChangeNotifierProvider(create: (_) => NewsListProvider()),
-        ChangeNotifierProxyProvider<LoginProvider, NewsListProvider>(
-          create: (context) => NewsListProvider(),
-          update: (context, loginProvider, newsListProvider) => newsListProvider..update(loginProvider),
+        ChangeNotifierProvider(create: (context) => TimerProvider()),
+        ChangeNotifierProvider(create: (context) => HomeProvider()),
+        ChangeNotifierProvider(create: (context) => AvatarProvider()),
+        ChangeNotifierProvider(create: (context) => EventProvider()),
+        ChangeNotifierProvider(create: (context) => MemberProvider()),
+        ChangeNotifierProvider(create: (context) => PhotoProvider()),
+        ChangeNotifierProvider(create: (context) => TrackProvider()),
+        ChangeNotifierProvider(create: (context) => RecordProvider()),
+        ChangeNotifierProvider(create: (context) => PasscodeProvider()),
+        ChangeNotifierProvider(create: (context) => MessageProvider()),
+        // so that we can set messages from login provider
+        ChangeNotifierProxyProvider<MessageProvider, LoginProvider>(
+          create: (context) => LoginProvider(),
+          update: (context, messageProvider, loginProvider) => loginProvider..update(messageProvider),
         ),
-        /*ChangeNotifierProxyProvider<NewsListProvider, LoginProvider>(
-          create: (_) => LoginProvider(),
-          update: (_, newsListProvider, loginProvider) => loginProvider..update(newsListProvider),
-          //lazy: false,
-        ),*/
-        /*ChangeNotifierProxyProvider<NewsListProvider, NewsDetailProvider>(
-          update: (context, newsListProvider, previousNews) => NewsDetailProvider(newsListProvider),
-          create: (BuildContext context) => NewsDetailProvider(),
-        ),*/
-        //ChangeNotifierProvider(create: (_) => NewsProvider()),
-        ChangeNotifierProvider(create: (_) => NewsCreationProvider()),
-        ChangeNotifierProvider(create: (_) => NewsDetailProvider()),
-        ChangeNotifierProvider(create: (_) => EventProvider()),
-        ChangeNotifierProvider(create: (_) => MemberProvider()),
-        ChangeNotifierProvider(create: (_) => PhotoProvider()),
-        ChangeNotifierProvider(create: (_) => TrackProvider()),
-        ChangeNotifierProvider(create: (_) => RecordProvider()),
-        ChangeNotifierProvider(create: (_) => PasscodeProvider()),
+        // so that we can set messages and logout user from NewsListProvider
+        ChangeNotifierProxyProvider2<MessageProvider, LoginProvider, NewsListProvider>(
+          create: (context) => NewsListProvider(),
+          update: (context, messageProvider, loginProvider, newsListProvider) => newsListProvider
+            ..updateMessageProvider(messageProvider)
+            ..updateLoginProvider(loginProvider),
+        ),
+        // so that we can set messages and logout user from NewsDetailProvider
+        ChangeNotifierProxyProvider2<MessageProvider, LoginProvider, NewsDetailProvider>(
+          create: (context) => NewsDetailProvider(),
+          update: (context, messageProvider, loginProvider, newsDetailProvider) => newsDetailProvider
+            ..updateMessageProvider(messageProvider)
+            ..updateLoginProvider(loginProvider),
+        ),
+        // so that we can set messages and logout user from NewsCreationProvider
+        ChangeNotifierProxyProvider2<MessageProvider, LoginProvider, NewsCreationProvider>(
+          create: (context) => NewsCreationProvider(),
+          update: (context, messageProvider, loginProvider, newsCreationProvider) => newsCreationProvider
+            ..updateMessageProvider(messageProvider)
+            ..updateLoginProvider(loginProvider),
+        ),
       ],
       child: ChachatteTeamApp(),
     ),
@@ -137,21 +145,64 @@ class ChachatteTeamApp extends StatelessWidget {
           '/photoDetail': (context) => PhotoDetail(photo: ModalRoute.of(context).settings.arguments),
           '/trackDetail': (context) => TrackDetail(track: ModalRoute.of(context).settings.arguments),
         },
-        home: Consumer<LoginProvider>(
-          builder: (context, loginProvider, child) {
-            // if an error message is set in the provider, display it in a dialog
-            if (loginProvider.errorMessage != null) {
+        home: Consumer2<LoginProvider, MessageProvider>(
+          builder: (context, loginProvider, messageProvider, child) {
+            // if an error message is set in the message provider, display it in a dialog
+            if (messageProvider.message != null) {
               // to prevent calling setState() during build
               WidgetsBinding.instance.addPostFrameCallback((_) {
-                showTopSnackBar(
-                  Overlay.of(context),
-                  CustomSnackBar.error(
-                    message: loginProvider.errorMessage,
-                    backgroundColor: Colors.red[700],
-                    textStyle: TextStyle(fontSize: 12),
+                final Color notificationColor = messageProvider.messageType == MessageType.ERROR
+                    ? Color(0xFFB43636)
+                    : messageProvider.messageType == MessageType.WARNING
+                        ? Color(0xFFC9922D)
+                        : messageProvider.messageType == MessageType.SUCCESS
+                            ? Color(0xFF42914A)
+                            : Color(0xFF2368AF);
+                final String notificationTitle = messageProvider.messageType == MessageType.ERROR
+                    ? "Erreur"
+                    : messageProvider.messageType == MessageType.WARNING
+                        ? "Attention"
+                        : messageProvider.messageType == MessageType.SUCCESS
+                            ? "Succès"
+                            : "Information";
+                final IconData notificationIcon = messageProvider.messageType == MessageType.ERROR
+                    ? Icons.error_outline
+                    : messageProvider.messageType == MessageType.WARNING
+                        ? Icons.warning_amber_rounded
+                        : messageProvider.messageType == MessageType.SUCCESS
+                            ? Icons.check_circle_outline
+                            : Icons.info_outline;
+                final snackBar = SnackBar(
+                  behavior: SnackBarBehavior.floating,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(32),
+                  ),
+                  showCloseIcon: true,
+                  closeIconColor: Colors.white,
+                  backgroundColor: notificationColor,
+                  padding: const EdgeInsets.all(24),
+                  margin: const EdgeInsets.all(24),
+                  duration: Duration(minutes: 1),
+                  content: Row(
+                    children: [
+                      Icon(notificationIcon, color: Colors.white, size: 35),
+                      SizedBox(width: 16),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(notificationTitle, textScaleFactor: 1.3),
+                            SizedBox(height: 8),
+                            Text(messageProvider.message, textScaleFactor: 0.9),
+                          ],
+                        ),
+                      ),
+                    ],
                   ),
                 );
-                loginProvider.clearErrorMessage();
+                ScaffoldMessenger.of(context).clearSnackBars();
+                ScaffoldMessenger.of(context).showSnackBar(snackBar);
+                messageProvider.clearMessage();
               });
             }
             switch (loginProvider.authStatus) {
@@ -190,6 +241,7 @@ class ChachatteTeamApp extends StatelessWidget {
         ],
         localizationsDelegates: [
           GlobalMaterialLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
           GlobalWidgetsLocalizations.delegate,
         ],
       ),

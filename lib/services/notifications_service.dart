@@ -30,7 +30,7 @@ class NotificationsService {
 
   static final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
 
-  static const AndroidInitializationSettings initializationSettingsAndroid = AndroidInitializationSettings('app_icon');
+  static const AndroidInitializationSettings initializationSettingsAndroid = AndroidInitializationSettings('@mipmap/ic_launcher');
 
   static final DarwinInitializationSettings initializationSettingsDarwin =
       DarwinInitializationSettings(onDidReceiveLocalNotification: onDidReceiveLocalNotification);

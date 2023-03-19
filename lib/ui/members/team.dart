@@ -53,15 +53,12 @@ class _TeamState extends State<Team> {
   }
 
   /// Method that launches the Member detail screen and awaits the result from Navigator.pop
-  void _navigateToMemberDetailScreen(
-      BuildContext context, Member member) async {
+  void _navigateToMemberDetailScreen(BuildContext context, Member member) async {
+
     // fetch the current member
-    Provider.of<MemberProvider>(context, listen: false)
-        .fetchCurrentMember(member);
-    Provider.of<RecordProvider>(context, listen: false)
-        .fetchMemberRecords(member.id);
-    Provider.of<EventProvider>(context, listen: false)
-        .fetchMemberEvents(member.id);
+    Provider.of<MemberProvider>(context, listen: false).fetchCurrentMember(member);
+    Provider.of<RecordProvider>(context, listen: false).fetchMemberRecords(member.id);
+    //Provider.of<EventProvider>(context, listen: false).fetchMemberEvents(member.id);
 
     // Navigator.push returns a Future that will complete after we call Navigator.pop on the target screen
     final _result = await Navigator.pushNamed(context, '/memberDetail');
@@ -91,8 +88,7 @@ class _TeamState extends State<Team> {
   }
 
   Widget build(BuildContext context) {
-    final MemberProvider _memberProvider =
-        Provider.of<MemberProvider>(context, listen: true);
+    final MemberProvider _memberProvider = Provider.of<MemberProvider>(context, listen: true);
 
     return Scaffold(
       appBar: AppBar(
@@ -121,22 +117,15 @@ class _TeamState extends State<Team> {
                         child: ListTile(
                           title: Text(
                               "${_memberProvider.members[index].firstName} ${_memberProvider.members[index].lastName}"),
-                          subtitle: Text(_memberProvider.members[index].bike ??
-                              AppString.notDefined),
-                          leading: _memberProvider.members[index].avatarUrl !=
-                                      null &&
-                                  _memberProvider
-                                          .members[index].avatarUrl.length >
-                                      0
+                          subtitle: Text(_memberProvider.members[index].bike ?? AppString.notDefined),
+                          leading: _memberProvider.members[index].avatarUrl != null &&
+                                  _memberProvider.members[index].avatarUrl.length > 0
                               ? CircleAvatar(
                                   backgroundImage: NetworkImage(
                                       "$SERVER_ROOT_PATH$SERVER_AVATAR_FOLDER${_memberProvider.members[index].avatarUrl}"))
-                              : CircleAvatar(
-                                  child: Text(_memberProvider
-                                      .members[index].firstName[0])),
+                              : CircleAvatar(child: Text(_memberProvider.members[index].firstName[0])),
                         ),
-                        onTap: () => _navigateToMemberDetailScreen(
-                            context, _memberProvider.members[index]),
+                        onTap: () => _navigateToMemberDetailScreen(context, _memberProvider.members[index]),
                       ),
                       color: Colors.transparent,
                     );

@@ -17,14 +17,13 @@
  * along with Chachatte Team. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import 'dart:ui';
-
 import 'package:chachatte_team/providers/login_provider.dart';
+import 'package:chachatte_team/providers/message_provider.dart';
 import 'package:chachatte_team/providers/passcode_provider.dart';
+import 'package:chachatte_team/utils/app_utils.dart';
 import 'package:chachatte_team/utils/enums.dart';
 import 'package:chachatte_team/utils/strings.dart';
 import 'package:chachatte_team/widgets/chachatte_logo.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:logging/logging.dart';
 import 'package:provider/provider.dart';
@@ -37,22 +36,26 @@ class PasscodeForm extends StatefulWidget {
 class _PasscodeFormState extends State<PasscodeForm> {
   final Logger _log = new Logger('PasscodeForm');
 
-  /// Method that log in the user according to the information specified in the related form.
+  /// Log in the user according to the information specified in the related form.
   /// It updates the login step status and the authentication status according to the result.
   _doLogin(BuildContext context, PasscodeProvider passcodeProvider) async {
-    Provider.of<LoginProvider>(context, listen: false)
-        .loginMember(passcodeProvider.loginPassCode)
-        .then((value) {
+    final MessageProvider _messageProvider = Provider.of<MessageProvider>(context, listen: false);
+    final LoginProvider _loginProvider = Provider.of<LoginProvider>(context, listen: false);
+
+    _loginProvider.loginMember(passcodeProvider.loginPassCode).then((value) {
+      // clear passcode once logged
       passcodeProvider.loginPassCode = null;
     }, onError: (error) {
       _log.severe(error.toString());
+      // display error message
+      _messageProvider.setMessage(AppUtils.extractExceptionMessage(error), MessageType.ERROR);
+      // clear passcode so user can try again with a new one
       passcodeProvider.loginPassCode = null;
     });
   }
 
   /// A widget representing a digit of the passcode
-  Widget _passcodeDigit(int digitId, LoginProvider loginProvider,
-      PasscodeProvider passcodeProvider) {
+  Widget _passcodeDigit(int digitId, LoginProvider loginProvider, PasscodeProvider passcodeProvider) {
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: TextButton(
@@ -60,58 +63,43 @@ class _PasscodeFormState extends State<PasscodeForm> {
           // passcode for logging in
           if (loginProvider.loginStatus == LoginStatus.PasscodeStep) {
             // if 6 digits have already been entered, ignore any tap
-            if (passcodeProvider.loginPassCode != null &&
-                passcodeProvider.loginPassCode.length >= 6) {
+            if (passcodeProvider.loginPassCode != null && passcodeProvider.loginPassCode.length >= 6) {
               return;
             }
             // update the provider, so we can update the digits indicator
             passcodeProvider.loginPassCode =
-                (passcodeProvider.loginPassCode != null
-                        ? passcodeProvider.loginPassCode
-                        : "") +
-                    "$digitId";
+                (passcodeProvider.loginPassCode != null ? passcodeProvider.loginPassCode : "") + "$digitId";
             // auto submit form when last digit is entered
-            if (passcodeProvider.loginPassCode != null &&
-                passcodeProvider.loginPassCode.length >= 6) {
+            if (passcodeProvider.loginPassCode != null && passcodeProvider.loginPassCode.length >= 6) {
               _doLogin(context, passcodeProvider);
             }
           }
           // passcode creation 1st step
-          else if (loginProvider.loginStatus ==
-              LoginStatus.CreatePasscodeStep) {
+          else if (loginProvider.loginStatus == LoginStatus.CreatePasscodeStep) {
             // if 6 digits have already been entered, ignore any tap
-            if (passcodeProvider.firstPassCode != null &&
-                passcodeProvider.firstPassCode.length >= 6) {
+            if (passcodeProvider.firstPassCode != null && passcodeProvider.firstPassCode.length >= 6) {
               return;
             }
             // update the provider, so we can update the digits indicator
             loginProvider.firstPassCode =
-                ((passcodeProvider.firstPassCode != null
-                        ? passcodeProvider.firstPassCode
-                        : "") +
-                    "$digitId");
+                ((passcodeProvider.firstPassCode != null ? passcodeProvider.firstPassCode : "") + "$digitId");
           }
           // passcode creation 2nd step (confirmation)
-          else if (loginProvider.loginStatus ==
-              LoginStatus.ConfirmPasscodeStep) {
+          else if (loginProvider.loginStatus == LoginStatus.ConfirmPasscodeStep) {
             // if 6 digits have already been entered, ignore any tap
-            if (passcodeProvider.secondPassCode != null &&
-                passcodeProvider.secondPassCode.length >= 6) {
+            if (passcodeProvider.secondPassCode != null && passcodeProvider.secondPassCode.length >= 6) {
               return;
             }
             // update the provider, so we can update the digits indicator
             passcodeProvider.secondPassCode =
-                (passcodeProvider.secondPassCode != null
-                        ? passcodeProvider.secondPassCode
-                        : "") +
-                    "$digitId";
+                (passcodeProvider.secondPassCode != null ? passcodeProvider.secondPassCode : "") + "$digitId";
           }
         },
         style: TextButton.styleFrom(
           shape: CircleBorder(side: BorderSide(color: Colors.blue[900])),
-          primary: Colors.black,
+          foregroundColor: Colors.black,
           padding: EdgeInsets.all(20.0),
-          onSurface: Colors.blue[700],
+          disabledForegroundColor: Colors.blue[700],
         ),
         child: Text("$digitId"),
       ),
@@ -119,17 +107,15 @@ class _PasscodeFormState extends State<PasscodeForm> {
   }
 
   /// A widget representing the back button of the passcode
-  Widget _passcodeBack(
-      LoginProvider loginProvider, PasscodeProvider passcodeProvider) {
+  Widget _passcodeBack(LoginProvider loginProvider, PasscodeProvider passcodeProvider) {
     return TextButton(
       onPressed: () {
         // passcode for logging in
         if (loginProvider.loginStatus == LoginStatus.PasscodeStep) {
           // remove last digit or set it to null if it was the last one
-          if (passcodeProvider.loginPassCode != null &&
-              passcodeProvider.loginPassCode.length >= 1) {
-            passcodeProvider.loginPassCode = passcodeProvider.loginPassCode
-                .substring(0, passcodeProvider.loginPassCode.length - 1);
+          if (passcodeProvider.loginPassCode != null && passcodeProvider.loginPassCode.length >= 1) {
+            passcodeProvider.loginPassCode =
+                passcodeProvider.loginPassCode.substring(0, passcodeProvider.loginPassCode.length - 1);
           } else {
             passcodeProvider.loginPassCode = null;
           }
@@ -137,10 +123,9 @@ class _PasscodeFormState extends State<PasscodeForm> {
         // passcode creation 1st step
         else if (loginProvider.loginStatus == LoginStatus.CreatePasscodeStep) {
           // remove last digit or set it to null if it was the last one
-          if (passcodeProvider.firstPassCode != null &&
-              passcodeProvider.firstPassCode.length >= 1) {
-            passcodeProvider.firstPassCode = passcodeProvider.firstPassCode
-                .substring(0, passcodeProvider.firstPassCode.length - 1);
+          if (passcodeProvider.firstPassCode != null && passcodeProvider.firstPassCode.length >= 1) {
+            passcodeProvider.firstPassCode =
+                passcodeProvider.firstPassCode.substring(0, passcodeProvider.firstPassCode.length - 1);
           } else {
             passcodeProvider.firstPassCode = null;
           }
@@ -148,10 +133,9 @@ class _PasscodeFormState extends State<PasscodeForm> {
         // passcode creation 2nd step (confirmation)
         else if (loginProvider.loginStatus == LoginStatus.ConfirmPasscodeStep) {
           // remove last digit or set it to null if it was the last one
-          if (passcodeProvider.secondPassCode != null &&
-              passcodeProvider.secondPassCode.length >= 1) {
-            passcodeProvider.secondPassCode = passcodeProvider.secondPassCode
-                .substring(0, passcodeProvider.secondPassCode.length - 1);
+          if (passcodeProvider.secondPassCode != null && passcodeProvider.secondPassCode.length >= 1) {
+            passcodeProvider.secondPassCode =
+                passcodeProvider.secondPassCode.substring(0, passcodeProvider.secondPassCode.length - 1);
           } else {
             passcodeProvider.secondPassCode = null;
           }
@@ -171,8 +155,7 @@ class _PasscodeFormState extends State<PasscodeForm> {
   }
 
   /// A widget representing the passcode indicator (number of digits entered)
-  Widget _passcodeIndicator(
-      LoginProvider loginProvider, PasscodeProvider passcodeProvider) {
+  Widget _passcodeIndicator(LoginProvider loginProvider, PasscodeProvider passcodeProvider) {
     final List<Widget> digits = [];
     for (var i = 0; i < 6; i++) {
       digits.add(
@@ -184,16 +167,11 @@ class _PasscodeFormState extends State<PasscodeForm> {
             shape: BoxShape.circle,
             border: Border.all(color: Colors.blue[900]),
             color: ((loginProvider.loginStatus == LoginStatus.PasscodeStep &&
-                        (passcodeProvider.loginPassCode == null ||
-                            passcodeProvider.loginPassCode.length <= i)) ||
-                    (loginProvider.loginStatus ==
-                            LoginStatus.CreatePasscodeStep &&
-                        (passcodeProvider.firstPassCode == null ||
-                            passcodeProvider.firstPassCode.length <= i)) ||
-                    (loginProvider.loginStatus ==
-                            LoginStatus.ConfirmPasscodeStep &&
-                        (passcodeProvider.secondPassCode == null ||
-                            passcodeProvider.secondPassCode.length <= i)))
+                        (passcodeProvider.loginPassCode == null || passcodeProvider.loginPassCode.length <= i)) ||
+                    (loginProvider.loginStatus == LoginStatus.CreatePasscodeStep &&
+                        (passcodeProvider.firstPassCode == null || passcodeProvider.firstPassCode.length <= i)) ||
+                    (loginProvider.loginStatus == LoginStatus.ConfirmPasscodeStep &&
+                        (passcodeProvider.secondPassCode == null || passcodeProvider.secondPassCode.length <= i)))
                 ? Colors.transparent
                 : Colors.blue[700],
           ),
@@ -207,10 +185,8 @@ class _PasscodeFormState extends State<PasscodeForm> {
   }
 
   Widget build(BuildContext context) {
-    final LoginProvider _loginProvider =
-        Provider.of<LoginProvider>(context, listen: false);
-    final PasscodeProvider _passcodeProvider =
-        Provider.of<PasscodeProvider>(context, listen: true);
+    final LoginProvider _loginProvider = Provider.of<LoginProvider>(context, listen: false);
+    final PasscodeProvider _passcodeProvider = Provider.of<PasscodeProvider>(context, listen: true);
 
     _log.info("Building PasscodeForm...");
 

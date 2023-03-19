@@ -20,7 +20,8 @@
 import 'package:chachatte_team/models/news.dart';
 import 'package:chachatte_team/providers/login_provider.dart';
 import 'package:chachatte_team/providers/news_creation_provider.dart';
-import 'package:chachatte_team/providers/news_provider.dart';
+import 'package:chachatte_team/providers/news_detail_provider.dart';
+import 'package:chachatte_team/providers/news_list_provider.dart';
 import 'package:chachatte_team/services/notifications_service.dart';
 import 'package:chachatte_team/utils/constants.dart';
 import 'package:chachatte_team/utils/custom_decorations.dart';
@@ -33,7 +34,6 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 class AddEditNews extends StatefulWidget {
-
   const AddEditNews({Key key}) : super(key: key);
 
   @override
@@ -50,23 +50,20 @@ class _AddEditNewsState extends State<AddEditNews> {
   initState() {
     // set date picker text if set
     if (Provider.of<NewsCreationProvider>(context, listen: false).news != null) {
-      _datePickerController.text =
-          AppDateUtils.convertToString(Provider.of<NewsCreationProvider>(context, listen: false).news.newsDate, DATE_FORMAT);
+      _datePickerController.text = AppDateUtils.convertToString(
+          Provider.of<NewsCreationProvider>(context, listen: false).news.newsDate, DATE_FORMAT);
     }
     return super.initState();
   }
 
-  /// Initialize and display a Date picker related to the specified [controller] in the specified [context]
-  Future _chooseDate(BuildContext context, TextEditingController controller,
-      DateTime defaultValue) async {
+  /// Initialize and display a date picker related to the specified [controller] in the specified [context].
+  Future _chooseDate(BuildContext context, TextEditingController controller, DateTime defaultValue) async {
     final DateTime _currentDate = DateTime.now();
     final TimeOfDay _currentTime = TimeOfDay.now();
 
     // define initial date and time from the specified default DateTime value if set
     final DateTime _initialDate = defaultValue ?? _currentDate;
-    final TimeOfDay _initialTime = defaultValue != null
-        ? TimeOfDay.fromDateTime(defaultValue)
-        : _currentTime;
+    final TimeOfDay _initialTime = defaultValue != null ? TimeOfDay.fromDateTime(defaultValue) : _currentTime;
 
     // show the date picker and await for the chosen date
     final DateTime _dateResult = await showDatePicker(
@@ -77,13 +74,12 @@ class _AddEditNewsState extends State<AddEditNews> {
     if (_dateResult == null) return;
 
     // show the time picker and await for the chosen time
-    final TimeOfDay _timeResult =
-        await showTimePicker(context: context, initialTime: _initialTime);
+    final TimeOfDay _timeResult = await showTimePicker(context: context, initialTime: _initialTime);
     if (_timeResult == null) return;
 
     // build final date with time
-    final DateTime finalDateTime = DateTime(_dateResult.year, _dateResult.month,
-        _dateResult.day, _timeResult.hour, _timeResult.minute);
+    final DateTime finalDateTime =
+        DateTime(_dateResult.year, _dateResult.month, _dateResult.day, _timeResult.hour, _timeResult.minute);
 
     // notify the framework that the internal state of this object has changed
     setState(() {
@@ -91,50 +87,46 @@ class _AddEditNewsState extends State<AddEditNews> {
     });
   }
 
-  /// Validate the form then submit data to backend
+  /// Validate the form then submit data to backend.
   void submitForm(News news) {
     final FormState _form = _formKey.currentState;
 
     if (!_form.validate()) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          backgroundColor: Colors.red, content: Text(AppString.formNotValid)));
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(backgroundColor: Colors.red, content: Text(AppString.formNotValid)));
     } else {
       // this invokes each onSaved event
       _form.save();
 
-
       // submit data to backend, if id is set this is an update, else a creation
       if (news.id != null) {
-        news.modifiedBy =
-            Provider.of<LoginProvider>(context, listen: false).loggedMember;
+        news.modifiedBy = Provider.of<LoginProvider>(context, listen: false).loggedMember;
         news.modifiedOn = DateTime.now();
         // update the news then go back with a message, the result is awaited in caller
-        Provider.of<NewsCreationProvider>(context, listen: false).updateNews().then(
-            (value) {
+        Provider.of<NewsCreationProvider>(context, listen: false).updateNews().then((value) {
+          Provider.of<NewsListProvider>(context, listen: false).updateNewsInList(Provider.of<NewsCreationProvider>(context, listen: false).news);
+          Provider.of<NewsDetailProvider>(context, listen: false).fetchNews(Provider.of<NewsCreationProvider>(context, listen: false).news);
           Navigator.pop(context, AppString.newsUpdated);
         }, onError: (error) {
           Navigator.pop(context, AppString.newsUpdateFailed);
         });
       } else {
-        news.createdBy =
-            Provider.of<LoginProvider>(context, listen: false).loggedMember;
+        news.createdBy = Provider.of<LoginProvider>(context, listen: false).loggedMember;
         // create the news then go back with a message, the result is awaited in caller
-        Provider.of<NewsCreationProvider>(context, listen: false).setNewsToEdit(news);
-        Provider.of<NewsCreationProvider>(context, listen: false).createNews().then(
-            (value) {
-          Navigator.pop(context, AppString.newsCreated);
+        Provider.of<NewsCreationProvider>(context, listen: false).createNews().then((value) {
+          Navigator.pop(context);
+          Provider.of<NewsListProvider>(context, listen: false).addNewsInList(Provider.of<NewsCreationProvider>(context, listen: false).news);
           // send a push notification
           NotificationsService.pushInstantNewsNotification(news);
         }, onError: (error) {
-          Navigator.pop(context, AppString.newsCreationFailed);
+          Navigator.pop(context);
         });
       }
     }
   }
 
   Widget build(BuildContext context) {
-    final _newsCreationProvider =
-    Provider.of<NewsCreationProvider>(context, listen: true);
+    final _newsCreationProvider = Provider.of<NewsCreationProvider>(context, listen: true);
 
     return Scaffold(
       key: _scaffoldKey,
@@ -159,8 +151,7 @@ class _AddEditNewsState extends State<AddEditNews> {
                     ),
                     maxLines: 1,
                     inputFormatters: [LengthLimitingTextInputFormatter(128)],
-                    validator: (val) =>
-                        val.isEmpty ? AppString.newsTitleMandatory : null,
+                    validator: (val) => val.isEmpty ? AppString.newsTitleMandatory : null,
                     onSaved: (val) => _newsCreationProvider.news.title = val,
                     initialValue: _newsCreationProvider.news.title,
                   ),
@@ -172,8 +163,7 @@ class _AddEditNewsState extends State<AddEditNews> {
                     ),
                     maxLines: 2,
                     inputFormatters: [LengthLimitingTextInputFormatter(512)],
-                    validator: (val) =>
-                        val.isEmpty ? AppString.newsContentMandatory : null,
+                    validator: (val) => val.isEmpty ? AppString.newsContentMandatory : null,
                     onSaved: (val) => _newsCreationProvider.news.catchLine = val,
                     initialValue: _newsCreationProvider.news.catchLine,
                   ),
@@ -185,14 +175,12 @@ class _AddEditNewsState extends State<AddEditNews> {
                     ),
                     maxLines: 5,
                     inputFormatters: [LengthLimitingTextInputFormatter(8128)],
-                    validator: (val) =>
-                        val.isEmpty ? AppString.newsContentMandatory : null,
+                    validator: (val) => val.isEmpty ? AppString.newsContentMandatory : null,
                     onSaved: (val) => _newsCreationProvider.news.content = val,
                     initialValue: _newsCreationProvider.news.content,
                   ),
                   GestureDetector(
-                    onTap: () => _chooseDate(
-                        context, _datePickerController, _newsCreationProvider.news.newsDate),
+                    onTap: () => _chooseDate(context, _datePickerController, _newsCreationProvider.news.newsDate),
                     child: AbsorbPointer(
                       child: TextFormField(
                         decoration: InputDecoration(
@@ -202,14 +190,12 @@ class _AddEditNewsState extends State<AddEditNews> {
                         ),
                         controller: _datePickerController,
                         keyboardType: TextInputType.datetime,
-                        validator: (val) => _newsCreationProvider.news.id == null &&
-                                !AppDateUtils.isBeforeNow(val, DATE_FORMAT)
-                            ? AppString.newsDateMustBeFuture
-                            : (val.isEmpty
-                                ? AppString.newsDateMandatory
-                                : null),
-                        onSaved: (val) => _newsCreationProvider.news.newsDate =
-                            DateFormat(DATE_FORMAT).parseStrict(val),
+                        validator: (val) =>
+                            _newsCreationProvider.news.id == null && !AppDateUtils.isBeforeNow(val, DATE_FORMAT)
+                                ? AppString.newsDateMustBeFuture
+                                : (val.isEmpty ? AppString.newsDateMandatory : null),
+                        onSaved: (val) =>
+                            _newsCreationProvider.news.newsDate = DateFormat(DATE_FORMAT).parseStrict(val),
                       ),
                     ),
                   ),

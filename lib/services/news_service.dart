@@ -17,15 +17,11 @@
  * along with Chachatte Team. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import 'dart:convert';
-
 import 'package:chachatte_team/models/news.dart';
 import 'package:chachatte_team/utils/app_utils.dart';
-import 'package:chachatte_team/utils/constants.dart';
 import 'package:chachatte_team/utils/graphql_connection.dart';
 import 'package:gql/language.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
-import 'package:http/http.dart' as http;
 import 'package:logging/logging.dart';
 
 class NewsService {
@@ -45,6 +41,7 @@ class NewsService {
           likedNews {
             id
             member {
+              id
               email
             }
           }
@@ -68,13 +65,10 @@ class NewsService {
         } else {
           dynamic newsList = result.data['getAllNews'];
           if (newsList == null) {
-            // returned { "data": { "allNews": null } }
             _log.info("GetAllNews returned null data");
           } else if (newsList is Map<String, dynamic> && newsList.isEmpty) {
-            // returned { "data": { "allNews": [] } }
             _log.info("GetAllNews returned empty data");
           } else {
-            // returned at least one record, build object from JSON
             for (dynamic oneNews in newsList) {
               news.add(News.fromJson(oneNews));
             }
@@ -134,16 +128,8 @@ class NewsService {
         .then(
       (result) {
         if (result.hasException) {
-          // usually ClientException means invalid or expired token
-          if (result.exception.linkException != null) {
-            throw Exception(result.exception.linkException.toString());
-          } else if (result.exception.graphqlErrors != null && result.exception.graphqlErrors.isNotEmpty) {
-            throw Exception(result.exception.graphqlErrors.first.message);
-          } else {
-            throw Exception(result.exception.toString());
-          }
+          throw AppUtils.handleGraphQlException(result);
         } else {
-          // if no news found, newsById will be null
           if (result.data['getNewsById'] == null) {
             return null;
           }
@@ -156,12 +142,13 @@ class NewsService {
     );
   }
 
-  /// Mark the news identified by the specified [newsId] as liked for the member identified by the specified [memberId]
+  /// Mark the news identified by the specified [newsId] as liked for the member identified by the specified [memberId].
+  /// Return the up-to-date liked news.
   Future<News> likeNews(int newsId, int memberId) async {
     _log.info("Liking news $newsId for member $memberId ...");
 
     final String likeNewsMutation = """
-      mutation LikeNews(\$newsId: Int!, \$memberId: Int!) {
+      mutation LikeNews(\$newsId: Long!, \$memberId: Long!) {
         likeNews(
             newsId: \$newsId
             memberId: \$memberId
@@ -203,25 +190,19 @@ class NewsService {
     final QueryResult result = await GraphQLConnection().graphQLClient.mutate(mutationOptions);
 
     if (result.hasException) {
-      // usually ClientException means invalid or expired token
-      if (result.exception.linkException != null) {
-        throw Exception(result.exception.linkException.toString());
-      } else if (result.exception.graphqlErrors != null && result.exception.graphqlErrors.isNotEmpty) {
-        throw Exception(result.exception.graphqlErrors.first.message);
-      } else {
-        throw Exception(result.exception.toString());
-      }
+      throw AppUtils.handleGraphQlException(result);
     } else {
       return News.fromJson(result.data['likeNews']);
     }
   }
 
-  /// Mark the news identified by the specified [newsId] as not liked for the member identified by the specified [memberId]
+  /// Mark the news identified by the specified [newsId] as not liked for the member identified by the specified [memberId].
+  /// Return the up-to-date unliked news.
   Future<News> unlikeNews(int newsId, int memberId) async {
     _log.info("Unliking news $newsId for member $memberId ...");
 
     final String unlikeNewsMutation = """
-      mutation UnlikeNews(\$newsId: Int!, \$memberId: Int!) {
+      mutation UnlikeNews(\$newsId: Long!, \$memberId: Long!) {
         unlikeNews(
             newsId: \$newsId
             memberId: \$memberId
@@ -262,14 +243,7 @@ class NewsService {
     final QueryResult result = await GraphQLConnection().graphQLClient.mutate(mutationOptions);
 
     if (result.hasException) {
-      // usually ClientException means invalid or expired token
-      if (result.exception.linkException != null) {
-        throw Exception(result.exception.linkException.toString());
-      } else if (result.exception.graphqlErrors != null && result.exception.graphqlErrors.isNotEmpty) {
-        throw Exception(result.exception.graphqlErrors.first.message);
-      } else {
-        throw Exception(result.exception.toString());
-      }
+      throw AppUtils.handleGraphQlException(result);
     } else {
       if (result.data['unlikeNews'] != null) {
         return News.fromJson(result.data['unlikeNews']);
@@ -278,8 +252,9 @@ class NewsService {
   }
 
   /// Create the specified [news] into the database.
+  /// Return the created news.
   Future<News> createNews(News news) async {
-    _log.info("Creating news ${news.title}...");
+    _log.info("Creating news ${news.title} ...");
 
     final String newNewsMutation = """
       mutation CreateNews(\$title: String!, \$catchLine: String!, \$content: String!, \$newsDate: String!, \$memberId: Long!) {
@@ -319,32 +294,29 @@ class NewsService {
 
     final MutationOptions mutationOptions = new MutationOptions(
       document: parseString(newNewsMutation),
-      variables: {'title': news.title, 'catchLine': news.catchLine, 'content': news.content, 'newsDate': news.newsDate.toIso8601String(), 'memberId': news.createdBy.id},
+      variables: {
+        'title': news.title,
+        'catchLine': news.catchLine,
+        'content': news.content,
+        'newsDate': news.newsDate.toIso8601String(),
+        'memberId': news.createdBy.id
+      },
       fetchPolicy: FetchPolicy.noCache,
     );
 
     final QueryResult result = await GraphQLConnection().graphQLClient.mutate(mutationOptions);
 
     if (result.hasException) {
-      // usually ClientException means invalid or expired token
-      if (result.exception.linkException != null) {
-        throw Exception(result.exception.linkException.toString());
-      } else if (result.exception.graphqlErrors != null && result.exception.graphqlErrors.isNotEmpty) {
-        throw Exception(result.exception.graphqlErrors.first.message);
-      } else {
-        throw Exception(result.exception.toString());
-      }
+      throw AppUtils.handleGraphQlException(result);
     } else {
-      _log.info("Query result value : ${result.data}");
       return News.fromJson(result.data['createNews']);
     }
   }
 
-  /// Update the specified [news] into the database
-  /// Send a POST request to the Restful API
-  /// Throw an exception if response status code is different from 200
+  /// Update the specified [news] into the database.
+  /// Return the updated news.
   Future<News> updateNews(News news) async {
-    _log.info("Updating news ${news.title}...");
+    _log.info("Updating news ${news.title} ...");
 
     final String editNewsMutation = """
       mutation UpdateNews(\$newsId: Long!, \$title: String!, \$catchLine: String!, \$content: String!, \$newsDate: String!, \$memberId: Long!) {
@@ -385,37 +357,77 @@ class NewsService {
 
     final MutationOptions mutationOptions = new MutationOptions(
       document: parseString(editNewsMutation),
-      variables: {'newsId': news.id, 'title': news.title, 'catchLine': news.catchLine, 'content': news.content, 'newsDate': news.newsDate.toIso8601String(), 'memberId': news.modifiedBy.id},
+      variables: {
+        'newsId': news.id,
+        'title': news.title,
+        'catchLine': news.catchLine,
+        'content': news.content,
+        'newsDate': news.newsDate.toIso8601String(),
+        'memberId': news.modifiedBy.id
+      },
       fetchPolicy: FetchPolicy.noCache,
     );
 
     final QueryResult result = await GraphQLConnection().graphQLClient.mutate(mutationOptions);
 
     if (result.hasException) {
-      // usually ClientException means invalid or expired token
-      if (result.exception.linkException != null) {
-        throw Exception(result.exception.linkException.toString());
-      } else if (result.exception.graphqlErrors != null && result.exception.graphqlErrors.isNotEmpty) {
-        throw Exception(result.exception.graphqlErrors.first.message);
-      } else {
-        throw Exception(result.exception.toString());
-      }
+      throw AppUtils.handleGraphQlException(result);
     } else {
-      _log.info("Query result value : ${result.data}");
       return News.fromJson(result.data['updateNews']);
     }
   }
 
-  /// Delete specified [news] from the database
-  /// Send a POST request to the Restful API
-  /// Throw an exception if response status code is different from 204
-  Future<void> deleteNews(News news) async {
-    // call to API
-    final response = await http.post(Uri.parse(API_ROOT_URL + API_DELETE_NEWS_ENDPOINT),
-        headers: {'Content-Type': 'application/json'}, body: json.encode(news.toJson()));
+  /// Delete specified [news] from the database.
+  /// return the original news that have been deleted
+  Future<News> deleteNews(News news) async {
+    _log.info("Deleting news ${news.title} ...");
 
-    if (response.statusCode != 204) {
-      throw Exception('Unexpected server response');
+    final String editNewsMutation = """
+      mutation DeleteNews(\$newsId: Long!) {
+        deleteNews(
+            newsId: \$newsId
+        )
+        {
+          id
+          title
+          catchLine
+          content
+          newsDate
+          likedNews {
+            member {
+              id
+              firstName
+              lastName
+            }
+          }
+          createdOn
+          createdBy {
+            firstName
+            lastName
+          }
+          modifiedOn
+          modifiedBy {
+            firstName
+            lastName
+          }          
+        }
+      }
+    """;
+
+    final MutationOptions mutationOptions = new MutationOptions(
+      document: parseString(editNewsMutation),
+      variables: {
+        'newsId': news.id,
+      },
+      fetchPolicy: FetchPolicy.noCache,
+    );
+
+    final QueryResult result = await GraphQLConnection().graphQLClient.mutate(mutationOptions);
+
+    if (result.hasException) {
+      throw AppUtils.handleGraphQlException(result);
+    } else {
+      return News.fromJson(result.data['deleteNews']);
     }
   }
 }

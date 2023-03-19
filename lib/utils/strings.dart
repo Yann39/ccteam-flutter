@@ -92,6 +92,14 @@ class AppString {
   static const String loginFailed = 'L\'dentification a échouée, vérifiez vos informations et assurez-vous que votre compte soit actif';
   static const String loginNoAccountFound = "Aucun compte trouvé avec l'adresse e-mail spécifiée";
   static const String loginAccountEmailAlreadyExist = "Un compte existe déjà avec cette adresse e-mail";
+  static const String loginEmailMissing = "L'adresse e-mail doit être spécifiée";
+
+  static const String checkAccountUnexpectedResponse = "Une erreur inattendue est survenue lors de la vérification de votre compte. Si le problème persite, contactez un administrateur";
+  static const String checkAccountError = "Une erreur inattendue est survenue lors de la vérification de votre compte. Si le problème persite, contactez un administrateur";
+
+  static const String preRegisterConfirmationEmailNotSent = "Le code de confirmation n'a pas pu être envoyé à l'adresse {0}. Veuillez vérifier que l'adresse e-mail est correcte puis renvoyez le code";
+  static const String preRegisterUnexpectedResponse = "Une erreur inattendue est survenue lors de la création de votre compte. Si le problème persite, contactez un administrateur";
+  static const String preRegisterError = "Une erreur inattendue est survenue lors de la création de votre compte. Si le problème persite, contactez un administrateur";
 
   static const String codeHint = 'Code';
   static const String codeMandatory = 'Le code est obligatoire';
@@ -295,8 +303,9 @@ class AppString {
   static const String errorTokenNotFound = 'Votre session n\'est pas valide';
   static const String errorTokenWrongFormat = 'Votre identifiant de session n\'est pas valide';
   static const String errorBadCredentials = 'Nom d\'utilisateur ou mot de passe incorrect';
+  static const String errorServerInternal = 'Erreur interne au serveur. Si le problème persiste, contactez un administrateur';
+  static const String errorServerTimeOut = "Impossible de contacter le serveur, vérifiez votre connection internet. Si le problème persite, contactez un administrateur";
   static const String errorUnknown = 'Erreur inconnue : {0}';
-  static const String errorServerTimeOut = 'Impossible de contacter le serveur pour vérifier votre identité. Veuillez vous assurer que vous êtes bien connecter à internet';
 
 
 }

@@ -17,10 +17,12 @@
  * along with Chachatte Team. If not, see <http://www.gnu.org/licenses/>.
  */
 
+import 'dart:async';
 import 'dart:collection';
 
 import 'package:chachatte_team/models/news.dart';
 import 'package:chachatte_team/providers/login_provider.dart';
+import 'package:chachatte_team/providers/message_provider.dart';
 import 'package:chachatte_team/services/news_service.dart';
 import 'package:chachatte_team/utils/custom_graphql_exception.dart';
 import 'package:chachatte_team/utils/enums.dart';
@@ -32,10 +34,14 @@ class NewsListProvider extends ChangeNotifier {
   final Logger _log = new Logger('NewsListProvider');
   final NewsService _newsService = new NewsService();
 
+  // message provider that can be set from the proxy provider
+  MessageProvider _messageProvider;
+
+  // login provider that can be set from the proxy provider
   LoginProvider _loginProvider;
 
   // current news list
-  List<News> _news = [];
+  List<News> _newsList = [];
 
   // current loading status
   LoadingStatus _loadingStatus = LoadingStatus.notLoaded;
@@ -46,71 +52,93 @@ class NewsListProvider extends ChangeNotifier {
     fetchNewsList();
   }
 
-  bool _logout = false;
-
-  bool get logout => _logout;
-
-  UnmodifiableListView<News> get news => UnmodifiableListView(_news);
+  UnmodifiableListView<News> get newsList => UnmodifiableListView(_newsList);
 
   LoadingStatus get loadingStatus => _loadingStatus;
 
-  void update(LoginProvider loginProvider) {
-    // Do some custom work based on myModel that may call `notifyListeners`
-    _log.info("Calling update");
+  /// Update message provider with the specified [messageProvider].
+  void updateMessageProvider(MessageProvider messageProvider) {
+    _messageProvider = messageProvider;
+    notifyListeners();
+  }
+
+  /// Update login provider with the specified [loginProvider].
+  void updateLoginProvider(LoginProvider loginProvider) {
     _loginProvider = loginProvider;
     notifyListeners();
   }
 
-  /// Update the current loading status
+  /// Add the specified [news] to the current news list.
+  void addNewsInList(News news) {
+    _newsList.add(news);
+
+    // re-sort the list by date
+    _newsList.sort((a, b) => a.newsDate.compareTo(b.newsDate));
+
+    _log.info("Notifying listeners of NewsListProvider");
+    notifyListeners();
+  }
+
+  /// Update the specified [news] in the current news list.
+  void updateNewsInList(News news) {
+    final int index = _newsList.indexWhere((n) => n.id == news.id);
+    if (index != -1) {
+      _newsList[index] = news;
+      _log.info("Notifying listeners of NewsListProvider");
+      notifyListeners();
+    }
+  }
+
+  /// Remove the specified [news] from the current news list.
+  void removeNewsFromList(News news) {
+    _newsList.removeWhere((n) => n.id == news.id);
+    _log.info("Notifying listeners of NewsListProvider");
+    notifyListeners();
+  }
+
+  /// Fetch the list of all news.
+  Future<void> fetchNewsList() async {
+    _updateStatus(LoadingStatus.loading);
+    await _newsService.fetchNews().then((value) async {
+      _log.fine("News list retrieved successfully");
+      _newsList = value;
+      _updateStatus(LoadingStatus.loaded);
+    }, onError: (error) {
+      _log.warning("Error when retrieving news list ($error)");
+      _newsList = [];
+      _handleServiceException(error);
+      _updateStatus(LoadingStatus.notLoaded);
+    });
+  }
+
+  /// Update the current loading [status].
   void _updateStatus(LoadingStatus status) {
     _loadingStatus = status;
     _log.info("Notifying listeners of NewsListProvider");
     notifyListeners();
   }
 
-  void updateNews(News news) {
-    final int index = _news.indexWhere((n) => n.id == news.id);
-    if (index != -1) {
-      _news[index] = news;
-      _log.info("Notifying listeners of NewsListProvider");
-      notifyListeners();
-    }
-  }
-
-  /// Get the list of all news
-  Future<void> fetchNewsList() async {
-    _updateStatus(LoadingStatus.loading);
-    await _newsService.fetchNews().then((value) async {
-      _log.fine("News list retrieved successfully");
-      _news = value;
-      _updateStatus(LoadingStatus.loaded);
-    }, onError: (error) {
-      _log.warning("Error when retrieving news list ($error)");
-      _news = [];
-      _updateStatus(LoadingStatus.notLoaded);
-      if (error is CustomGraphQlException) {
-        //_loginProvider.logoutMember();
-        //_setLoginStatus(LoginStatus.PasscodeStep);
-        //_setAuthStatus(AuthStatus.Unauthenticated);
-        // Member not found
-        if (error.code == "member_not_found") {
-          //_setErrorMessage(AppString.format(AppString.errorEmailNotFoundInDatabase, [_email]));
-        }
-        // JWT token has expired
-        else if (error.code == "token_expired") {
-          //_prefs.remove('jwt');
-          //_setErrorMessage(AppString.errorTokenExpired);
-          _logout = true;
-          notifyListeners();
-          _loginProvider.errorMessage = AppString.errorTokenExpired;
-          _loginProvider.logoutMember();
-        }
-        // JWT token has expired
-        else if (error.code == "wrong_token_format") {
-          //_prefs.remove('jwt');
-          //_setErrorMessage(AppString.errorTokenExpired);
-        }
+  /// Handle specified [error] from service call.
+  void _handleServiceException(dynamic error) {
+    if (error is CustomGraphQlException) {
+      if (error.code == "token_expired") {
+        _messageProvider.setMessage(AppString.errorTokenExpired, MessageType.INFO);
+      } else if (error.code == "wrong_token_format") {
+        _messageProvider.setMessage(AppString.errorTokenWrongFormat, MessageType.ERROR);
+      } else if (error.code == "no_token") {
+        _messageProvider.setMessage(AppString.errorTokenNotFound, MessageType.ERROR);
+      } else if (error.code == "bad_credentials") {
+        _messageProvider.setMessage(AppString.errorBadCredentials, MessageType.ERROR);
+      } else if (error.code == "internal_error") {
+        _messageProvider.setMessage(AppString.errorServerInternal, MessageType.ERROR);
+      } else {
+        _messageProvider.setMessage(AppString.format(AppString.errorUnknown, [error.toString()]), MessageType.ERROR);
       }
-    });
+      _loginProvider.logoutMember();
+    } else if (error is TimeoutException) {
+      _messageProvider.setMessage(AppString.errorServerTimeOut, MessageType.ERROR);
+    } else {
+      _messageProvider.setMessage(AppString.format(AppString.errorUnknown, [error.toString()]), MessageType.ERROR);
+    }
   }
 }

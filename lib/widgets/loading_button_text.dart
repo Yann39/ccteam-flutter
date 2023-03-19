@@ -17,11 +17,29 @@
  * along with Chachatte Team. If not, see <http://www.gnu.org/licenses/>.
  */
 
-enum AuthStatus { Initializing, Unauthenticated, Authenticating, Authenticated }
-enum LoginStatus { Loading, EmailStep, EmailAndInfoStep, OtpStep, CreatePasscodeStep, ConfirmPasscodeStep, PasscodeStep }
-enum OtpStatus { NotSent, Sent, Verified }
-enum LoadingStatus { notLoaded, loading, loaded }
-enum ConfirmDialogAction { yes, no }
-enum QuickActions { about, contact, logout }
-enum DialogType { info, success, warning, error }
-enum MessageType { INFO, SUCCESS, WARNING, ERROR }
+import 'package:flutter/material.dart';
+
+/// A widget that display a loading indicator when the specified condition is met.
+/// It is designed to be used in buttons.
+class LoadingButtonText extends StatelessWidget {
+  const LoadingButtonText({Key key, this.text, this.loaderCondition}) : super(key: key);
+
+  final Text text;
+  final bool loaderCondition;
+
+  static final Widget _loader = Center(
+    child: SizedBox(
+      child: CircularProgressIndicator(
+        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+        strokeWidth: 2.0,
+      ),
+      height: 14.0,
+      width: 14.0,
+    ),
+  );
+
+  @override
+  Widget build(BuildContext context) {
+    return loaderCondition ? _loader : text;
+  }
+}

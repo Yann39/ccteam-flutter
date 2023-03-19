@@ -45,8 +45,8 @@ class _MemberEventsState extends State<MemberEvents> {
     super.initState();
     Provider.of<RecordProvider>(context, listen: false)
         .fetchMemberRecords(widget.member.id);
-    Provider.of<EventProvider>(context, listen: false)
-        .fetchMemberEventsByStatus(widget.member.id);
+    /*Provider.of<EventProvider>(context, listen: false)
+        .fetchMemberEventsByStatus(widget.member.id);*/
   }
 
   /// Method that launches the Add Event screen and awaits the result from Navigator.pop

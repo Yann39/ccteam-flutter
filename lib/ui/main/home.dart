@@ -20,7 +20,7 @@
 import 'package:chachatte_team/providers/home_provider.dart';
 import 'package:chachatte_team/ui/events/calendar.dart';
 import 'package:chachatte_team/ui/members/team.dart';
-import 'package:chachatte_team/ui/news/news.dart';
+import 'package:chachatte_team/ui/news/news_list.dart';
 import 'package:chachatte_team/ui/photos/galleries.dart';
 import 'package:chachatte_team/ui/tracks/tracks.dart';
 import 'package:chachatte_team/utils/custom_icons.dart';

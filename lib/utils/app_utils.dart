@@ -36,10 +36,17 @@ class AppUtils {
     }
   }
 
+  /// Return the message string from a given [Exception].
+  /// By default the [Exception]'s [toString] method appends "Exception: " string before the message,
+  /// so simply remove it.
+  static String extractExceptionMessage(Exception exception) {
+    return exception.toString().substring(11);
+  }
+
   /// Handle exception encountered during a GraphQL request.
   /// It parses the specified [QueryResult] and return the appropriate exception.
   static Exception handleGraphQlException(QueryResult result) {
-    // error encountered during execution
+    // error encountered during execution such as network or cache errors
     if (result.exception.linkException != null) {
       // network exception, usually server down or not accessible
       if (result.exception.linkException is NetworkException) {

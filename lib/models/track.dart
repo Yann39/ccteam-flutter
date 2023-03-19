@@ -54,11 +54,11 @@ class Track {
   Track.fromJson(Map<String, dynamic> json)
       : id = json['id'] != null ? int.parse(json['id']) : -1,
         name = json['name'],
-        distance = json['distance'] != null ? int.parse(json['distance']) : null,
-        lapRecord = json['lapRecord'] != null ? int.parse(json['lapRecord']) : null,
+        distance = json['distance'] != null ? json['distance'] : null,
+        lapRecord = json['lapRecord'] != null ? json['lapRecord'] : null,
         website = json['website'],
-        latitude = json['latitude'] != null ? double.parse(json['latitude']) : null,
-        longitude = json['longitude'] != null ? double.parse(json['longitude']) : null;
+        latitude = json['latitude'] != null ? json['latitude'] : null,
+        longitude = json['longitude'] != null ? json['longitude'] : null;
 
   /// Convert [member] object to the corresponding JSON map
   Map<String, dynamic> toJson() => {

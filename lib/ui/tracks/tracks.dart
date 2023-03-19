@@ -58,8 +58,8 @@ class _TracksState extends State<Tracks> {
 
   /// Method that launches the Track detail screen and awaits the result from Navigator.pop
   void _navigateToTrackDetailScreen(BuildContext context, Track track) async {
-    Provider.of<EventProvider>(context, listen: false)
-        .fetchTrackEvents(track.id);
+    /*Provider.of<EventProvider>(context, listen: false)
+        .fetchTrackEvents(track.id);*/
 
     // Navigator.push returns a Future that will complete after we call Navigator.pop on the target screen
     final _result =

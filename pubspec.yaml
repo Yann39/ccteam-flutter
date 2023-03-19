@@ -53,8 +53,6 @@ dependencies:
   # mocking
   mockito: ^5.3.2
 
-  top_snackbar_flutter: ^3.0.0+1
-
 dev_dependencies:
   flutter_test:
     sdk: flutter

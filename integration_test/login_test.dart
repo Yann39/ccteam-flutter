@@ -4,7 +4,7 @@ import 'package:chachatte_team/providers/login_provider.dart';
 import 'package:chachatte_team/providers/news_list_provider.dart';
 import 'package:chachatte_team/providers/passcode_provider.dart';
 import 'package:chachatte_team/ui/main/home.dart';
-import 'package:chachatte_team/ui/news/news.dart';
+import 'package:chachatte_team/ui/news/news_list.dart';
 import 'package:chachatte_team/ui/unauthenticated/email_form.dart';
 import 'package:chachatte_team/utils/constants.dart';
 import 'package:chachatte_team/utils/strings.dart';

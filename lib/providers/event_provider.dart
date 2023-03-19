@@ -89,7 +89,7 @@ class EventProvider extends ChangeNotifier {
     } else {
       _selectedStatuses.add(index);
     }
-    fetchMemberEventsByStatus(memberId);
+    //fetchMemberEventsByStatus(memberId);
   }
 
   /// Update the current loading status
@@ -158,6 +158,7 @@ class EventProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  /*
   /// Get the list of all events for the specified [memberId]
   void fetchMemberEvents(int memberId) async {
     _updateLoadingStatus(LoadingStatus.loading);
@@ -213,4 +214,6 @@ class EventProvider extends ChangeNotifier {
       throw (error);
     });
   }
+   */
+
 }

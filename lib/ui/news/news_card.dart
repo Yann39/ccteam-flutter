@@ -37,7 +37,7 @@ class NewsCard extends StatelessWidget {
     final NewsListProvider _newsListProvider = Provider.of<NewsListProvider>(context, listen: true);
     final LoginProvider _loginProvider = Provider.of<LoginProvider>(context, listen: false);
 
-    final News news = _newsListProvider.news[index];
+    final News news = _newsListProvider.newsList[index];
 
     final Color _color = index % 3 == 0
         ? Colors.red[900]
@@ -76,7 +76,7 @@ class NewsCard extends StatelessWidget {
               Row(
                 children: <Widget>[
                   Icon(
-                    news.likedNews.any((element) => element.member.email == _loginProvider.email)
+                    news.likedNews.any((element) => element.member.id == _loginProvider.loggedMember.id)
                         ? Icons.favorite
                         : Icons.favorite_border,
                     color: Colors.pink,

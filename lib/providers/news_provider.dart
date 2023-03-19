@@ -20,14 +20,12 @@
 import 'dart:collection';
 
 import 'package:chachatte_team/models/news.dart';
-import 'package:chachatte_team/services/news_service.dart';
 import 'package:chachatte_team/utils/enums.dart';
 import 'package:flutter/foundation.dart';
 import 'package:logging/logging.dart';
 
 class NewsProvider extends ChangeNotifier {
   final Logger _log = new Logger('NewsProvider');
-  final NewsService _newsService = new NewsService();
 
   // current news list
   List<News> _news = [];
@@ -39,12 +37,6 @@ class NewsProvider extends ChangeNotifier {
   LoadingStatus _loadingStatus = LoadingStatus.notLoaded;
 
   LoadingStatus _currentNewsLoadingStatus = LoadingStatus.notLoaded;
-
-  // constructor
-  NewsProvider() {
-    // as soon as it is instantiated, we fetch all news
-    //fetchNewsList();
-  }
 
   UnmodifiableListView<News> get news => UnmodifiableListView(_news);
 
@@ -66,76 +58,5 @@ class NewsProvider extends ChangeNotifier {
     _currentNewsLoadingStatus = status;
     _log.info("Notifying listeners of NewsProvider");
     notifyListeners();
-  }
-
-  /// Get the list of all news
-  /*Future<void> fetchNewsList() async {
-    _updateStatus(LoadingStatus.loading);
-    await _newsService.fetchNews().then((value) async {
-      _log.fine("News list retrieved successfully");
-      _news = value;
-      _updateStatus(LoadingStatus.loaded);
-    }, onError: (error) {
-      _log.warning("Error when retrieving news list ($error)");
-      _news = [];
-      _updateStatus(LoadingStatus.notLoaded);
-      throw (error);
-    });
-    return _news;
-  }*/
-
-  /// Fetch the specified [news]
-  Future<void> fetchCurrentNews(News news) async {
-    _log.fine("Fetching news ${news.title}");
-    _updateCurrentNewsStatus(LoadingStatus.loading);
-    await _newsService.getNewsById(news.id).then((value) async {
-      _log.fine("News with ID ${news.id} retrieved successfully");
-      _currentNews = value;
-      _updateCurrentNewsStatus(LoadingStatus.loaded);
-    }, onError: (error) {
-      _log.warning("Error when retrieving news ($error)");
-      _currentNews = null;
-      _updateCurrentNewsStatus(LoadingStatus.notLoaded);
-      throw (error);
-    });
-  }
-
-  /// Create the specified [news]
-  Future<void> createNews(News news) async {
-    await _newsService.createNews(news).then((value) {
-      _log.fine("New news created : ${value.title} (id=${value.id})");
-      _news.add(value);
-      _log.info("Notifying listeners of NewsProvider");
-      notifyListeners();
-    }, onError: (error) {
-      _log.severe("Failed to create new news ($error)");
-      throw (error);
-    });
-  }
-
-  /// Update the specified [news]
-  Future<void> updateNews(News news) async {
-    await _newsService.updateNews(news).then((value) {
-      _log.fine("News successfully updated : ${news.title}");
-      _news[_news.indexWhere((m) => m.id == news.id)] = news;
-      _log.info("Notifying listeners of NewsProvider");
-      notifyListeners();
-    }, onError: (error) {
-      _log.severe("Failed to update news ($error)");
-      throw (error);
-    });
-  }
-
-  /// Delete the specified [news]
-  Future<void> deleteNews(News news) async {
-    await _newsService.deleteNews(news).then((value) {
-      _log.fine("News deleted successfully : ${news.title}");
-      _news.remove(news);
-      _log.info("Notifying listeners of NewsProvider");
-      notifyListeners();
-    }, onError: (error) {
-      _log.severe("Failed to delete news ($error)");
-      throw (error);
-    });
   }
 }

@@ -87,8 +87,8 @@ class _MemberDetailState extends State<MemberDetail> {
     // todo Maybe better to do it in detail screen init method instead of each time here ?
     Provider.of<RecordProvider>(context, listen: false)
         .fetchTrackRecords(track.id);
-    Provider.of<EventProvider>(context, listen: false)
-        .fetchTrackEvents(track.id);
+    /*Provider.of<EventProvider>(context, listen: false)
+        .fetchTrackEvents(track.id);*/
 
     // Navigator.push returns a Future that will complete after we call Navigator.pop on the target screen
     final _result =
@@ -408,7 +408,7 @@ class _MemberDetailState extends State<MemberDetail> {
                       style: TextStyle(color: Colors.red[700])),
                   Container(
                     child: Text(
-                      "${_memberProvider.currentMember.phone}",
+                      "${_memberProvider.currentMember?.phone}",
                       style: TextStyle(color: Colors.black.withOpacity(0.8)),
                       textScaleFactor: 1.1,
                     ),
@@ -423,7 +423,7 @@ class _MemberDetailState extends State<MemberDetail> {
                     color: Colors.green,
                     onPressed: () {
                       AppUtils.launchURL(
-                          "tel:${_memberProvider.currentMember.phone}");
+                          "tel:${_memberProvider.currentMember?.phone}");
                     })),
             SizedBox(
                 width: 72.0,
@@ -432,7 +432,7 @@ class _MemberDetailState extends State<MemberDetail> {
                     color: Colors.blue,
                     onPressed: () {
                       AppUtils.launchURL(
-                          "sms:${_memberProvider.currentMember.phone}");
+                          "sms:${_memberProvider.currentMember?.phone}");
                     }))
           ],
         ),
@@ -453,7 +453,7 @@ class _MemberDetailState extends State<MemberDetail> {
                       style: TextStyle(color: Colors.red[700])),
                   Container(
                     child: Text(
-                      "${_memberProvider.currentMember.email}",
+                      "${_memberProvider.currentMember?.email}",
                       style: TextStyle(color: Colors.black.withOpacity(0.8)),
                       textScaleFactor: 1.1,
                     ),
@@ -468,7 +468,7 @@ class _MemberDetailState extends State<MemberDetail> {
                     color: Colors.purple.withOpacity(0.6),
                     onPressed: () {
                       AppUtils.launchURL(
-                          "mailto:${_memberProvider.currentMember.email}");
+                          "mailto:${_memberProvider.currentMember?.email}");
                     }))
           ],
         ),
@@ -478,7 +478,7 @@ class _MemberDetailState extends State<MemberDetail> {
     return Scaffold(
       body: Container(
         decoration: CustomDecorations.mainContent,
-        child: CustomScrollView(
+        child: _memberProvider.currentMember != null ? CustomScrollView(
           controller: _scrollController,
           slivers: <Widget>[
             SliverAppBar(
@@ -496,9 +496,7 @@ class _MemberDetailState extends State<MemberDetail> {
                   ? null
                   : FlexibleSpaceBar(
                       title: FlexibleTitle(
-                        text: _memberProvider.currentMember.firstName +
-                            ' ' +
-                            _memberProvider.currentMember.lastName,
+                        text: "${_memberProvider.currentMember.firstName} ${_memberProvider.currentMember.lastName}",
                         padding: EdgeInsets.only(left: 84, bottom: 44),
                       ),
                       background: Stack(
@@ -676,7 +674,7 @@ class _MemberDetailState extends State<MemberDetail> {
               ),
             ),
           ],
-        ),
+        ) : Text("Member not found"),
       ),
     );
   }
