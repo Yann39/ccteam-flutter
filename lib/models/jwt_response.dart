@@ -34,5 +34,5 @@ class JwtResponse {
 
   Map<String, dynamic> toJson() => {
         'jwtToken': jwtToken,
-  };
+      };
 }

@@ -17,11 +17,12 @@
  * along with Chachatte Team. If not, see <http://www.gnu.org/licenses/>.
  */
 
+import 'package:chachatte_team/models/event_member.dart';
 import 'package:chachatte_team/models/member.dart';
 import 'package:chachatte_team/models/track.dart';
 import 'package:intl/intl.dart';
 
-/// Class representing a track event
+/// Class representing an event
 class Event {
   int id;
   String title;
@@ -31,7 +32,7 @@ class Event {
   Track track;
   String organizer;
   double price;
-  List<Member> members;
+  List<EventMember> participants;
   DateTime createdOn;
   Member createdBy;
   DateTime modifiedOn;
@@ -46,7 +47,7 @@ class Event {
     this.track,
     this.organizer,
     this.price,
-    this.members,
+    this.participants,
     this.createdOn,
     this.createdBy,
     this.modifiedOn,
@@ -64,7 +65,7 @@ class Event {
       track: ${this.track?.toString()},
       organizer: ${this.organizer},
       price: ${this.price},
-      members: ${this.members?.map((member) => member.toString())},
+      participants: ${this.participants?.map((eventMember) => eventMember.toString())},
       createdOn: ${this.createdOn?.toIso8601String()},
       createdBy: ${this.createdBy?.toString()},
       modifiedOn: ${this.modifiedOn?.toIso8601String()},
@@ -82,14 +83,16 @@ class Event {
         track = json['track'] != null ? Track.fromJson(json['track']) : null,
         organizer = json['organizer'],
         price = json['price'],
-        members = json['members'] != null ? (json['members'] as List).map((i) => Member.fromJson(i)).toList() : [],
+        participants = json['participants'] != null
+            ? (json['participants'] as List).map((i) => EventMember.fromJson(i)).toList()
+            : [],
         createdOn = json['createdOn'] != null ? DateFormat("yyyy-MM-dd HH:mm:ss").parseStrict(json['createdOn']) : null,
         createdBy = json['createdBy'] != null ? Member.fromJson(json['createdBy']) : null,
         modifiedOn =
             json['modifiedOn'] != null ? DateFormat("yyyy-MM-dd HH:mm:ss").parseStrict(json['modifiedOn']) : null,
         modifiedBy = json['modifiedBy'] != null ? Member.fromJson(json['modifiedBy']) : null;
 
-  /// Convert [member] object to the corresponding JSON map
+  /// Convert [Event] object to the corresponding JSON map
   Map<String, dynamic> toJson() => {
         "id": id,
         "title": title,
@@ -99,7 +102,7 @@ class Event {
         "track": track?.toJson(),
         "organizer": organizer,
         "price": price,
-        "members": members?.map((i) => i.toJson()),
+        "participants": participants?.map((i) => i.toJson()),
         "createdOn": createdOn?.toIso8601String(),
         "createdBy": createdBy?.toJson(),
         "modifiedOn": modifiedOn?.toIso8601String(),

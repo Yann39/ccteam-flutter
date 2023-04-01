@@ -70,16 +70,15 @@ class News {
         catchLine = json['catchLine'],
         content = json['content'],
         newsDate = json['newsDate'] != null ? DateFormat("yyyy-MM-dd HH:mm:ss").parseStrict(json['newsDate']) : null,
-        likedNews = json['likedNews'] != null
-            ? (json['likedNews'] as List).map((i) => LikedNews.fromJson(i)).toList()
-            : null,
+        likedNews =
+            json['likedNews'] != null ? (json['likedNews'] as List).map((i) => LikedNews.fromJson(i)).toList() : null,
         createdOn = json['createdOn'] != null ? DateFormat("yyyy-MM-dd HH:mm:ss").parseStrict(json['createdOn']) : null,
         createdBy = json['createdBy'] != null ? Member.fromJson(json['createdBy']) : null,
         modifiedOn =
             json['modifiedOn'] != null ? DateFormat("yyyy-MM-dd HH:mm:ss").parseStrict(json['modifiedOn']) : null,
         modifiedBy = json['modifiedBy'] != null ? Member.fromJson(json['createdBy']) : null;
 
-  /// Convert [member] object to the corresponding JSON map
+  /// Convert [News] object to the corresponding JSON map
   Map<String, dynamic> toJson() => {
         "id": id,
         "title": title,

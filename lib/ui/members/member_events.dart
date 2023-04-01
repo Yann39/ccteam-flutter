@@ -18,10 +18,8 @@
  */
 
 import 'package:chachatte_team/models/member.dart';
-import 'package:chachatte_team/providers/event_provider.dart';
 import 'package:chachatte_team/providers/member_provider.dart';
 import 'package:chachatte_team/providers/record_provider.dart';
-import 'package:chachatte_team/ui/events/event_card.dart';
 import 'package:chachatte_team/utils/custom_decorations.dart';
 import 'package:chachatte_team/utils/enums.dart';
 import 'package:chachatte_team/utils/strings.dart';
@@ -108,10 +106,9 @@ class _MemberEventsState extends State<MemberEvents> {
   }
 
   Widget build(BuildContext context) {
-    final EventProvider _eventProvider =
-        Provider.of<EventProvider>(context, listen: true);
+    //final EventProvider _eventProvider = Provider.of<EventProvider>(context, listen: true);
 
-    final _search = SizedBox(
+    /*final _search = SizedBox(
       height: 50,
       child: ListView.separated(
         separatorBuilder: (BuildContext context, int index) {
@@ -138,7 +135,7 @@ class _MemberEventsState extends State<MemberEvents> {
           showCheckmark: true,
         ),
       ),
-    );
+    );*/
 
     return Scaffold(
       appBar: AppBar(
@@ -153,8 +150,8 @@ class _MemberEventsState extends State<MemberEvents> {
         decoration: CustomDecorations.mainContent,
         child: Column(
           children: <Widget>[
-            _search,
-            Expanded(
+            //_search,
+            /*Expanded(
               child: ListView.separated(
                 separatorBuilder: (context, index) => SizedBox(height: 8.0),
                 scrollDirection: Axis.vertical,
@@ -171,15 +168,15 @@ class _MemberEventsState extends State<MemberEvents> {
                         Text(
                             "${_eventProvider.memberEvents[index].startDate.year}"),
                         SizedBox(height: 4.0),
-                        EventCard(_eventProvider.memberEvents[index]),
+                        EventCard(index),
                       ],
                     );
                   } else {
-                    return EventCard(_eventProvider.memberEvents[index]);
+                    return EventCard(index);
                   }
                 },
               ),
-            ),
+            ),*/
           ],
         ),
       ),

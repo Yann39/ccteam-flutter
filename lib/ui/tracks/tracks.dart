@@ -18,7 +18,6 @@
  */
 
 import 'package:chachatte_team/models/track.dart';
-import 'package:chachatte_team/providers/event_provider.dart';
 import 'package:chachatte_team/providers/track_provider.dart';
 import 'package:chachatte_team/ui/main/main_action_menu.dart';
 import 'package:chachatte_team/ui/main/main_drawer.dart';
@@ -28,7 +27,6 @@ import 'package:chachatte_team/utils/strings.dart';
 import 'package:chachatte_team/utils/track_utils.dart';
 import 'package:chachatte_team/widgets/loading_content.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:provider/provider.dart';
 
 /// We need stateful widget to keep search field value
@@ -62,8 +60,7 @@ class _TracksState extends State<Tracks> {
         .fetchTrackEvents(track.id);*/
 
     // Navigator.push returns a Future that will complete after we call Navigator.pop on the target screen
-    final _result =
-        await Navigator.pushNamed(context, '/trackDetail', arguments: track);
+    final _result = await Navigator.pushNamed(context, '/trackDetail', arguments: track);
 
     // after the target screen returns a result, hide any previous snack bars and show the result
     if (_result != null) {
@@ -94,20 +91,15 @@ class _TracksState extends State<Tracks> {
                 child: GridView.builder(
                   padding: EdgeInsets.all(4.0),
                   gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: MediaQuery.of(context).orientation ==
-                              Orientation.portrait
-                          ? 2
-                          : 3,
+                      crossAxisCount: MediaQuery.of(context).orientation == Orientation.portrait ? 2 : 3,
                       crossAxisSpacing: 4,
                       mainAxisSpacing: 4,
                       childAspectRatio: 1),
                   itemCount: _trackProvider.tracks.length,
                   itemBuilder: (BuildContext context, int index) => InkWell(
-                    onTap: () => _navigateToTrackDetailScreen(
-                        context, _trackProvider.tracks[index]),
+                    onTap: () => _navigateToTrackDetailScreen(context, _trackProvider.tracks[index]),
                     child: Card(
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(6.0)),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6.0)),
                       clipBehavior: Clip.antiAlias,
                       child: Container(
                         padding: EdgeInsets.all(8.0),
@@ -119,8 +111,7 @@ class _TracksState extends State<Tracks> {
                             Padding(
                               padding: const EdgeInsets.only(bottom: 5.0),
                               child: Text(_trackProvider.tracks[index].name,
-                                  style: TextStyle(color: Colors.white),
-                                  textScaleFactor: 1.1),
+                                  style: TextStyle(color: Colors.white), textScaleFactor: 1.1),
                             ),
                             Divider(
                               height: 1.0,
@@ -129,8 +120,7 @@ class _TracksState extends State<Tracks> {
                             Container(
                               height: 90.0,
                               padding: EdgeInsets.all(0),
-                              child: TrackUtils.getTrackIcon(
-                                  _trackProvider.tracks[index].name),
+                              child: TrackUtils.getTrackIcon(_trackProvider.tracks[index].name),
                             ),
                             Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -138,8 +128,7 @@ class _TracksState extends State<Tracks> {
                               children: <Widget>[
                                 Row(
                                   children: <Widget>[
-                                    Icon(Icons.straighten,
-                                        size: 13, color: Colors.white),
+                                    Icon(Icons.straighten, size: 13, color: Colors.white),
                                     SizedBox(width: 6.0),
                                     Text(
                                         "${AppString.length} : ${(_trackProvider.tracks[index].distance / 1000).toStringAsFixed(2)} km",
@@ -149,8 +138,7 @@ class _TracksState extends State<Tracks> {
                                 ),
                                 Row(
                                   children: <Widget>[
-                                    Icon(Icons.timer,
-                                        size: 13, color: Colors.white),
+                                    Icon(Icons.timer, size: 13, color: Colors.white),
                                     SizedBox(width: 6.0),
                                     Text(
                                         "${AppString.record} : ${AppDateUtils.toLapTimeString(_trackProvider.tracks[index].lapRecord)}",

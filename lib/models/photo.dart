@@ -60,7 +60,7 @@ class Photo {
         modifiedOn =
             json['modifiedOn'] != null ? DateFormat("yyyy-MM-dd HH:mm:ss").parseStrict(json['modifiedOn']) : null;
 
-  /// Convert [photo] object to the corresponding JSON map
+  /// Convert [Photo] object to the corresponding JSON map
   Map<String, dynamic> toJson() => {
         "id": id,
         "title": title,

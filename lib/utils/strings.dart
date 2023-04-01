@@ -53,6 +53,7 @@ class AppString {
   static const String useAnotherEmailAddress = 'Utiliser une autre adresse e-mail';
   static const String emailAddressVerification = 'Vérification de l\'adresse e-mail';
   static const String codeNotReceived = 'Code non reçu ?';
+  static const String contentNotLoaded = 'Le contenu n\'a pas pu être chargé';
 
   static const String notDefined = 'Non-défini';
   static const String confirmation = 'Confirmation';
@@ -305,7 +306,7 @@ class AppString {
   static const String errorBadCredentials = 'Nom d\'utilisateur ou mot de passe incorrect';
   static const String errorServerInternal = 'Erreur interne au serveur. Si le problème persiste, contactez un administrateur';
   static const String errorServerTimeOut = "Impossible de contacter le serveur, vérifiez votre connection internet. Si le problème persite, contactez un administrateur";
-  static const String errorUnknown = 'Erreur inconnue : {0}';
+  static const String errorUnknown = 'Erreur : {0}';
 
 
 }

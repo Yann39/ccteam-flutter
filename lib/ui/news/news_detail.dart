@@ -27,8 +27,8 @@ import 'package:chachatte_team/services/notifications_service.dart';
 import 'package:chachatte_team/utils/constants.dart';
 import 'package:chachatte_team/utils/custom_decorations.dart';
 import 'package:chachatte_team/utils/date_utils.dart';
-import 'package:chachatte_team/utils/enums.dart';
 import 'package:chachatte_team/utils/strings.dart';
+import 'package:chachatte_team/widgets/loading_content.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:logging/logging.dart';
@@ -51,7 +51,7 @@ class NewsDetail extends StatelessWidget {
   _likeNews(BuildContext context, News news) async {
     final Member member = Provider.of<LoginProvider>(context, listen: false).loggedMember;
     Provider.of<NewsDetailProvider>(context, listen: false).likeNews(news, member).then((value) => {
-          // update news in the news list
+          // update the news in the news list
           Provider.of<NewsListProvider>(context, listen: false)
               .updateNewsInList(Provider.of<NewsDetailProvider>(context, listen: false).currentNews)
         });
@@ -61,7 +61,7 @@ class NewsDetail extends StatelessWidget {
   _unlikeNews(BuildContext context, News news) async {
     final Member member = Provider.of<LoginProvider>(context, listen: false).loggedMember;
     Provider.of<NewsDetailProvider>(context, listen: false).unlikeNews(news, member).then((value) => {
-          // update news in the news list
+          // update the news in the news list
           Provider.of<NewsListProvider>(context, listen: false)
               .updateNewsInList(Provider.of<NewsDetailProvider>(context, listen: false).currentNews)
         });
@@ -77,16 +77,15 @@ class NewsDetail extends StatelessWidget {
         actions: <Widget>[
           TextButton(
             onPressed: () {
-              // close this dialog
-              Navigator.pop(context);
-              final News currentNews = Provider.of<NewsDetailProvider>(context, listen: false).currentNews;
+              final NewsDetailProvider newsDetailProvider = Provider.of<NewsDetailProvider>(context, listen: false);
+              final NewsListProvider newsListProvider = Provider.of<NewsListProvider>(context, listen: false);
+              final News newsToDelete = newsDetailProvider.currentNews;
               // delete news
-              Provider.of<NewsDetailProvider>(context, listen: false).deleteNews(currentNews).then((value) {
+              newsDetailProvider.deleteNews(newsToDelete).then((value) {
                 // remove news from the news list
-                Provider.of<NewsListProvider>(context, listen: false).removeNewsFromList(currentNews);
-                Navigator.pop(context, AppString.newsDeleted);
-              }, onError: (error) {
-                Navigator.pop(context, AppString.newsDeletionFailed);
+                newsListProvider.removeNewsFromList(newsToDelete);
+                // close this dialog
+                Navigator.pop(context);
               });
             },
             child: Text(AppString.confirm),
@@ -109,55 +108,46 @@ class NewsDetail extends StatelessWidget {
     final NewsDetailProvider _newsDetailProvider = Provider.of<NewsDetailProvider>(context, listen: true);
     final LoginProvider _loginProvider = Provider.of<LoginProvider>(context, listen: false);
 
-    if (_newsDetailProvider.currentNews == null) {
-      return Scaffold(
-        body: Text("No data"),
-      );
-    } else {
-      // get if that news is liked for current logged member
-      final bool isLiked = _newsDetailProvider.currentNews.likedNews
-          ?.any((element) => element.member.id == _loginProvider.loggedMember.id) ??
-          false;
+    // get if that news is liked for current logged member
+    final bool isLiked = _newsDetailProvider.currentNews.likedNews
+            ?.any((element) => element.member.id == _loginProvider.loggedMember.id) ??
+        false;
 
-      return Scaffold(
-        //extendBodyBehindAppBar: true,
-        appBar: AppBar(
-          //backgroundColor: Colors.transparent,
-          //elevation: 0,
-          actions: <Widget>[
-            Builder(
-              builder: (context) =>
-                  IconButton(
-                    icon: Icon(Icons.notifications_active),
-                    onPressed: () =>
-                    // send a push notification
-                    NotificationsService.pushInstantNewsNotification(_newsDetailProvider.currentNews),
-                  ),
+    return Scaffold(
+      appBar: AppBar(
+        actions: <Widget>[
+          Builder(
+            builder: (context) => IconButton(
+              icon: Icon(Icons.notifications_active),
+              onPressed: () =>
+                  // send a push notification
+                  NotificationsService.pushInstantNewsNotification(_newsDetailProvider.currentNews),
             ),
-            Builder(
-              builder: (context) =>
-                  IconButton(
-                    icon: Icon(Icons.edit),
-                    onPressed: () => _navigateToEditNewsScreen(context, _newsDetailProvider.currentNews),
-                  ),
-            ),
-            Builder(
-              builder: (context) =>
-                  IconButton(
-                    icon: Icon(Icons.delete_forever),
-                    onPressed: () => _showDeleteNewsConfirmation(context, AppString.newsDeletionAreYouSure),
-                  ),
-            ),
-          ],
-          title: Text(AppString.detail),
-          leading: IconButton(
-            icon: Icon(Icons.arrow_back),
-            onPressed: () => Navigator.pop(context),
           ),
+          Builder(
+            builder: (context) => IconButton(
+              icon: Icon(Icons.edit),
+              onPressed: () => _navigateToEditNewsScreen(context, _newsDetailProvider.currentNews),
+            ),
+          ),
+          Builder(
+            builder: (context) => IconButton(
+              icon: Icon(Icons.delete_forever),
+              onPressed: () => _showDeleteNewsConfirmation(context, AppString.newsDeletionAreYouSure),
+            ),
+          ),
+        ],
+        title: Text(AppString.detail),
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back),
+          onPressed: () => Navigator.pop(context),
         ),
-        body: _newsDetailProvider.loadingStatus == LoadingStatus.loaded
-            ? Container(
-          decoration: CustomDecorations.mainContent,
+      ),
+      body: Container(
+        decoration: CustomDecorations.mainContent,
+        child: LoadingContent(
+          loadingStatus: _newsDetailProvider.loadingStatus,
+          emptyText: AppString.contentNotLoaded,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisAlignment: MainAxisAlignment.start,
@@ -184,8 +174,7 @@ class NewsDetail extends StatelessWidget {
                           Icon(Icons.person, color: Colors.purple[700], size: 13.0),
                           SizedBox(width: 2.0),
                           Text(
-                            "${AppString.by} ${_newsDetailProvider.currentNews.createdBy
-                                .firstName} ${_newsDetailProvider.currentNews.createdBy.lastName}",
+                            "${AppString.by} ${_newsDetailProvider.currentNews.createdBy.firstName} ${_newsDetailProvider.currentNews.createdBy.lastName}",
                             textAlign: TextAlign.left,
                           ),
                         ],
@@ -197,8 +186,7 @@ class NewsDetail extends StatelessWidget {
                         Icon(Icons.access_time, color: Colors.red[700], size: 13.0),
                         SizedBox(width: 2.0),
                         Text(
-                          "${AppString.on} ${AppDateUtils.convertToString(_newsDetailProvider.currentNews.newsDate,
-                              DATE_FORMAT_TXT)}",
+                          "${AppString.on} ${AppDateUtils.convertToString(_newsDetailProvider.currentNews.newsDate, DATE_FORMAT_TXT)}",
                           textAlign: TextAlign.left,
                         ),
                       ],
@@ -231,10 +219,9 @@ class NewsDetail extends StatelessWidget {
                             borderRadius: BorderRadius.circular(4),
                           ),
                           padding: EdgeInsets.symmetric(horizontal: 6.0),
-                          primary: Colors.blue[700],
+                          backgroundColor: Colors.blue[700],
                         ),
-                        onPressed: () =>
-                        {
+                        onPressed: () => {
                           Share.share(_newsDetailProvider.currentNews.catchLine,
                               subject: _newsDetailProvider.currentNews.title)
                         },
@@ -259,10 +246,9 @@ class NewsDetail extends StatelessWidget {
                             borderRadius: BorderRadius.circular(4),
                           ),
                           padding: EdgeInsets.symmetric(horizontal: 6.0),
-                          primary: Colors.blue[700],
+                          backgroundColor: Colors.blue[700],
                         ),
-                        onPressed: () =>
-                        isLiked
+                        onPressed: () => isLiked
                             ? _unlikeNews(context, _newsDetailProvider.currentNews)
                             : _likeNews(context, _newsDetailProvider.currentNews),
                         child: Row(
@@ -289,19 +275,13 @@ class NewsDetail extends StatelessWidget {
               ),
             ],
           ),
-        )
-            : Center(
-          child: SizedBox(
-            child: CircularProgressIndicator(),
-            height: 20.0,
-            width: 20.0,
-          ),
         ),
-      );
-    }
+      ),
+    );
   }
 }
 
+/// Custom painter for the header graphics.
 class HeaderPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {

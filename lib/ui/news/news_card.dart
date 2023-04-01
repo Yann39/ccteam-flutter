@@ -37,8 +37,10 @@ class NewsCard extends StatelessWidget {
     final NewsListProvider _newsListProvider = Provider.of<NewsListProvider>(context, listen: true);
     final LoginProvider _loginProvider = Provider.of<LoginProvider>(context, listen: false);
 
+    // the news to display in this card
     final News news = _newsListProvider.newsList[index];
 
+    // the icon color
     final Color _color = index % 3 == 0
         ? Colors.red[900]
         : index % 3 == 1

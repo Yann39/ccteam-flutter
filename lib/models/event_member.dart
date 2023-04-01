@@ -17,21 +17,21 @@
  * along with Chachatte Team. If not, see <http://www.gnu.org/licenses/>.
  */
 
+import 'package:chachatte_team/models/event.dart';
 import 'package:chachatte_team/models/member.dart';
-import 'package:chachatte_team/models/news.dart';
 import 'package:intl/intl.dart';
 
-/// Class representing a liked news
-class LikedNews {
+/// Class representing an event participant
+class EventMember {
   int id;
-  News news;
   Member member;
+  Event event;
   DateTime createdOn;
 
-  LikedNews({
+  EventMember({
     this.id,
-    this.news,
     this.member,
+    this.event,
     this.createdOn,
   });
 
@@ -39,24 +39,24 @@ class LikedNews {
   String toString() {
     return """{
       id: ${this.id},
-      news: ${this.news?.toString()},
-      member: ${this.member?.toString()},
+      members: ${this.member?.toString()},
+      members: ${this.event?.toString()},
       createdOn: ${this.createdOn?.toIso8601String()},
     }""";
   }
 
   /// Convert [json] map to the corresponding object
-  LikedNews.fromJson(Map<String, dynamic> json)
+  EventMember.fromJson(Map<String, dynamic> json)
       : id = json['id'] != null ? int.parse(json['id']) : -1,
-        news = json['news'] != null ? News.fromJson(json['news']) : null,
         member = json['member'] != null ? Member.fromJson(json['member']) : null,
+        event = json['event'] != null ? Event.fromJson(json['event']) : null,
         createdOn = json['createdOn'] != null ? DateFormat("yyyy-MM-dd HH:mm:ss").parseStrict(json['createdOn']) : null;
 
-  /// Convert [LikedNews] object to the corresponding JSON map
+  /// Convert [EventMember] object to the corresponding JSON map
   Map<String, dynamic> toJson() => {
         "id": id,
-        "news": news?.toJson(),
-        "member": member?.toJson(),
+        "member": member.toJson(),
+        "event": event.toJson(),
         "createdOn": createdOn?.toIso8601String(),
       };
 }

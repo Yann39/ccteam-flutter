@@ -28,7 +28,7 @@ class HomeProvider extends ChangeNotifier {
 
   int get currentIndex => _currentIndex;
 
-  /// Set the current tab index to be the specified [currIndex]
+  /// Set the current tab index to be the specified [currIndex].
   void setCurrentIndex(int currIndex) {
     _currentIndex = currIndex;
     _log.info("Notifying listeners of HomeProvider");

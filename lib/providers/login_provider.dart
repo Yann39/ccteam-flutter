@@ -31,7 +31,6 @@ import 'package:chachatte_team/utils/graphql_connection.dart';
 import 'package:chachatte_team/utils/strings.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
-import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:logging/logging.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -39,6 +38,7 @@ class LoginProvider extends ChangeNotifier {
   final Logger _log = new Logger('LoginProvider');
   final MembersService _membersService = new MembersService();
 
+  // message provider that can be set from the proxy provider
   MessageProvider _messageProvider;
 
   // current authentication status
@@ -101,33 +101,19 @@ class LoginProvider extends ChangeNotifier {
   /// Set the current [passcode] used for login.
   set loginPassCode(String passcode) {
     _loginPassCode = passcode;
-    _log.info("Notifying listeners of LoginProvider");
-    notifyListeners();
+    _notifyListeners();
   }
 
   /// Set the current [passcode] used in registration process.
   set firstPassCode(String passcode) {
     _firstPassCode = passcode;
-    _log.info("Notifying listeners of LoginProvider");
-    notifyListeners();
+    _notifyListeners();
   }
 
-  /// Change the current authentication [status].
-  void _setAuthStatus(AuthStatus status) {
-    _authStatus = status;
-    _log.info("Notifying listeners of LoginProvider");
-    notifyListeners();
-  }
-
-  /// Change the current login [status].
-  void _setLoginStatus(LoginStatus status) {
-    // if we go to login passcode, always clear it first
-    if (status == LoginStatus.PasscodeStep) {
-      _loginPassCode = null;
-    }
-    _loginStatus = status;
-    _log.info("Notifying listeners of LoginProvider");
-    notifyListeners();
+  /// Update message provider with the specified [messageProvider].
+  void updateMessageProvider(MessageProvider messageProvider) {
+    _messageProvider = messageProvider;
+    _notifyListeners();
   }
 
   /// Change the login status so that it goes back to the previous login step.
@@ -154,8 +140,7 @@ class LoginProvider extends ChangeNotifier {
       default:
         _loginStatus = LoginStatus.EmailStep;
     }
-    _log.info("Notifying listeners of LoginProvider");
-    notifyListeners();
+    _notifyListeners();
   }
 
   /// Go to the confirm password screen.
@@ -168,85 +153,6 @@ class LoginProvider extends ChangeNotifier {
   void goToRegister() {
     _log.info("User clicked link to go to register page");
     _setLoginStatus(LoginStatus.EmailAndInfoStep);
-  }
-
-  /// Check if the user needs to authenticate.
-  /// Used to be called on app start.
-  /// If email is found in shared preferences and exists in the database, user will be consider as logged in.
-  Future<void> _checkUser() async {
-    _log.info("Checking user...");
-    _setAuthStatus(AuthStatus.Initializing);
-
-    // read shared preference to get any e-mail and JWT
-    final SharedPreferences _prefs = await SharedPreferences.getInstance();
-    final String _email = _prefs.getString('email');
-    final String _jwt = _prefs.getString('jwt');
-
-    // no e-mail found in shared preferences, it means user have to identify
-    if (_email == null) {
-      _log.info("Email not found in shared preferences");
-      _setLoginStatus(LoginStatus.EmailStep);
-      _setAuthStatus(AuthStatus.Unauthenticated);
-      return;
-    }
-
-    // no JWT token found in shared preferences, it means user have to authenticate
-    if (_jwt == null) {
-      _log.info("JWT token not found in shared preferences");
-      _setLoginStatus(LoginStatus.PasscodeStep);
-      _setAuthStatus(AuthStatus.Unauthenticated);
-      return;
-    }
-
-    _log.fine("Email $_email and token $_jwt found in shared preferences, let's get member from database");
-
-    // set the JWT token to be used for all future GraphQL queries
-    GraphQLConnection().jwtToken = _jwt;
-
-    // retrieve full user from database, this will use and check the JWT token
-    await _membersService.getMemberByEmail(_email).timeout(Duration(seconds: 5)).then((value) {
-      _log.fine("User $_email found in database and JWT token verified, consider as logged in");
-      _loggedMember = value;
-      _setAuthStatus(AuthStatus.Authenticated);
-    }, onError: (error) {
-      _log.info("An error occurred while retrieving member from the database : $error");
-      if (error is CustomGraphQlException) {
-        _setLoginStatus(LoginStatus.PasscodeStep);
-        _setAuthStatus(AuthStatus.Unauthenticated);
-        // Member not found
-        if (error.code == "member_not_found") {
-          _messageProvider.setMessage(
-              AppString.format(AppString.errorEmailNotFoundInDatabase, [_email]), MessageType.ERROR);
-        }
-        // JWT token has expired
-        else if (error.code == "token_expired") {
-          _prefs.remove('jwt');
-          _messageProvider.setMessage(AppString.errorTokenExpired, MessageType.INFO);
-        }
-        // JWT token has wrong format and cannot be decoded
-        else if (error.code == "wrong_token_format") {
-          _messageProvider.setMessage(AppString.errorTokenWrongFormat, MessageType.ERROR);
-        }
-        // JWT token has not been specified
-        else if (error.code == "no_token") {
-          _messageProvider.setMessage(AppString.errorTokenNotFound, MessageType.ERROR);
-        }
-        // wrong credentials
-        else if (error.code == "bad_credentials") {
-          _messageProvider.setMessage(AppString.errorBadCredentials, MessageType.ERROR);
-        }
-      } else if (error is TimeoutException) {
-        _setAuthStatus(AuthStatus.Unauthenticated);
-        _messageProvider.setMessage(AppString.errorServerTimeOut, MessageType.ERROR);
-      }
-      // other error
-      else {
-        _setLoginStatus(LoginStatus.EmailStep);
-        _setAuthStatus(AuthStatus.Unauthenticated);
-        _log.info("Error is ${error.toString()}");
-        _messageProvider.setMessage(AppString.format(AppString.errorUnknown, [error.toString()]), MessageType.ERROR);
-      }
-    });
   }
 
   /// Check the specified member account from the given e-mail address.
@@ -543,10 +449,6 @@ class LoginProvider extends ChangeNotifier {
     _setAuthStatus(AuthStatus.Unauthenticated);
   }
 
-  void update(MessageProvider messageProvider) {
-    _messageProvider = messageProvider;
-  }
-
   /// Ask for a new password.
   Future<void> askPassword(String email) async {
     await _membersService.askPassword(email).then((value) {
@@ -585,8 +487,7 @@ class LoginProvider extends ChangeNotifier {
         if (member.id == _loggedMember.id) {
           _loggedMember.avatarUrl = tmpMember.avatarUrl;
           _loggedMember.modifiedOn = tmpMember.modifiedOn;
-          _log.info("Notifying listeners of LoginProvider");
-          notifyListeners();
+          _notifyListeners();
         }
       }, onError: (error) {
         _log.severe("Failed to update avatar for member ${tmpMember.email} ($error)");
@@ -620,8 +521,7 @@ class LoginProvider extends ChangeNotifier {
           _loggedMember.avatarUrl = null;
           _loggedMember.modifiedOn = tmpMember.modifiedOn;
         }
-        _log.info("Notifying listeners of LoginProvider");
-        notifyListeners();
+        _notifyListeners();
       }, onError: (error) {
         _log.severe("Failed to delete avatar for member ${tmpMember.email} ($error)");
         throw (error);
@@ -629,6 +529,107 @@ class LoginProvider extends ChangeNotifier {
     }, onError: (error) {
       _log.severe("Failed to delete avatar ($error)");
       throw (error);
+    });
+  }
+
+  /// Notify all the registered listeners of this provider.
+  void _notifyListeners() {
+    _log.info("Notifying listeners of LoginProvider");
+    notifyListeners();
+  }
+
+  /// Change the current authentication [status].
+  void _setAuthStatus(AuthStatus status) {
+    _authStatus = status;
+    _notifyListeners();
+  }
+
+  /// Change the current login [status].
+  void _setLoginStatus(LoginStatus status) {
+    // if we go to login passcode, always clear it first
+    if (status == LoginStatus.PasscodeStep) {
+      _loginPassCode = null;
+    }
+    _loginStatus = status;
+    _notifyListeners();
+  }
+
+  /// Check if the user needs to authenticate.
+  /// Used to be called on app start.
+  /// If email is found in shared preferences and exists in the database, user will be consider as logged in.
+  Future<void> _checkUser() async {
+    _log.info("Checking user...");
+    _setAuthStatus(AuthStatus.Initializing);
+
+    // read shared preference to get any e-mail and JWT
+    final SharedPreferences _prefs = await SharedPreferences.getInstance();
+    final String _email = _prefs.getString('email');
+    final String _jwt = _prefs.getString('jwt');
+
+    // no e-mail found in shared preferences, it means user have to identify
+    if (_email == null) {
+      _log.info("Email not found in shared preferences");
+      _setLoginStatus(LoginStatus.EmailStep);
+      _setAuthStatus(AuthStatus.Unauthenticated);
+      return;
+    }
+
+    // no JWT token found in shared preferences, it means user have to authenticate
+    if (_jwt == null) {
+      _log.info("JWT token not found in shared preferences");
+      _setLoginStatus(LoginStatus.PasscodeStep);
+      _setAuthStatus(AuthStatus.Unauthenticated);
+      return;
+    }
+
+    _log.fine("Email $_email and token $_jwt found in shared preferences, let's get member from database");
+
+    // set the JWT token to be used for all future GraphQL queries
+    GraphQLConnection().jwtToken = _jwt;
+
+    // retrieve full user from database, this will use and check the JWT token
+    await _membersService.getMemberByEmail(_email).timeout(Duration(seconds: 5)).then((value) {
+      _log.fine("User $_email found in database and JWT token verified, consider as logged in");
+      _loggedMember = value;
+      _setAuthStatus(AuthStatus.Authenticated);
+    }, onError: (error) {
+      _log.info("An error occurred while retrieving member from the database : $error");
+      if (error is CustomGraphQlException) {
+        _setLoginStatus(LoginStatus.PasscodeStep);
+        _setAuthStatus(AuthStatus.Unauthenticated);
+        // Member not found
+        if (error.code == "member_not_found") {
+          _messageProvider.setMessage(
+              AppString.format(AppString.errorEmailNotFoundInDatabase, [_email]), MessageType.ERROR);
+        }
+        // JWT token has expired
+        else if (error.code == "token_expired") {
+          _prefs.remove('jwt');
+          _messageProvider.setMessage(AppString.errorTokenExpired, MessageType.INFO);
+        }
+        // JWT token has wrong format and cannot be decoded
+        else if (error.code == "wrong_token_format") {
+          _messageProvider.setMessage(AppString.errorTokenWrongFormat, MessageType.ERROR);
+        }
+        // JWT token has not been specified
+        else if (error.code == "no_token") {
+          _messageProvider.setMessage(AppString.errorTokenNotFound, MessageType.ERROR);
+        }
+        // wrong credentials
+        else if (error.code == "bad_credentials") {
+          _messageProvider.setMessage(AppString.errorBadCredentials, MessageType.ERROR);
+        }
+      } else if (error is TimeoutException) {
+        _setAuthStatus(AuthStatus.Unauthenticated);
+        _messageProvider.setMessage(AppString.errorServerTimeOut, MessageType.ERROR);
+      }
+      // other error
+      else {
+        _setLoginStatus(LoginStatus.EmailStep);
+        _setAuthStatus(AuthStatus.Unauthenticated);
+        _log.info("Error is ${error.toString()}");
+        _messageProvider.setMessage(AppString.format(AppString.errorUnknown, [error.toString()]), MessageType.ERROR);
+      }
     });
   }
 }

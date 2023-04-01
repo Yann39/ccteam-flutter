@@ -19,20 +19,19 @@
 
 import 'dart:async';
 
-import 'package:chachatte_team/models/member.dart';
-import 'package:chachatte_team/models/news.dart';
+import 'package:chachatte_team/models/event.dart';
 import 'package:chachatte_team/providers/login_provider.dart';
 import 'package:chachatte_team/providers/message_provider.dart';
-import 'package:chachatte_team/services/news_service.dart';
+import 'package:chachatte_team/services/events_service.dart';
 import 'package:chachatte_team/utils/custom_graphql_exception.dart';
 import 'package:chachatte_team/utils/enums.dart';
 import 'package:chachatte_team/utils/strings.dart';
 import 'package:flutter/foundation.dart';
 import 'package:logging/logging.dart';
 
-class NewsDetailProvider extends ChangeNotifier {
-  final Logger _log = new Logger('NewsDetailProvider');
-  final NewsService _newsService = new NewsService();
+class EventCreationProvider extends ChangeNotifier {
+  final Logger _log = new Logger('EventCreationProvider');
+  final EventsService _eventsService = new EventsService();
 
   // message provider that can be set from the proxy provider
   MessageProvider _messageProvider;
@@ -40,13 +39,13 @@ class NewsDetailProvider extends ChangeNotifier {
   // login provider that can be set from the proxy provider
   LoginProvider _loginProvider;
 
-  // current news
-  News _currentNews;
+  // current event
+  Event _event = new Event();
 
   // current loading status
   LoadingStatus _loadingStatus = LoadingStatus.notLoaded;
 
-  News get currentNews => _currentNews;
+  Event get event => _event;
 
   LoadingStatus get loadingStatus => _loadingStatus;
 
@@ -62,73 +61,48 @@ class NewsDetailProvider extends ChangeNotifier {
     _notifyListeners();
   }
 
-  /// Set the current news to be the specified [news].
-  void setCurrentNews(News news) {
-    _currentNews = news;
-    _notifyListeners();
+  /// Set the [Event] to be edited.
+  void setEventToEdit(Event event) {
+    _event = event;
+    _updateStatus(LoadingStatus.loaded);
   }
 
-  /// Fetch the specified [news] from the database.
-  Future<void> fetchNews(News news) async {
-    _log.fine("Fetching news ${news.title}...");
+  /// Create the current event being edited.
+  Future<void> createEvent() async {
     _updateStatus(LoadingStatus.loading);
-    await _newsService.getNewsById(news.id).then((value) async {
-      _log.fine("News with ID ${news.id} retrieved successfully");
-      _currentNews = value;
+    await _eventsService.createEvent(_event).then((value) async {
+      _log.fine("Event created successfully");
+      _event = value;
       _updateStatus(LoadingStatus.loaded);
+      _messageProvider.setMessage(AppString.eventCreated, MessageType.SUCCESS);
     }, onError: (error) {
-      _log.warning("Error when retrieving news ($error)");
-      _currentNews = null;
+      _log.warning("Error when creating event ($error)");
+      _messageProvider.setMessage(AppString.eventCreationFailed, MessageType.ERROR);
       _handleServiceException(error);
       _updateStatus(LoadingStatus.notLoaded);
     });
   }
 
-  /// Set the specified [news] as liked by the specified [member].
-  Future<void> likeNews(News news, Member member) async {
-    _log.fine("Liking news ${news.title}...");
-    await _newsService.likeNews(news.id, member.id).then((value) async {
-      _log.fine("News ${news.title} liked by user ${member.email}");
-      _currentNews = value;
-      _notifyListeners();
+  /// Update the current event being edited.
+  Future<void> updateEvent() async {
+    _updateStatus(LoadingStatus.loading);
+    await _eventsService.updateEvent(_event).then((value) {
+      _log.fine("Event successfully updated : ${_event.title}");
+      _event = value;
+      _updateStatus(LoadingStatus.loaded);
+      _messageProvider.setMessage(AppString.eventUpdated, MessageType.SUCCESS);
     }, onError: (error) {
-      _log.warning("Error when liking news ${news.title} for user ${member.email} ($error)");
+      // todo here we should reload the event as it has not been updated in db ?
+      _log.warning("Error when updating event ($error)");
+      _messageProvider.setMessage(AppString.eventUpdateFailed, MessageType.ERROR);
       _handleServiceException(error);
-      _notifyListeners();
-    });
-  }
-
-  /// Set the specified [news] as not liked by the specified [member].
-  Future<void> unlikeNews(News news, Member member) async {
-    await _newsService.unlikeNews(news.id, member.id).then((value) async {
-      _log.fine("News ${news.title} unliked by user ${member.email}");
-      _currentNews = value;
-      _notifyListeners();
-    }, onError: (error) {
-      _log.warning("Error when unliking news ${news.title} for user ${member.email} ($error)");
-      _handleServiceException(error);
-      _notifyListeners();
-    });
-  }
-
-  /// Delete the specified [news].
-  Future<void> deleteNews(News news) async {
-    await _newsService.deleteNews(news).then((value) {
-      _log.fine("News deleted successfully : ${news.title}");
-      _currentNews = null;
-      _messageProvider.setMessage(AppString.newsDeleted, MessageType.SUCCESS);
-      _notifyListeners();
-    }, onError: (error) {
-      _log.warning("Failed to delete news ($error)");
-      _messageProvider.setMessage(AppString.newsDeletionFailed, MessageType.ERROR);
-      _handleServiceException(error);
-      _notifyListeners();
+      _updateStatus(LoadingStatus.notLoaded);
     });
   }
 
   /// Notify all the registered listeners of this provider.
   void _notifyListeners() {
-    _log.info("Notifying listeners of NewsDetailProvider");
+    _log.info("Notifying listeners of EventCreationProvider");
     notifyListeners();
   }
 

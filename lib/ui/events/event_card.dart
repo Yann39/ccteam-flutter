@@ -18,7 +18,7 @@
  */
 
 import 'package:chachatte_team/models/event.dart';
-import 'package:chachatte_team/providers/event_provider.dart';
+import 'package:chachatte_team/providers/event_list_provider.dart';
 import 'package:chachatte_team/utils/custom_decorations.dart';
 import 'package:chachatte_team/utils/string_utils.dart';
 import 'package:chachatte_team/utils/track_utils.dart';
@@ -27,79 +27,105 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 class EventCard extends StatelessWidget {
-  final Event event;
+  final int index;
 
-  EventCard(this.event);
-
-  /// Method that launches the Event detail screen and awaits the result from Navigator.pop
-  _navigateToEventDetailScreen(BuildContext context, Event event) async {
-    // fetch the current event
-    Provider.of<EventProvider>(context, listen: false).fetchCurrentEvent(event);
-
-    // Navigator.push returns a Future that will complete after we call Navigator.pop on the target screen
-    //final result = await Navigator.push(context, MaterialPageRoute(builder: (context) => EventDetail()));
-    final result = await Navigator.pushNamed(context, '/eventDetail');
-
-    // after the target screen returns a result, hide any previous snack bars and show the new result
-    if (result != null) {
-      ScaffoldMessenger.of(context)
-        ..removeCurrentSnackBar()
-        ..showSnackBar(SnackBar(content: Text("$result")));
-    }
-  }
+  EventCard(this.index);
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
-      onTap: () => _navigateToEventDetailScreen(context, event),
-      child: Container(
-        height: 90,
-        decoration: CustomDecorations.cardFull,
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: <Widget>[
-            Expanded(
-              child: Padding(
-                child: Row(
-                  children: <Widget>[
-                    Column(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: <Widget>[
-                        ClipRRect(
-                          borderRadius: BorderRadius.all(Radius.circular(8.0)),
-                          child: Image.network(
-                            TrackUtils.trackCoverImageUrlFromName(
-                                event.track.name),
-                            width: 50,
-                            //fit: BoxFit.fill,
-                          ),
+    final EventListProvider _eventListProvider = Provider.of<EventListProvider>(context, listen: true);
+
+    final Event event = _eventListProvider.allEvents[index];
+
+    return Container(
+      height: 90,
+      decoration: CustomDecorations.cardFull,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          Expanded(
+            child: Padding(
+              child: Row(
+                children: <Widget>[
+                  Column(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: <Widget>[
+                      ClipRRect(
+                        borderRadius: BorderRadius.all(Radius.circular(8.0)),
+                        child: Image.network(
+                          TrackUtils.trackCoverImageUrlFromName(event.track.name),
+                          width: 50,
+                          //fit: BoxFit.fill,
                         ),
-                        Container(
-                          child: Row(
-                            children: <Widget>[
-                              RotatedBox(
-                                quarterTurns: -1,
-                                child: Text(
-                                  "${DateFormat('EEEE', 'fr').format(event.startDate).substring(0, 3)}",
-                                  style:
-                                      TextStyle(color: Colors.white, height: 1),
-                                ),
+                      ),
+                      Container(
+                        child: Row(
+                          children: <Widget>[
+                            RotatedBox(
+                              quarterTurns: -1,
+                              child: Text(
+                                "${DateFormat('EEEE', 'fr').format(event.startDate).substring(0, 3)}",
+                                style: TextStyle(color: Colors.white, height: 1),
                               ),
-                              Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
+                            ),
+                            Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: <Widget>[
+                                Text("${DateFormat('dd', 'fr').format(event.startDate)}",
+                                    textScaleFactor: 1.5, style: TextStyle(color: Colors.white, height: 1)),
+                                Text("${DateFormat('MMM', 'fr').format(event.startDate)}",
+                                    textScaleFactor: 0.9, style: TextStyle(color: Colors.white, height: 0.8)),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  VerticalDivider(color: Colors.white),
+                  Expanded(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: <Widget>[
+                        Text(event.title, textScaleFactor: 1.2, style: TextStyle(color: Colors.white)),
+                        Divider(height: 12.0, color: Colors.white),
+                        Expanded(
+                          child: ListView(
+                            scrollDirection: Axis.horizontal,
+                            children: <Widget>[
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.start,
                                 crossAxisAlignment: CrossAxisAlignment.center,
                                 children: <Widget>[
-                                  Text(
-                                      "${DateFormat('dd', 'fr').format(event.startDate)}",
-                                      textScaleFactor: 1.5,
-                                      style: TextStyle(
-                                          color: Colors.white, height: 1)),
-                                  Text(
-                                      "${DateFormat('MMM', 'fr').format(event.startDate)}",
-                                      textScaleFactor: 0.9,
-                                      style: TextStyle(
-                                          color: Colors.white, height: 0.8)),
+                                  Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: <Widget>[
+                                      Icon(Icons.location_on, size: 15, color: Colors.red[700]),
+                                      Text("${event.track.name}",
+                                          textScaleFactor: 0.9, style: TextStyle(color: Colors.white)),
+                                    ],
+                                  ),
+                                  VerticalDivider(color: Colors.white),
+                                  Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: <Widget>[
+                                      Icon(Icons.euro_symbol, size: 15, color: Colors.purple[700]),
+                                      Text("${StringUtils.formatPrice(event.price)}€",
+                                          textScaleFactor: 0.9, style: TextStyle(color: Colors.white)),
+                                    ],
+                                  ),
+                                  VerticalDivider(color: Colors.white),
+                                  Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: <Widget>[
+                                      Icon(Icons.perm_contact_calendar, size: 15, color: Colors.teal[700]),
+                                      Text(event.organizer,
+                                          textScaleFactor: 0.9, style: TextStyle(color: Colors.white)),
+                                    ],
+                                  ),
                                 ],
                               ),
                             ],
@@ -107,109 +133,32 @@ class EventCard extends StatelessWidget {
                         ),
                       ],
                     ),
-                    VerticalDivider(color: Colors.white),
-                    Expanded(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: <Widget>[
-                          Text(event.title,
-                              textScaleFactor: 1.2,
-                              style: TextStyle(color: Colors.white)),
-                          Divider(height: 12.0, color: Colors.white),
-                          Expanded(
-                            child: ListView(
-                              scrollDirection: Axis.horizontal,
-                              children: <Widget>[
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.start,
-                                  crossAxisAlignment: CrossAxisAlignment.center,
-                                  children: <Widget>[
-                                    Column(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      children: <Widget>[
-                                        Icon(Icons.location_on,
-                                            size: 15, color: Colors.red[700]),
-                                        Text("${event.track.name}",
-                                            textScaleFactor: 0.9,
-                                            style:
-                                                TextStyle(color: Colors.white)),
-                                      ],
-                                    ),
-                                    VerticalDivider(color: Colors.white),
-                                    Column(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      children: <Widget>[
-                                        Icon(Icons.euro_symbol,
-                                            size: 15,
-                                            color: Colors.purple[700]),
-                                        Text(
-                                            "${StringUtils.formatPrice(event.price)}€",
-                                            textScaleFactor: 0.9,
-                                            style:
-                                                TextStyle(color: Colors.white)),
-                                      ],
-                                    ),
-                                    VerticalDivider(color: Colors.white),
-                                    Column(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      children: <Widget>[
-                                        Icon(Icons.perm_contact_calendar,
-                                            size: 15, color: Colors.teal[700]),
-                                        Text(event.organizer,
-                                            textScaleFactor: 0.9,
-                                            style:
-                                                TextStyle(color: Colors.white)),
-                                      ],
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
+                  ),
+                  Container(
+                    width: 26,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: <Widget>[
+                        Icon(event.participants.length > 1 ? Icons.group : Icons.person, color: Colors.white, size: 18),
+                        Text("${event.participants.length}", textScaleFactor: 0.8, style: TextStyle(color: Colors.white)),
+                      ],
                     ),
-                    Container(
-                      width: 26,
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: <Widget>[
-                          Icon(
-                              event.members.length > 1
-                                  ? Icons.group
-                                  : Icons.person,
-                              color: Colors.white,
-                              size: 18),
-                          Text("${event.members.length}",
-                              textScaleFactor: 0.8,
-                              style: TextStyle(color: Colors.white)),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-                padding: EdgeInsets.all(8.0),
+                  ),
+                ],
               ),
+              padding: EdgeInsets.all(8.0),
             ),
-            Container(
-              decoration: BoxDecoration(
-                shape: BoxShape.rectangle,
-                color: event.endDate.isAfter(DateTime.now())
-                    ? Colors.green[700]
-                    : Colors.grey[600],
-                borderRadius: BorderRadius.only(
-                    topRight: Radius.circular(4.0),
-                    bottomRight: Radius.circular(4.0)),
-              ),
-              width: 5,
+          ),
+          Container(
+            decoration: BoxDecoration(
+              shape: BoxShape.rectangle,
+              color: event.endDate.isAfter(DateTime.now()) ? Colors.green[700] : Colors.grey[600],
+              borderRadius: BorderRadius.only(topRight: Radius.circular(4.0), bottomRight: Radius.circular(4.0)),
             ),
-          ],
-        ),
+            width: 5,
+          ),
+        ],
       ),
     );
   }

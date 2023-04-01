@@ -28,15 +28,11 @@ class CalendarSelector extends StatefulWidget {
   final DateTime centerDate; // the date to be rendered on center
   final DateTime selectedDate; // the default selected date
   final Function onDateSelected; // a function to execute on date selection
-  final bool
-      onlyMonthDays; // a boolean indicating if we need to display previous and next months days in month view
-  final bool
-      expandable; // a boolean indicating if calendar is expandable between week to month views
+  final bool onlyMonthDays; // a boolean indicating if we need to display previous and next months days in month view
+  final bool expandable; // a boolean indicating if calendar is expandable between week to month views
   final Map<String, DateTime> eventsDates; // list of events dates
-  final Color
-      weekEndDayColor; // color to apply on week end days in month and week views
-  final int
-      firstWeekDay; // the first week day to display in month and week views
+  final Color weekEndDayColor; // color to apply on week end days in month and week views
+  final int firstWeekDay; // the first week day to display in month and week views
   final String locale; // the locale to use to render dates as strings
 
   CalendarSelector({
@@ -52,12 +48,10 @@ class CalendarSelector extends StatefulWidget {
     this.firstWeekDay = DateTime.monday,
   });
 
-  State<CalendarSelector> createState() =>
-      CalendarSelectorState(mode, centerDate, selectedDate);
+  State<CalendarSelector> createState() => CalendarSelectorState(mode, centerDate, selectedDate);
 }
 
-class CalendarSelectorState extends State<CalendarSelector>
-    with TickerProviderStateMixin {
+class CalendarSelectorState extends State<CalendarSelector> with TickerProviderStateMixin {
   CalendarMode _calendarMode; // the current calendar display mode
   DateTime _centerDate; // the current center date
   DateTime _selectedDate; // the current selected date
@@ -69,8 +63,7 @@ class CalendarSelectorState extends State<CalendarSelector>
   AnimationController _animationController;
   Animation<double> _animation;
 
-  CalendarSelectorState(
-      CalendarMode calendarMode, DateTime centerDate, DateTime selectedDate) {
+  CalendarSelectorState(CalendarMode calendarMode, DateTime centerDate, DateTime selectedDate) {
     _calendarMode = calendarMode;
     _centerDate = centerDate ?? DateTime.now();
     _selectedDate = selectedDate;
@@ -80,10 +73,8 @@ class CalendarSelectorState extends State<CalendarSelector>
   @override
   void initState() {
     super.initState();
-    _animationController = new AnimationController(
-        duration: Duration(milliseconds: 200), vsync: this);
-    _animation =
-        CurvedAnimation(parent: _animationController, curve: Curves.decelerate);
+    _animationController = new AnimationController(duration: Duration(milliseconds: 200), vsync: this);
+    _animation = CurvedAnimation(parent: _animationController, curve: Curves.decelerate);
     _animationController.forward();
   }
 
@@ -94,8 +85,7 @@ class CalendarSelectorState extends State<CalendarSelector>
   }
 
   /// Capitalize the specified [string]
-  String capitalize(String string) =>
-      string[0].toUpperCase() + string.substring(1);
+  String capitalize(String string) => string[0].toUpperCase() + string.substring(1);
 
   /// Build the top bar content widget according to the current display mode
   Widget getTopWidget() {
@@ -108,24 +98,17 @@ class CalendarSelectorState extends State<CalendarSelector>
       case CalendarMode.year:
         return InkWell(
           onTap: () => setCalendarMode(CalendarMode.decade, _centerDate),
-          child: Text(DateFormat('yyyy', widget.locale).format(_centerDate),
-              textScaleFactor: 1.2),
+          child: Text(DateFormat('yyyy', widget.locale).format(_centerDate), textScaleFactor: 1.2),
         );
       case CalendarMode.month:
         return InkWell(
           onTap: () => setCalendarMode(CalendarMode.year, _centerDate),
-          child: Text(
-              capitalize(
-                  DateFormat('MMMM yyyy', widget.locale).format(_centerDate)),
-              textScaleFactor: 1.2),
+          child: Text(capitalize(DateFormat('MMMM yyyy', widget.locale).format(_centerDate)), textScaleFactor: 1.2),
         );
       case CalendarMode.week:
         return InkWell(
           onTap: () => setCalendarMode(CalendarMode.year, _centerDate),
-          child: Text(
-              capitalize(
-                  DateFormat('MMMM yyyy', widget.locale).format(_centerDate)),
-              textScaleFactor: 1.2),
+          child: Text(capitalize(DateFormat('MMMM yyyy', widget.locale).format(_centerDate)), textScaleFactor: 1.2),
         );
       default:
         return Text("Unsupported mode");
@@ -137,12 +120,10 @@ class CalendarSelectorState extends State<CalendarSelector>
     if (widget.expandable) {
       if (_calendarMode == CalendarMode.week) {
         return InkWell(
-            onTap: () => setCalendarMode(CalendarMode.month, _centerDate),
-            child: Icon(Icons.keyboard_arrow_down));
+            onTap: () => setCalendarMode(CalendarMode.month, _centerDate), child: Icon(Icons.keyboard_arrow_down));
       } else if (_calendarMode == CalendarMode.month) {
         return InkWell(
-            onTap: () => setCalendarMode(CalendarMode.week, _centerDate),
-            child: Icon(Icons.keyboard_arrow_up));
+            onTap: () => setCalendarMode(CalendarMode.week, _centerDate), child: Icon(Icons.keyboard_arrow_up));
       }
     }
     return SizedBox();
@@ -154,13 +135,10 @@ class CalendarSelectorState extends State<CalendarSelector>
       case CalendarMode.decade:
         return getDecadeWidgets(_centerDate.year);
       case CalendarMode.year:
-        return SingleChildScrollView(
-            physics: NeverScrollableScrollPhysics(),
-            child: getYearWidgets(_centerDate.year));
+        return SingleChildScrollView(physics: NeverScrollableScrollPhysics(), child: getYearWidgets(_centerDate.year));
       case CalendarMode.month:
         return SingleChildScrollView(
-            physics: NeverScrollableScrollPhysics(),
-            child: getMonthWidgets(_centerDate.year, _centerDate.month));
+            physics: NeverScrollableScrollPhysics(), child: getMonthWidgets(_centerDate.year, _centerDate.month));
       case CalendarMode.week:
         return getWeekWidgets(_centerDate);
       default:
@@ -179,9 +157,7 @@ class CalendarSelectorState extends State<CalendarSelector>
 
       // number of events in that specific year
       final int nbEvents = widget.eventsDates != null
-          ? widget.eventsDates.values
-              .where((ed) => df.format(ed) == df.format(dt))
-              .length
+          ? widget.eventsDates.values.where((ed) => df.format(ed) == df.format(dt)).length
           : 0;
 
       list.add(
@@ -191,26 +167,19 @@ class CalendarSelectorState extends State<CalendarSelector>
             height: 45,
             width: 45,
             padding: EdgeInsets.symmetric(vertical: 9.0, horizontal: 2.0),
-            decoration: (_selectedDate != null &&
-                    df.format(_selectedDate) == df.format(dt))
-                ? BoxDecoration(
-                    color: Colors.white54,
-                    borderRadius: BorderRadius.circular(4.0))
+            decoration: (_selectedDate != null && df.format(_selectedDate) == df.format(dt))
+                ? BoxDecoration(color: Colors.white54, borderRadius: BorderRadius.circular(4.0))
                 : null,
             child: Column(
               mainAxisAlignment: MainAxisAlignment.start,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: <Widget>[
                 Text(df.format(dt),
-                    textScaleFactor: 0.9,
-                    style: TextStyle(
-                        color: i < 10 ? Colors.black87 : Colors.black45)),
+                    textScaleFactor: 0.9, style: TextStyle(color: i < 10 ? Colors.black87 : Colors.black45)),
                 nbEvents > 0
                     ? Container(
                         padding: EdgeInsets.symmetric(horizontal: 1.0),
-                        decoration: BoxDecoration(
-                            color: Colors.white54,
-                            borderRadius: BorderRadius.circular(2.0)),
+                        decoration: BoxDecoration(color: Colors.white54, borderRadius: BorderRadius.circular(2.0)),
                         child: Text(
                           "$nbEvents",
                           textScaleFactor: 0.6,
@@ -258,41 +227,29 @@ class CalendarSelectorState extends State<CalendarSelector>
 
       // number of events in that specific month
       final int nbEvents = widget.eventsDates != null
-          ? widget.eventsDates.values
-              .where((ed) => df.format(ed) == df.format(dt))
-              .length
+          ? widget.eventsDates.values.where((ed) => df.format(ed) == df.format(dt)).length
           : 0;
 
       list.add(
         InkWell(
-          onTap: () => setCalendarMode(
-              widget.mode == CalendarMode.month
-                  ? CalendarMode.month
-                  : CalendarMode.week,
-              dt),
+          onTap: () => setCalendarMode(widget.mode == CalendarMode.month ? CalendarMode.month : CalendarMode.week, dt),
           child: Container(
             height: 45,
             width: 45,
             padding: EdgeInsets.symmetric(vertical: 8.0, horizontal: 2.0),
-            decoration: (_selectedDate != null &&
-                    df.format(_selectedDate) == df.format(dt))
-                ? BoxDecoration(
-                    color: Colors.white54,
-                    borderRadius: BorderRadius.circular(4.0))
+            decoration: (_selectedDate != null && df.format(_selectedDate) == df.format(dt))
+                ? BoxDecoration(color: Colors.white54, borderRadius: BorderRadius.circular(4.0))
                 : null,
             child: Column(
               mainAxisAlignment: MainAxisAlignment.start,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: <Widget>[
                 Text(DateFormat('MMM', widget.locale).format(dt),
-                    textScaleFactor: 0.9,
-                    style: TextStyle(color: Colors.black87)),
+                    textScaleFactor: 0.9, style: TextStyle(color: Colors.black87)),
                 nbEvents > 0
                     ? Container(
                         padding: EdgeInsets.symmetric(horizontal: 1.0),
-                        decoration: BoxDecoration(
-                            color: Colors.white54,
-                            borderRadius: BorderRadius.circular(2.0)),
+                        decoration: BoxDecoration(color: Colors.white54, borderRadius: BorderRadius.circular(2.0)),
                         child: Text(
                           "$nbEvents",
                           textScaleFactor: 0.6,
@@ -341,12 +298,9 @@ class CalendarSelectorState extends State<CalendarSelector>
       }
 
       // number of days to add to complete the week
-      final int nbPrevDaysToAdd =
-          firstDayCurrMonth.difference(lastWeekDay).inDays;
+      final int nbPrevDaysToAdd = firstDayCurrMonth.difference(lastWeekDay).inDays;
       for (int j = 0; j < nbPrevDaysToAdd; j++) {
-        dates.add(widget.onlyMonthDays
-            ? null
-            : firstDayCurrMonth.subtract(Duration(days: nbPrevDaysToAdd - j)));
+        dates.add(widget.onlyMonthDays ? null : firstDayCurrMonth.subtract(Duration(days: nbPrevDaysToAdd - j)));
       }
     }
 
@@ -369,9 +323,7 @@ class CalendarSelectorState extends State<CalendarSelector>
     for (DateTime dt in dates) {
       // number of events in that specific day
       final int nbEvents = dt != null && widget.eventsDates != null
-          ? widget.eventsDates.values
-              .where((ed) => df.format(ed) == df.format(dt))
-              .length
+          ? widget.eventsDates.values.where((ed) => df.format(ed) == df.format(dt)).length
           : 0;
 
       list.add(
@@ -383,24 +335,19 @@ class CalendarSelectorState extends State<CalendarSelector>
                   width: 34,
                   height: 34,
                   padding: EdgeInsets.symmetric(vertical: 3.0, horizontal: 2.0),
-                  decoration: (_selectedDate != null &&
-                          df.format(_selectedDate) == df.format(dt))
-                      ? BoxDecoration(
-                          color: Colors.white54,
-                          borderRadius: BorderRadius.circular(4.0))
+                  decoration: (_selectedDate != null && df.format(_selectedDate) == df.format(dt))
+                      ? BoxDecoration(color: Colors.white54, borderRadius: BorderRadius.circular(4.0))
                       : null,
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.start,
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: <Widget>[
-                      Text(DateFormat('dd', widget.locale).format(dt),
-                          style: TextStyle(color: getDayColor(dt, false))),
+                      Text(DateFormat('dd', widget.locale).format(dt), style: TextStyle(color: getDayColor(dt, false))),
                       nbEvents > 0
                           ? Container(
                               padding: EdgeInsets.symmetric(horizontal: 1.0),
-                              decoration: BoxDecoration(
-                                  color: Colors.white54,
-                                  borderRadius: BorderRadius.circular(2.0)),
+                              decoration:
+                                  BoxDecoration(color: Colors.white54, borderRadius: BorderRadius.circular(2.0)),
                               child: Text(
                                 "$nbEvents",
                                 textScaleFactor: 0.6,
@@ -424,13 +371,9 @@ class CalendarSelectorState extends State<CalendarSelector>
           width: 40,
           alignment: Alignment.center,
           child: Text(
-            DateFormat('EEEE', widget.locale)
-                .format(DateTime(2000, 1, i + 2))
-                .substring(0, 3) /*.toUpperCase()*/,
+            DateFormat('EEEE', widget.locale).format(DateTime(2000, 1, i + 2)).substring(0, 3) /*.toUpperCase()*/,
             textScaleFactor: 0.9,
-            style: TextStyle(
-                fontWeight: FontWeight.bold,
-                color: getDayColor(DateTime(2000, 1, i + 2), true)),
+            style: TextStyle(fontWeight: FontWeight.bold, color: getDayColor(DateTime(2000, 1, i + 2), true)),
             textAlign: TextAlign.center,
           ),
         ),
@@ -474,9 +417,7 @@ class CalendarSelectorState extends State<CalendarSelector>
     for (DateTime dt in dates) {
       // number of events in that specific day
       final int nbEvents = widget.eventsDates != null
-          ? widget.eventsDates.values
-              .where((ed) => df.format(ed) == df.format(dt))
-              .length
+          ? widget.eventsDates.values.where((ed) => df.format(ed) == df.format(dt)).length
           : 0;
 
       list.add(
@@ -486,36 +427,29 @@ class CalendarSelectorState extends State<CalendarSelector>
             height: 45,
             width: 45,
             //padding: EdgeInsets.symmetric(vertical: 3.0, horizontal: 1.0),
-            decoration: (_selectedDate != null &&
-                    df.format(_selectedDate) == df.format(dt))
+            decoration: (_selectedDate != null && df.format(_selectedDate) == df.format(dt))
                 ? BoxDecoration(
                     /*border: Border.all(color: Colors.red[700])*/
                     color: Colors.white54,
-                borderRadius: BorderRadius.circular(4.0))
+                    borderRadius: BorderRadius.circular(4.0))
                 : null,
             child: Column(
               mainAxisAlignment: MainAxisAlignment.start,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: <Widget>[
                 Text(
-                  DateFormat('EEEE', widget.locale)
-                      .format(dt)
-                      .substring(0, 3) /*.toUpperCase()*/,
+                  DateFormat('EEEE', widget.locale).format(dt).substring(0, 3) /*.toUpperCase()*/,
                   textScaleFactor: 0.9,
                   style: TextStyle(color: getDayColor(dt, false)),
                 ),
                 Text(
                   DateFormat('dd', widget.locale).format(dt),
-                  style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      color: getDayColor(dt, false)),
+                  style: TextStyle(fontWeight: FontWeight.bold, color: getDayColor(dt, false)),
                 ),
                 nbEvents > 0
                     ? Container(
                         padding: EdgeInsets.symmetric(horizontal: 1.0),
-                        decoration: BoxDecoration(
-                            color: Colors.white54,
-                            borderRadius: BorderRadius.circular(2.0)),
+                        decoration: BoxDecoration(color: Colors.white54, borderRadius: BorderRadius.circular(2.0)),
                         child: Text(
                           "$nbEvents",
                           textScaleFactor: 0.6,
@@ -531,9 +465,7 @@ class CalendarSelectorState extends State<CalendarSelector>
     }
 
     return Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: list);
+        mainAxisAlignment: MainAxisAlignment.center, crossAxisAlignment: CrossAxisAlignment.start, children: list);
   }
 
   /// Update the current center date according to paging [position]
@@ -541,20 +473,16 @@ class CalendarSelectorState extends State<CalendarSelector>
     final int pos = position - 5000;
     switch (_calendarMode) {
       case CalendarMode.decade:
-        _centerDate =
-            DateTime(_initDate.year + pos * 10, _initDate.month, _initDate.day);
+        _centerDate = DateTime(_initDate.year + pos * 10, _initDate.month, _initDate.day);
         break;
       case CalendarMode.year:
-        _centerDate =
-            DateTime(_initDate.year + pos, _initDate.month, _initDate.day);
+        _centerDate = DateTime(_initDate.year + pos, _initDate.month, _initDate.day);
         break;
       case CalendarMode.month:
-        _centerDate =
-            DateTime(_initDate.year, _initDate.month + pos, _initDate.day);
+        _centerDate = DateTime(_initDate.year, _initDate.month + pos, _initDate.day);
         break;
       case CalendarMode.week:
-        _centerDate =
-            DateTime(_initDate.year, _initDate.month, _initDate.day + pos * 7);
+        _centerDate = DateTime(_initDate.year, _initDate.month, _initDate.day + pos * 7);
         break;
       default:
         break;
@@ -575,24 +503,19 @@ class CalendarSelectorState extends State<CalendarSelector>
 
   /// Handle previous icon click
   onPrevDate() {
-    _pageController.previousPage(
-        duration: Duration(milliseconds: 200), curve: Curves.easeIn);
+    _pageController.previousPage(duration: Duration(milliseconds: 200), curve: Curves.easeIn);
   }
 
   /// Handle next icon click
   onNextDate() {
-    _pageController.nextPage(
-        duration: Duration(milliseconds: 200), curve: Curves.easeIn);
+    _pageController.nextPage(duration: Duration(milliseconds: 200), curve: Curves.easeIn);
   }
 
   /// Handle [date] selection
   onSelectDate(date) {
     setState(() {
       _centerDate = date;
-      _selectedDate =
-          _selectedDate != null && _selectedDate.compareTo(date) == 0
-              ? null
-              : date;
+      _selectedDate = _selectedDate != null && _selectedDate.compareTo(date) == 0 ? null : date;
       widget.onDateSelected(_selectedDate, _calendarMode);
     });
   }
@@ -648,10 +571,7 @@ class CalendarSelectorState extends State<CalendarSelector>
             crossAxisAlignment: CrossAxisAlignment.center,
             children: <Widget>[
               InkWell(onTap: onPrevDate, child: Icon(Icons.chevron_left)),
-              Container(
-                  height: 30,
-                  alignment: Alignment.center,
-                  child: getTopWidget()),
+              Container(height: 30, alignment: Alignment.center, child: getTopWidget()),
               InkWell(onTap: onNextDate, child: Icon(Icons.chevron_right)),
             ],
           ),
@@ -663,12 +583,7 @@ class CalendarSelectorState extends State<CalendarSelector>
                 return LinearGradient(
                   begin: FractionalOffset(0.0, 1.0),
                   end: FractionalOffset(1.0, 1.0),
-                  colors: <Color>[
-                    Colors.transparent,
-                    Colors.black,
-                    Colors.black,
-                    Colors.transparent
-                  ],
+                  colors: <Color>[Colors.transparent, Colors.black, Colors.black, Colors.transparent],
                   tileMode: TileMode.clamp,
                   stops: [0.0, 0.04, 0.96, 1.0],
                 ).createShader(Offset.zero & bounds.size);

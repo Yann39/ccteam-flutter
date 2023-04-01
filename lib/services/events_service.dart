@@ -44,14 +44,25 @@ class EventsService {
           }
           organizer
           price
-          members {
-            id
+          participants {
+            member {
+              id
+              firstName
+              lastName
+              avatarUrl
+            }
           }
         }
       }
     """;
 
-    return GraphQLConnection().graphQLClient.query(QueryOptions(document: parseString(allEventQuery))).then(
+    return GraphQLConnection()
+        .graphQLClient
+        .query(QueryOptions(
+          document: parseString(allEventQuery),
+          fetchPolicy: FetchPolicy.noCache,
+        ))
+        .then(
       (result) {
         final List<Event> events = [];
         if (result.hasException) {
@@ -77,6 +88,178 @@ class EventsService {
     );
   }
 
+  /// Fetch all events from the database for the specified [year] based on event start date.
+  Future<List<Event>> fetchEventsForYear(int year) async {
+    _log.info("Getting all events of year $year from database...");
+
+    final String yearEventQuery = """
+      query GetEventsByYear(\$year: Int!) {
+        getEventsByYear(year: \$year) {
+          id
+          title
+          startDate
+          endDate
+          track {
+            id
+            name
+          }
+          organizer
+          price
+          participants {
+            id
+          }
+        }
+      }
+    """;
+
+    return GraphQLConnection()
+        .graphQLClient
+        .query(QueryOptions(
+          document: parseString(yearEventQuery),
+          variables: {'year': year},
+          fetchPolicy: FetchPolicy.noCache,
+        ))
+        .then(
+      (result) {
+        final List<Event> events = [];
+        if (result.hasException) {
+          throw AppUtils.handleGraphQlException(result);
+        } else {
+          dynamic eventList = result.data['getEventsByYear'];
+          if (eventList == null) {
+            _log.info("getEventsByYear returned null data");
+          } else if (eventList is Map<String, dynamic> && eventList.isEmpty) {
+            _log.info("getEventsByYear returned empty data");
+          } else {
+            for (dynamic event in eventList) {
+              events.add(Event.fromJson(event));
+            }
+          }
+          return events;
+        }
+      },
+      onError: (error) {
+        _log.severe("Error while fetching event list for year $year : $error");
+        throw Exception(error);
+      },
+    );
+  }
+
+  /// Fetch all events from the database for the specified [month] and [year] based on event start date.
+  Future<List<Event>> fetchEventsForMonthAndYear(int month, int year) async {
+    _log.info("Getting all events of month $month and year $year from database...");
+
+    final String monthAndYearEventQuery = """
+      query GetEventsByMonthAndYear(\$month: Int!, \$year: Int!) {
+        getEventsByMonthAndYear(month: \$month, year: \$year) {
+          id
+          title
+          startDate
+          endDate
+          track {
+            id
+            name
+          }
+          organizer
+          price
+          participants {
+            id
+          }
+        }
+      }
+    """;
+
+    return GraphQLConnection()
+        .graphQLClient
+        .query(QueryOptions(
+          document: parseString(monthAndYearEventQuery),
+          variables: {'month': month, 'year': year},
+          fetchPolicy: FetchPolicy.noCache,
+        ))
+        .then(
+      (result) {
+        final List<Event> events = [];
+        if (result.hasException) {
+          throw AppUtils.handleGraphQlException(result);
+        } else {
+          dynamic eventList = result.data['getEventsByMonthAndYear'];
+          if (eventList == null) {
+            _log.info("getEventsByMonthAndYear returned null data");
+          } else if (eventList is Map<String, dynamic> && eventList.isEmpty) {
+            _log.info("getEventsByMonthAndYear returned empty data");
+          } else {
+            for (dynamic event in eventList) {
+              events.add(Event.fromJson(event));
+            }
+          }
+          return events;
+        }
+      },
+      onError: (error) {
+        _log.severe("Error while fetching event list for month $month and year $year : $error");
+        throw Exception(error);
+      },
+    );
+  }
+
+  /// Fetch all events from the database for the specified [day], [month] and [year] based on event start date.
+  Future<List<Event>> fetchEventsForDayAndMonthAndYear(int day, int month, int year) async {
+    _log.info("Getting all events for day $day, month $month and year $year from database...");
+
+    final String dateEventQuery = """
+      query GetEventsByDayAndMonthAndYear(\$day: Int!, \$month: Int!, \$year: Int!) {
+        getEventsByDayAndMonthAndYear(day: \$day, month: \$month, year: \$year) {
+          id
+          title
+          startDate
+          endDate
+          track {
+            id
+            name
+          }
+          organizer
+          price
+          participants {
+            id
+          }
+        }
+      }
+    """;
+
+    return GraphQLConnection()
+        .graphQLClient
+        .query(QueryOptions(
+          document: parseString(dateEventQuery),
+          variables: {'day': day, 'month': month, 'year': year},
+          fetchPolicy: FetchPolicy.noCache,
+        ))
+        .then(
+      (result) {
+        print(result);
+        final List<Event> events = [];
+        if (result.hasException) {
+          throw AppUtils.handleGraphQlException(result);
+        } else {
+          dynamic eventList = result.data['getEventsByDayAndMonthAndYear'];
+          if (eventList == null) {
+            _log.info("getEventsByDayAndMonthAndYear returned null data");
+          } else if (eventList is Map<String, dynamic> && eventList.isEmpty) {
+            _log.info("getEventsByDayAndMonthAndYear returned empty data");
+          } else {
+            for (dynamic event in eventList) {
+              events.add(Event.fromJson(event));
+            }
+          }
+          return events;
+        }
+      },
+      onError: (error) {
+        _log.severe("Error while fetching event list for day $day, month $month and year $year : $error");
+        throw Exception(error);
+      },
+    );
+  }
+
   /// Get an event from the database given its [id].
   Future<Event> getEventById(int id) async {
     _log.info("Getting event $id from database...");
@@ -95,9 +278,11 @@ class EventsService {
           }
           organizer
           price
-          members {
-            firstName
-            lastName
+          participants {
+            member {
+              firstName
+              lastName
+            }
           }
         }
       }
@@ -109,6 +294,7 @@ class EventsService {
           QueryOptions(
             document: parseString(eventByIdQuery),
             variables: {'id': id},
+            fetchPolicy: FetchPolicy.noCache,
           ),
         )
         .then(
@@ -130,7 +316,7 @@ class EventsService {
 
   /// Create the specified [event] into the database.
   /// Return the created event.
-  Future<void> createEvent(Event event) async {
+  Future<Event> createEvent(Event event) async {
     _log.info("Creating event ${event.title} ...");
 
     final String newEventMutation = """
@@ -203,7 +389,7 @@ class EventsService {
 
   /// Update the specified [event] into the database.
   /// Return the updated event.
-  Future<void> updateEvent(Event event) async {
+  Future<Event> updateEvent(Event event) async {
     _log.info("Updating event ${event.title} ...");
 
     final String newEventMutation = """
@@ -272,14 +458,13 @@ class EventsService {
     if (result.hasException) {
       throw AppUtils.handleGraphQlException(result);
     } else {
-      return Event.fromJson(result.data['createEvent']);
+      return Event.fromJson(result.data['updateEvent']);
     }
   }
 
-  /// Delete specified [event] from the database
-  /// Send a POST request to the Restful API
-  /// Throw an exception if response status code is different from 204
-  Future<void> deleteEvent(Event event) async {
+  /// Delete the specified [event] from the database.
+  /// return the original event that have been deleted.
+  Future<Event> deleteEvent(Event event) async {
     _log.info("Deleting event ${event.title} ...");
 
     final String editEventMutation = """
@@ -321,9 +506,7 @@ class EventsService {
 
     final MutationOptions mutationOptions = new MutationOptions(
       document: parseString(editEventMutation),
-      variables: {
-        'eventId': event.id,
-      },
+      variables: {'eventId': event.id},
       fetchPolicy: FetchPolicy.noCache,
     );
 
@@ -335,50 +518,4 @@ class EventsService {
       return Event.fromJson(result.data['deleteEvent']);
     }
   }
-
-/*
-  /// Fetch all events for the specified [memberId] from the database
-  /// Send a GET request to the Restful API
-  /// Throw an exception if response status code is different from 200 or 404
-  /// Return empty array if no data found (404)
-  Future<List<Event>> fetchMemberEvents(int memberId) async {
-    // call to API
-    final response = await http.get(Uri.parse(API_ROOT_URL + API_GET_MEMBER_EVENTS_ENDPOINT + "?memberId=$memberId"));
-
-    if (response.statusCode == 200) {
-      // if the call to the server was successful, parse the JSON and return content
-      dynamic responseJson = json.decode(response.body);
-      return (responseJson['records'] as List).map((p) => Event.fromJson(p)).toList();
-    } else if (response.statusCode == 404) {
-      // no data found, return empty array
-      return [];
-    } else if (response.statusCode == 400) {
-      throw Exception('Bad request, check that parameter has been specified correctly');
-    } else {
-      throw Exception('Unexpected server response');
-    }
-  }
-
-  /// Fetch all events for the specified [trackId] from the database
-  /// Send a GET request to the Restful API
-  /// Throw an exception if response status code is different from 200 or 404
-  /// Return empty array if no data found (404)
-  Future<List<Event>> fetchTrackEvents(int trackId) async {
-    // call to API
-    final response = await http.get(Uri.parse(API_ROOT_URL + API_GET_TRACK_EVENTS_ENDPOINT + "?trackId=$trackId"));
-
-    if (response.statusCode == 200) {
-      // if the call to the server was successful, parse the JSON and return content
-      dynamic responseJson = json.decode(response.body);
-      return (responseJson['records'] as List).map((p) => Event.fromJson(p)).toList();
-    } else if (response.statusCode == 404) {
-      // no data found, return empty array
-      return [];
-    } else if (response.statusCode == 400) {
-      throw Exception('Bad request, check that parameter has been specified correctly');
-    } else {
-      throw Exception('Unexpected server response');
-    }
-  }
-   */
 }

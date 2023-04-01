@@ -18,7 +18,7 @@
  */
 
 import 'package:chachatte_team/providers/home_provider.dart';
-import 'package:chachatte_team/ui/events/calendar.dart';
+import 'package:chachatte_team/ui/events/event_list.dart';
 import 'package:chachatte_team/ui/members/team.dart';
 import 'package:chachatte_team/ui/news/news_list.dart';
 import 'package:chachatte_team/ui/photos/galleries.dart';
@@ -33,7 +33,7 @@ class Home extends StatelessWidget {
   final Logger _log = new Logger('Home');
 
   // list of pages of the bottom navigation bar
-  final List<Widget> _children = [NewsList(), Calendar(), Team(), Tracks(), Galleries()];
+  final List<Widget> _children = [NewsList(), EventList(), Team(), Tracks(), Galleries()];
 
   /// handle tab click
   void onTabTapped(int index, BuildContext context) {

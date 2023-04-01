@@ -22,11 +22,11 @@ import 'package:chachatte_team/providers/login_provider.dart';
 import 'package:chachatte_team/providers/news_creation_provider.dart';
 import 'package:chachatte_team/providers/news_detail_provider.dart';
 import 'package:chachatte_team/providers/news_list_provider.dart';
-import 'package:chachatte_team/services/notifications_service.dart';
 import 'package:chachatte_team/utils/constants.dart';
 import 'package:chachatte_team/utils/custom_decorations.dart';
 import 'package:chachatte_team/utils/date_utils.dart';
 import 'package:chachatte_team/utils/strings.dart';
+import 'package:chachatte_team/widgets/loading_content.dart';
 import 'package:chachatte_team/widgets/save_cancel_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -48,10 +48,10 @@ class _AddEditNewsState extends State<AddEditNews> {
   final TextEditingController _datePickerController = new TextEditingController();
 
   initState() {
+    final NewsCreationProvider _newsCreationProvider = Provider.of<NewsCreationProvider>(context, listen: false);
     // set date picker text if set
-    if (Provider.of<NewsCreationProvider>(context, listen: false).news != null) {
-      _datePickerController.text = AppDateUtils.convertToString(
-          Provider.of<NewsCreationProvider>(context, listen: false).news.newsDate, DATE_FORMAT);
+    if (_newsCreationProvider.news != null) {
+      _datePickerController.text = AppDateUtils.convertToString(_newsCreationProvider.news.newsDate, DATE_FORMAT);
     }
     return super.initState();
   }
@@ -98,30 +98,23 @@ class _AddEditNewsState extends State<AddEditNews> {
       // this invokes each onSaved event
       _form.save();
 
+      final NewsCreationProvider _newsCreationProvider = Provider.of<NewsCreationProvider>(context, listen: false);
+      final NewsListProvider _newsListProvider = Provider.of<NewsListProvider>(context, listen: false);
+      final NewsDetailProvider _newsDetailProvider = Provider.of<NewsDetailProvider>(context, listen: false);
+      final LoginProvider _loginProvider = Provider.of<LoginProvider>(context, listen: false);
+
       // submit data to backend, if id is set this is an update, else a creation
       if (news.id != null) {
-        news.modifiedBy = Provider.of<LoginProvider>(context, listen: false).loggedMember;
-        news.modifiedOn = DateTime.now();
-        // update the news then go back with a message, the result is awaited in caller
-        Provider.of<NewsCreationProvider>(context, listen: false).updateNews().then((value) {
-          Provider.of<NewsListProvider>(context, listen: false).updateNewsInList(Provider.of<NewsCreationProvider>(context, listen: false).news);
-          Provider.of<NewsDetailProvider>(context, listen: false).fetchNews(Provider.of<NewsCreationProvider>(context, listen: false).news);
-          Navigator.pop(context, AppString.newsUpdated);
-        }, onError: (error) {
-          Navigator.pop(context, AppString.newsUpdateFailed);
+        _newsCreationProvider.updateNews().then((value) {
+          _newsListProvider.updateNewsInList(_newsCreationProvider.news);
+          _newsDetailProvider.setCurrentNews(_newsCreationProvider.news);
         });
       } else {
-        news.createdBy = Provider.of<LoginProvider>(context, listen: false).loggedMember;
-        // create the news then go back with a message, the result is awaited in caller
-        Provider.of<NewsCreationProvider>(context, listen: false).createNews().then((value) {
-          Navigator.pop(context);
-          Provider.of<NewsListProvider>(context, listen: false).addNewsInList(Provider.of<NewsCreationProvider>(context, listen: false).news);
-          // send a push notification
-          NotificationsService.pushInstantNewsNotification(news);
-        }, onError: (error) {
-          Navigator.pop(context);
+        _newsCreationProvider.createNews().then((value) {
+          _newsListProvider.addNewsInList(_newsCreationProvider.news);
         });
       }
+      Navigator.pop(context);
     }
   }
 
@@ -135,78 +128,82 @@ class _AddEditNewsState extends State<AddEditNews> {
       ),
       body: Container(
         decoration: CustomDecorations.mainContent,
-        child: Stack(
-          children: <Widget>[
-            Form(
-              autovalidateMode: AutovalidateMode.disabled,
-              key: _formKey,
-              child: ListView(
-                padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                children: <Widget>[
-                  TextFormField(
-                    decoration: const InputDecoration(
-                      icon: const Icon(Icons.title),
-                      hintText: AppString.newsTitleHint,
-                      labelText: AppString.newsTitle,
+        child: LoadingContent(
+          loadingStatus: _newsCreationProvider.loadingStatus,
+          emptyText: AppString.contentNotLoaded,
+          child: Stack(
+            children: <Widget>[
+              Form(
+                autovalidateMode: AutovalidateMode.disabled,
+                key: _formKey,
+                child: ListView(
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                  children: <Widget>[
+                    TextFormField(
+                      decoration: const InputDecoration(
+                        icon: const Icon(Icons.title),
+                        hintText: AppString.newsTitleHint,
+                        labelText: AppString.newsTitle,
+                      ),
+                      maxLines: 1,
+                      inputFormatters: [LengthLimitingTextInputFormatter(128)],
+                      validator: (val) => val.isEmpty ? AppString.newsTitleMandatory : null,
+                      onSaved: (val) => _newsCreationProvider.news.title = val,
+                      initialValue: _newsCreationProvider.news.title,
                     ),
-                    maxLines: 1,
-                    inputFormatters: [LengthLimitingTextInputFormatter(128)],
-                    validator: (val) => val.isEmpty ? AppString.newsTitleMandatory : null,
-                    onSaved: (val) => _newsCreationProvider.news.title = val,
-                    initialValue: _newsCreationProvider.news.title,
-                  ),
-                  TextFormField(
-                    decoration: const InputDecoration(
-                      icon: const Icon(Icons.short_text),
-                      hintText: AppString.newsCatchLineHint,
-                      labelText: AppString.newsCatchLine,
+                    TextFormField(
+                      decoration: const InputDecoration(
+                        icon: const Icon(Icons.short_text),
+                        hintText: AppString.newsCatchLineHint,
+                        labelText: AppString.newsCatchLine,
+                      ),
+                      maxLines: 2,
+                      inputFormatters: [LengthLimitingTextInputFormatter(512)],
+                      validator: (val) => val.isEmpty ? AppString.newsContentMandatory : null,
+                      onSaved: (val) => _newsCreationProvider.news.catchLine = val,
+                      initialValue: _newsCreationProvider.news.catchLine,
                     ),
-                    maxLines: 2,
-                    inputFormatters: [LengthLimitingTextInputFormatter(512)],
-                    validator: (val) => val.isEmpty ? AppString.newsContentMandatory : null,
-                    onSaved: (val) => _newsCreationProvider.news.catchLine = val,
-                    initialValue: _newsCreationProvider.news.catchLine,
-                  ),
-                  TextFormField(
-                    decoration: const InputDecoration(
-                      icon: const Icon(Icons.format_align_left),
-                      hintText: AppString.newsContentHint,
-                      labelText: AppString.newsContent,
+                    TextFormField(
+                      decoration: const InputDecoration(
+                        icon: const Icon(Icons.format_align_left),
+                        hintText: AppString.newsContentHint,
+                        labelText: AppString.newsContent,
+                      ),
+                      maxLines: 5,
+                      inputFormatters: [LengthLimitingTextInputFormatter(8128)],
+                      validator: (val) => val.isEmpty ? AppString.newsContentMandatory : null,
+                      onSaved: (val) => _newsCreationProvider.news.content = val,
+                      initialValue: _newsCreationProvider.news.content,
                     ),
-                    maxLines: 5,
-                    inputFormatters: [LengthLimitingTextInputFormatter(8128)],
-                    validator: (val) => val.isEmpty ? AppString.newsContentMandatory : null,
-                    onSaved: (val) => _newsCreationProvider.news.content = val,
-                    initialValue: _newsCreationProvider.news.content,
-                  ),
-                  GestureDetector(
-                    onTap: () => _chooseDate(context, _datePickerController, _newsCreationProvider.news.newsDate),
-                    child: AbsorbPointer(
-                      child: TextFormField(
-                        decoration: InputDecoration(
-                          icon: const Icon(Icons.calendar_today),
-                          hintText: AppString.newsDateHint,
-                          labelText: AppString.newsDate,
+                    GestureDetector(
+                      onTap: () => _chooseDate(context, _datePickerController, _newsCreationProvider.news.newsDate),
+                      child: AbsorbPointer(
+                        child: TextFormField(
+                          decoration: InputDecoration(
+                            icon: const Icon(Icons.calendar_today),
+                            hintText: AppString.newsDateHint,
+                            labelText: AppString.newsDate,
+                          ),
+                          controller: _datePickerController,
+                          keyboardType: TextInputType.datetime,
+                          validator: (val) =>
+                              _newsCreationProvider.news.id == null && !AppDateUtils.isBeforeNow(val, DATE_FORMAT)
+                                  ? AppString.newsDateMustBeFuture
+                                  : (val.isEmpty ? AppString.newsDateMandatory : null),
+                          onSaved: (val) =>
+                              _newsCreationProvider.news.newsDate = DateFormat(DATE_FORMAT).parseStrict(val),
                         ),
-                        controller: _datePickerController,
-                        keyboardType: TextInputType.datetime,
-                        validator: (val) =>
-                            _newsCreationProvider.news.id == null && !AppDateUtils.isBeforeNow(val, DATE_FORMAT)
-                                ? AppString.newsDateMustBeFuture
-                                : (val.isEmpty ? AppString.newsDateMandatory : null),
-                        onSaved: (val) =>
-                            _newsCreationProvider.news.newsDate = DateFormat(DATE_FORMAT).parseStrict(val),
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
-            SaveCancelBar(
-              saveFunction: () => submitForm(_newsCreationProvider.news),
-              cancelFunction: () => Navigator.pop(context),
-            ),
-          ],
+              SaveCancelBar(
+                saveFunction: () => submitForm(_newsCreationProvider.news),
+                cancelFunction: () => Navigator.pop(context),
+              ),
+            ],
+          ),
         ),
       ),
     );

@@ -257,13 +257,12 @@ class NewsService {
     _log.info("Creating news ${news.title} ...");
 
     final String newNewsMutation = """
-      mutation CreateNews(\$title: String!, \$catchLine: String!, \$content: String!, \$newsDate: String!, \$memberId: Long!) {
+      mutation CreateNews(\$title: String!, \$catchLine: String!, \$content: String!, \$newsDate: String!) {
         createNews(
             title: \$title
             catchLine: \$catchLine
             content: \$content
             newsDate: \$newsDate
-            memberId: \$memberId
         )
         {
           id
@@ -298,8 +297,7 @@ class NewsService {
         'title': news.title,
         'catchLine': news.catchLine,
         'content': news.content,
-        'newsDate': news.newsDate.toIso8601String(),
-        'memberId': news.createdBy.id
+        'newsDate': news.newsDate.toIso8601String()
       },
       fetchPolicy: FetchPolicy.noCache,
     );
@@ -319,14 +317,13 @@ class NewsService {
     _log.info("Updating news ${news.title} ...");
 
     final String editNewsMutation = """
-      mutation UpdateNews(\$newsId: Long!, \$title: String!, \$catchLine: String!, \$content: String!, \$newsDate: String!, \$memberId: Long!) {
+      mutation UpdateNews(\$newsId: Long!, \$title: String!, \$catchLine: String!, \$content: String!, \$newsDate: String!) {
         updateNews(
             newsId: \$newsId
             title: \$title
             catchLine: \$catchLine
             content: \$content
             newsDate: \$newsDate
-            memberId: \$memberId
         )
         {
           id
@@ -362,8 +359,7 @@ class NewsService {
         'title': news.title,
         'catchLine': news.catchLine,
         'content': news.content,
-        'newsDate': news.newsDate.toIso8601String(),
-        'memberId': news.modifiedBy.id
+        'newsDate': news.newsDate.toIso8601String()
       },
       fetchPolicy: FetchPolicy.noCache,
     );
@@ -377,8 +373,8 @@ class NewsService {
     }
   }
 
-  /// Delete specified [news] from the database.
-  /// return the original news that have been deleted
+  /// Delete the specified [news] from the database.
+  /// return the original news that have been deleted.
   Future<News> deleteNews(News news) async {
     _log.info("Deleting news ${news.title} ...");
 

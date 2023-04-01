@@ -52,60 +52,63 @@ class NewsCreationProvider extends ChangeNotifier {
   /// Update message provider with the specified [messageProvider].
   void updateMessageProvider(MessageProvider messageProvider) {
     _messageProvider = messageProvider;
-    notifyListeners();
+    _notifyListeners();
   }
 
   /// Update login provider with the specified [loginProvider].
   void updateLoginProvider(LoginProvider loginProvider) {
     _loginProvider = loginProvider;
-    notifyListeners();
+    _notifyListeners();
   }
 
   /// Set the [news] to be edited.
   void setNewsToEdit(News news) {
     _news = news;
+    _updateStatus(LoadingStatus.loaded);
   }
 
   /// Create the current news being edited.
   Future<void> createNews() async {
     _updateStatus(LoadingStatus.loading);
-    await _newsService.createNews(news).then((value) async {
+    await _newsService.createNews(_news).then((value) async {
       _log.fine("News created successfully");
       _news = value;
       _updateStatus(LoadingStatus.loaded);
       _messageProvider.setMessage(AppString.newsCreated, MessageType.SUCCESS);
     }, onError: (error) {
       _log.warning("Error when creating news ($error)");
-      _news = null;
       _messageProvider.setMessage(AppString.newsCreationFailed, MessageType.ERROR);
       _handleServiceException(error);
       _updateStatus(LoadingStatus.notLoaded);
-      throw (error);
     });
   }
 
   /// Update the current news being edited.
   Future<void> updateNews() async {
-    await _newsService.updateNews(news).then((value) {
-      _log.fine("News successfully updated : ${news.title}");
+    _updateStatus(LoadingStatus.loading);
+    await _newsService.updateNews(_news).then((value) {
+      _log.fine("News successfully updated : ${_news.title}");
       _news = value;
       _updateStatus(LoadingStatus.loaded);
       _messageProvider.setMessage(AppString.newsUpdated, MessageType.SUCCESS);
     }, onError: (error) {
       _log.warning("Error when updating news ($error)");
-      _news = null;
       _messageProvider.setMessage(AppString.newsUpdateFailed, MessageType.ERROR);
       _handleServiceException(error);
       _updateStatus(LoadingStatus.notLoaded);
-      throw (error);
     });
+  }
+
+  /// Notify all the registered listeners of this provider.
+  void _notifyListeners() {
+    _log.info("Notifying listeners of NewsCreationProvider");
+    notifyListeners();
   }
 
   /// Update the current loading [status].
   void _updateStatus(LoadingStatus status) {
     _loadingStatus = status;
-    _log.info("Notifying listeners of NewsListProvider");
-    notifyListeners();
+    _notifyListeners();
   }
 
   /// Handle specified [error] from service call.
@@ -124,7 +127,6 @@ class NewsCreationProvider extends ChangeNotifier {
       } else {
         _messageProvider.setMessage(AppString.format(AppString.errorUnknown, [error.toString()]), MessageType.ERROR);
       }
-      _loginProvider.logoutMember();
     } else if (error is TimeoutException) {
       _messageProvider.setMessage(AppString.errorServerTimeOut, MessageType.ERROR);
     } else {

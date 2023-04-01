@@ -60,7 +60,7 @@ class Track {
         latitude = json['latitude'] != null ? json['latitude'] : null,
         longitude = json['longitude'] != null ? json['longitude'] : null;
 
-  /// Convert [member] object to the corresponding JSON map
+  /// Convert [Record] object to the corresponding JSON map
   Map<String, dynamic> toJson() => {
         "id": id,
         "name": name,

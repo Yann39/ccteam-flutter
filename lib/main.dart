@@ -18,7 +18,9 @@
  */
 
 import 'package:chachatte_team/providers/avatar_provider.dart';
-import 'package:chachatte_team/providers/event_provider.dart';
+import 'package:chachatte_team/providers/event_creation_provider.dart';
+import 'package:chachatte_team/providers/event_detail_provider.dart';
+import 'package:chachatte_team/providers/event_list_provider.dart';
 import 'package:chachatte_team/providers/home_provider.dart';
 import 'package:chachatte_team/providers/login_provider.dart';
 import 'package:chachatte_team/providers/member_provider.dart';
@@ -73,7 +75,6 @@ void main() {
         ChangeNotifierProvider(create: (context) => TimerProvider()),
         ChangeNotifierProvider(create: (context) => HomeProvider()),
         ChangeNotifierProvider(create: (context) => AvatarProvider()),
-        ChangeNotifierProvider(create: (context) => EventProvider()),
         ChangeNotifierProvider(create: (context) => MemberProvider()),
         ChangeNotifierProvider(create: (context) => PhotoProvider()),
         ChangeNotifierProvider(create: (context) => TrackProvider()),
@@ -83,7 +84,8 @@ void main() {
         // so that we can set messages from login provider
         ChangeNotifierProxyProvider<MessageProvider, LoginProvider>(
           create: (context) => LoginProvider(),
-          update: (context, messageProvider, loginProvider) => loginProvider..update(messageProvider),
+          update: (context, messageProvider, loginProvider) => loginProvider
+            ..updateMessageProvider(messageProvider),
         ),
         // so that we can set messages and logout user from NewsListProvider
         ChangeNotifierProxyProvider2<MessageProvider, LoginProvider, NewsListProvider>(
@@ -103,6 +105,27 @@ void main() {
         ChangeNotifierProxyProvider2<MessageProvider, LoginProvider, NewsCreationProvider>(
           create: (context) => NewsCreationProvider(),
           update: (context, messageProvider, loginProvider, newsCreationProvider) => newsCreationProvider
+            ..updateMessageProvider(messageProvider)
+            ..updateLoginProvider(loginProvider),
+        ),
+        // so that we can set messages and logout user from NewsListProvider
+        ChangeNotifierProxyProvider2<MessageProvider, LoginProvider, EventListProvider>(
+          create: (context) => EventListProvider(),
+          update: (context, messageProvider, loginProvider, eventListProvider) => eventListProvider
+            ..updateMessageProvider(messageProvider)
+            ..updateLoginProvider(loginProvider),
+        ),
+        // so that we can set messages and logout user from NewsDetailProvider
+        ChangeNotifierProxyProvider2<MessageProvider, LoginProvider, EventDetailProvider>(
+          create: (context) => EventDetailProvider(),
+          update: (context, messageProvider, loginProvider, eventDetailProvider) => eventDetailProvider
+            ..updateMessageProvider(messageProvider)
+            ..updateLoginProvider(loginProvider),
+        ),
+        // so that we can set messages and logout user from NewsCreationProvider
+        ChangeNotifierProxyProvider2<MessageProvider, LoginProvider, EventCreationProvider>(
+          create: (context) => EventCreationProvider(),
+          update: (context, messageProvider, loginProvider, eventCreationProvider) => eventCreationProvider
             ..updateMessageProvider(messageProvider)
             ..updateLoginProvider(loginProvider),
         ),
@@ -133,7 +156,7 @@ class ChachatteTeamApp extends StatelessWidget {
           '/gallery': (context) => Gallery(title: ModalRoute.of(context).settings.arguments),
           '/editAvatar': (context) => EditAvatar(member: ModalRoute.of(context).settings.arguments),
           '/addEditNews': (context) => AddEditNews(),
-          '/addEditEvent': (context) => AddEditEvent(event: ModalRoute.of(context).settings.arguments),
+          '/addEditEvent': (context) => AddEditEvent(),
           '/addEditMember': (context) => AddEditMember(member: ModalRoute.of(context).settings.arguments),
           '/addEditPhoto': (context) => AddEditPhoto(photo: ModalRoute.of(context).settings.arguments),
           '/addEditRecord': (context) => AddEditRecord(record: ModalRoute.of(context).settings.arguments),

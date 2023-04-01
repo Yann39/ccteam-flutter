@@ -18,7 +18,6 @@
  */
 
 import 'package:chachatte_team/models/member.dart';
-import 'package:chachatte_team/providers/event_provider.dart';
 import 'package:chachatte_team/providers/member_provider.dart';
 import 'package:chachatte_team/providers/record_provider.dart';
 import 'package:chachatte_team/ui/main/main_action_menu.dart';

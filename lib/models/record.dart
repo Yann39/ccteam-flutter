@@ -73,7 +73,7 @@ class Record {
         modifiedOn =
             json['modifiedOn'] != null ? DateFormat("yyyy-MM-dd HH:mm:ss").parseStrict(json['modifiedOn']) : null;
 
-  /// Convert [member] object to the corresponding JSON map
+  /// Convert [Record] object to the corresponding JSON map
   Map<String, dynamic> toJson() => {
         "id": id,
         "track": track?.toJson(),
@@ -84,5 +84,5 @@ class Record {
         "comments": comments,
         "createdOn": createdOn?.toIso8601String(),
         "modifiedOn": createdOn?.toIso8601String(),
-  };
+      };
 }

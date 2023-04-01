@@ -48,7 +48,7 @@ class NewsList extends StatelessWidget {
     // fetch the news to get complete data
     Provider.of<NewsDetailProvider>(context, listen: false).fetchNews(news);
 
-    // navigate to news detail screen
+    // navigate to the news detail screen
     Navigator.pushNamed(context, '/newsDetail');
   }
 

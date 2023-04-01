@@ -58,7 +58,7 @@ class PhotoProvider extends ChangeNotifier {
   /// Update the current loading status
   void _updateStatus(LoadingStatus status) {
     _loadingStatus = status;
-    _log.info("Notifying listeners of NewsProvider");
+    _log.info("Notifying listeners of PhotoProvider");
     notifyListeners();
   }
 

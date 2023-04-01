@@ -48,7 +48,7 @@ class NewsListProvider extends ChangeNotifier {
 
   // constructor
   NewsListProvider() {
-    // as soon as it is instantiated, we fetch all news
+    // as soon as it is instantiated, we fetch the news list
     fetchNewsList();
   }
 
@@ -59,13 +59,13 @@ class NewsListProvider extends ChangeNotifier {
   /// Update message provider with the specified [messageProvider].
   void updateMessageProvider(MessageProvider messageProvider) {
     _messageProvider = messageProvider;
-    notifyListeners();
+    _notifyListeners();
   }
 
   /// Update login provider with the specified [loginProvider].
   void updateLoginProvider(LoginProvider loginProvider) {
     _loginProvider = loginProvider;
-    notifyListeners();
+    _notifyListeners();
   }
 
   /// Add the specified [news] to the current news list.
@@ -75,8 +75,7 @@ class NewsListProvider extends ChangeNotifier {
     // re-sort the list by date
     _newsList.sort((a, b) => a.newsDate.compareTo(b.newsDate));
 
-    _log.info("Notifying listeners of NewsListProvider");
-    notifyListeners();
+    _notifyListeners();
   }
 
   /// Update the specified [news] in the current news list.
@@ -84,38 +83,41 @@ class NewsListProvider extends ChangeNotifier {
     final int index = _newsList.indexWhere((n) => n.id == news.id);
     if (index != -1) {
       _newsList[index] = news;
-      _log.info("Notifying listeners of NewsListProvider");
-      notifyListeners();
+      _notifyListeners();
     }
   }
 
   /// Remove the specified [news] from the current news list.
   void removeNewsFromList(News news) {
     _newsList.removeWhere((n) => n.id == news.id);
-    _log.info("Notifying listeners of NewsListProvider");
-    notifyListeners();
+    _notifyListeners();
   }
 
   /// Fetch the list of all news.
   Future<void> fetchNewsList() async {
-    _updateStatus(LoadingStatus.loading);
+    _updateLoadingStatus(LoadingStatus.loading);
     await _newsService.fetchNews().then((value) async {
       _log.fine("News list retrieved successfully");
       _newsList = value;
-      _updateStatus(LoadingStatus.loaded);
+      _updateLoadingStatus(LoadingStatus.loaded);
     }, onError: (error) {
       _log.warning("Error when retrieving news list ($error)");
       _newsList = [];
       _handleServiceException(error);
-      _updateStatus(LoadingStatus.notLoaded);
+      _updateLoadingStatus(LoadingStatus.notLoaded);
     });
   }
 
-  /// Update the current loading [status].
-  void _updateStatus(LoadingStatus status) {
-    _loadingStatus = status;
+  /// Notify all the registered listeners of this provider.
+  void _notifyListeners() {
     _log.info("Notifying listeners of NewsListProvider");
     notifyListeners();
+  }
+
+  /// Update the current loading [status].
+  void _updateLoadingStatus(LoadingStatus status) {
+    _loadingStatus = status;
+    _notifyListeners();
   }
 
   /// Handle specified [error] from service call.
