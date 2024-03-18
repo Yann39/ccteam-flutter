@@ -1,34 +1,34 @@
 /*
  * Copyright (c) 2019 by Yann39.
  *
- * This file is part of Chachatte Team application.
+ * This file is part of CCTeam application.
  *
- * Chachatte Team is free software: you can redistribute it and/or modify
+ * CCTeam is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * Chachatte Team is distributed in the hope that it will be useful,
+ * CCTeam is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with Chachatte Team. If not, see <http://www.gnu.org/licenses/>.
+ * along with CCTeam. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import 'package:chachatte_team/models/member.dart';
-import 'package:chachatte_team/models/news.dart';
-import 'package:chachatte_team/providers/login_provider.dart';
-import 'package:chachatte_team/providers/news_creation_provider.dart';
-import 'package:chachatte_team/providers/news_detail_provider.dart';
-import 'package:chachatte_team/providers/news_list_provider.dart';
-import 'package:chachatte_team/services/notifications_service.dart';
-import 'package:chachatte_team/utils/constants.dart';
-import 'package:chachatte_team/utils/custom_decorations.dart';
-import 'package:chachatte_team/utils/date_utils.dart';
-import 'package:chachatte_team/utils/strings.dart';
-import 'package:chachatte_team/widgets/loading_content.dart';
+import 'package:ccteam/models/member.dart';
+import 'package:ccteam/models/news.dart';
+import 'package:ccteam/providers/login_provider.dart';
+import 'package:ccteam/providers/news_creation_provider.dart';
+import 'package:ccteam/providers/news_detail_provider.dart';
+import 'package:ccteam/providers/news_list_provider.dart';
+import 'package:ccteam/services/notifications_service.dart';
+import 'package:ccteam/utils/constants.dart';
+import 'package:ccteam/utils/custom_decorations.dart';
+import 'package:ccteam/utils/date_utils.dart';
+import 'package:ccteam/utils/strings.dart';
+import 'package:ccteam/widgets/loading_content.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:logging/logging.dart';

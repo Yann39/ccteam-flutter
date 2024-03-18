@@ -1,34 +1,34 @@
 /*
  * Copyright (c) 2019 by Yann39.
  *
- * This file is part of Chachatte Team application.
+ * This file is part of CCTeam application.
  *
- * Chachatte Team is free software: you can redistribute it and/or modify
+ * CCTeam is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * Chachatte Team is distributed in the hope that it will be useful,
+ * CCTeam is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with Chachatte Team. If not, see <http://www.gnu.org/licenses/>.
+ * along with CCTeam. If not, see <http://www.gnu.org/licenses/>.
  */
 
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:chachatte_team/models/jwt_response.dart';
-import 'package:chachatte_team/models/member.dart';
-import 'package:chachatte_team/providers/message_provider.dart';
-import 'package:chachatte_team/services/members_service.dart';
-import 'package:chachatte_team/utils/custom_graphql_exception.dart';
-import 'package:chachatte_team/utils/enums.dart';
-import 'package:chachatte_team/utils/graphql_connection.dart';
-import 'package:chachatte_team/utils/strings.dart';
+import 'package:ccteam/models/jwt_response.dart';
+import 'package:ccteam/models/member.dart';
+import 'package:ccteam/providers/message_provider.dart';
+import 'package:ccteam/services/members_service.dart';
+import 'package:ccteam/utils/custom_graphql_exception.dart';
+import 'package:ccteam/utils/enums.dart';
+import 'package:ccteam/utils/graphql_connection.dart';
+import 'package:ccteam/utils/strings.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:logging/logging.dart';

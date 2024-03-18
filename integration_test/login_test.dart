@@ -1,13 +1,13 @@
-import 'package:chachatte_team/main.dart';
-import 'package:chachatte_team/providers/home_provider.dart';
-import 'package:chachatte_team/providers/login_provider.dart';
-import 'package:chachatte_team/providers/news_list_provider.dart';
-import 'package:chachatte_team/providers/passcode_provider.dart';
-import 'package:chachatte_team/ui/main/home.dart';
-import 'package:chachatte_team/ui/news/news_list.dart';
-import 'package:chachatte_team/ui/unauthenticated/email_form.dart';
-import 'package:chachatte_team/utils/constants.dart';
-import 'package:chachatte_team/utils/strings.dart';
+import 'package:ccteam/main.dart';
+import 'package:ccteam/providers/home_provider.dart';
+import 'package:ccteam/providers/login_provider.dart';
+import 'package:ccteam/providers/news_list_provider.dart';
+import 'package:ccteam/providers/passcode_provider.dart';
+import 'package:ccteam/ui/main/home.dart';
+import 'package:ccteam/ui/news/news_list.dart';
+import 'package:ccteam/ui/unauthenticated/email_form.dart';
+import 'package:ccteam/utils/constants.dart';
+import 'package:ccteam/utils/strings.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
@@ -25,7 +25,7 @@ void main() {
         providers: [
           ChangeNotifierProvider(create: (_) => LoginProvider()),
         ],
-        child: ChachatteTeamApp(),
+        child: CCTeamApp(),
       ),
     );
 
@@ -49,7 +49,7 @@ void main() {
           providers: [
             ChangeNotifierProvider(create: (_) => LoginProvider()),
           ],
-          child: ChachatteTeamApp(),
+          child: CCTeamApp(),
         ),
       );
 
@@ -76,7 +76,7 @@ void main() {
         providers: [
           ChangeNotifierProvider(create: (_) => LoginProvider()),
         ],
-        child: ChachatteTeamApp(),
+        child: CCTeamApp(),
       ),
     );
 
@@ -116,7 +116,7 @@ void main() {
           ChangeNotifierProvider(create: (_) => HomeProvider()),
           ChangeNotifierProvider(create: (_) => NewsListProvider()),
         ],
-        child: ChachatteTeamApp(),
+        child: CCTeamApp(),
       ),
     );
 
@@ -147,7 +147,7 @@ void main() {
           ChangeNotifierProvider(create: (_) => HomeProvider()),
           ChangeNotifierProvider(create: (_) => NewsListProvider()),
         ],
-        child: ChachatteTeamApp(),
+        child: CCTeamApp(),
       ),
     );
 
@@ -177,7 +177,7 @@ void main() {
           ChangeNotifierProvider(create: (_) => LoginProvider()),
           ChangeNotifierProvider(create: (_) => PasscodeProvider()),
         ],
-        child: ChachatteTeamApp(),
+        child: CCTeamApp(),
       ),
     );
 
@@ -282,7 +282,7 @@ void main() {
         providers: [
           ChangeNotifierProvider(create: (_) => LoginProvider()),
         ],
-        child: ChachatteTeamApp(),
+        child: CCTeamApp(),
       ),
     );
 

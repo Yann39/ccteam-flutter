@@ -1,64 +1,64 @@
 /*
  * Copyright (c) 2019 by Yann39.
  *
- * This file is part of Chachatte Team application.
+ * This file is part of CCTeam application.
  *
- * Chachatte Team is free software: you can redistribute it and/or modify
+ * CCTeam is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * Chachatte Team is distributed in the hope that it will be useful,
+ * CCTeam is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with Chachatte Team. If not, see <http://www.gnu.org/licenses/>.
+ * along with CCTeam. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import 'package:chachatte_team/providers/avatar_provider.dart';
-import 'package:chachatte_team/providers/event_creation_provider.dart';
-import 'package:chachatte_team/providers/event_detail_provider.dart';
-import 'package:chachatte_team/providers/event_list_provider.dart';
-import 'package:chachatte_team/providers/home_provider.dart';
-import 'package:chachatte_team/providers/login_provider.dart';
-import 'package:chachatte_team/providers/member_creation_provider.dart';
-import 'package:chachatte_team/providers/member_detail_provider.dart';
-import 'package:chachatte_team/providers/member_list_provider.dart';
-import 'package:chachatte_team/providers/member_provider.dart';
-import 'package:chachatte_team/providers/message_provider.dart';
-import 'package:chachatte_team/providers/news_creation_provider.dart';
-import 'package:chachatte_team/providers/news_detail_provider.dart';
-import 'package:chachatte_team/providers/news_list_provider.dart';
-import 'package:chachatte_team/providers/passcode_provider.dart';
-import 'package:chachatte_team/providers/photo_provider.dart';
-import 'package:chachatte_team/providers/record_provider.dart';
-import 'package:chachatte_team/providers/timer_provider.dart';
-import 'package:chachatte_team/providers/track_provider.dart';
-import 'package:chachatte_team/services/notifications_service.dart';
-import 'package:chachatte_team/ui/events/add_edit_event.dart';
-import 'package:chachatte_team/ui/events/event_detail.dart';
-import 'package:chachatte_team/ui/main/edit_avatar.dart';
-import 'package:chachatte_team/ui/main/home.dart';
-import 'package:chachatte_team/ui/main/image_crop.dart';
-import 'package:chachatte_team/ui/members/add_edit_member.dart';
-import 'package:chachatte_team/ui/members/add_edit_record.dart';
-import 'package:chachatte_team/ui/members/member_chronos.dart';
-import 'package:chachatte_team/ui/members/member_detail.dart';
-import 'package:chachatte_team/ui/members/member_events.dart';
-import 'package:chachatte_team/ui/news/add_edit_news.dart';
-import 'package:chachatte_team/ui/news/news_detail.dart';
-import 'package:chachatte_team/ui/photos/add_edit_photo.dart';
-import 'package:chachatte_team/ui/photos/gallery.dart';
-import 'package:chachatte_team/ui/photos/photo_detail.dart';
-import 'package:chachatte_team/ui/tracks/track_detail.dart';
-import 'package:chachatte_team/ui/unauthenticated/forgot_password.dart';
-import 'package:chachatte_team/ui/unauthenticated/loading.dart';
-import 'package:chachatte_team/ui/unauthenticated/login.dart';
-import 'package:chachatte_team/utils/enums.dart';
-import 'package:chachatte_team/utils/graphql_connection.dart';
-import 'package:chachatte_team/utils/strings.dart';
+import 'package:ccteam/providers/avatar_provider.dart';
+import 'package:ccteam/providers/event_creation_provider.dart';
+import 'package:ccteam/providers/event_detail_provider.dart';
+import 'package:ccteam/providers/event_list_provider.dart';
+import 'package:ccteam/providers/home_provider.dart';
+import 'package:ccteam/providers/login_provider.dart';
+import 'package:ccteam/providers/member_creation_provider.dart';
+import 'package:ccteam/providers/member_detail_provider.dart';
+import 'package:ccteam/providers/member_list_provider.dart';
+import 'package:ccteam/providers/member_provider.dart';
+import 'package:ccteam/providers/message_provider.dart';
+import 'package:ccteam/providers/news_creation_provider.dart';
+import 'package:ccteam/providers/news_detail_provider.dart';
+import 'package:ccteam/providers/news_list_provider.dart';
+import 'package:ccteam/providers/passcode_provider.dart';
+import 'package:ccteam/providers/photo_provider.dart';
+import 'package:ccteam/providers/record_provider.dart';
+import 'package:ccteam/providers/timer_provider.dart';
+import 'package:ccteam/providers/track_provider.dart';
+import 'package:ccteam/services/notifications_service.dart';
+import 'package:ccteam/ui/events/add_edit_event.dart';
+import 'package:ccteam/ui/events/event_detail.dart';
+import 'package:ccteam/ui/main/edit_avatar.dart';
+import 'package:ccteam/ui/main/home.dart';
+import 'package:ccteam/ui/main/image_crop.dart';
+import 'package:ccteam/ui/members/add_edit_member.dart';
+import 'package:ccteam/ui/members/add_edit_record.dart';
+import 'package:ccteam/ui/members/member_chronos.dart';
+import 'package:ccteam/ui/members/member_detail.dart';
+import 'package:ccteam/ui/members/member_events.dart';
+import 'package:ccteam/ui/news/add_edit_news.dart';
+import 'package:ccteam/ui/news/news_detail.dart';
+import 'package:ccteam/ui/photos/add_edit_photo.dart';
+import 'package:ccteam/ui/photos/gallery.dart';
+import 'package:ccteam/ui/photos/photo_detail.dart';
+import 'package:ccteam/ui/tracks/track_detail.dart';
+import 'package:ccteam/ui/unauthenticated/forgot_password.dart';
+import 'package:ccteam/ui/unauthenticated/loading.dart';
+import 'package:ccteam/ui/unauthenticated/login.dart';
+import 'package:ccteam/utils/enums.dart';
+import 'package:ccteam/utils/graphql_connection.dart';
+import 'package:ccteam/utils/strings.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
@@ -153,17 +153,17 @@ void main() {
             ..updateLoginProvider(loginProvider),
         ),
       ],
-      child: ChachatteTeamApp(),
+      child: CCTeamApp(),
     ),
   );
 }
 
-class ChachatteTeamApp extends StatelessWidget {
-  final Logger _log = new Logger('ChachatteTeamApp');
+class CCTeamApp extends StatelessWidget {
+  final Logger _log = new Logger('CCTeamApp');
 
   @override
   Widget build(BuildContext context) {
-    _log.info("Building ChachatteTeamApp...");
+    _log.info("Building CCTeamApp...");
 
     // initialize notifications plugin
     NotificationsService.initialize(context);

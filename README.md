@@ -1,6 +1,6 @@
-# Chachatte team
+# CCTeam
 
-Flutter mobile application for the "Chachatte team" motorcycle racing club
+Flutter mobile application for the "CCTeam" motorcycle racing club
 
 # Screenshots
 

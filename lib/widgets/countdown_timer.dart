@@ -1,4 +1,4 @@
-import 'package:chachatte_team/providers/timer_provider.dart';
+import 'package:ccteam/providers/timer_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
