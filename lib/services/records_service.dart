@@ -31,7 +31,7 @@ class RecordsService {
   Future<List<Record>> fetchRecords() async {
     // call to API
     final response =
-        await http.get(Uri.parse(API_ROOT_URL + API_GET_ALL_RECORDS_ENDPOINT));
+        await http.get(Uri.parse(API_BASE_URL + API_GET_ALL_RECORDS_ENDPOINT));
 
     if (response.statusCode == 200) {
       // if the call to the server was successful, parse the JSON and return content
@@ -54,7 +54,7 @@ class RecordsService {
   Future<List<Record>> fetchTrackRecords(int trackId) async {
     // call to API
     final response = await http.get(Uri.parse(
-        API_ROOT_URL + API_GET_TRACK_RECORDS_ENDPOINT + "?trackId=$trackId"));
+        API_BASE_URL + API_GET_TRACK_RECORDS_ENDPOINT + "?trackId=$trackId"));
 
     if (response.statusCode == 200) {
       // if the call to the server was successful, parse the JSON and return content
@@ -79,7 +79,7 @@ class RecordsService {
   /// Return empty array if no data found (404)
   Future<List<Record>> fetchMemberRecords(int memberId) async {
     // call to API
-    final response = await http.get(Uri.parse(API_ROOT_URL +
+    final response = await http.get(Uri.parse(API_BASE_URL +
         API_GET_MEMBER_RECORDS_ENDPOINT +
         "?memberId=$memberId"));
 
@@ -106,7 +106,7 @@ class RecordsService {
   Future<void> createRecord(Record record) async {
     // call to API
     final response = await http.post(
-        Uri.parse(API_ROOT_URL + API_CREATE_RECORD_ENDPOINT),
+        Uri.parse(API_BASE_URL + API_CREATE_RECORD_ENDPOINT),
         headers: {'Content-Type': 'application/json'},
         body: record.toJson());
 
@@ -129,7 +129,7 @@ class RecordsService {
   Future<void> updateRecord(Record record) async {
     // call to API
     final response = await http.post(
-        Uri.parse(API_ROOT_URL + API_UPDATE_RECORD_ENDPOINT),
+        Uri.parse(API_BASE_URL + API_UPDATE_RECORD_ENDPOINT),
         headers: {'Content-Type': 'application/json'},
         body: record.toJson());
 
@@ -150,7 +150,7 @@ class RecordsService {
   Future<void> deleteRecord(Record record) async {
     // call to API
     final response = await http.post(
-        Uri.parse(API_ROOT_URL + API_DELETE_RECORD_ENDPOINT),
+        Uri.parse(API_BASE_URL + API_DELETE_RECORD_ENDPOINT),
         headers: {'Content-Type': 'application/json'},
         body: record.toJson());
 

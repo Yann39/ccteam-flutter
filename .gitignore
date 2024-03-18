@@ -11,3 +11,5 @@ packages
 .flutter-plugins
 .php/api/config/database.php
 */key.properties
+*.iml
+./android/key.properties

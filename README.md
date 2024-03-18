@@ -15,6 +15,26 @@ Flutter mobile application for the "Chachatte team" motorcycle racing club
 
 You must be an authorized member to use the application.
 
+You must set the `API_BASE_URL` variable when executing the application :
+
+For production :
+
+```bash
+flutter run lib/main.dart --dart-define=API_BASE_URL=https://ccteam.rockybox.net/ccteam-gql
+```
+
+For connected mobile device :
+
+```bash
+flutter run lib/main.dart --dart-define=API_BASE_URL=http://192.168.0.11:5001/ccteam-gql // for
+```
+
+For local emulator :
+
+```bash
+flutter run lib/main.dart --dart-define=API_BASE_URL=http://10.0.2.2:5000/ccteam-gql // for local emulator
+```
+
 # Dependencies
 
 The following packages have been used :
@@ -157,11 +177,7 @@ classDef blue fill:#288,stroke:#333,stroke-width:1px
 
 ## Misc
 
-PHP API, uses PDO
-
 The application is connected to an external MariaDB database via REST web services.
-
-Passwords are hashed using PHP default hashing algorithm (which uses bcrypt as I'm using PHP 7).
 
 Only user e-mail is kept in shared preferences
 
@@ -192,5 +208,4 @@ flutter drive --driver=test_driver/integration_test.dart --target=integration_te
 - liste prédéfinie de motos plus possibilité d'en ajouter
 - liste prédéfinie d'organisateurs + possibilité d'en créer
 - couleur datepicker
-- refactoring du php pour faire une seul requête sql plutôt que de récuprer les sous objets un par un
 - renvoyer vers page "maintenance" si serveur down

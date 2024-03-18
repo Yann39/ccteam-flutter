@@ -31,7 +31,7 @@ class GalleriesService {
   Future<List<Gallery>> fetchGalleries() async {
     // call to API
     final response = await http
-        .get(Uri.parse(API_ROOT_URL + API_GET_ALL_GALLERIES_ENDPOINT));
+        .get(Uri.parse(API_BASE_URL + API_GET_ALL_GALLERIES_ENDPOINT));
 
     if (response.statusCode == 200) {
       print(response.body);
@@ -54,7 +54,7 @@ class GalleriesService {
   Future<void> createGallery(Gallery gallery) async {
     // call to API
     final response = await http.post(
-        Uri.parse(API_ROOT_URL + API_CREATE_GALLERY_ENDPOINT),
+        Uri.parse(API_BASE_URL + API_CREATE_GALLERY_ENDPOINT),
         headers: {'Content-Type': 'application/json'},
         body: gallery.toJson());
 
@@ -77,7 +77,7 @@ class GalleriesService {
   Future<void> updateGallery(Gallery gallery) async {
     // call to API
     final response = await http.post(
-        Uri.parse(API_ROOT_URL + API_UPDATE_GALLERY_ENDPOINT),
+        Uri.parse(API_BASE_URL + API_UPDATE_GALLERY_ENDPOINT),
         headers: {'Content-Type': 'application/json'},
         body: gallery.toJson());
 
@@ -98,7 +98,7 @@ class GalleriesService {
   Future<void> deleteGallery(Gallery gallery) async {
     // call to API
     final response = await http.post(
-        Uri.parse(API_ROOT_URL + API_DELETE_GALLERY_ENDPOINT),
+        Uri.parse(API_BASE_URL + API_DELETE_GALLERY_ENDPOINT),
         headers: {'Content-Type': 'application/json'},
         body: gallery.toJson());
 

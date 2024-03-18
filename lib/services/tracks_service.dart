@@ -91,7 +91,7 @@ class TracksService {
     final String urlParameters = "?s=${Uri.encodeComponent(text)}";
 
     // call to API
-    final response = await http.get(Uri.parse(API_ROOT_URL + API_SEARCH_TRACKS_ENDPOINT + urlParameters),
+    final response = await http.get(Uri.parse(API_BASE_URL + API_SEARCH_TRACKS_ENDPOINT + urlParameters),
         headers: {'Content-Type': 'application/json'});
 
     if (response.statusCode == 200) {
@@ -111,7 +111,7 @@ class TracksService {
   /// Throw an exception if response status code is different from 201
   Future<void> createTrack(Track track) async {
     // call to API
-    final response = await http.post(Uri.parse(API_ROOT_URL + API_CREATE_TRACK_ENDPOINT),
+    final response = await http.post(Uri.parse(API_BASE_URL + API_CREATE_TRACK_ENDPOINT),
         headers: {'Content-Type': 'application/json'}, body: track.toJson());
 
     // handle server response code
@@ -131,7 +131,7 @@ class TracksService {
   /// Throw an exception if response status code is different from 200
   Future<void> updateTrack(Track track) async {
     // call to API
-    final response = await http.post(Uri.parse(API_ROOT_URL + API_UPDATE_TRACK_ENDPOINT),
+    final response = await http.post(Uri.parse(API_BASE_URL + API_UPDATE_TRACK_ENDPOINT),
         headers: {'Content-Type': 'application/json'}, body: track.toJson());
 
     // handle server response code
@@ -149,7 +149,7 @@ class TracksService {
   /// Throw an exception if response status code is different from 204
   Future<void> deleteTrack(Track track) async {
     // call to API
-    final response = await http.post(Uri.parse(API_ROOT_URL + API_DELETE_TRACK_ENDPOINT),
+    final response = await http.post(Uri.parse(API_BASE_URL + API_DELETE_TRACK_ENDPOINT),
         headers: {'Content-Type': 'application/json'}, body: track.toJson());
 
     if (response.statusCode != 204) {

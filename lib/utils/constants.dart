@@ -27,13 +27,10 @@ const String TEST_VALID_JWT = 'obfuscated';
 const String TEST_INVALID_JWT = 'aBcDeFgHijKlmNOpQrSTuVWxYz';
 
 const String API_OLD_ROOT_URL = 'obfuscated';
-const String API_ROOT_URL = 'obfuscated'; // for mobile device HOME
-//const String API_ROOT_URL = 'obfuscated'; // for local emulator
-//const String API_ROOT_URL = 'obfuscated'; // for production
+const String API_BASE_URL = String.fromEnvironment('API_BASE_URL');
 
-const String SERVER_ROOT_PATH = 'obfuscated';
-const String SERVER_AVATAR_FOLDER = 'upload/avatars/';
-const String SERVER_TRACK_IMAGES_FOLDER = 'images/tracks/';
+const String SERVER_AVATAR_FOLDER = 'avatars/';
+const String SERVER_PHOTOS_FOLDER = 'photos/';
 
 const String API_GRAPHQL_ENDPOINT = '/graphql';
 
@@ -44,34 +41,10 @@ const String API_CONFIRM_EMAIL_ENDPOINT = '/rest/confirmEmail';
 const String API_COMPLETE_REGISTRATION_ENDPOINT = '/rest/completeRegistration';
 const String API_AUTHENTICATE_ENDPOINT = '/rest/authenticate';
 
-const String API_GET_ALL_NEWS_ENDPOINT = '/news/read.php';
-const String API_GET_SINGLE_NEWS_ENDPOINT = '/news/read_one.php';
-const String API_CREATE_NEWS_ENDPOINT = '/news/create.php';
-const String API_UPDATE_NEWS_ENDPOINT = '/news/update.php';
-const String API_DELETE_NEWS_ENDPOINT = '/news/delete.php';
-const String API_LIKE_NEWS_ENDPOINT = '/news/like.php';
-const String API_UNLIKE_NEWS_ENDPOINT = '/news/unlike.php';
-
-const String API_GET_ALL_MEMBERS_ENDPOINT = '/members/read.php';
-const String API_GET_SINGLE_MEMBER_ENDPOINT = '/members/read_one.php';
-const String API_GET_MEMBER_BY_EMAIL_ENDPOINT = '/members/read_by_email.php';
-const String API_SEARCH_MEMBERS_ENDPOINT = '/members/search.php';
-const String API_CREATE_MEMBER_ENDPOINT = '/members/create.php';
-const String API_UPDATE_MEMBER_ENDPOINT = '/members/update.php';
-const String API_DELETE_MEMBER_ENDPOINT = '/members/delete.php';
-const String API_LOGIN_MEMBER_ENDPOINT = '/members/login.php';
 const String API_ASK_PASSWORD_MEMBER_ENDPOINT = '/members/ask_password.php';
 const String API_UPLOAD_MEMBER_AVATAR_ENDPOINT = '/members/upload_avatar.php';
 const String API_DELETE_MEMBER_AVATAR_ENDPOINT = '/members/delete_avatar.php';
 
-const String API_GET_ALL_EVENTS_ENDPOINT = '/events/read.php';
-const String API_GET_MEMBER_EVENTS_ENDPOINT = '/events/read_by_member.php';
-const String API_GET_TRACK_EVENTS_ENDPOINT = '/events/read_by_track.php';
-const String API_CREATE_EVENT_ENDPOINT = '/events/create.php';
-const String API_UPDATE_EVENT_ENDPOINT = '/events/update.php';
-const String API_DELETE_EVENT_ENDPOINT = '/events/delete.php';
-
-const String API_GET_ALL_TRACKS_ENDPOINT = '/tracks/read.php';
 const String API_SEARCH_TRACKS_ENDPOINT = '/tracks/search.php';
 const String API_CREATE_TRACK_ENDPOINT = '/tracks/create.php';
 const String API_UPDATE_TRACK_ENDPOINT = '/tracks/update.php';

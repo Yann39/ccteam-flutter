@@ -41,7 +41,7 @@ class GraphQLConnection {
     ioc.badCertificateCallback = (X509Certificate cert, String host, int port) => true;
     final http = new IOClient(ioc);*/
 
-    final HttpLink httpLink = HttpLink(API_ROOT_URL + API_GRAPHQL_ENDPOINT);
+    final HttpLink httpLink = HttpLink(API_BASE_URL + API_GRAPHQL_ENDPOINT);
 
     final AuthLink authLink = AuthLink(
       getToken: () async => 'Bearer $_jwtToken',

@@ -38,7 +38,7 @@ class MembersService {
   /// It returns a specific status code according to the account current status.
   Future<http.Response> checkAccount(String email) {
     return http.post(
-      Uri.parse(API_ROOT_URL + API_CHECK_ACCOUNT_ENDPOINT),
+      Uri.parse(API_BASE_URL + API_CHECK_ACCOUNT_ENDPOINT),
       headers: <String, String>{'Content-Type': 'application/json; charset=UTF-8'},
       body: jsonEncode(<String, String>{'email': email}),
     );
@@ -49,7 +49,7 @@ class MembersService {
   /// confirm its e-mail address and create a passcode to complete the registration process.
   Future<http.Response> preRegister(String firstName, String lastName, String email) {
     return http.post(
-      Uri.parse(API_ROOT_URL + API_PRE_REGISTER_ENDPOINT),
+      Uri.parse(API_BASE_URL + API_PRE_REGISTER_ENDPOINT),
       headers: <String, String>{'Content-Type': 'application/json; charset=UTF-8'},
       body: jsonEncode(<String, String>{'firstName': firstName, 'lastName': lastName, 'email': email}),
     );
@@ -59,7 +59,7 @@ class MembersService {
   /// It is used in case user has not entered the OTP in the given time, or if he manually ask a new OTP.
   Future<http.Response> resendOtp(String email) {
     return http.post(
-      Uri.parse(API_ROOT_URL + API_RESEND_OTP_ENDPOINT),
+      Uri.parse(API_BASE_URL + API_RESEND_OTP_ENDPOINT),
       headers: <String, String>{'Content-Type': 'application/json; charset=UTF-8'},
       body: jsonEncode(<String, String>{'email': email}),
     );
@@ -69,7 +69,7 @@ class MembersService {
   /// one-time password which was sent on registration.
   Future<http.Response> confirmEmail(String email, String otp) {
     return http.post(
-      Uri.parse(API_ROOT_URL + API_CONFIRM_EMAIL_ENDPOINT),
+      Uri.parse(API_BASE_URL + API_CONFIRM_EMAIL_ENDPOINT),
       headers: <String, String>{'Content-Type': 'application/json; charset=UTF-8'},
       body: jsonEncode(<String, String>{'email': email, 'otp': otp}),
     );
@@ -78,7 +78,7 @@ class MembersService {
   /// Complete the registration for the specified member account, especially by setting the specified password.
   Future<http.Response> completeRegistration(String email, String passcode) {
     return http.post(
-      Uri.parse(API_ROOT_URL + API_COMPLETE_REGISTRATION_ENDPOINT),
+      Uri.parse(API_BASE_URL + API_COMPLETE_REGISTRATION_ENDPOINT),
       headers: <String, String>{'Content-Type': 'application/json; charset=UTF-8'},
       body: jsonEncode(<String, String>{'email': email, 'password': passcode}),
     );
@@ -88,7 +88,7 @@ class MembersService {
   /// The response will contains the issued JWT token.
   Future<http.Response> authenticate(String email, String password) {
     return http.post(
-      Uri.parse(API_ROOT_URL + API_AUTHENTICATE_ENDPOINT),
+      Uri.parse(API_BASE_URL + API_AUTHENTICATE_ENDPOINT),
       headers: <String, String>{'Content-Type': 'application/json; charset=UTF-8'},
       body: jsonEncode(<String, String>{'email': email, 'password': password}),
     );
