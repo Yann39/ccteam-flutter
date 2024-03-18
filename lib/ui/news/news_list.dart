@@ -46,10 +46,10 @@ class NewsList extends StatelessWidget {
   /// Navigate to the detail screen of the specified [news].
   _navigateToNewsDetailScreen(BuildContext context, News news) async {
     // fetch the news to get complete data
-    Provider.of<NewsDetailProvider>(context, listen: false).fetchNews(news);
-
-    // navigate to the news detail screen
-    Navigator.pushNamed(context, '/newsDetail');
+    Provider.of<NewsDetailProvider>(context, listen: false).fetchNews(news).then((value) => {
+          // navigate to the news detail screen
+          Navigator.pushNamed(context, '/newsDetail')
+    });
   }
 
   Widget build(BuildContext context) {

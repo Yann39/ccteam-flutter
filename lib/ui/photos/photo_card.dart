@@ -26,6 +26,8 @@ import 'package:chachatte_team/utils/strings.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../utils/constants.dart';
+
 class PhotoCard extends StatelessWidget {
   final Photo photo;
 
@@ -152,7 +154,7 @@ class PhotoCard extends StatelessWidget {
             children: [
               CachedNetworkImage(
                 placeholder: (context, url) => CircularProgressIndicator(),
-                imageUrl: photo.link,
+                imageUrl: SERVER_PHOTOS_FOLDER + photo.link,
                 fit: BoxFit.fitWidth,
               ),
               Align(

@@ -19,19 +19,20 @@
 
 import 'dart:async';
 
-import 'package:chachatte_team/models/news.dart';
+import 'package:chachatte_team/models/member.dart';
 import 'package:chachatte_team/providers/login_provider.dart';
 import 'package:chachatte_team/providers/message_provider.dart';
-import 'package:chachatte_team/services/news_service.dart';
+import 'package:chachatte_team/services/members_service.dart';
 import 'package:chachatte_team/utils/app_utils.dart';
 import 'package:chachatte_team/utils/enums.dart';
 import 'package:chachatte_team/utils/strings.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/widgets.dart';
 import 'package:logging/logging.dart';
 
-class NewsCreationProvider extends ChangeNotifier {
-  final Logger _log = new Logger('NewsCreationProvider');
-  final NewsService _newsService = new NewsService();
+class MemberCreationProvider extends ChangeNotifier {
+  final Logger _log = new Logger('MemberCreationProvider');
+  final MembersService _membersService = new MembersService();
 
   // message provider that can be set from the proxy provider
   MessageProvider _messageProvider;
@@ -39,13 +40,13 @@ class NewsCreationProvider extends ChangeNotifier {
   // login provider that can be set from the proxy provider
   LoginProvider _loginProvider;
 
-  // current news being created/edited
-  News _news = new News();
+  // current member
+  Member _currentMember = new Member();
 
   // current loading status
   LoadingStatus _loadingStatus = LoadingStatus.notLoaded;
 
-  News get news => _news;
+  Member get currentMember => _currentMember;
 
   LoadingStatus get loadingStatus => _loadingStatus;
 
@@ -61,57 +62,67 @@ class NewsCreationProvider extends ChangeNotifier {
     _notifyListeners();
   }
 
-  /// Set the [news] to be edited.
-  void setNewsToEdit(News news) {
-    _news = news;
+  /// Set the [member] to be edited.
+  void setMemberToEdit(Member member) {
+    _currentMember = member;
     _updateStatus(LoadingStatus.loaded);
   }
 
-  /// Create the current news being edited.
-  Future<void> createNews() async {
+  /// Update the avatar of the specified [member] in the current member list
+  void updateMemberAvatar(String avatarUrl) {
+    _currentMember.avatarUrl = avatarUrl;
+    _notifyListeners();
+  }
+
+  /// Remove the avatar of the specified [member] in the current member list
+  void resetMemberAvatar() {
+    _currentMember.avatarUrl = null;
+    _notifyListeners();
+  }
+
+  /// Create the current member being edited.
+  Future<void> createMember() async {
     _updateStatus(LoadingStatus.loading);
-    await _newsService.createNews(_news).then((value) async {
-      _log.fine("News created successfully");
-      _news = value;
+    await _membersService.createMember(_currentMember).then((value) async {
+      _log.fine("Member ${_currentMember.email} created successfully");
+      _currentMember = value;
       _updateStatus(LoadingStatus.loaded);
-      _messageProvider.setMessage(AppString.newsCreated, MessageType.SUCCESS);
+      _messageProvider.setMessage(AppString.memberCreated, MessageType.SUCCESS);
     }, onError: (error) {
-      _log.severe("Error when creating news ($error)");
-      _messageProvider.setMessage(AppString.newsCreationFailed, MessageType.ERROR);
+      _log.warning("Error when creating member ($error)");
+      _messageProvider.setMessage(AppString.memberCreationFailed, MessageType.ERROR);
       AppUtils.handleServiceException(error, _messageProvider, _loginProvider);
       _updateStatus(LoadingStatus.notLoaded);
     });
   }
 
-  /// Update the current news being edited.
-  Future<News> updateNews() async {
+  /// Create the current member being edited.
+  Future<void> updateMember() async {
     _updateStatus(LoadingStatus.loading);
-    _news.modifiedBy = _loginProvider.loggedMember;
-
-    return await _newsService.updateNews(_news).then((value) {
-      _log.fine("News successfully updated : ${_news.title}");
-      _news = value;
+    await _membersService.updateMember(_currentMember).then((value) {
+      _log.fine("Member successfully updated : ${_currentMember.email}");
+      _currentMember = value;
       _updateStatus(LoadingStatus.loaded);
-      _messageProvider.setMessage(AppString.newsUpdated, MessageType.SUCCESS);
-      return value;
-    }).onError((error, stackTrace) {
-      _log.severe("Error when updating news ($error)");
-      _messageProvider.setMessage(AppString.newsUpdateFailed, MessageType.ERROR);
+      _messageProvider.setMessage(AppString.memberUpdated, MessageType.SUCCESS);
+    }, onError: (error) {
+      // todo here we should reload the member as it has not been updated in db ?
+      _log.warning("Error when updating member ($error)");
+      _messageProvider.setMessage(AppString.memberUpdateFailed, MessageType.ERROR);
       AppUtils.handleServiceException(error, _messageProvider, _loginProvider);
       _updateStatus(LoadingStatus.notLoaded);
-      return null;
     });
   }
 
   /// Notify all the registered listeners of this provider.
   void _notifyListeners() {
-    _log.info("Notifying listeners of NewsCreationProvider");
+    _log.info("Notifying listeners of MemberCreationProvider");
     notifyListeners();
   }
 
-  /// Update the current loading [status].
+  /// Update the current loading status
   void _updateStatus(LoadingStatus status) {
     _loadingStatus = status;
+    _log.info("Notifying listeners of MemberCreationProvider");
     _notifyListeners();
   }
 }

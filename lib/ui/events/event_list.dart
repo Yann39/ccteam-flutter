@@ -47,10 +47,9 @@ class EventList extends StatelessWidget {
   /// Navigate to the detail screen of the specified [event].
   _navigateToEventDetailScreen(BuildContext context, Event event) async {
     // fetch the event to get complete data
-    Provider.of<EventDetailProvider>(context, listen: false).fetchEvent(event);
-
-    // navigate to event detail screen
-    Navigator.pushNamed(context, '/eventDetail');
+    Provider.of<EventDetailProvider>(context, listen: false).fetchEvent(event).then((value) =>
+        // navigate to event detail screen
+        Navigator.pushNamed(context, '/eventDetail'));
   }
 
   Widget build(BuildContext context) {
@@ -79,7 +78,7 @@ class EventList extends StatelessWidget {
       }
     }
 
-    List<Event> _events = _eventListProvider.eventModeSelectorIndex == 0
+    final List<Event> _events = _eventListProvider.eventModeSelectorIndex == 0
         ? _eventListProvider.allEvents
         : _eventListProvider.eventModeSelectorIndex == 1
             ? _eventListProvider.yearEvents

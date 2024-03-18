@@ -26,6 +26,8 @@ import 'package:flutter/material.dart';
 import 'package:logging/logging.dart';
 import 'package:provider/provider.dart';
 
+import '../../widgets/passcode.dart';
+
 class CreatePasscodeForm extends StatefulWidget {
   @override
   _CreatePasscodeFormState createState() => _CreatePasscodeFormState();
@@ -68,7 +70,7 @@ class _CreatePasscodeFormState extends State<CreatePasscodeForm> {
               borderRadius: BorderRadius.circular(4),
             ),
             padding: EdgeInsets.fromLTRB(16.0, 12.0, 16.0, 12.0),
-            primary: Colors.blue[700],
+            backgroundColor: Colors.blue[700],
           ),
           onPressed: () {
             _goToConfirmPasscode();
@@ -124,9 +126,7 @@ class _CreatePasscodeFormState extends State<CreatePasscodeForm> {
             textAlign: TextAlign.center,
           ),
           SizedBox(height: 32.0),
-          //_passcodeIndicator(_loginProvider),
-          SizedBox(height: 24.0),
-          //_passcodeField,
+          PasscodeWidget(),
           SizedBox(height: 32.0),
           _passcodeValidateButton,
           _backButton,

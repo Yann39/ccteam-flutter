@@ -64,11 +64,4 @@ class PasscodeProvider extends ChangeNotifier {
     _log.info("Notifying listeners of PasscodeProvider");
     notifyListeners();
   }
-
-  /// Set the current [error] message.
-  void _setErrorMessage(String error) {
-    _errorMessage = error;
-    _log.info("Notifying listeners of PasscodeProvider");
-    notifyListeners();
-  }
 }

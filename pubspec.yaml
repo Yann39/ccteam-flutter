@@ -89,6 +89,16 @@ flutter:
     - images/chachatte-team-banner-drawer.png
     - images/motos.jpg
     - images/finish_flag.png
+    - images/tracks/ales_cover.jpg
+    - images/tracks/bourbonnais_cover.jpg
+    - images/tracks/bresse_cover.jpg
+    - images/tracks/carole_cover.jpg
+    - images/tracks/dijon_cover.jpg
+    - images/tracks/la_ferte_gaucher_cover.jpg
+    - images/tracks/le_mans_cover.jpg
+    - images/tracks/ledenon_cover.jpg
+    - images/tracks/magny_cours_cover.jpg
+    - images/tracks/vaison_cover.jpg
 
   # To add assets to your application, add an assets section, like this:
   # assets:

@@ -52,7 +52,6 @@ class MemberProvider extends ChangeNotifier {
   LoadingStatus get loadingStatus => _loadingStatus;
 
   /// Update the current loading status
-  /// todo Should we have different variables for all members and events members so that it does not refresh all ?
   void _updateStatus(LoadingStatus status) {
     _loadingStatus = status;
     _log.info("Notifying listeners of MemberProvider");
@@ -125,7 +124,7 @@ class MemberProvider extends ChangeNotifier {
 
   /// Update the specified [member]
   Future<void> updateMember(Member member) async {
-    await _membersService.createMember(member).then((value) {
+    await _membersService.updateMember(member).then((value) {
       _log.fine("Member successfully updated : ${member.email}");
       _members[_members.indexWhere((m) => m.id == member.id)] = member;
       _log.info("Notifying listeners of MemberProvider");

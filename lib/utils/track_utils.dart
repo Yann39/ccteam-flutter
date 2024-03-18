@@ -17,7 +17,6 @@
  * along with Chachatte Team. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import 'package:chachatte_team/utils/constants.dart';
 import 'package:chachatte_team/utils/custom_icons.dart';
 import 'package:flutter/material.dart';
 
@@ -80,27 +79,27 @@ class TrackUtils {
   /// Get the right track cover image according to the specified [trackName]
   static String trackCoverImageUrlFromName(String trackName) {
     if (trackName == 'Alès') {
-      return SERVER_ROOT_PATH + SERVER_TRACK_IMAGES_FOLDER + "ales_cover.jpg";
+      return "images/tracks/ales_cover.jpg";
     } else if (trackName == 'Bresse') {
-      return SERVER_ROOT_PATH + SERVER_TRACK_IMAGES_FOLDER + "bresse_cover.jpg";
+      return "images/tracks/bresse_cover.jpg";
     } else if (trackName == 'Bourbonnais') {
-      return SERVER_ROOT_PATH + SERVER_TRACK_IMAGES_FOLDER + "bourbonnais_cover.jpg";
+      return "images/tracks/bourbonnais_cover.jpg";
     } else if (trackName == 'Carole') {
-      return SERVER_ROOT_PATH + SERVER_TRACK_IMAGES_FOLDER + "carole_cover.jpg";
+      return "images/tracks/carole_cover.jpg";
     } else if (trackName == 'Dijon-Prenois') {
-      return SERVER_ROOT_PATH + SERVER_TRACK_IMAGES_FOLDER + "dijon_cover.jpg";
+      return "images/tracks/dijon_cover.jpg";
     } else if (trackName == 'La Ferté-Gaucher') {
-      return SERVER_ROOT_PATH + SERVER_TRACK_IMAGES_FOLDER + "la_ferte_gaucher_cover.jpg";
+      return "images/tracks/la_ferte_gaucher_cover.jpg";
     } else if (trackName == 'Le Mans') {
-      return SERVER_ROOT_PATH + SERVER_TRACK_IMAGES_FOLDER + "le_mans_cover.jpg";
+      return "images/tracks/le_mans_cover.jpg";
     } else if (trackName == 'Lédenon') {
-      return SERVER_ROOT_PATH + SERVER_TRACK_IMAGES_FOLDER + "ledenon_cover.jpg";
+      return "images/tracks/ledenon_cover.jpg";
     } else if (trackName == 'Magny-Cours') {
-      return SERVER_ROOT_PATH + SERVER_TRACK_IMAGES_FOLDER + "magny_cours_cover.jpg";
+      return "images/tracks/magny_cours_cover.jpg";
     } else if (trackName == 'Vaison') {
-      return SERVER_ROOT_PATH + SERVER_TRACK_IMAGES_FOLDER + "vaison_cover.jpg";
+      return "images/tracks/vaison_cover.jpg";
     } else {
-      return SERVER_ROOT_PATH + SERVER_TRACK_IMAGES_FOLDER + "default_cover.jpg";
+      return "images/tracks/default_cover.jpg";
     }
   }
 }

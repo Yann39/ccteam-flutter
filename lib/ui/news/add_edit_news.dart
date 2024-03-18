@@ -18,7 +18,6 @@
  */
 
 import 'package:chachatte_team/models/news.dart';
-import 'package:chachatte_team/providers/login_provider.dart';
 import 'package:chachatte_team/providers/news_creation_provider.dart';
 import 'package:chachatte_team/providers/news_detail_provider.dart';
 import 'package:chachatte_team/providers/news_list_provider.dart';
@@ -100,14 +99,15 @@ class _AddEditNewsState extends State<AddEditNews> {
 
       final NewsCreationProvider _newsCreationProvider = Provider.of<NewsCreationProvider>(context, listen: false);
       final NewsListProvider _newsListProvider = Provider.of<NewsListProvider>(context, listen: false);
-      final NewsDetailProvider _newsDetailProvider = Provider.of<NewsDetailProvider>(context, listen: false);
-      final LoginProvider _loginProvider = Provider.of<LoginProvider>(context, listen: false);
 
       // submit data to backend, if id is set this is an update, else a creation
       if (news.id != null) {
         _newsCreationProvider.updateNews().then((value) {
-          _newsListProvider.updateNewsInList(_newsCreationProvider.news);
-          _newsDetailProvider.setCurrentNews(_newsCreationProvider.news);
+          if (value != null) {
+            _newsListProvider.updateNewsInList(_newsCreationProvider.news);
+            Provider.of<NewsDetailProvider>(context, listen: false).setCurrentNews(_newsCreationProvider.news);
+          } else {
+          }
         });
       } else {
         _newsCreationProvider.createNews().then((value) {

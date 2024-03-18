@@ -24,7 +24,7 @@ import 'package:chachatte_team/models/news.dart';
 import 'package:chachatte_team/providers/login_provider.dart';
 import 'package:chachatte_team/providers/message_provider.dart';
 import 'package:chachatte_team/services/news_service.dart';
-import 'package:chachatte_team/utils/custom_graphql_exception.dart';
+import 'package:chachatte_team/utils/app_utils.dart';
 import 'package:chachatte_team/utils/enums.dart';
 import 'package:chachatte_team/utils/strings.dart';
 import 'package:flutter/foundation.dart';
@@ -79,7 +79,7 @@ class NewsDetailProvider extends ChangeNotifier {
     }, onError: (error) {
       _log.warning("Error when retrieving news ($error)");
       _currentNews = null;
-      _handleServiceException(error);
+      AppUtils.handleServiceException(error, _messageProvider, _loginProvider);
       _updateStatus(LoadingStatus.notLoaded);
     });
   }
@@ -93,7 +93,7 @@ class NewsDetailProvider extends ChangeNotifier {
       _notifyListeners();
     }, onError: (error) {
       _log.warning("Error when liking news ${news.title} for user ${member.email} ($error)");
-      _handleServiceException(error);
+      AppUtils.handleServiceException(error, _messageProvider, _loginProvider);
       _notifyListeners();
     });
   }
@@ -106,7 +106,7 @@ class NewsDetailProvider extends ChangeNotifier {
       _notifyListeners();
     }, onError: (error) {
       _log.warning("Error when unliking news ${news.title} for user ${member.email} ($error)");
-      _handleServiceException(error);
+      AppUtils.handleServiceException(error, _messageProvider, _loginProvider);
       _notifyListeners();
     });
   }
@@ -121,7 +121,7 @@ class NewsDetailProvider extends ChangeNotifier {
     }, onError: (error) {
       _log.warning("Failed to delete news ($error)");
       _messageProvider.setMessage(AppString.newsDeletionFailed, MessageType.ERROR);
-      _handleServiceException(error);
+      AppUtils.handleServiceException(error, _messageProvider, _loginProvider);
       _notifyListeners();
     });
   }
@@ -136,29 +136,5 @@ class NewsDetailProvider extends ChangeNotifier {
   void _updateStatus(LoadingStatus status) {
     _loadingStatus = status;
     _notifyListeners();
-  }
-
-  /// Handle specified [error] from service call.
-  void _handleServiceException(dynamic error) {
-    if (error is CustomGraphQlException) {
-      if (error.code == "token_expired") {
-        _messageProvider.setMessage(AppString.errorTokenExpired, MessageType.INFO);
-      } else if (error.code == "wrong_token_format") {
-        _messageProvider.setMessage(AppString.errorTokenWrongFormat, MessageType.ERROR);
-      } else if (error.code == "no_token") {
-        _messageProvider.setMessage(AppString.errorTokenNotFound, MessageType.ERROR);
-      } else if (error.code == "bad_credentials") {
-        _messageProvider.setMessage(AppString.errorBadCredentials, MessageType.ERROR);
-      } else if (error.code == "internal_error") {
-        _messageProvider.setMessage(AppString.errorServerInternal, MessageType.ERROR);
-      } else {
-        _messageProvider.setMessage(AppString.format(AppString.errorUnknown, [error.toString()]), MessageType.ERROR);
-      }
-      _loginProvider.logoutMember();
-    } else if (error is TimeoutException) {
-      _messageProvider.setMessage(AppString.errorServerTimeOut, MessageType.ERROR);
-    } else {
-      _messageProvider.setMessage(AppString.format(AppString.errorUnknown, [error.toString()]), MessageType.ERROR);
-    }
   }
 }

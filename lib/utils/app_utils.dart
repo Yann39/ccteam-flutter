@@ -17,7 +17,13 @@
  * along with Chachatte Team. If not, see <http://www.gnu.org/licenses/>.
  */
 
+import 'dart:async';
+
+import 'package:chachatte_team/providers/login_provider.dart';
+import 'package:chachatte_team/providers/message_provider.dart';
 import 'package:chachatte_team/utils/custom_graphql_exception.dart';
+import 'package:chachatte_team/utils/enums.dart';
+import 'package:chachatte_team/utils/strings.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:logging/logging.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -82,4 +88,32 @@ class AppUtils {
       return Exception(result.exception.toString());
     }
   }
+
+  /// Handle specified [error] from service call.
+  static void handleServiceException(dynamic error, MessageProvider messageProvider, LoginProvider loginProvider) {
+    if (error is CustomGraphQlException) {
+      if (error.code == "token_expired") {
+        messageProvider.setMessage(AppString.errorTokenExpired, MessageType.INFO);
+        loginProvider.logoutMember();
+      } else if (error.code == "wrong_token_format") {
+        messageProvider.setMessage(AppString.errorTokenWrongFormat, MessageType.ERROR);
+        loginProvider.logoutMember();
+      } else if (error.code == "no_token") {
+        messageProvider.setMessage(AppString.errorTokenNotFound, MessageType.ERROR);
+        loginProvider.logoutMember();
+      } else if (error.code == "bad_credentials") {
+        messageProvider.setMessage(AppString.errorBadCredentials, MessageType.ERROR);
+        loginProvider.logoutMember();
+      } else if (error.code == "internal_error") {
+        messageProvider.setMessage(AppString.errorServerInternal, MessageType.ERROR);
+      } else {
+        messageProvider.setMessage(AppString.format(AppString.errorUnknown, [error.message]), MessageType.ERROR);
+      }
+    } else if (error is TimeoutException) {
+      messageProvider.setMessage(AppString.errorServerTimeOut, MessageType.ERROR);
+    } else {
+      messageProvider.setMessage(AppString.format(AppString.errorUnknown, [error.toString()]), MessageType.ERROR);
+    }
+  }
+
 }

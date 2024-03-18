@@ -93,7 +93,7 @@ class MainDrawer extends StatelessWidget {
                         ? CircleAvatar(
                             backgroundColor: Colors.blue[100],
                             backgroundImage: NetworkImage(
-                                "$SERVER_ROOT_PATH$SERVER_AVATAR_FOLDER${_loginProvider.loggedMember.avatarUrl}"),
+                                "$SERVER_AVATAR_FOLDER${_loginProvider.loggedMember.avatarUrl}"),
                           )
                         : CircleAvatar(
                             backgroundColor: Colors.blue[100],

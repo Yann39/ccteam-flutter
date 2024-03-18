@@ -23,7 +23,7 @@ import 'package:chachatte_team/models/event.dart';
 import 'package:chachatte_team/providers/login_provider.dart';
 import 'package:chachatte_team/providers/message_provider.dart';
 import 'package:chachatte_team/services/events_service.dart';
-import 'package:chachatte_team/utils/custom_graphql_exception.dart';
+import 'package:chachatte_team/utils/app_utils.dart';
 import 'package:chachatte_team/utils/enums.dart';
 import 'package:chachatte_team/utils/strings.dart';
 import 'package:flutter/foundation.dart';
@@ -78,7 +78,7 @@ class EventDetailProvider extends ChangeNotifier {
     }, onError: (error) {
       _log.warning("Error when retrieving event ($error)");
       _currentEvent = null;
-      _handleServiceException(error);
+      AppUtils.handleServiceException(error, _messageProvider, _loginProvider);
       _updateStatus(LoadingStatus.notLoaded);
     });
   }
@@ -88,13 +88,12 @@ class EventDetailProvider extends ChangeNotifier {
     await _eventsService.deleteEvent(event).then((value) {
       _log.fine("Event deleted successfully : ${event.title}");
       _currentEvent = null;
-      _log.info("Notifying listeners of EventDetailProvider");
       _messageProvider.setMessage(AppString.eventDeleted, MessageType.SUCCESS);
       _notifyListeners();
     }, onError: (error) {
       _log.warning("Failed to delete event ($error)");
       _messageProvider.setMessage(AppString.eventDeletionFailed, MessageType.ERROR);
-      _handleServiceException(error);
+      AppUtils.handleServiceException(error, _messageProvider, _loginProvider);
       _notifyListeners();
     });
   }
@@ -109,29 +108,5 @@ class EventDetailProvider extends ChangeNotifier {
   void _updateStatus(LoadingStatus status) {
     _loadingStatus = status;
     _notifyListeners();
-  }
-
-  /// Handle specified [error] from service call.
-  void _handleServiceException(dynamic error) {
-    if (error is CustomGraphQlException) {
-      if (error.code == "token_expired") {
-        _messageProvider.setMessage(AppString.errorTokenExpired, MessageType.INFO);
-      } else if (error.code == "wrong_token_format") {
-        _messageProvider.setMessage(AppString.errorTokenWrongFormat, MessageType.ERROR);
-      } else if (error.code == "no_token") {
-        _messageProvider.setMessage(AppString.errorTokenNotFound, MessageType.ERROR);
-      } else if (error.code == "bad_credentials") {
-        _messageProvider.setMessage(AppString.errorBadCredentials, MessageType.ERROR);
-      } else if (error.code == "internal_error") {
-        _messageProvider.setMessage(AppString.errorServerInternal, MessageType.ERROR);
-      } else {
-        _messageProvider.setMessage(AppString.format(AppString.errorUnknown, [error.toString()]), MessageType.ERROR);
-      }
-      _loginProvider.logoutMember();
-    } else if (error is TimeoutException) {
-      _messageProvider.setMessage(AppString.errorServerTimeOut, MessageType.ERROR);
-    } else {
-      _messageProvider.setMessage(AppString.format(AppString.errorUnknown, [error.toString()]), MessageType.ERROR);
-    }
   }
 }

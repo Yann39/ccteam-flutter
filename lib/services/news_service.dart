@@ -317,7 +317,7 @@ class NewsService {
     _log.info("Updating news ${news.title} ...");
 
     final String editNewsMutation = """
-      mutation UpdateNews(\$newsId: Long!, \$title: String!, \$catchLine: String!, \$content: String!, \$newsDate: String!) {
+      mutation UpdateNews(\$newsId: Long!, \$title: String!, \$catchLine: String!, \$content: String!, \$newsDate: String!, \$memberId: Long!) {
         updateNews(
             newsId: \$newsId
             title: \$title

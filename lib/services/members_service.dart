@@ -99,13 +99,12 @@ class MembersService {
   Future<List<Member>> fetchMembers(String filter) async {
     _log.info("Getting all members from database...");
 
-    final String membersFilteredQuery = """
+    final String query = """
       query GetMembersFiltered(\$text: String) {
         getMembersFiltered(text: \$text) {
           id
           firstName
           lastName
-          email
           avatarUrl
           bike
           admin
@@ -117,7 +116,7 @@ class MembersService {
         .graphQLClient
         .query(
           QueryOptions(
-            document: parseString(membersFilteredQuery),
+            document: parseString(query),
             variables: {'text': filter},
           ),
         )
@@ -150,7 +149,7 @@ class MembersService {
   Future<Member> getMemberById(int id) async {
     _log.info("Getting member $id from database...");
 
-    final String memberByIdQuery = """
+    final String query = """
       query GetMemberById(\$id: Long!) {
         getMemberById(id: \$id) {
           id
@@ -161,7 +160,19 @@ class MembersService {
           avatarUrl
           bike
           admin
+          active
           registrationDate
+          eventMembers {
+            event {
+              id
+              title
+              startDate
+              track {
+                name
+              }
+              organizer
+            }
+          }
           createdOn
           modifiedOn
         }
@@ -172,7 +183,7 @@ class MembersService {
         .graphQLClient
         .query(
           QueryOptions(
-            document: parseString(memberByIdQuery),
+            document: parseString(query),
             variables: {'id': id},
           ),
         )
@@ -197,7 +208,7 @@ class MembersService {
   Future<Member> getMemberByEmail(String email) async {
     _log.info("Getting member $email from database...");
 
-    final String memberByEmailQuery = """
+    final String query = """
       query GetMemberByEmail(\$email: String!) {
         getMemberByEmail(email: \$email) {
           id
@@ -226,7 +237,7 @@ class MembersService {
         .graphQLClient
         .query(
           QueryOptions(
-            document: parseString(memberByEmailQuery),
+            document: parseString(query),
             variables: {'email': email},
           ),
         )
@@ -248,53 +259,178 @@ class MembersService {
   }
 
   /// Create the specified [member] into the database.
-  /// Send a POST request to the Restful API.
-  /// Throw an exception if response status code is different from 201.
-  Future<void> createMember(Member member) async {
-    // call to API
-    final response = await http.post(Uri.parse(API_OLD_ROOT_URL + API_CREATE_MEMBER_ENDPOINT),
-        headers: {'Content-Type': 'application/json'}, body: member.toJson());
+  /// Return the created member.
+  Future<Member> createMember(Member member) async {
+    _log.info("Creating member ${member.email} ...");
 
-    // handle server response code
-    if (response.statusCode == 201) {
-      return;
-    } else if (response.statusCode == 503) {
-      throw Exception('Failed to create the member');
-    } else if (response.statusCode == 400) {
-      throw Exception('Bad request, member has not been created');
+    final String query = """
+      mutation CreateMember(\$firstName: String!, \$lastName: String!, \$email: String!, \$phone: String, \$avatarUrl: String, \$bike: String, \$active: Boolean!, \$admin: Boolean!) {
+        createMember(
+          firstName: \$firstName
+          lastName: \$lastName
+          email: \$email
+          phone: \$phone
+          avatarUrl: \$avatarUrl
+          bike: \$bike
+          active: \$active
+          admin: \$admin
+        ) {
+          id
+          firstName
+          lastName
+          email
+          phone
+          avatarUrl
+          bike
+          active
+          admin
+          registrationDate
+          likedNews {
+            news {
+              id
+              title
+            }
+          }
+          createdOn
+          modifiedOn
+        }
+      }
+    """;
+
+    final MutationOptions mutationOptions = new MutationOptions(
+      document: parseString(query),
+      variables: {
+        'firstName': member.firstName,
+        'lastName': member.lastName,
+        'email': member.email,
+        'phone': member.phone,
+        'avatarUrl': member.avatarUrl,
+        'bike': member.bike,
+        'active': member.active,
+        'admin': member.admin
+      },
+      fetchPolicy: FetchPolicy.noCache,
+    );
+
+    final QueryResult result = await GraphQLConnection().graphQLClient.mutate(mutationOptions);
+
+    if (result.hasException) {
+      throw AppUtils.handleGraphQlException(result);
     } else {
-      throw Exception('Unexpected server response, member has not been created');
+      return Member.fromJson(result.data['createMember']);
     }
   }
 
   /// Update the specified [member] into the database.
-  /// Send a POST request to the Restful API.
-  /// Throw an exception if response status code is different from 200.
-  Future<void> updateMember(Member member) async {
-    // call to API
-    final response = await http.post(Uri.parse(API_OLD_ROOT_URL + API_UPDATE_MEMBER_ENDPOINT),
-        headers: {'Content-Type': 'application/json'}, body: json.encode(member.toJson()));
+  /// Return the updated member.
+  Future<Member> updateMember(Member member) async {
+    _log.info("Updating member ${member.email} ...");
 
-    // handle server response code
-    if (response.statusCode == 200) {
-      return;
-    } else if (response.statusCode == 503) {
-      throw Exception('Failed to update the member');
+    final String query = """
+      mutation UpdateMember(\$memberId: Long!, \$firstName: String!, \$lastName: String!, \$email: String!, \$phone: String, \$avatarUrl: String, \$bike: String, \$active: Boolean!, \$admin: Boolean!) {
+        updateMember(
+          memberId: \$memberId
+          firstName: \$firstName
+          lastName: \$lastName
+          email: \$email
+          phone: \$phone
+          avatarUrl: \$avatarUrl
+          bike: \$bike
+          active: \$active
+          admin: \$admin
+        ) {
+          id
+          firstName
+          lastName
+          email
+          phone
+          avatarUrl
+          bike
+          active
+          admin
+          registrationDate
+          likedNews {
+            news {
+              id
+              title
+            }
+          }
+          createdOn
+          modifiedOn
+        }
+      }
+    """;
+
+    final MutationOptions mutationOptions = new MutationOptions(
+      document: parseString(query),
+      variables: {
+        'memberId': member.id,
+        'firstName': member.firstName,
+        'lastName': member.lastName,
+        'email': member.email,
+        'phone': member.phone,
+        'avatarUrl': member.avatarUrl,
+        'bike': member.bike,
+        'active': member.active,
+        'admin': member.admin
+      },
+      fetchPolicy: FetchPolicy.noCache,
+    );
+
+    final QueryResult result = await GraphQLConnection().graphQLClient.mutate(mutationOptions);
+
+    if (result.hasException) {
+      throw AppUtils.handleGraphQlException(result);
     } else {
-      throw Exception('Unexpected server response, member has not been updated');
+      return Member.fromJson(result.data['updateMember']);
     }
   }
 
-  /// Delete specified [member] from the database.
-  /// Send a POST request to the Restful API.
-  /// Throw an exception if response status code is different from 204.
-  Future<void> deleteMember(Member member) async {
-    // call to API
-    final response = await http.post(Uri.parse(API_OLD_ROOT_URL + API_DELETE_MEMBER_ENDPOINT),
-        headers: {'Content-Type': 'application/json'}, body: json.encode(member.toJson()));
+  /// Delete the specified [member] from the database.
+  /// Return the original member that have been deleted.
+  Future<Member> deleteMember(Member member) async {
+    _log.info("Deleting member ${member.email} ...");
 
-    if (response.statusCode != 204) {
-      throw Exception('Unexpected server response');
+    final String query = """
+      mutation DeleteMember(\$memberId: Long!) {
+        deleteMember(
+            memberId: \$memberId
+        )
+        {
+          id
+          firstName
+          lastName
+          email
+          phone
+          avatarUrl
+          bike
+          active
+          admin
+          registrationDate
+          likedNews {
+            news {
+              id
+              title
+            }
+          }
+          createdOn
+          modifiedOn          
+        }
+      }
+    """;
+
+    final MutationOptions mutationOptions = new MutationOptions(
+      document: parseString(query),
+      variables: {'memberId': member.id},
+      fetchPolicy: FetchPolicy.noCache,
+    );
+
+    final QueryResult result = await GraphQLConnection().graphQLClient.mutate(mutationOptions);
+
+    if (result.hasException) {
+      throw AppUtils.handleGraphQlException(result);
+    } else {
+      return Member.fromJson(result.data['deleteMember']);
     }
   }
 

@@ -18,20 +18,20 @@
  */
 
 import 'dart:async';
-import 'dart:collection';
 
-import 'package:chachatte_team/models/news.dart';
+import 'package:chachatte_team/models/member.dart';
 import 'package:chachatte_team/providers/login_provider.dart';
 import 'package:chachatte_team/providers/message_provider.dart';
-import 'package:chachatte_team/services/news_service.dart';
+import 'package:chachatte_team/services/members_service.dart';
 import 'package:chachatte_team/utils/app_utils.dart';
 import 'package:chachatte_team/utils/enums.dart';
+import 'package:chachatte_team/utils/strings.dart';
 import 'package:flutter/foundation.dart';
 import 'package:logging/logging.dart';
 
-class NewsListProvider extends ChangeNotifier {
-  final Logger _log = new Logger('NewsListProvider');
-  final NewsService _newsService = new NewsService();
+class MemberDetailProvider extends ChangeNotifier {
+  final Logger _log = new Logger('MemberDetailProvider');
+  final MembersService _membersService = new MembersService();
 
   // message provider that can be set from the proxy provider
   MessageProvider _messageProvider;
@@ -39,19 +39,13 @@ class NewsListProvider extends ChangeNotifier {
   // login provider that can be set from the proxy provider
   LoginProvider _loginProvider;
 
-  // current news list
-  List<News> _newsList = [];
+  // current member
+  Member _currentMember;
 
   // current loading status
   LoadingStatus _loadingStatus = LoadingStatus.notLoaded;
 
-  // constructor
-  NewsListProvider() {
-    // as soon as it is instantiated, we fetch the news list
-    fetchNewsList();
-  }
-
-  UnmodifiableListView<News> get newsList => UnmodifiableListView(_newsList);
+  Member get currentMember => _currentMember;
 
   LoadingStatus get loadingStatus => _loadingStatus;
 
@@ -67,54 +61,51 @@ class NewsListProvider extends ChangeNotifier {
     _notifyListeners();
   }
 
-  /// Add the specified [news] to the current news list.
-  void addNewsInList(News news) {
-    _newsList.add(news);
-
-    // re-sort the list by date
-    _newsList.sort((a, b) => a.newsDate.compareTo(b.newsDate));
-
+  /// Set the current member to be the specified [member].
+  void setCurrentMember(Member member) {
+    _currentMember = member;
     _notifyListeners();
   }
 
-  /// Update the specified [news] in the current news list.
-  void updateNewsInList(News news) {
-    final int index = _newsList.indexWhere((n) => n.id == news.id);
-    if (index != -1) {
-      _newsList[index] = news;
-      _notifyListeners();
-    }
-  }
-
-  /// Remove the specified [news] from the current news list.
-  void removeNewsFromList(News news) {
-    _newsList.removeWhere((n) => n.id == news.id);
-    _notifyListeners();
-  }
-
-  /// Fetch the list of all news.
-  Future<void> fetchNewsList() async {
-    _updateLoadingStatus(LoadingStatus.loading);
-    await _newsService.fetchNews().then((value) async {
-      _log.fine("News list of ${value.length} news retrieved successfully");
-      _newsList = value;
-      _updateLoadingStatus(LoadingStatus.loaded);
+  /// Fetch the specified [member] from the database.
+  Future<void> fetchMember(Member member) async {
+    _log.fine("Fetching member ${member.email}...");
+    _updateStatus(LoadingStatus.loading);
+    await _membersService.getMemberById(member.id).then((value) async {
+      _log.fine("Member ID ${member.id} retrieved successfully");
+      _currentMember = value;
+      _updateStatus(LoadingStatus.loaded);
     }, onError: (error) {
-      _log.warning("Error when retrieving news list ($error)");
-      _newsList = [];
+      _log.warning("Error when retrieving member ($error)");
+      _currentMember = null;
       AppUtils.handleServiceException(error, _messageProvider, _loginProvider);
-      _updateLoadingStatus(LoadingStatus.notLoaded);
+      _updateStatus(LoadingStatus.notLoaded);
+    });
+  }
+
+  /// Delete the specified [member].
+  Future<void> deleteMember(Member member) async {
+    await _membersService.deleteMember(member).then((value) {
+      _log.fine("Member deleted successfully : ${member.email}");
+      _currentMember = null;
+      _messageProvider.setMessage(AppString.memberDeleted, MessageType.SUCCESS);
+      _notifyListeners();
+    }, onError: (error) {
+      _log.warning("Failed to delete member ($error)");
+      _messageProvider.setMessage(AppString.memberDeletionFailed, MessageType.ERROR);
+      AppUtils.handleServiceException(error, _messageProvider, _loginProvider);
+      _notifyListeners();
     });
   }
 
   /// Notify all the registered listeners of this provider.
   void _notifyListeners() {
-    _log.info("Notifying listeners of NewsListProvider");
+    _log.info("Notifying listeners of MemberDetailProvider");
     notifyListeners();
   }
 
   /// Update the current loading [status].
-  void _updateLoadingStatus(LoadingStatus status) {
+  void _updateStatus(LoadingStatus status) {
     _loadingStatus = status;
     _notifyListeners();
   }

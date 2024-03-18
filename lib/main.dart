@@ -23,6 +23,9 @@ import 'package:chachatte_team/providers/event_detail_provider.dart';
 import 'package:chachatte_team/providers/event_list_provider.dart';
 import 'package:chachatte_team/providers/home_provider.dart';
 import 'package:chachatte_team/providers/login_provider.dart';
+import 'package:chachatte_team/providers/member_creation_provider.dart';
+import 'package:chachatte_team/providers/member_detail_provider.dart';
+import 'package:chachatte_team/providers/member_list_provider.dart';
 import 'package:chachatte_team/providers/member_provider.dart';
 import 'package:chachatte_team/providers/message_provider.dart';
 import 'package:chachatte_team/providers/news_creation_provider.dart';
@@ -84,8 +87,7 @@ void main() {
         // so that we can set messages from login provider
         ChangeNotifierProxyProvider<MessageProvider, LoginProvider>(
           create: (context) => LoginProvider(),
-          update: (context, messageProvider, loginProvider) => loginProvider
-            ..updateMessageProvider(messageProvider),
+          update: (context, messageProvider, loginProvider) => loginProvider..updateMessageProvider(messageProvider),
         ),
         // so that we can set messages and logout user from NewsListProvider
         ChangeNotifierProxyProvider2<MessageProvider, LoginProvider, NewsListProvider>(
@@ -108,24 +110,45 @@ void main() {
             ..updateMessageProvider(messageProvider)
             ..updateLoginProvider(loginProvider),
         ),
-        // so that we can set messages and logout user from NewsListProvider
+        // so that we can set messages and logout user from EventListProvider
         ChangeNotifierProxyProvider2<MessageProvider, LoginProvider, EventListProvider>(
           create: (context) => EventListProvider(),
           update: (context, messageProvider, loginProvider, eventListProvider) => eventListProvider
             ..updateMessageProvider(messageProvider)
             ..updateLoginProvider(loginProvider),
         ),
-        // so that we can set messages and logout user from NewsDetailProvider
+        // so that we can set messages and logout user from EventDetailProvider
         ChangeNotifierProxyProvider2<MessageProvider, LoginProvider, EventDetailProvider>(
           create: (context) => EventDetailProvider(),
           update: (context, messageProvider, loginProvider, eventDetailProvider) => eventDetailProvider
             ..updateMessageProvider(messageProvider)
             ..updateLoginProvider(loginProvider),
         ),
-        // so that we can set messages and logout user from NewsCreationProvider
+        // so that we can set messages and logout user from EventCreationProvider
         ChangeNotifierProxyProvider2<MessageProvider, LoginProvider, EventCreationProvider>(
           create: (context) => EventCreationProvider(),
           update: (context, messageProvider, loginProvider, eventCreationProvider) => eventCreationProvider
+            ..updateMessageProvider(messageProvider)
+            ..updateLoginProvider(loginProvider),
+        ),
+        // so that we can set messages and logout user from MemberListProvider
+        ChangeNotifierProxyProvider2<MessageProvider, LoginProvider, MemberListProvider>(
+          create: (context) => MemberListProvider(),
+          update: (context, messageProvider, loginProvider, memberListProvider) => memberListProvider
+            ..updateMessageProvider(messageProvider)
+            ..updateLoginProvider(loginProvider),
+        ),
+        // so that we can set messages and logout user from MemberDetailProvider
+        ChangeNotifierProxyProvider2<MessageProvider, LoginProvider, MemberDetailProvider>(
+          create: (context) => MemberDetailProvider(),
+          update: (context, messageProvider, loginProvider, memberDetailProvider) => memberDetailProvider
+            ..updateMessageProvider(messageProvider)
+            ..updateLoginProvider(loginProvider),
+        ),
+        // so that we can set messages and logout user from MemberCreationProvider
+        ChangeNotifierProxyProvider2<MessageProvider, LoginProvider, MemberCreationProvider>(
+          create: (context) => MemberCreationProvider(),
+          update: (context, messageProvider, loginProvider, memberCreationProvider) => memberCreationProvider
             ..updateMessageProvider(messageProvider)
             ..updateLoginProvider(loginProvider),
         ),
@@ -157,7 +180,7 @@ class ChachatteTeamApp extends StatelessWidget {
           '/editAvatar': (context) => EditAvatar(member: ModalRoute.of(context).settings.arguments),
           '/addEditNews': (context) => AddEditNews(),
           '/addEditEvent': (context) => AddEditEvent(),
-          '/addEditMember': (context) => AddEditMember(member: ModalRoute.of(context).settings.arguments),
+          '/addEditMember': (context) => AddEditMember(),
           '/addEditPhoto': (context) => AddEditPhoto(photo: ModalRoute.of(context).settings.arguments),
           '/addEditRecord': (context) => AddEditRecord(record: ModalRoute.of(context).settings.arguments),
           '/newsDetail': (context) => NewsDetail(),

@@ -24,9 +24,8 @@ import 'package:chachatte_team/models/event.dart';
 import 'package:chachatte_team/providers/login_provider.dart';
 import 'package:chachatte_team/providers/message_provider.dart';
 import 'package:chachatte_team/services/events_service.dart';
-import 'package:chachatte_team/utils/custom_graphql_exception.dart';
+import 'package:chachatte_team/utils/app_utils.dart';
 import 'package:chachatte_team/utils/enums.dart';
-import 'package:chachatte_team/utils/strings.dart';
 import 'package:flutter/foundation.dart';
 import 'package:logging/logging.dart';
 
@@ -129,13 +128,13 @@ class EventListProvider extends ChangeNotifier {
   Future<void> fetchEventList() async {
     _updateLoadingStatus(LoadingStatus.loading);
     await _eventsService.fetchEvents().then((value) async {
-      _log.fine("Events list retrieved successfully");
+      _log.fine("Events list of ${value.length} events retrieved successfully");
       _allEvents = value;
       _updateLoadingStatus(LoadingStatus.loaded);
     }, onError: (error) {
       _log.warning("Error when retrieving events list ($error)");
       _allEvents = [];
-      _handleServiceException(error);
+      AppUtils.handleServiceException(error, _messageProvider, _loginProvider);
       _updateLoadingStatus(LoadingStatus.notLoaded);
     });
   }
@@ -150,7 +149,7 @@ class EventListProvider extends ChangeNotifier {
     }, onError: (error) {
       _log.warning("Error when retrieving events list for year $year ($error)");
       _yearEvents = [];
-      _handleServiceException(error);
+      AppUtils.handleServiceException(error, _messageProvider, _loginProvider);
       _updateLoadingStatus(LoadingStatus.notLoaded);
     });
   }
@@ -165,7 +164,7 @@ class EventListProvider extends ChangeNotifier {
     }, onError: (error) {
       _log.warning("Error when retrieving events list for month $month and year $year ($error)");
       _dayEvents = [];
-      _handleServiceException(error);
+      AppUtils.handleServiceException(error, _messageProvider, _loginProvider);
       _updateLoadingStatus(LoadingStatus.notLoaded);
     });
   }
@@ -180,7 +179,7 @@ class EventListProvider extends ChangeNotifier {
     }, onError: (error) {
       _log.warning("Error when retrieving events list for day $day, month $month and year $year ($error)");
       _dayEvents = [];
-      _handleServiceException(error);
+      AppUtils.handleServiceException(error, _messageProvider, _loginProvider);
       _updateLoadingStatus(LoadingStatus.notLoaded);
     });
   }
@@ -195,32 +194,5 @@ class EventListProvider extends ChangeNotifier {
   void _updateLoadingStatus(LoadingStatus status) {
     _loadingStatus = status;
     _notifyListeners();
-  }
-
-  /// Handle specified [error] from service call.
-  void _handleServiceException(dynamic error) {
-    if (error is CustomGraphQlException) {
-      if (error.code == "token_expired") {
-        _messageProvider.setMessage(AppString.errorTokenExpired, MessageType.INFO);
-        _loginProvider.logoutMember();
-      } else if (error.code == "wrong_token_format") {
-        _messageProvider.setMessage(AppString.errorTokenWrongFormat, MessageType.ERROR);
-        _loginProvider.logoutMember();
-      } else if (error.code == "no_token") {
-        _messageProvider.setMessage(AppString.errorTokenNotFound, MessageType.ERROR);
-        _loginProvider.logoutMember();
-      } else if (error.code == "bad_credentials") {
-        _messageProvider.setMessage(AppString.errorBadCredentials, MessageType.ERROR);
-        _loginProvider.logoutMember();
-      } else if (error.code == "internal_error") {
-        _messageProvider.setMessage(AppString.errorServerInternal, MessageType.ERROR);
-      } else {
-        _messageProvider.setMessage(AppString.format(AppString.errorUnknown, [error.toString()]), MessageType.ERROR);
-      }
-    } else if (error is TimeoutException) {
-      _messageProvider.setMessage(AppString.errorServerTimeOut, MessageType.ERROR);
-    } else {
-      _messageProvider.setMessage(AppString.format(AppString.errorUnknown, [error.toString()]), MessageType.ERROR);
-    }
   }
 }

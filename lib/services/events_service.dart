@@ -31,7 +31,7 @@ class EventsService {
   Future<List<Event>> fetchEvents() async {
     _log.info("Getting all events from database...");
 
-    final String allEventQuery = """
+    final String query = """
       query GetAllEvents() {
         getAllEvents() {
           id
@@ -59,7 +59,7 @@ class EventsService {
     return GraphQLConnection()
         .graphQLClient
         .query(QueryOptions(
-          document: parseString(allEventQuery),
+          document: parseString(query),
           fetchPolicy: FetchPolicy.noCache,
         ))
         .then(
@@ -92,7 +92,7 @@ class EventsService {
   Future<List<Event>> fetchEventsForYear(int year) async {
     _log.info("Getting all events of year $year from database...");
 
-    final String yearEventQuery = """
+    final String query = """
       query GetEventsByYear(\$year: Int!) {
         getEventsByYear(year: \$year) {
           id
@@ -115,7 +115,7 @@ class EventsService {
     return GraphQLConnection()
         .graphQLClient
         .query(QueryOptions(
-          document: parseString(yearEventQuery),
+          document: parseString(query),
           variables: {'year': year},
           fetchPolicy: FetchPolicy.noCache,
         ))
@@ -149,7 +149,7 @@ class EventsService {
   Future<List<Event>> fetchEventsForMonthAndYear(int month, int year) async {
     _log.info("Getting all events of month $month and year $year from database...");
 
-    final String monthAndYearEventQuery = """
+    final String query = """
       query GetEventsByMonthAndYear(\$month: Int!, \$year: Int!) {
         getEventsByMonthAndYear(month: \$month, year: \$year) {
           id
@@ -172,7 +172,7 @@ class EventsService {
     return GraphQLConnection()
         .graphQLClient
         .query(QueryOptions(
-          document: parseString(monthAndYearEventQuery),
+          document: parseString(query),
           variables: {'month': month, 'year': year},
           fetchPolicy: FetchPolicy.noCache,
         ))
@@ -206,7 +206,7 @@ class EventsService {
   Future<List<Event>> fetchEventsForDayAndMonthAndYear(int day, int month, int year) async {
     _log.info("Getting all events for day $day, month $month and year $year from database...");
 
-    final String dateEventQuery = """
+    final String query = """
       query GetEventsByDayAndMonthAndYear(\$day: Int!, \$month: Int!, \$year: Int!) {
         getEventsByDayAndMonthAndYear(day: \$day, month: \$month, year: \$year) {
           id
@@ -229,7 +229,7 @@ class EventsService {
     return GraphQLConnection()
         .graphQLClient
         .query(QueryOptions(
-          document: parseString(dateEventQuery),
+          document: parseString(query),
           variables: {'day': day, 'month': month, 'year': year},
           fetchPolicy: FetchPolicy.noCache,
         ))
@@ -264,7 +264,7 @@ class EventsService {
   Future<Event> getEventById(int id) async {
     _log.info("Getting event $id from database...");
 
-    final String eventByIdQuery = """
+    final String query = """
       query GetEventById(\$id: Int!) {
         getEventById(id: \$id) {
           id
@@ -280,6 +280,7 @@ class EventsService {
           price
           participants {
             member {
+              id
               firstName
               lastName
             }
@@ -292,7 +293,7 @@ class EventsService {
         .graphQLClient
         .query(
           QueryOptions(
-            document: parseString(eventByIdQuery),
+            document: parseString(query),
             variables: {'id': id},
             fetchPolicy: FetchPolicy.noCache,
           ),
@@ -319,7 +320,7 @@ class EventsService {
   Future<Event> createEvent(Event event) async {
     _log.info("Creating event ${event.title} ...");
 
-    final String newEventMutation = """
+    final String query = """
       mutation CreateEvent(\$title: String!, \$description: String!, \$startDate: String!, \$endDate: String!, \$trackId: Long!, \$organizer: String!, \$price: Float!, \$memberId: Long!) {
         createEvent(
             title: \$title
@@ -364,7 +365,7 @@ class EventsService {
     """;
 
     final MutationOptions mutationOptions = new MutationOptions(
-      document: parseString(newEventMutation),
+      document: parseString(query),
       variables: {
         'title': event.title,
         'description': event.description,
@@ -392,7 +393,7 @@ class EventsService {
   Future<Event> updateEvent(Event event) async {
     _log.info("Updating event ${event.title} ...");
 
-    final String newEventMutation = """
+    final String query = """
       mutation UpdateEvent(\$eventId: Long!, \$title: String!, \$description: String!, \$startDate: String!, \$endDate: String!, \$trackId: Long!, \$organizer: String!, \$price: Float!, \$memberId: Long!) {
         updateEvent(
             eventId: \$eventId
@@ -438,7 +439,7 @@ class EventsService {
     """;
 
     final MutationOptions mutationOptions = new MutationOptions(
-      document: parseString(newEventMutation),
+      document: parseString(query),
       variables: {
         'eventId': event.id,
         'title': event.title,
@@ -463,11 +464,11 @@ class EventsService {
   }
 
   /// Delete the specified [event] from the database.
-  /// return the original event that have been deleted.
+  /// Return the original event that have been deleted.
   Future<Event> deleteEvent(Event event) async {
     _log.info("Deleting event ${event.title} ...");
 
-    final String editEventMutation = """
+    final String query = """
       mutation DeleteEvent(\$eventId: Long!) {
         deleteEvent(
             eventId: \$eventId
@@ -505,7 +506,7 @@ class EventsService {
     """;
 
     final MutationOptions mutationOptions = new MutationOptions(
-      document: parseString(editEventMutation),
+      document: parseString(query),
       variables: {'eventId': event.id},
       fetchPolicy: FetchPolicy.noCache,
     );

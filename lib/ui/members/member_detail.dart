@@ -17,34 +17,34 @@
  * along with Chachatte Team. If not, see <http://www.gnu.org/licenses/>.
  */
 
+import 'dart:math';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:chachatte_team/models/member.dart';
 import 'package:chachatte_team/models/record.dart';
 import 'package:chachatte_team/models/track.dart';
-import 'package:chachatte_team/providers/member_provider.dart';
+import 'package:chachatte_team/providers/member_creation_provider.dart';
+import 'package:chachatte_team/providers/member_detail_provider.dart';
+import 'package:chachatte_team/providers/member_list_provider.dart';
 import 'package:chachatte_team/providers/record_provider.dart';
 import 'package:chachatte_team/utils/app_utils.dart';
 import 'package:chachatte_team/utils/constants.dart';
 import 'package:chachatte_team/utils/custom_decorations.dart';
 import 'package:chachatte_team/utils/custom_icons.dart';
 import 'package:chachatte_team/utils/date_utils.dart';
-import 'package:chachatte_team/utils/enums.dart';
 import 'package:chachatte_team/utils/strings.dart';
 import 'package:chachatte_team/widgets/flexible_title.dart';
+import 'package:chachatte_team/widgets/loading_content.dart';
 import 'package:flutter/material.dart';
+import 'package:logging/logging.dart';
 import 'package:provider/provider.dart';
 
-class MemberDetail extends StatefulWidget {
-  const MemberDetail({Key key}) : super(key: key);
+import '../../utils/track_utils.dart';
 
-  @override
-  State<StatefulWidget> createState() {
-    return _MemberDetailState();
-  }
-}
+class MemberDetail extends StatelessWidget {
+  final Logger _log = new Logger('MemberDetail');
 
-class _MemberDetailState extends State<MemberDetail> {
-  ScrollController _scrollController;
+  final ScrollController _scrollController = new ScrollController();
 
   // height of the Sliver app bar
   final double _expandedHeight = 202;
@@ -52,31 +52,21 @@ class _MemberDetailState extends State<MemberDetail> {
   // size (width and height) of an event timeline card
   final double _eventCardSize = 90;
 
-  @override
-  void initState() {
-    super.initState();
-    _scrollController = ScrollController()..addListener(() => setState(() {}));
-  }
-
   /// Display or hide the Sliver app bar title depending on the scroll offset
   bool get _showTitle {
     return _scrollController.hasClients && _scrollController.offset > _expandedHeight - kToolbarHeight;
   }
 
-  /// Method that launches the Edit Member screen and awaits the result from Navigator.pop
+  /// Navigate to the news creation form screen to edit the specified [member].
   void _navigateToEditMemberScreen(BuildContext context, Member member) async {
-    // Navigator.push returns a Future that will complete after we call Navigator.pop on the target screen
-    final _result = await Navigator.pushNamed(context, '/addEditMember', arguments: member);
+    // set the member to be edited
+    Provider.of<MemberCreationProvider>(context, listen: false).setMemberToEdit(member);
 
-    // after the target screen returns a result, hide any previous snack bars and show the result
-    if (_result != null) {
-      ScaffoldMessenger.of(context)
-        ..removeCurrentSnackBar()
-        ..showSnackBar(SnackBar(content: Text("$_result")));
-    }
+    // navigate to the member creation form screen
+    Navigator.pushNamed(context, '/addEditMember');
   }
 
-  /// Method that launches the Track detail screen and awaits the result from Navigator.pop
+  /// Navigate to the specified [track] detail screen.
   void _navigateToTrackDetailScreen(BuildContext context, Track track) async {
     // todo Maybe better to do it in detail screen init method instead of each time here ?
     Provider.of<RecordProvider>(context, listen: false).fetchTrackRecords(track.id);
@@ -95,7 +85,7 @@ class _MemberDetailState extends State<MemberDetail> {
   }
 
   /// Display a confirmation popup when trying to delete a member
-  void _showConfirmation(BuildContext context, String value) {
+  _showDeleteMemberConfirmation(BuildContext context, String value) {
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
@@ -104,38 +94,30 @@ class _MemberDetailState extends State<MemberDetail> {
         actions: <Widget>[
           TextButton(
             onPressed: () {
-              _dialogueResult(context, ConfirmDialogAction.yes);
+              final MemberDetailProvider memberDetailProvider =
+                  Provider.of<MemberDetailProvider>(context, listen: false);
+              final MemberListProvider memberListProvider = Provider.of<MemberListProvider>(context, listen: false);
+              final Member memberToDelete = memberDetailProvider.currentMember;
+              // delete member
+              memberDetailProvider.deleteMember(memberToDelete).then((value) {
+                // remove member from the members list
+                memberListProvider.removeMemberFromList(memberToDelete);
+                // close this dialog
+                Navigator.pop(context);
+              });
             },
             child: Text(AppString.confirm),
           ),
           TextButton(
             onPressed: () {
-              _dialogueResult(context, ConfirmDialogAction.no);
+              // close this dialog
+              Navigator.pop(context);
             },
             child: Text(AppString.cancel),
           ),
         ],
       ),
     );
-  }
-
-  /// Handle result of the member deletion confirmation dialog
-  void _dialogueResult(BuildContext context, ConfirmDialogAction value) {
-    if (value == ConfirmDialogAction.yes) {
-      // delete member
-      Provider.of<MemberProvider>(context, listen: false)
-          .deleteMember(Provider.of<MemberProvider>(context, listen: false).currentMember)
-          .then((value) {
-        ScaffoldMessenger.of(context)
-          ..removeCurrentSnackBar()
-          ..showSnackBar(SnackBar(content: Text(AppString.memberDeleted)));
-      }, onError: (error) {
-        ScaffoldMessenger.of(context)
-          ..removeCurrentSnackBar()
-          ..showSnackBar(SnackBar(content: Text(AppString.memberDeletionFailed)));
-      });
-    }
-    Navigator.pop(context);
   }
 
   Widget _recordsTable(RecordProvider recordProvider) {
@@ -189,21 +171,20 @@ class _MemberDetailState extends State<MemberDetail> {
     }
   }
 
-  /*Widget _eventsTimeline(EventProvider eventProvider) {
-    if (eventProvider.memberEvents != null &&
-        eventProvider.memberEvents.length > 0) {
+  Widget _eventsTimeline(MemberDetailProvider memberDetailProvider) {
+    if (memberDetailProvider.currentMember.eventMembers != null &&
+        memberDetailProvider.currentMember.eventMembers.length > 0) {
       return SizedBox(
         height: 142,
         child: ListView.builder(
           scrollDirection: Axis.horizontal,
-          itemCount: eventProvider.memberEvents.length,
+          itemCount: memberDetailProvider.currentMember.eventMembers.length,
           itemBuilder: (BuildContext context, int index) {
             // if list view is not large enough, add padding so it fills the whole screen width
-            final double pad = index >= eventProvider.memberEvents.length - 1
+            final double pad = index >= memberDetailProvider.currentMember.eventMembers.length - 1
                 ? max(
                     MediaQuery.of(context).size.width -
-                        ((_eventCardSize + 16) *
-                            eventProvider.memberEvents.length) -
+                        ((_eventCardSize + 16) * memberDetailProvider.currentMember.eventMembers.length) -
                         16,
                     0)
                 : 0.0;
@@ -217,7 +198,7 @@ class _MemberDetailState extends State<MemberDetail> {
                       margin: EdgeInsets.only(right: pad),
                       child: InkWell(
                         onTap: () => _navigateToTrackDetailScreen(
-                            context, eventProvider.memberEvents[index].track),
+                            context, memberDetailProvider.currentMember.eventMembers[index].event.track),
                         child: Container(
                           decoration: CustomDecorations.cardLight,
                           width: _eventCardSize,
@@ -228,20 +209,20 @@ class _MemberDetailState extends State<MemberDetail> {
                             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                             children: <Widget>[
                               Icon(
-                                TrackUtils.trackIconFromName(eventProvider
-                                    .memberEvents[index].track.name),
+                                TrackUtils.trackIconFromName(
+                                    memberDetailProvider.currentMember.eventMembers[index].event.track.name),
                                 size: 30,
                                 color: Colors.red[700],
                               ),
                               Text(
-                                "${eventProvider.memberEvents[index].track.name}",
+                                "${memberDetailProvider.currentMember.eventMembers[index].event.track.name}",
                                 textAlign: TextAlign.center,
                                 overflow: TextOverflow.ellipsis,
                                 style: TextStyle(fontWeight: FontWeight.bold),
                                 maxLines: 2,
                               ),
                               Text(
-                                "${eventProvider.memberEvents[index].organizer}",
+                                "${memberDetailProvider.currentMember.eventMembers[index].event.organizer}",
                                 textScaleFactor: 0.8,
                                 textAlign: TextAlign.center,
                                 overflow: TextOverflow.ellipsis,
@@ -261,8 +242,8 @@ class _MemberDetailState extends State<MemberDetail> {
                         color: Colors.red[700],
                       ),
                     ),
-                    if (eventProvider.memberEvents.length > 1 &&
-                        index != eventProvider.memberEvents.length - 1)
+                    if (memberDetailProvider.currentMember.eventMembers.length > 1 &&
+                        index != memberDetailProvider.currentMember.eventMembers.length - 1)
                       Positioned(
                         top: 6.0,
                         left: _eventCardSize,
@@ -286,13 +267,12 @@ class _MemberDetailState extends State<MemberDetail> {
                                 decoration: BoxDecoration(
                                   color: Colors.red[700],
                                   shape: BoxShape.rectangle,
-                                  borderRadius: BorderRadius.only(
-                                      topLeft: Radius.circular(6.0),
-                                      topRight: Radius.circular(6.0)),
+                                  borderRadius:
+                                      BorderRadius.only(topLeft: Radius.circular(6.0), topRight: Radius.circular(6.0)),
                                 ),
                                 child: Center(
                                   child: Text(
-                                    "${AppDateUtils.convertToString(eventProvider.memberEvents[index].startDate, "MMM yy")}",
+                                    "${AppDateUtils.convertToString(memberDetailProvider.currentMember.eventMembers[index].event.startDate, "MMM yy")}",
                                     textScaleFactor: 0.75,
                                     style: TextStyle(color: Colors.white),
                                   ),
@@ -303,7 +283,7 @@ class _MemberDetailState extends State<MemberDetail> {
                                   decoration: CustomDecorations.cardBody,
                                   child: Center(
                                     child: Text(
-                                      "${AppDateUtils.convertToString(eventProvider.memberEvents[index].startDate, "dd")}",
+                                      "${AppDateUtils.convertToString(memberDetailProvider.currentMember.eventMembers[index].event.startDate, "dd")}",
                                       style: TextStyle(color: Colors.white),
                                     ),
                                   ),
@@ -328,12 +308,10 @@ class _MemberDetailState extends State<MemberDetail> {
         child: Text(AppString.memberNoEvent),
       );
     }
-  }*/
+  }
 
   Widget build(BuildContext context) {
-    final MemberProvider _memberProvider = Provider.of<MemberProvider>(context, listen: true);
-    final RecordProvider _recordProvider = Provider.of<RecordProvider>(context, listen: true);
-    //final EventProvider _eventProvider = Provider.of<EventProvider>(context, listen: true);
+    final MemberDetailProvider _memberDetailProvider = Provider.of<MemberDetailProvider>(context, listen: true);
 
     final _motoInfo = MergeSemantics(
       child: Padding(
@@ -348,7 +326,7 @@ class _MemberDetailState extends State<MemberDetail> {
                   Text(AppString.moto, style: TextStyle(color: Colors.red[700])),
                   Container(
                     child: Text(
-                      "${_memberProvider.currentMember?.bike}",
+                      "${_memberDetailProvider.currentMember?.bike}",
                       style: TextStyle(color: Colors.black.withOpacity(0.8)),
                       textScaleFactor: 1.1,
                     ),
@@ -378,7 +356,7 @@ class _MemberDetailState extends State<MemberDetail> {
                   Text(AppString.mobile, style: TextStyle(color: Colors.red[700])),
                   Container(
                     child: Text(
-                      "${_memberProvider.currentMember?.phone}",
+                      "${_memberDetailProvider.currentMember?.phone}",
                       style: TextStyle(color: Colors.black.withOpacity(0.8)),
                       textScaleFactor: 1.1,
                     ),
@@ -392,7 +370,7 @@ class _MemberDetailState extends State<MemberDetail> {
                     icon: Icon(Icons.phone),
                     color: Colors.green,
                     onPressed: () {
-                      AppUtils.launchURL("tel:${_memberProvider.currentMember?.phone}");
+                      AppUtils.launchURL("tel:${_memberDetailProvider.currentMember?.phone}");
                     })),
             SizedBox(
                 width: 72.0,
@@ -400,7 +378,7 @@ class _MemberDetailState extends State<MemberDetail> {
                     icon: Icon(Icons.sms),
                     color: Colors.blue,
                     onPressed: () {
-                      AppUtils.launchURL("sms:${_memberProvider.currentMember?.phone}");
+                      AppUtils.launchURL("sms:${_memberDetailProvider.currentMember?.phone}");
                     }))
           ],
         ),
@@ -420,7 +398,7 @@ class _MemberDetailState extends State<MemberDetail> {
                   Text(AppString.email, style: TextStyle(color: Colors.red[700])),
                   Container(
                     child: Text(
-                      "${_memberProvider.currentMember?.email}",
+                      "${_memberDetailProvider.currentMember?.email}",
                       style: TextStyle(color: Colors.black.withOpacity(0.8)),
                       textScaleFactor: 1.1,
                     ),
@@ -434,7 +412,7 @@ class _MemberDetailState extends State<MemberDetail> {
                     icon: Icon(Icons.mail),
                     color: Colors.purple.withOpacity(0.6),
                     onPressed: () {
-                      AppUtils.launchURL("mailto:${_memberProvider.currentMember?.email}");
+                      AppUtils.launchURL("mailto:${_memberDetailProvider.currentMember?.email}");
                     }))
           ],
         ),
@@ -444,175 +422,175 @@ class _MemberDetailState extends State<MemberDetail> {
     return Scaffold(
       body: Container(
         decoration: CustomDecorations.mainContent,
-        child: _memberProvider.currentMember != null
-            ? CustomScrollView(
-                controller: _scrollController,
-                slivers: <Widget>[
-                  SliverAppBar(
-                    pinned: true,
-                    expandedHeight: _expandedHeight,
-                    title: _showTitle
-                        ? Text(
-                            _memberProvider.currentMember.firstName + ' ' + _memberProvider.currentMember.lastName,
-                            overflow: TextOverflow.ellipsis,
-                          )
-                        : null,
-                    flexibleSpace: _showTitle
-                        ? null
-                        : FlexibleSpaceBar(
-                            title: FlexibleTitle(
-                              text:
-                                  "${_memberProvider.currentMember.firstName} ${_memberProvider.currentMember.lastName}",
-                              padding: EdgeInsets.only(left: 84, bottom: 44),
-                            ),
-                            background: Stack(
-                              alignment: Alignment.bottomLeft,
-                              fit: StackFit.expand,
-                              children: <Widget>[
-                                CachedNetworkImage(
-                                  placeholder: (context, url) => Center(
-                                    child: SizedBox(
-                                      child: CircularProgressIndicator(),
-                                      height: 20.0,
-                                      width: 20.0,
-                                    ),
-                                  ),
-                                  imageUrl: 'https://images.freeimages.com/images/small-previews/e71/frog-1371919.jpg',
-                                  fit: BoxFit.fitWidth,
-                                ),
-                                DecoratedBox(
-                                  decoration: BoxDecoration(
-                                    gradient: LinearGradient(
-                                      begin: Alignment(0.0, 1.0),
-                                      end: Alignment(0.0, -1.0),
-                                      colors: <Color>[Colors.black.withOpacity(0.4), Colors.transparent],
-                                    ),
+        child: LoadingContent(
+            loadingStatus: _memberDetailProvider.loadingStatus,
+            emptyText: AppString.contentNotLoaded,
+            child: CustomScrollView(
+              controller: _scrollController,
+              slivers: <Widget>[
+                SliverAppBar(
+                  pinned: true,
+                  expandedHeight: _expandedHeight,
+                  title: _showTitle
+                      ? Text(
+                    _memberDetailProvider.currentMember.firstName +
+                              ' ' +
+                              _memberDetailProvider.currentMember.lastName,
+                          overflow: TextOverflow.ellipsis,
+                        )
+                      : null,
+                  flexibleSpace: _showTitle
+                      ? null
+                      : FlexibleSpaceBar(
+                          title: FlexibleTitle(
+                            text:
+                                "${_memberDetailProvider.currentMember.firstName} ${_memberDetailProvider.currentMember.lastName}",
+                            padding: EdgeInsets.only(left: 84, bottom: 44),
+                          ),
+                          background: Stack(
+                            alignment: Alignment.bottomLeft,
+                            fit: StackFit.expand,
+                            children: <Widget>[
+                              CachedNetworkImage(
+                                placeholder: (context, url) => Center(
+                                  child: SizedBox(
+                                    child: CircularProgressIndicator(),
+                                    height: 20.0,
+                                    width: 20.0,
                                   ),
                                 ),
-                                Positioned(
-                                  bottom: 15,
-                                  left: 15,
-                                  child: Container(
-                                    decoration: ShapeDecoration(shape: CircleBorder(), color: Colors.white),
-                                    padding: EdgeInsets.all(3.0),
-                                    child: _memberProvider.currentMember.avatarUrl != null &&
-                                            _memberProvider.currentMember.avatarUrl.length > 0
-                                        ? CircleAvatar(
-                                            radius: 50,
-                                            backgroundImage: NetworkImage(
-                                                "$SERVER_ROOT_PATH$SERVER_AVATAR_FOLDER${_memberProvider.currentMember.avatarUrl}"),
-                                          )
-                                        : CircleAvatar(
-                                            radius: 50,
-                                            backgroundColor: Colors.blue[100],
-                                            child: ShaderMask(
-                                              blendMode: BlendMode.srcATop,
-                                              shaderCallback: (bounds) => LinearGradient(
-                                                begin: const FractionalOffset(0.0, 0.0),
-                                                end: const FractionalOffset(0.0, 1.0),
-                                                stops: [0.0, 1.0],
-                                                colors: [Colors.red[700], Colors.blue[700]],
-                                              ).createShader(bounds),
-                                              child: Icon(CustomIcons.pilot, size: 75),
-                                            ),
+                                imageUrl: 'https://images.freeimages.com/images/small-previews/e71/frog-1371919.jpg',
+                                fit: BoxFit.fitWidth,
+                              ),
+                              DecoratedBox(
+                                decoration: BoxDecoration(
+                                  gradient: LinearGradient(
+                                    begin: Alignment(0.0, 1.0),
+                                    end: Alignment(0.0, -1.0),
+                                    colors: <Color>[Colors.black.withOpacity(0.4), Colors.transparent],
+                                  ),
+                                ),
+                              ),
+                              Positioned(
+                                bottom: 15,
+                                left: 15,
+                                child: Container(
+                                  decoration: ShapeDecoration(shape: CircleBorder(), color: Colors.white),
+                                  padding: EdgeInsets.all(3.0),
+                                  child: _memberDetailProvider.currentMember.avatarUrl != null &&
+                                          _memberDetailProvider.currentMember.avatarUrl.length > 0
+                                      ? CircleAvatar(
+                                          radius: 50,
+                                          backgroundImage: NetworkImage(
+                                              "$SERVER_AVATAR_FOLDER${_memberDetailProvider.currentMember.avatarUrl}"),
+                                        )
+                                      : CircleAvatar(
+                                          radius: 50,
+                                          backgroundColor: Colors.blue[100],
+                                          child: ShaderMask(
+                                            blendMode: BlendMode.srcATop,
+                                            shaderCallback: (bounds) => LinearGradient(
+                                              begin: const FractionalOffset(0.0, 0.0),
+                                              end: const FractionalOffset(0.0, 1.0),
+                                              stops: [0.0, 1.0],
+                                              colors: [Colors.red[700], Colors.blue[700]],
+                                            ).createShader(bounds),
+                                            child: Icon(CustomIcons.pilot, size: 75),
                                           ),
-                                  ),
+                                        ),
                                 ),
-                              ],
-                            ),
+                              ),
+                            ],
                           ),
-                    actions: <Widget>[
-                      IconButton(
-                        icon: const Icon(Icons.edit),
-                        onPressed: () => _navigateToEditMemberScreen(context, _memberProvider.currentMember),
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.delete_forever),
-                        onPressed: () => _showConfirmation(context, AppString.memberDeletionAreYouSure),
-                      )
-                    ],
-                  ),
-                  SliverPadding(
-                    padding: EdgeInsets.all(8.0),
-                    sliver: SliverList(
-                      delegate: SliverChildListDelegate(
-                        <Widget>[
-                          ConstrainedBox(
-                            // set minimum height : screen height - app bar height - status bar height - padding
-                            constraints: BoxConstraints(
-                                minHeight: MediaQuery.of(context).size.height -
-                                    kToolbarHeight -
-                                    MediaQuery.of(context).padding.top -
-                                    16),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.stretch,
-                              children: <Widget>[
-                                Row(
-                                  children: <Widget>[
-                                    Icon(Icons.person, size: 16, color: Colors.black.withOpacity(0.8)),
-                                    SizedBox(width: 5.0),
-                                    Text(
-                                      AppString.personalInformation,
-                                      textScaleFactor: 1.2,
-                                      style:
-                                          TextStyle(fontWeight: FontWeight.bold, color: Colors.black.withOpacity(0.8)),
-                                    ),
-                                  ],
-                                ),
-                                SizedBox(height: 10),
-                                Container(
-                                  padding: EdgeInsets.all(8.0),
-                                  decoration: CustomDecorations.cardLight,
-                                  child: Column(
-                                    children: <Widget>[
-                                      _motoInfo,
-                                      Divider(color: Colors.black.withOpacity(0.8), height: 5),
-                                      _mobileInfo,
-                                      Divider(color: Colors.black.withOpacity(0.8), height: 5),
-                                      _emailInfo,
-                                    ],
+                        ),
+                  actions: <Widget>[
+                    IconButton(
+                      icon: const Icon(Icons.edit),
+                      onPressed: () => _navigateToEditMemberScreen(context, _memberDetailProvider.currentMember),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.delete_forever),
+                      onPressed: () => _showDeleteMemberConfirmation(context, AppString.memberDeletionAreYouSure),
+                    )
+                  ],
+                ),
+                SliverPadding(
+                  padding: EdgeInsets.all(8.0),
+                  sliver: SliverList(
+                    delegate: SliverChildListDelegate(
+                      <Widget>[
+                        ConstrainedBox(
+                          // set minimum height : screen height - app bar height - status bar height - padding
+                          constraints: BoxConstraints(
+                              minHeight: MediaQuery.of(context).size.height -
+                                  kToolbarHeight -
+                                  MediaQuery.of(context).padding.top -
+                                  16),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: <Widget>[
+                              Row(
+                                children: <Widget>[
+                                  Icon(Icons.person, size: 16, color: Colors.black.withOpacity(0.8)),
+                                  SizedBox(width: 5.0),
+                                  Text(
+                                    AppString.personalInformation,
+                                    textScaleFactor: 1.2,
+                                    style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black.withOpacity(0.8)),
                                   ),
-                                ),
-                                SizedBox(height: 15),
-                                Row(
+                                ],
+                              ),
+                              SizedBox(height: 10),
+                              Container(
+                                padding: EdgeInsets.all(8.0),
+                                decoration: CustomDecorations.cardLight,
+                                child: Column(
                                   children: <Widget>[
-                                    Icon(Icons.event, size: 16, color: Colors.black.withOpacity(0.8)),
-                                    SizedBox(width: 5.0),
-                                    Text(
-                                      AppString.rides,
-                                      textScaleFactor: 1.2,
-                                      style:
-                                          TextStyle(fontWeight: FontWeight.bold, color: Colors.black.withOpacity(0.8)),
-                                    ),
+                                    _motoInfo,
+                                    Divider(color: Colors.black.withOpacity(0.8), height: 5),
+                                    _mobileInfo,
+                                    Divider(color: Colors.black.withOpacity(0.8), height: 5),
+                                    _emailInfo,
                                   ],
                                 ),
-                                SizedBox(height: 10),
-                                //_eventsTimeline(_eventProvider),
-                                SizedBox(height: 10),
-                                Row(
-                                  children: <Widget>[
-                                    Icon(Icons.timer, size: 16, color: Colors.black.withOpacity(0.8)),
-                                    SizedBox(width: 5.0),
-                                    Text(
-                                      AppString.chronos,
-                                      textScaleFactor: 1.2,
-                                      style:
-                                          TextStyle(fontWeight: FontWeight.bold, color: Colors.black.withOpacity(0.8)),
-                                    ),
-                                  ],
-                                ),
-                                SizedBox(height: 10),
-                                _recordsTable(_recordProvider),
-                              ],
-                            ),
+                              ),
+                              SizedBox(height: 15),
+                              Row(
+                                children: <Widget>[
+                                  Icon(Icons.event, size: 16, color: Colors.black.withOpacity(0.8)),
+                                  SizedBox(width: 5.0),
+                                  Text(
+                                    AppString.rides,
+                                    textScaleFactor: 1.2,
+                                    style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black.withOpacity(0.8)),
+                                  ),
+                                ],
+                              ),
+                              SizedBox(height: 10),
+                              _eventsTimeline(_memberDetailProvider),
+                              SizedBox(height: 10),
+                              Row(
+                                children: <Widget>[
+                                  Icon(Icons.timer, size: 16, color: Colors.black.withOpacity(0.8)),
+                                  SizedBox(width: 5.0),
+                                  Text(
+                                    AppString.chronos,
+                                    textScaleFactor: 1.2,
+                                    style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black.withOpacity(0.8)),
+                                  ),
+                                ],
+                              ),
+                              SizedBox(height: 10),
+                              //_recordsTable(_recordProvider),
+                            ],
                           ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
                   ),
-                ],
-              )
-            : Text("Member not found"),
+                ),
+              ],
+            )),
       ),
     );
   }

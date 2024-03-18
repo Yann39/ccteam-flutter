@@ -17,21 +17,21 @@
  * along with Chachatte Team. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import 'dart:async';
 import 'dart:collection';
 
-import 'package:chachatte_team/models/news.dart';
+import 'package:chachatte_team/models/member.dart';
 import 'package:chachatte_team/providers/login_provider.dart';
 import 'package:chachatte_team/providers/message_provider.dart';
-import 'package:chachatte_team/services/news_service.dart';
+import 'package:chachatte_team/services/members_service.dart';
 import 'package:chachatte_team/utils/app_utils.dart';
 import 'package:chachatte_team/utils/enums.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/widgets.dart';
 import 'package:logging/logging.dart';
 
-class NewsListProvider extends ChangeNotifier {
-  final Logger _log = new Logger('NewsListProvider');
-  final NewsService _newsService = new NewsService();
+class MemberListProvider extends ChangeNotifier {
+  final Logger _log = new Logger('MemberListProvider');
+  final MembersService _membersService = new MembersService();
 
   // message provider that can be set from the proxy provider
   MessageProvider _messageProvider;
@@ -39,19 +39,19 @@ class NewsListProvider extends ChangeNotifier {
   // login provider that can be set from the proxy provider
   LoginProvider _loginProvider;
 
-  // current news list
-  List<News> _newsList = [];
+  // current members list
+  List<Member> _memberList = [];
 
   // current loading status
   LoadingStatus _loadingStatus = LoadingStatus.notLoaded;
 
   // constructor
-  NewsListProvider() {
-    // as soon as it is instantiated, we fetch the news list
-    fetchNewsList();
+  MemberListProvider() {
+    // as soon as it is instantiated, we fetch members
+    fetchMemberList(null);
   }
 
-  UnmodifiableListView<News> get newsList => UnmodifiableListView(_newsList);
+  UnmodifiableListView<Member> get memberList => UnmodifiableListView(_memberList);
 
   LoadingStatus get loadingStatus => _loadingStatus;
 
@@ -67,41 +67,41 @@ class NewsListProvider extends ChangeNotifier {
     _notifyListeners();
   }
 
-  /// Add the specified [news] to the current news list.
-  void addNewsInList(News news) {
-    _newsList.add(news);
+  /// Add the specified [member] to the current member list.
+  void addMemberInList(Member member) {
+    _memberList.add(member);
 
-    // re-sort the list by date
-    _newsList.sort((a, b) => a.newsDate.compareTo(b.newsDate));
+    // re-sort the list by first name
+    _memberList.sort((a, b) => a.firstName.compareTo(b.firstName));
 
     _notifyListeners();
   }
 
-  /// Update the specified [news] in the current news list.
-  void updateNewsInList(News news) {
-    final int index = _newsList.indexWhere((n) => n.id == news.id);
+  /// Update the specified [member] in the current member list.
+  void updateMemberInList(Member member) {
+    final int index = _memberList.indexWhere((m) => m.id == member.id);
     if (index != -1) {
-      _newsList[index] = news;
+      _memberList[index] = member;
       _notifyListeners();
     }
   }
 
-  /// Remove the specified [news] from the current news list.
-  void removeNewsFromList(News news) {
-    _newsList.removeWhere((n) => n.id == news.id);
+  /// Remove the specified [member] from the current members list.
+  void removeMemberFromList(Member member) {
+    _memberList.removeWhere((n) => n.id == member.id);
     _notifyListeners();
   }
 
-  /// Fetch the list of all news.
-  Future<void> fetchNewsList() async {
+  /// Fetch the list of all members according to the specified [text] filter.
+  void fetchMemberList(String text) async {
     _updateLoadingStatus(LoadingStatus.loading);
-    await _newsService.fetchNews().then((value) async {
-      _log.fine("News list of ${value.length} news retrieved successfully");
-      _newsList = value;
+    await _membersService.fetchMembers(text).then((value) async {
+      _log.fine("Members list of ${value.length} members retrieved successfully");
+      _memberList = value;
       _updateLoadingStatus(LoadingStatus.loaded);
     }, onError: (error) {
-      _log.warning("Error when retrieving news list ($error)");
-      _newsList = [];
+      _log.warning("Error when retrieving members list ($error)");
+      _memberList = [];
       AppUtils.handleServiceException(error, _messageProvider, _loginProvider);
       _updateLoadingStatus(LoadingStatus.notLoaded);
     });
@@ -109,13 +109,14 @@ class NewsListProvider extends ChangeNotifier {
 
   /// Notify all the registered listeners of this provider.
   void _notifyListeners() {
-    _log.info("Notifying listeners of NewsListProvider");
+    _log.info("Notifying listeners of MemberListProvider");
     notifyListeners();
   }
 
-  /// Update the current loading [status].
+  /// Update the current loading status
   void _updateLoadingStatus(LoadingStatus status) {
     _loadingStatus = status;
+    _log.info("Notifying listeners of MemberListProvider");
     _notifyListeners();
   }
 }

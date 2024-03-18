@@ -41,7 +41,9 @@ class NewsDetail extends StatelessWidget {
   /// Navigate to the news creation form screen to edit the specified [news].
   _navigateToEditNewsScreen(BuildContext context, News news) async {
     // set the news to be edited
-    Provider.of<NewsCreationProvider>(context, listen: false).setNewsToEdit(news);
+    final News newNews = new News();
+    //todo need deep copy here else the reference will be updated even on error
+    Provider.of<NewsCreationProvider>(context, listen: false).setNewsToEdit(News.clone(news));
 
     // navigate to the news creation form screen
     Navigator.pushNamed(context, '/addEditNews');

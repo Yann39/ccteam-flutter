@@ -53,7 +53,7 @@ class EventCard extends StatelessWidget {
                     children: <Widget>[
                       ClipRRect(
                         borderRadius: BorderRadius.all(Radius.circular(8.0)),
-                        child: Image.network(
+                        child: Image.asset(
                           TrackUtils.trackCoverImageUrlFromName(event.track.name),
                           width: 50,
                           //fit: BoxFit.fill,

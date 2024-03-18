@@ -17,6 +17,7 @@
  * along with Chachatte Team. If not, see <http://www.gnu.org/licenses/>.
  */
 
+import 'package:chachatte_team/models/event_member.dart';
 import 'package:intl/intl.dart';
 
 /// Class representing a member
@@ -36,6 +37,7 @@ class Member {
   String otp;
   DateTime otpDate;
   DateTime registrationDate;
+  List<EventMember> eventMembers;
   DateTime createdOn;
   DateTime modifiedOn;
 
@@ -48,12 +50,13 @@ class Member {
     this.phone,
     this.avatarUrl,
     this.bike,
-    this.active,
-    this.verified,
-    this.admin,
+    this.active = false,
+    this.verified = false,
+    this.admin = false,
     this.otp,
     this.otpDate,
     this.registrationDate,
+    this.eventMembers,
     this.createdOn,
     this.modifiedOn,
   });
@@ -75,6 +78,7 @@ class Member {
       otp: ${this.otp},
       otpDate: ${this.otpDate?.toIso8601String()},
       registrationDate: ${this.registrationDate?.toIso8601String()},
+      eventMembers: ${this.eventMembers?.map((eventMember) => eventMember.toString())},
       createdOn: ${this.createdOn?.toIso8601String()},
       modifiedOn: ${this.modifiedOn?.toIso8601String()},
     }""";
@@ -98,12 +102,15 @@ class Member {
         registrationDate = json['registrationDate'] != null
             ? DateFormat("yyyy-MM-dd HH:mm:ss", "fr").parseStrict(json['registrationDate'])
             : null,
+        eventMembers = json['eventMembers'] != null
+            ? (json['eventMembers'] as List).map((i) => EventMember.fromJson(i)).toList()
+            : [],
         createdOn =
             json['created_on'] != null ? DateFormat("yyyy-MM-dd HH:mm:ss", "fr").parseStrict(json['createdOn']) : null,
         modifiedOn =
             json['modifiedOn'] != null ? DateFormat("yyyy-MM-dd HH:mm:ss", "fr").parseStrict(json['modifiedOn']) : null;
 
-  /// Convert [member] object to the corresponding JSON map
+  /// Convert [Member] object to the corresponding JSON map
   Map<String, dynamic> toJson() => {
         "id": id,
         "firstName": firstName,
@@ -119,6 +126,7 @@ class Member {
         "otp": otp,
         "otpDate": otpDate?.toIso8601String(),
         "registrationDate": registrationDate?.toIso8601String(),
+        "eventMembers": eventMembers?.map((i) => i.toJson()),
         "createdOn": createdOn?.toIso8601String(),
         "modifiedOn": modifiedOn?.toIso8601String(),
       };

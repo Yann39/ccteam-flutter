@@ -18,8 +18,9 @@
  */
 
 import 'package:chachatte_team/models/member.dart';
-import 'package:chachatte_team/providers/member_provider.dart';
-import 'package:chachatte_team/providers/record_provider.dart';
+import 'package:chachatte_team/providers/member_creation_provider.dart';
+import 'package:chachatte_team/providers/member_detail_provider.dart';
+import 'package:chachatte_team/providers/member_list_provider.dart';
 import 'package:chachatte_team/ui/main/main_action_menu.dart';
 import 'package:chachatte_team/ui/main/main_drawer.dart';
 import 'package:chachatte_team/utils/constants.dart';
@@ -30,48 +31,27 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 /// We need stateful widget to keep search field value
-class Team extends StatefulWidget {
-  @override
-  State<StatefulWidget> createState() {
-    return _TeamState();
-  }
-}
+class MemberList extends StatelessWidget {
+  /// Navigate to the member creation form screen to create a new member.
+  _navigateToAddMemberScreen(BuildContext context) async {
+    // set a new member to be created
+    Provider.of<MemberCreationProvider>(context, listen: false).setMemberToEdit(new Member());
 
-class _TeamState extends State<Team> {
-  /// Method that launches the Add Member screen and awaits the result from Navigator.pop
-  void _navigateToAddMemberScreen(BuildContext context) async {
-    // Navigator.push returns a Future which will complete after we call Navigator.pop on the target screen
-    final _result = await Navigator.pushNamed(context, '/addEditMember');
-
-    // after the target screen returns a result, hide any previous snack bars and show the result
-    if (_result != null) {
-      ScaffoldMessenger.of(context)
-        ..removeCurrentSnackBar()
-        ..showSnackBar(SnackBar(content: Text("$_result")));
-    }
+    // navigate to the member creation form screen
+    Navigator.pushNamed(context, '/addEditMember');
   }
 
-  /// Method that launches the Member detail screen and awaits the result from Navigator.pop
+  /// Navigate to the detail screen of the specified [member].
   void _navigateToMemberDetailScreen(BuildContext context, Member member) async {
-
-    // fetch the current member
-    Provider.of<MemberProvider>(context, listen: false).fetchCurrentMember(member);
-    Provider.of<RecordProvider>(context, listen: false).fetchMemberRecords(member.id);
-    //Provider.of<EventProvider>(context, listen: false).fetchMemberEvents(member.id);
-
-    // Navigator.push returns a Future that will complete after we call Navigator.pop on the target screen
-    final _result = await Navigator.pushNamed(context, '/memberDetail');
-
-    // after the target screen returns a result, hide any previous snack bars and show the result
-    if (_result != null) {
-      ScaffoldMessenger.of(context)
-        ..removeCurrentSnackBar()
-        ..showSnackBar(SnackBar(content: Text("$_result")));
-    }
+    // fetch the member to get complete data
+    Provider.of<MemberDetailProvider>(context, listen: false).fetchMember(member).then((value) => {
+          // navigate to member detail screen
+          Navigator.pushNamed(context, '/memberDetail')
+        });
   }
 
   /// Build the search field
-  TextField _buildSearchField(MemberProvider _memberProvider) {
+  TextField _buildSearchField(MemberListProvider _memberListProvider) {
     return TextField(
       decoration: InputDecoration(
         filled: true,
@@ -81,13 +61,13 @@ class _TeamState extends State<Team> {
       ),
       maxLines: 1,
       onChanged: (String text) {
-        _memberProvider.fetchMembers(text);
+        _memberListProvider.fetchMemberList(text);
       },
     );
   }
 
   Widget build(BuildContext context) {
-    final MemberProvider _memberProvider = Provider.of<MemberProvider>(context, listen: true);
+    final MemberListProvider _memberListProvider = Provider.of<MemberListProvider>(context, listen: true);
 
     return Scaffold(
       appBar: AppBar(
@@ -97,34 +77,34 @@ class _TeamState extends State<Team> {
       drawer: MainDrawer(),
       body: Column(
         children: <Widget>[
-          _buildSearchField(_memberProvider),
+          _buildSearchField(_memberListProvider),
           Expanded(
             child: Container(
               decoration: CustomDecorations.mainContent,
               child: LoadingContent(
-                loadingStatus: _memberProvider.loadingStatus,
+                loadingStatus: _memberListProvider.loadingStatus,
                 emptyText: AppString.membersNotFound,
                 child: ListView.separated(
                   separatorBuilder: (context, index) => Divider(
                     color: Colors.black,
                     height: 4,
                   ),
-                  itemCount: _memberProvider.members.length,
+                  itemCount: _memberListProvider.memberList.length,
                   itemBuilder: (context, index) {
                     return Material(
                       child: InkWell(
                         child: ListTile(
                           title: Text(
-                              "${_memberProvider.members[index].firstName} ${_memberProvider.members[index].lastName}"),
-                          subtitle: Text(_memberProvider.members[index].bike ?? AppString.notDefined),
-                          leading: _memberProvider.members[index].avatarUrl != null &&
-                                  _memberProvider.members[index].avatarUrl.length > 0
+                              "${_memberListProvider.memberList[index].firstName} ${_memberListProvider.memberList[index].lastName}"),
+                          subtitle: Text(_memberListProvider.memberList[index].bike ?? AppString.notDefined),
+                          leading: _memberListProvider.memberList[index].avatarUrl != null &&
+                                  _memberListProvider.memberList[index].avatarUrl.length > 0
                               ? CircleAvatar(
                                   backgroundImage: NetworkImage(
-                                      "$SERVER_ROOT_PATH$SERVER_AVATAR_FOLDER${_memberProvider.members[index].avatarUrl}"))
-                              : CircleAvatar(child: Text(_memberProvider.members[index].firstName[0])),
+                                      "$SERVER_AVATAR_FOLDER${_memberListProvider.memberList[index].avatarUrl}"))
+                              : CircleAvatar(child: Text(_memberListProvider.memberList[index].firstName[0])),
                         ),
-                        onTap: () => _navigateToMemberDetailScreen(context, _memberProvider.members[index]),
+                        onTap: () => _navigateToMemberDetailScreen(context, _memberListProvider.memberList[index]),
                       ),
                       color: Colors.transparent,
                     );

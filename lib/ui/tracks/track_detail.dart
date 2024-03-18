@@ -197,15 +197,8 @@ class _TrackDetailState extends State<TrackDetail> {
                     alignment: Alignment.bottomLeft,
                     fit: StackFit.expand,
                     children: <Widget>[
-                      CachedNetworkImage(
-                        placeholder: (context, url) => Center(
-                          child: SizedBox(
-                            child: CircularProgressIndicator(),
-                            height: 20.0,
-                            width: 20.0,
-                          ),
-                        ),
-                        imageUrl: TrackUtils.trackCoverImageUrlFromName(widget.track.name),
+                      Image.asset(
+                        TrackUtils.trackCoverImageUrlFromName(widget.track.name),
                         fit: BoxFit.fitWidth,
                       ),
                       DecoratedBox(

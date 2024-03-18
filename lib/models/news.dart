@@ -47,6 +47,18 @@ class News {
     this.modifiedBy,
   });
 
+  News.clone(News news)
+      : this.id = news.id,
+        this.title = news.title,
+        this.catchLine = news.catchLine,
+        this.content = news.content,
+        this.newsDate = news.newsDate,
+        this.likedNews = List.of(news.likedNews),
+        this.createdOn = news.createdOn,
+        this.createdBy = news.createdBy,
+        this.modifiedOn = news.modifiedOn,
+        this.modifiedBy = news.modifiedBy;
+
   @override
   String toString() {
     return """{

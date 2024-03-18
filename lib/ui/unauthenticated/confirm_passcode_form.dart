@@ -17,14 +17,14 @@
  * along with Chachatte Team. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import 'dart:ui';
-
 import 'package:chachatte_team/providers/login_provider.dart';
 import 'package:chachatte_team/utils/enums.dart';
 import 'package:chachatte_team/utils/strings.dart';
 import 'package:flutter/material.dart';
 import 'package:logging/logging.dart';
 import 'package:provider/provider.dart';
+
+import '../../widgets/passcode.dart';
 
 class ConfirmPasscodeForm extends StatefulWidget {
   @override
@@ -81,7 +81,7 @@ class _ConfirmPasscodeFormState extends State<ConfirmPasscodeForm> {
               borderRadius: BorderRadius.circular(4),
             ),
             padding: EdgeInsets.fromLTRB(16.0, 12.0, 16.0, 12.0),
-            primary: Colors.blue[700],
+            backgroundColor: Colors.blue[700],
           ),
           onPressed: () {
             _doCompleteRegistration(context);
@@ -137,9 +137,7 @@ class _ConfirmPasscodeFormState extends State<ConfirmPasscodeForm> {
             textAlign: TextAlign.center,
           ),
           SizedBox(height: 32.0),
-          //_passcodeIndicator(_loginProvider),
-          SizedBox(height: 24.0),
-          //_passcodeField,
+          PasscodeWidget(),
           SizedBox(height: 32.0),
           _passcodeCreateButton,
           _backButton,

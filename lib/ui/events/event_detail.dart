@@ -22,6 +22,7 @@ import 'package:chachatte_team/models/member.dart';
 import 'package:chachatte_team/providers/event_creation_provider.dart';
 import 'package:chachatte_team/providers/event_detail_provider.dart';
 import 'package:chachatte_team/providers/event_list_provider.dart';
+import 'package:chachatte_team/providers/member_detail_provider.dart';
 import 'package:chachatte_team/utils/constants.dart';
 import 'package:chachatte_team/utils/custom_decorations.dart';
 import 'package:chachatte_team/utils/custom_icons.dart';
@@ -45,20 +46,16 @@ class EventDetail extends StatelessWidget {
     Navigator.pushNamed(context, '/addEditEvent');
   }
 
-  /// Method that launches the Member detail screen and awaits the result from Navigator.pop
+  /// Navigate to the detail screen of the specified [member].
   void _navigateToMemberDetailScreen(BuildContext context, Member member) async {
-    // Navigator.push returns a Future that will complete after we call Navigator.pop on the target screen
-    final _result = await Navigator.pushNamed(context, '/memberDetail', arguments: member);
-
-    // after the target screen returns a result, hide any previous snack bars and show the result
-    if (_result != null) {
-      ScaffoldMessenger.of(context)
-        ..removeCurrentSnackBar()
-        ..showSnackBar(SnackBar(content: Text("$_result")));
-    }
+    // fetch the member to get complete data
+    Provider.of<MemberDetailProvider>(context, listen: false).fetchMember(member).then((value) => {
+          // navigate to member detail screen
+          Navigator.pushNamed(context, '/memberDetail')
+        });
   }
 
-  /// Display a confirmation popup when trying to delete a event.
+  /// Display a confirmation popup when trying to delete an event.
   void _showDeleteEventConfirmation(BuildContext context, String value) {
     showDialog(
       context: context,
@@ -97,8 +94,6 @@ class EventDetail extends StatelessWidget {
     _log.info("Building Event detail...");
 
     final EventDetailProvider _eventDetailProvider = Provider.of<EventDetailProvider>(context, listen: true);
-
-    print("${_eventDetailProvider.currentEvent.participants.length}");
 
     return Scaffold(
       appBar: AppBar(
@@ -355,13 +350,16 @@ class EventDetail extends StatelessWidget {
                                             padding: EdgeInsets.all(2.0),
                                             margin: EdgeInsets.symmetric(horizontal: 12.0),
                                             decoration: ShapeDecoration(shape: CircleBorder(), color: Colors.white70),
-                                            child: _eventDetailProvider.currentEvent.participants[index].member.avatarUrl != null &&
-                                                    _eventDetailProvider.currentEvent.participants[index].member.avatarUrl.length >
+                                            child: _eventDetailProvider
+                                                            .currentEvent.participants[index].member.avatarUrl !=
+                                                        null &&
+                                                    _eventDetailProvider
+                                                            .currentEvent.participants[index].member.avatarUrl.length >
                                                         0
                                                 ? CircleAvatar(
                                                     backgroundColor: Colors.blue[100],
                                                     backgroundImage: NetworkImage(
-                                                        "$SERVER_ROOT_PATH$SERVER_AVATAR_FOLDER${_eventDetailProvider.currentEvent.participants[index].member.avatarUrl}"),
+                                                        "$SERVER_AVATAR_FOLDER${_eventDetailProvider.currentEvent.participants[index].member.avatarUrl}"),
                                                   )
                                                 : CircleAvatar(
                                                     backgroundColor: Colors.blue[100],

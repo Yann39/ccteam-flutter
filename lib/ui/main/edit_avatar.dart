@@ -143,7 +143,7 @@ class EditAvatar extends StatelessWidget {
                                     alignment: Alignment.topCenter,
                                     fit: BoxFit.contain,
                                     image: NetworkImage(
-                                        "$SERVER_ROOT_PATH$SERVER_AVATAR_FOLDER${member.avatarUrl}"),
+                                        "$SERVER_AVATAR_FOLDER${member.avatarUrl}"),
                                   )
                                 : ShaderMask(
                                     blendMode: BlendMode.srcATop,
