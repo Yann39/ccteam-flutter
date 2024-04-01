@@ -34,10 +34,10 @@ class EventListProvider extends ChangeNotifier {
   final EventsService _eventsService = new EventsService();
 
   // message provider that can be set from the proxy provider
-  MessageProvider _messageProvider;
+  late MessageProvider _messageProvider;
 
   // login provider that can be set from the proxy provider
-  LoginProvider _loginProvider;
+  late LoginProvider _loginProvider;
 
   // list of all events
   List<Event> _allEvents = [];
@@ -49,7 +49,7 @@ class EventListProvider extends ChangeNotifier {
   List<Event> _dayEvents = [];
 
   // current selected date in the calendar selector
-  DateTime _selectedDate;
+  DateTime _selectedDate = DateTime.now();
 
   // index of the selected top filter, to display events for current year or per date
   int _eventModeSelectorIndex = 0;
@@ -94,7 +94,7 @@ class EventListProvider extends ChangeNotifier {
   }
 
   /// Change the [index] of the selected top filter, to display events for the current year or per date.
-  void changeEventModeSelectorIndex(int index) {
+  void changeEventModeSelectorIndex(int? index) {
     _eventModeSelectorIndex = index ?? 0;
     _notifyListeners();
   }
@@ -104,7 +104,7 @@ class EventListProvider extends ChangeNotifier {
     _allEvents.add(event);
 
     // re-sort the list by date
-    _allEvents.sort((a, b) => a.startDate.compareTo(b.startDate));
+    _allEvents.sort((a, b) => a.startDate!.compareTo(b.startDate!));
 
     _notifyListeners();
   }

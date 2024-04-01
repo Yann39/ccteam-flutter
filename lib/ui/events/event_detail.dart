@@ -34,6 +34,8 @@ import 'package:flutter/material.dart';
 import 'package:logging/logging.dart';
 import 'package:provider/provider.dart';
 
+import '../../providers/record_list_provider.dart';
+
 class EventDetail extends StatelessWidget {
   final Logger _log = new Logger('EventDetail');
 
@@ -48,6 +50,8 @@ class EventDetail extends StatelessWidget {
 
   /// Navigate to the detail screen of the specified [member].
   void _navigateToMemberDetailScreen(BuildContext context, Member member) async {
+    // fetch member records
+    Provider.of<RecordListProvider>(context, listen: false).fetchMemberRecords(member.id!);
     // fetch the member to get complete data
     Provider.of<MemberDetailProvider>(context, listen: false).fetchMember(member).then((value) => {
           // navigate to member detail screen
@@ -132,7 +136,7 @@ class EventDetail extends StatelessWidget {
                     decoration: BoxDecoration(
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.blue[300],
+                          color: Colors.blue[300]!,
                           spreadRadius: 1,
                           blurRadius: 2,
                         ),
@@ -143,14 +147,14 @@ class EventDetail extends StatelessWidget {
                         colorFilter: ColorFilter.mode(Colors.black.withOpacity(0.05), BlendMode.dstATop),
                       ),
                       gradient: LinearGradient(
-                        colors: [Colors.blue[300], Colors.blue[500]],
+                        colors: [Colors.blue[300]!, Colors.blue[500]!],
                         begin: Alignment.topCenter,
                         end: Alignment.bottomCenter,
                       ),
                     ),
                     child: Text(
-                      _eventDetailProvider.currentEvent?.title ?? "",
-                      textScaleFactor: 2,
+                      _eventDetailProvider.currentEvent.title ?? "",
+                      textScaler: TextScaler.linear(2),
                       style: TextStyle(color: Colors.white),
                       maxLines: 3,
                       overflow: TextOverflow.ellipsis,
@@ -190,7 +194,7 @@ class EventDetail extends StatelessWidget {
                                       color: Colors.blue[700],
                                     ),
                                     Text(
-                                      _eventDetailProvider.currentEvent?.fullDate ?? "",
+                                      _eventDetailProvider.currentEvent.fullDate,
                                       textAlign: TextAlign.center,
                                       maxLines: 2,
                                       overflow: TextOverflow.ellipsis,
@@ -226,7 +230,9 @@ class EventDetail extends StatelessWidget {
                                       color: Colors.purple[700],
                                     ),
                                     Text(
-                                      StringUtils.formatPrice(_eventDetailProvider.currentEvent?.price) ?? "",
+                                      _eventDetailProvider.currentEvent.price != null
+                                          ? StringUtils.formatPrice(_eventDetailProvider.currentEvent.price!)
+                                          : "",
                                       textAlign: TextAlign.center,
                                       maxLines: 2,
                                       overflow: TextOverflow.ellipsis,
@@ -256,10 +262,12 @@ class EventDetail extends StatelessWidget {
                                 child: Column(
                                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                   children: <Widget>[
-                                    Icon(TrackUtils.trackIconFromName(_eventDetailProvider.currentEvent?.track?.name),
+                                    Icon(TrackUtils.trackIconFromName(_eventDetailProvider.currentEvent.track?.name),
                                         size: 38, color: Colors.red[700]),
                                     Text(
-                                      _eventDetailProvider.currentEvent?.track?.name ?? "",
+                                      _eventDetailProvider.currentEvent.track != null
+                                          ? _eventDetailProvider.currentEvent.track!.name ?? ""
+                                          : "",
                                       textAlign: TextAlign.center,
                                       maxLines: 2,
                                       overflow: TextOverflow.ellipsis,
@@ -291,7 +299,7 @@ class EventDetail extends StatelessWidget {
                                   children: <Widget>[
                                     Icon(Icons.perm_contact_calendar, size: 38, color: Colors.teal[700]),
                                     Text(
-                                      _eventDetailProvider.currentEvent?.organizer ?? "",
+                                      _eventDetailProvider.currentEvent.organizer ?? "",
                                       textAlign: TextAlign.center,
                                       maxLines: 2,
                                       overflow: TextOverflow.ellipsis,
@@ -310,13 +318,13 @@ class EventDetail extends StatelessWidget {
                             SizedBox(width: 5.0),
                             Text(
                               AppString.description,
-                              textScaleFactor: 1.2,
+                              textScaler: TextScaler.linear(1.2),
                               style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black.withOpacity(0.64)),
                             ),
                           ],
                         ),
                         SizedBox(height: 10),
-                        Text(_eventDetailProvider.currentEvent?.description ?? ""),
+                        Text(_eventDetailProvider.currentEvent.description ?? ""),
                         SizedBox(height: 10),
                         Divider(color: Colors.white),
                         SizedBox(height: 10),
@@ -326,24 +334,24 @@ class EventDetail extends StatelessWidget {
                             SizedBox(width: 5.0),
                             Text(
                               AppString.participants,
-                              textScaleFactor: 1.2,
+                              textScaler: TextScaler.linear(1.2),
                               style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black.withOpacity(0.64)),
                             ),
                           ],
                         ),
                         SizedBox(height: 10),
-                        (_eventDetailProvider.currentEvent?.participants?.length ?? 0) > 0
+                        (_eventDetailProvider.currentEvent.participants?.length ?? 0) > 0
                             ? SizedBox(
                                 height: 140,
                                 child: ListView.builder(
                                   scrollDirection: Axis.horizontal,
-                                  itemCount: _eventDetailProvider.currentEvent.participants.length,
+                                  itemCount: _eventDetailProvider.currentEvent.participants!.length,
                                   itemBuilder: (BuildContext context, int index) {
                                     return Column(
                                       children: <Widget>[
                                         InkWell(
                                           onTap: () => _navigateToMemberDetailScreen(
-                                              context, _eventDetailProvider.currentEvent.participants[index].member),
+                                              context, _eventDetailProvider.currentEvent.participants![index].member!),
                                           child: Container(
                                             width: 80,
                                             height: 80,
@@ -351,15 +359,15 @@ class EventDetail extends StatelessWidget {
                                             margin: EdgeInsets.symmetric(horizontal: 12.0),
                                             decoration: ShapeDecoration(shape: CircleBorder(), color: Colors.white70),
                                             child: _eventDetailProvider
-                                                            .currentEvent.participants[index].member.avatarUrl !=
+                                                            .currentEvent.participants![index].member!.avatarUrl !=
                                                         null &&
                                                     _eventDetailProvider
-                                                            .currentEvent.participants[index].member.avatarUrl.length >
-                                                        0
+                                                            .currentEvent.participants![index].member!.avatarUrl !=
+                                                        null
                                                 ? CircleAvatar(
                                                     backgroundColor: Colors.blue[100],
                                                     backgroundImage: NetworkImage(
-                                                        "$SERVER_AVATAR_FOLDER${_eventDetailProvider.currentEvent.participants[index].member.avatarUrl}"),
+                                                        "$SERVER_AVATAR_FOLDER${_eventDetailProvider.currentEvent.participants![index].member!.avatarUrl}"),
                                                   )
                                                 : CircleAvatar(
                                                     backgroundColor: Colors.blue[100],
@@ -368,7 +376,7 @@ class EventDetail extends StatelessWidget {
                                                         begin: const FractionalOffset(0.0, 0.0),
                                                         end: const FractionalOffset(0.0, 1.0),
                                                         stops: [0.0, 1.0],
-                                                        colors: [Colors.red[300], Colors.white],
+                                                        colors: [Colors.red[300]!, Colors.white],
                                                       ).createShader(bounds),
                                                       child: Icon(CustomIcons.pilot, size: 50),
                                                     ),
@@ -379,7 +387,7 @@ class EventDetail extends StatelessWidget {
                                         Container(
                                           width: 80,
                                           child: Text(
-                                            "${_eventDetailProvider.currentEvent.participants[index].member.firstName} ${_eventDetailProvider.currentEvent.participants[index].member.lastName}",
+                                            "${_eventDetailProvider.currentEvent.participants![index].member!.firstName} ${_eventDetailProvider.currentEvent.participants![index].member!.lastName}",
                                             overflow: TextOverflow.ellipsis,
                                             maxLines: 2,
                                             textAlign: TextAlign.center,

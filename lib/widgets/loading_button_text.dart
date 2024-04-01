@@ -22,7 +22,7 @@ import 'package:flutter/material.dart';
 /// A widget that display a loading indicator when the specified condition is met.
 /// It is designed to be used in buttons.
 class LoadingButtonText extends StatelessWidget {
-  const LoadingButtonText({Key key, this.text, this.loaderCondition}) : super(key: key);
+  const LoadingButtonText({Key? key, required this.text, required this.loaderCondition}) : super(key: key);
 
   final Text text;
   final bool loaderCondition;

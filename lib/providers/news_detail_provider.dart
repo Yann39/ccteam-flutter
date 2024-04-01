@@ -35,18 +35,18 @@ class NewsDetailProvider extends ChangeNotifier {
   final NewsService _newsService = new NewsService();
 
   // message provider that can be set from the proxy provider
-  MessageProvider _messageProvider;
+  late MessageProvider _messageProvider;
 
   // login provider that can be set from the proxy provider
-  LoginProvider _loginProvider;
+  late LoginProvider _loginProvider;
 
   // current news
-  News _currentNews;
+  News? _currentNews;
 
   // current loading status
   LoadingStatus _loadingStatus = LoadingStatus.notLoaded;
 
-  News get currentNews => _currentNews;
+  News? get currentNews => _currentNews;
 
   LoadingStatus get loadingStatus => _loadingStatus;
 
@@ -72,7 +72,7 @@ class NewsDetailProvider extends ChangeNotifier {
   Future<void> fetchNews(News news) async {
     _log.fine("Fetching news ${news.title}...");
     _updateStatus(LoadingStatus.loading);
-    await _newsService.getNewsById(news.id).then((value) async {
+    await _newsService.getNewsById(news.id!).then((value) async {
       _log.fine("News with ID ${news.id} retrieved successfully");
       _currentNews = value;
       _updateStatus(LoadingStatus.loaded);
@@ -87,7 +87,7 @@ class NewsDetailProvider extends ChangeNotifier {
   /// Set the specified [news] as liked by the specified [member].
   Future<void> likeNews(News news, Member member) async {
     _log.fine("Liking news ${news.title}...");
-    await _newsService.likeNews(news.id, member.id).then((value) async {
+    await _newsService.likeNews(news.id!, member.id!).then((value) async {
       _log.fine("News ${news.title} liked by user ${member.email}");
       _currentNews = value;
       _notifyListeners();
@@ -100,7 +100,7 @@ class NewsDetailProvider extends ChangeNotifier {
 
   /// Set the specified [news] as not liked by the specified [member].
   Future<void> unlikeNews(News news, Member member) async {
-    await _newsService.unlikeNews(news.id, member.id).then((value) async {
+    await _newsService.unlikeNews(news.id!, member.id!).then((value) async {
       _log.fine("News ${news.title} unliked by user ${member.email}");
       _currentNews = value;
       _notifyListeners();

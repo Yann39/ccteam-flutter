@@ -60,7 +60,7 @@ class NumberTextInputFormatter extends TextInputFormatter {
 }
 
 class AddEditMember extends StatefulWidget {
-  const AddEditMember({Key key}) : super(key: key);
+  const AddEditMember({Key? key}) : super(key: key);
 
   @override
   State<StatefulWidget> createState() {
@@ -77,7 +77,7 @@ class _AddEditMemberState extends State<AddEditMember> {
 
   /// Validate the form then submit data to backend
   void submitForm(Member member) {
-    final FormState form = _formKey.currentState;
+    final FormState form = _formKey.currentState!;
 
     if (!form.validate()) {
       ScaffoldMessenger.of(context)
@@ -118,7 +118,7 @@ class _AddEditMemberState extends State<AddEditMember> {
       ),
       maxLines: 1,
       inputFormatters: [LengthLimitingTextInputFormatter(64)],
-      validator: (val) => val.isEmpty ? AppString.memberFirstNameMandatory : null,
+      validator: (val) => (val == null || val.isEmpty) ? AppString.memberFirstNameMandatory : null,
       onSaved: (val) => _memberCreationProvider.currentMember.firstName = val,
       initialValue: _memberCreationProvider.currentMember.firstName,
     );
@@ -131,7 +131,7 @@ class _AddEditMemberState extends State<AddEditMember> {
       ),
       maxLines: 1,
       inputFormatters: [LengthLimitingTextInputFormatter(64)],
-      validator: (val) => val.isEmpty ? AppString.memberLastNameMandatory : null,
+      validator: (val) => (val == null || val.isEmpty) ? AppString.memberLastNameMandatory : null,
       onSaved: (val) => _memberCreationProvider.currentMember.lastName = val,
       initialValue: _memberCreationProvider.currentMember.lastName,
     );
@@ -145,7 +145,7 @@ class _AddEditMemberState extends State<AddEditMember> {
       keyboardType: TextInputType.emailAddress,
       maxLines: 1,
       inputFormatters: [LengthLimitingTextInputFormatter(128)],
-      validator: (val) => val.isEmpty
+      validator: (val) => (val == null || val.isEmpty)
           ? AppString.memberEmailMandatory
           : (StringUtils.isValidEmail(val) ? null : AppString.memberEmailNotValid),
       onSaved: (val) => _memberCreationProvider.currentMember.email = val,
@@ -165,7 +165,7 @@ class _AddEditMemberState extends State<AddEditMember> {
         FilteringTextInputFormatter.digitsOnly,
         NumberTextInputFormatter()
       ],
-      validator: (val) => val.isEmpty
+      validator: (val) => (val == null || val.isEmpty)
           ? AppString.memberPhoneMandatory
           : (StringUtils.isValidPhoneNumber(val) ? null : AppString.memberPhoneNotValid),
       onSaved: (val) => _memberCreationProvider.currentMember.phone = val,
@@ -179,7 +179,7 @@ class _AddEditMemberState extends State<AddEditMember> {
         Text("Actif ?"),
         Switch(
           activeColor: Colors.green[700],
-          value: _memberCreationProvider.currentMember.active,
+          value: _memberCreationProvider.currentMember.active!,
           onChanged: (val) => setState(() {
             _memberCreationProvider.currentMember.active = val;
           }),
@@ -194,7 +194,7 @@ class _AddEditMemberState extends State<AddEditMember> {
         Text("Admin ?"),
         Switch(
           activeColor: Colors.green[700],
-          value: _memberCreationProvider.currentMember.admin,
+          value: _memberCreationProvider.currentMember.admin!,
           onChanged: (val) => setState(() {
             _memberCreationProvider.currentMember.admin = val;
           }),
@@ -207,7 +207,7 @@ class _AddEditMemberState extends State<AddEditMember> {
           icon: const Icon(CustomIcons.motorbike), hintText: AppString.memberBikeHint, labelText: AppString.memberBike),
       maxLines: 1,
       inputFormatters: [LengthLimitingTextInputFormatter(64)],
-      validator: (val) => val.isEmpty ? AppString.memberBikeMandatory : null,
+      validator: (val) => (val == null || val.isEmpty) ? AppString.memberBikeMandatory : null,
       onSaved: (val) => _memberCreationProvider.currentMember.bike = val,
       initialValue: _memberCreationProvider.currentMember.bike,
     );
@@ -217,14 +217,15 @@ class _AddEditMemberState extends State<AddEditMember> {
         InkWell(
           onTap: () {
             _drawerProvider.loadImage(null);
-            Navigator.of(context).pushNamed('/editAvatar', arguments: _memberCreationProvider.currentMember);
+            Provider.of<AvatarProvider>(context, listen: false).setMemberToEdit(_memberCreationProvider.currentMember);
+            Navigator.of(context).pushNamed('/editAvatar');
           },
           child: _memberCreationProvider.currentMember.avatarUrl != null &&
-                  _memberCreationProvider.currentMember.avatarUrl.length > 0
+                  _memberCreationProvider.currentMember.avatarUrl!.length > 0
               ? CircleAvatar(
                   radius: 60,
-                  backgroundImage: NetworkImage(
-                      "$SERVER_AVATAR_FOLDER${_memberCreationProvider.currentMember.avatarUrl}"),
+                  backgroundImage:
+                      NetworkImage("$SERVER_AVATAR_FOLDER${_memberCreationProvider.currentMember.avatarUrl}"),
                 )
               : CircleAvatar(
                   radius: 60,
@@ -235,7 +236,7 @@ class _AddEditMemberState extends State<AddEditMember> {
                       begin: const FractionalOffset(0.0, 0.0),
                       end: const FractionalOffset(0.0, 1.0),
                       stops: [0.0, 1.0],
-                      colors: [Colors.red[700], Colors.blue[700]],
+                      colors: [Colors.red[700]!, Colors.blue[700]!],
                     ).createShader(bounds),
                     child: Icon(CustomIcons.pilot, size: 75, color: Colors.white),
                   ),
@@ -251,7 +252,8 @@ class _AddEditMemberState extends State<AddEditMember> {
             child: Icon(Icons.edit, size: 12),
             onPressed: () {
               _drawerProvider.loadImage(null);
-              Navigator.of(context).pushNamed('/editAvatar', arguments: _memberCreationProvider.currentMember);
+              Provider.of<AvatarProvider>(context, listen: false).setMemberToEdit(_memberCreationProvider.currentMember);
+              Navigator.of(context).pushNamed('/editAvatar');
             },
           ),
         ),

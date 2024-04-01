@@ -23,23 +23,23 @@ import 'package:intl/intl.dart';
 /// Class representing a member
 /// todo add Role attribute ?
 class Member {
-  int id;
-  String firstName;
-  String lastName;
-  String email;
-  String password;
-  String phone;
-  String avatarUrl;
-  String bike;
-  bool active;
-  bool verified;
-  bool admin;
-  String otp;
-  DateTime otpDate;
-  DateTime registrationDate;
-  List<EventMember> eventMembers;
-  DateTime createdOn;
-  DateTime modifiedOn;
+  int? id;
+  String? firstName;
+  String? lastName;
+  String? email;
+  String? password;
+  String? phone;
+  String? avatarUrl;
+  String? bike;
+  bool? active;
+  bool? verified;
+  bool? admin;
+  String? otp;
+  DateTime? otpDate;
+  DateTime? registrationDate;
+  List<EventMember>? eventMembers;
+  DateTime? createdOn;
+  DateTime? modifiedOn;
 
   Member({
     this.id,
@@ -94,21 +94,15 @@ class Member {
         phone = json['phone'],
         avatarUrl = json['avatarUrl'],
         bike = json['bike'],
-        active = json['active'] != null && json['active'] == '1',
-        verified = json['verified'] != null && json['verified'] == '1',
-        admin = json['admin'] != null && json['admin'] == '1',
+        active = json['active'] != null && (json['active'] == '1'),
+        verified = json['verified'] != null && (json['verified'] == '1'),
+        admin = json['admin'] != null && (json['admin'] == '1'),
         otp = json['otp'],
         otpDate = json['otpDate'] != null ? DateFormat("yyyy-MM-dd HH:mm:ss", "fr").parseStrict(json['otpDate']) : null,
-        registrationDate = json['registrationDate'] != null
-            ? DateFormat("yyyy-MM-dd HH:mm:ss", "fr").parseStrict(json['registrationDate'])
-            : null,
-        eventMembers = json['eventMembers'] != null
-            ? (json['eventMembers'] as List).map((i) => EventMember.fromJson(i)).toList()
-            : [],
-        createdOn =
-            json['created_on'] != null ? DateFormat("yyyy-MM-dd HH:mm:ss", "fr").parseStrict(json['createdOn']) : null,
-        modifiedOn =
-            json['modifiedOn'] != null ? DateFormat("yyyy-MM-dd HH:mm:ss", "fr").parseStrict(json['modifiedOn']) : null;
+        registrationDate = json['registrationDate'] != null ? DateFormat("yyyy-MM-dd HH:mm:ss", "fr").parseStrict(json['registrationDate']) : null,
+        eventMembers = json['eventMembers'] != null ? (json['eventMembers'] as List).map((i) => EventMember.fromJson(i)).toList() : null,
+        createdOn = json['createdOn'] != null ? DateFormat("yyyy-MM-dd HH:mm:ss", "fr").parseStrict(json['createdOn']) : null,
+        modifiedOn = json['modifiedOn'] != null ? DateFormat("yyyy-MM-dd HH:mm:ss", "fr").parseStrict(json['modifiedOn']) : null;
 
   /// Convert [Member] object to the corresponding JSON map
   Map<String, dynamic> toJson() => {

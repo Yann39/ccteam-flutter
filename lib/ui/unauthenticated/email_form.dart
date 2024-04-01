@@ -17,11 +17,7 @@
  * along with CCTeam. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import 'dart:async';
-
 import 'package:ccteam/providers/login_provider.dart';
-import 'package:ccteam/providers/message_provider.dart';
-import 'package:ccteam/utils/app_utils.dart';
 import 'package:ccteam/utils/enums.dart';
 import 'package:ccteam/utils/string_utils.dart';
 import 'package:ccteam/utils/strings.dart';
@@ -42,12 +38,12 @@ class _EmailFormState extends State<EmailForm> {
 
   final GlobalKey<FormState> _emailFormKey = new GlobalKey<FormState>();
 
-  String _email;
+  late String _email;
 
   /// Method that check the account associated to the e-mail address specified in the related form.
   /// It updates the login step status according to the result.
   _doCheckAccount(BuildContext context) async {
-    final FormState _form = _emailFormKey.currentState;
+    final FormState _form = _emailFormKey.currentState!;
 
     // validate the form
     if (_form.validate()) {
@@ -73,7 +69,7 @@ class _EmailFormState extends State<EmailForm> {
         enabledBorder: OutlineInputBorder(),
         focusedBorder: OutlineInputBorder(),
         errorBorder: OutlineInputBorder(
-          borderSide: BorderSide(color: Colors.red[700]),
+          borderSide: BorderSide(color: Colors.red[700]!),
         ),
         focusedErrorBorder: OutlineInputBorder(),
         disabledBorder: OutlineInputBorder(
@@ -87,14 +83,14 @@ class _EmailFormState extends State<EmailForm> {
       maxLines: 1,
       inputFormatters: [LengthLimitingTextInputFormatter(128)],
       validator: (val) {
-        if (val.isEmpty) {
+        if (val == null || val.isEmpty) {
           return AppString.memberEmailMandatory;
         } else if (!StringUtils.isValidEmail(val)) {
           return AppString.memberEmailNotValid;
         }
         return null;
       },
-      onSaved: (val) => _email = val,
+      onSaved: (val) => _email = val!,
       initialValue: _email,
     );
 

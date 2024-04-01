@@ -25,7 +25,7 @@ import 'package:logging/logging.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class TimerProvider extends ChangeNotifier {
-  Timer _timer;
+  Timer? _timer;
   final Logger _log = new Logger('TimerProvider');
 
   // current timer value
@@ -36,7 +36,7 @@ class TimerProvider extends ChangeNotifier {
   /// Start the countdown timer from the specified start value
   void startNewCountDown(int startValue) async {
     if (_timer != null) {
-      _timer.cancel();
+      _timer!.cancel();
     }
     _currentValue = startValue;
     _log.info("Start with value $_currentValue");
@@ -67,10 +67,8 @@ class TimerProvider extends ChangeNotifier {
     // read value from user preferences
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     if (prefs.containsKey('otp_timer')) {
-      final int elapsedTime =
-          DateTime.now().millisecondsSinceEpoch - prefs.getInt('otp_timer');
-      _log.info(
-          "Got back timer value from preferences, remaining : $elapsedTime ms");
+      final int elapsedTime = DateTime.now().millisecondsSinceEpoch - prefs.getInt('otp_timer')!;
+      _log.info("Got back timer value from preferences, remaining : $elapsedTime ms");
       // if elapsed time is greater than start value, set it to zero
       if (elapsedTime > startValue * 1000) {
         _log.info("Last timer has run out, user has to resend a new code");
@@ -89,7 +87,7 @@ class TimerProvider extends ChangeNotifier {
 
   @override
   void dispose() {
-    _timer.cancel();
+    _timer!.cancel();
     super.dispose();
   }
 }

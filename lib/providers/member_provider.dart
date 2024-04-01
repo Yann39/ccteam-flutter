@@ -34,7 +34,7 @@ class MemberProvider extends ChangeNotifier {
   List<Member> _members = [];
 
   // current members
-  Member _currentMember;
+  Member? _currentMember;
 
   // current loading status
   LoadingStatus _loadingStatus = LoadingStatus.notLoaded;
@@ -47,7 +47,7 @@ class MemberProvider extends ChangeNotifier {
 
   UnmodifiableListView<Member> get members => UnmodifiableListView(_members);
 
-  Member get currentMember => _currentMember;
+  Member? get currentMember => _currentMember;
 
   LoadingStatus get loadingStatus => _loadingStatus;
 
@@ -59,7 +59,7 @@ class MemberProvider extends ChangeNotifier {
   }
 
   /// Fetch the list of all members according to specified filter [text]
-  void fetchMembers(String text) async {
+  void fetchMembers(String? text) async {
     _updateStatus(LoadingStatus.loading);
     await _membersService.fetchMembers(text).then((value) async {
       _log.fine("Members list of ${value.length} members retrieved successfully");
@@ -77,7 +77,7 @@ class MemberProvider extends ChangeNotifier {
   Future<void> fetchCurrentMember(Member member) async {
     _log.fine("Fetching member ${member.email}");
     _updateStatus(LoadingStatus.loading);
-    await _membersService.getMemberById(member.id).then((value) async {
+    await _membersService.getMemberById(member.id!).then((value) async {
       _log.fine("Member with ID ${member.id} retrieved successfully");
       _currentMember = value;
       _updateStatus(LoadingStatus.loaded);

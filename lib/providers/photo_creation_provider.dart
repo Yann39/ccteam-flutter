@@ -19,19 +19,20 @@
 
 import 'dart:async';
 
-import 'package:ccteam/models/event.dart';
+import 'package:ccteam/models/photo.dart';
 import 'package:ccteam/providers/login_provider.dart';
 import 'package:ccteam/providers/message_provider.dart';
-import 'package:ccteam/services/events_service.dart';
 import 'package:ccteam/utils/app_utils.dart';
 import 'package:ccteam/utils/enums.dart';
 import 'package:ccteam/utils/strings.dart';
 import 'package:flutter/foundation.dart';
 import 'package:logging/logging.dart';
 
-class EventDetailProvider extends ChangeNotifier {
-  final Logger _log = new Logger('EventDetailProvider');
-  final EventsService _eventsService = new EventsService();
+import '../services/photos_service.dart';
+
+class PhotoCreationProvider extends ChangeNotifier {
+  final Logger _log = new Logger('PhotoCreationProvider');
+  final PhotosService _photosService = new PhotosService();
 
   // message provider that can be set from the proxy provider
   late MessageProvider _messageProvider;
@@ -39,13 +40,13 @@ class EventDetailProvider extends ChangeNotifier {
   // login provider that can be set from the proxy provider
   late LoginProvider _loginProvider;
 
-  // current event
-  late Event _currentEvent;
+  // current photo
+  Photo _photo = new Photo();
 
   // current loading status
   LoadingStatus _loadingStatus = LoadingStatus.notLoaded;
 
-  Event get currentEvent => _currentEvent;
+  Photo get photo => _photo;
 
   LoadingStatus get loadingStatus => _loadingStatus;
 
@@ -61,44 +62,48 @@ class EventDetailProvider extends ChangeNotifier {
     _notifyListeners();
   }
 
-  /// Set the current event to be the specified [event].
-  void setCurrentEvent(Event event) {
-    _currentEvent = event;
-    _notifyListeners();
+  /// Set the [Photo] to be edited.
+  void setPhotoToEdit(Photo photo) {
+    _photo = photo;
+    _updateStatus(LoadingStatus.loaded);
   }
 
-  /// Fetch the specified [event] from the database.
-  Future<void> fetchEvent(Event event) async {
-    _log.fine("Fetching event ${event.title}...");
+  /// Create the current photo being edited.
+  Future<void> createPhoto() async {
     _updateStatus(LoadingStatus.loading);
-    await _eventsService.getEventById(event.id!).then((value) async {
-      _log.fine("Event ID ${event.id} retrieved successfully");
-      _currentEvent = value;
+    await _photosService.createPhoto(_photo).then((value) async {
+      _log.fine("Photo created successfully");
+      //_photo = value;
       _updateStatus(LoadingStatus.loaded);
+      _messageProvider.setMessage(AppString.photoCreated, MessageType.SUCCESS);
     }, onError: (error) {
-      _log.warning("Error when retrieving event ($error)");
+      _log.warning("Error when creating photo ($error)");
+      _messageProvider.setMessage(AppString.photoCreationFailed, MessageType.ERROR);
       AppUtils.handleServiceException(error, _messageProvider, _loginProvider);
       _updateStatus(LoadingStatus.notLoaded);
     });
   }
 
-  /// Delete the specified [event].
-  Future<void> deleteEvent(Event event) async {
-    await _eventsService.deleteEvent(event).then((value) {
-      _log.fine("Event deleted successfully : ${event.title}");
-      _messageProvider.setMessage(AppString.eventDeleted, MessageType.SUCCESS);
-      _notifyListeners();
+  /// Update the current photo being edited.
+  Future<void> updatePhoto() async {
+    _updateStatus(LoadingStatus.loading);
+    await _photosService.updatePhoto(_photo).then((value) {
+      _log.fine("Photo successfully updated : ${_photo.title}");
+      //_photo = value;
+      _updateStatus(LoadingStatus.loaded);
+      _messageProvider.setMessage(AppString.photoUpdated, MessageType.SUCCESS);
     }, onError: (error) {
-      _log.warning("Failed to delete event ($error)");
-      _messageProvider.setMessage(AppString.eventDeletionFailed, MessageType.ERROR);
+      // todo here we should reload the original photo as it has not been updated in db ?
+      _log.warning("Error when updating photo ($error)");
+      _messageProvider.setMessage(AppString.photoUpdateFailed, MessageType.ERROR);
       AppUtils.handleServiceException(error, _messageProvider, _loginProvider);
-      _notifyListeners();
+      _updateStatus(LoadingStatus.notLoaded);
     });
   }
 
   /// Notify all the registered listeners of this provider.
   void _notifyListeners() {
-    _log.info("Notifying listeners of EventDetailProvider");
+    _log.info("Notifying listeners of PhotoCreationProvider");
     notifyListeners();
   }
 

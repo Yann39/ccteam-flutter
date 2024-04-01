@@ -23,16 +23,16 @@ import 'package:intl/intl.dart';
 
 /// Class representing a news
 class News {
-  int id;
-  String title;
-  String catchLine;
-  String content;
-  DateTime newsDate;
-  List<LikedNews> likedNews;
-  DateTime createdOn;
-  Member createdBy;
-  DateTime modifiedOn;
-  Member modifiedBy;
+  int? id;
+  String? title;
+  String? catchLine;
+  String? content;
+  DateTime? newsDate;
+  List<LikedNews>? likedNews;
+  DateTime? createdOn;
+  Member? createdBy;
+  DateTime? modifiedOn;
+  Member? modifiedBy;
 
   News({
     this.id,
@@ -53,7 +53,7 @@ class News {
         this.catchLine = news.catchLine,
         this.content = news.content,
         this.newsDate = news.newsDate,
-        this.likedNews = List.of(news.likedNews),
+        this.likedNews = news.likedNews ?? List.of(news.likedNews!),
         this.createdOn = news.createdOn,
         this.createdBy = news.createdBy,
         this.modifiedOn = news.modifiedOn,
@@ -69,7 +69,7 @@ class News {
       newsDate: ${this.newsDate?.toIso8601String()},
       likedNews: ${this.likedNews?.map((i) => i.toString())},
       createdOn: ${this.createdOn?.toIso8601String()},
-      createdBy: ${this.createdBy?.toString()},
+      createdBy: ${this.createdBy.toString()},
       modifiedOn: ${this.modifiedOn?.toIso8601String()},
       modifiedBy: ${this.modifiedBy?.toString()},
     }""";
@@ -77,17 +77,15 @@ class News {
 
   /// Convert [json] map to the corresponding object
   News.fromJson(Map<String, dynamic> json)
-      : id = json['id'] != null ? int.parse(json['id']) : -1,
+      : id = json['id'] != null ? int.parse(json['id']) : null,
         title = json['title'],
         catchLine = json['catchLine'],
         content = json['content'],
         newsDate = json['newsDate'] != null ? DateFormat("yyyy-MM-dd HH:mm:ss").parseStrict(json['newsDate']) : null,
-        likedNews =
-            json['likedNews'] != null ? (json['likedNews'] as List).map((i) => LikedNews.fromJson(i)).toList() : null,
+        likedNews = json['likedNews'] != null ? (json['likedNews'] as List).map((i) => LikedNews.fromJson(i)).toList() : null,
         createdOn = json['createdOn'] != null ? DateFormat("yyyy-MM-dd HH:mm:ss").parseStrict(json['createdOn']) : null,
         createdBy = json['createdBy'] != null ? Member.fromJson(json['createdBy']) : null,
-        modifiedOn =
-            json['modifiedOn'] != null ? DateFormat("yyyy-MM-dd HH:mm:ss").parseStrict(json['modifiedOn']) : null,
+        modifiedOn = json['modifiedOn'] != null ? DateFormat("yyyy-MM-dd HH:mm:ss").parseStrict(json['modifiedOn']) : null,
         modifiedBy = json['modifiedBy'] != null ? Member.fromJson(json['createdBy']) : null;
 
   /// Convert [News] object to the corresponding JSON map
@@ -97,7 +95,7 @@ class News {
         "catchLine": catchLine,
         "content": content,
         "newsDate": newsDate?.toIso8601String(),
-        "likedNews": likedNews != null && likedNews.length > 0 ? '[${likedNews.map((ln) => ln.toJson())}]' : null,
+        "likedNews": likedNews?.map((ln) => ln.toJson()),
         "createdOn": createdOn?.toIso8601String(),
         "createdBy": createdBy?.toJson(),
         "modifiedOn": modifiedOn?.toIso8601String(),

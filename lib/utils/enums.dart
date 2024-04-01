@@ -18,10 +18,25 @@
  */
 
 enum AuthStatus { Initializing, Unauthenticated, Authenticating, Authenticated }
-enum LoginStatus { Loading, EmailStep, EmailAndInfoStep, OtpStep, CreatePasscodeStep, ConfirmPasscodeStep, PasscodeStep }
+
+enum LoginStatus {
+  Loading,
+  EmailStep,
+  EmailAndInfoStep,
+  OtpStep,
+  CreatePasscodeStep,
+  ConfirmPasscodeStep,
+  PasscodeStep
+}
+
 enum OtpStatus { NotSent, Sent, Verified }
+
 enum LoadingStatus { notLoaded, loading, loaded }
+
 enum ConfirmDialogAction { yes, no }
+
 enum QuickActions { about, contact, logout }
+
 enum DialogType { info, success, warning, error }
+
 enum MessageType { INFO, SUCCESS, WARNING, ERROR }

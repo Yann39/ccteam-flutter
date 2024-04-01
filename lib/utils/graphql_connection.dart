@@ -17,7 +17,6 @@
  * along with CCTeam. If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
@@ -25,12 +24,11 @@ import 'package:graphql_flutter/graphql_flutter.dart';
 import 'constants.dart';
 
 class GraphQLConnection {
-  static final GraphQLConnection _graphQLSingleton =
-      new GraphQLConnection._internal();
+  static final GraphQLConnection _graphQLSingleton = new GraphQLConnection._internal();
 
-  GraphQLClient _graphQLClient;
-  ValueNotifier<GraphQLClient> _client;
-  String _jwtToken;
+  late GraphQLClient _graphQLClient;
+  late ValueNotifier<GraphQLClient> _client;
+  String? _jwtToken;
 
   factory GraphQLConnection() {
     return _graphQLSingleton;
@@ -61,5 +59,5 @@ class GraphQLConnection {
 
   ValueNotifier<GraphQLClient> get client => _client;
 
-  set jwtToken(String jwtToken) => _jwtToken = jwtToken;
+  set jwtToken(String? jwtToken) => _jwtToken = jwtToken;
 }

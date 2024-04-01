@@ -26,11 +26,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
 class NotificationsService {
-  static BuildContext buildContext;
+  static late BuildContext buildContext;
 
   static final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
 
-  static const AndroidInitializationSettings initializationSettingsAndroid = AndroidInitializationSettings('@mipmap/ic_launcher');
+  static const AndroidInitializationSettings initializationSettingsAndroid =
+      AndroidInitializationSettings('@mipmap/ic_launcher');
 
   static final DarwinInitializationSettings initializationSettingsDarwin =
       DarwinInitializationSettings(onDidReceiveLocalNotification: onDidReceiveLocalNotification);
@@ -54,13 +55,13 @@ class NotificationsService {
     buildContext = context;
   }
 
-  static void onDidReceiveLocalNotification(int id, String title, String body, String payload) async {
+  static void onDidReceiveLocalNotification(int id, String? title, String? body, String? payload) async {
     // display a dialog with the notification details, tap ok to go to another page
     showDialog(
       context: buildContext,
       builder: (BuildContext context) => CupertinoAlertDialog(
-        title: Text(title),
-        content: Text(body),
+        title: Text(title!),
+        content: Text(body!),
         actions: [
           CupertinoDialogAction(
             isDefaultAction: true,
@@ -68,7 +69,7 @@ class NotificationsService {
             onPressed: () async {
               Navigator.of(context, rootNavigator: true).pop();
               print("A notification has been clicked, payload is : $payload");
-              dynamic jsonData = json.decode(payload);
+              dynamic jsonData = json.decode(payload!);
               if (jsonData['type'] == 'news') {
                 print("Navigates to news detail from notification");
                 //await navigatorKey.currentState.pushNamed('/newsDetail', arguments: News.fromJson(jsonData['value']));
@@ -89,7 +90,7 @@ class NotificationsService {
   /// It navigates to the right page depending on the specified [payload]
   static void onDidReceiveNotificationResponse(NotificationResponse notificationResponse) async {
     print("A notification has been clicked, payload is : $notificationResponse.payload");
-    dynamic jsonData = json.decode(notificationResponse.payload);
+    dynamic jsonData = json.decode(notificationResponse.payload!);
     if (jsonData['type'] == 'news') {
       print("Navigates to news detail from notification");
       //await navigatorKey.currentState.pushNamed('/newsDetail', arguments: News.fromJson(jsonData['value']));
@@ -115,11 +116,11 @@ class NotificationsService {
 
     final Map<String, dynamic> param = {
       "type": "news",
-      "value": news != null ? news.toJson() : null,
+      "value": news.toJson(),
     };
 
     await flutterLocalNotificationsPlugin.show(
-      news.id,
+      news.id!,
       news.title,
       news.catchLine,
       notificationDetails,
@@ -130,7 +131,7 @@ class NotificationsService {
   /// Schedule an event notification for the specified [event]
   /// The notification will be sent 6 hours before the event start date
   static void scheduleEventNotification(Event event) async {
-    final DateTime scheduledNotificationDateTime = event.startDate.subtract(Duration(hours: 6));
+    final DateTime scheduledNotificationDateTime = event.startDate!.subtract(Duration(hours: 6));
     final AndroidNotificationDetails androidNotificationDetails = AndroidNotificationDetails(
       'track_events',
       'Track events push notifications',
@@ -144,18 +145,18 @@ class NotificationsService {
 
     final Map<String, dynamic> param = {
       "type": "event",
-      "value": event != null ? event.toJson() : null,
+      "value": event.toJson(),
     };
 
-    await flutterLocalNotificationsPlugin.zonedSchedule(
-      event.id,
+    /*await flutterLocalNotificationsPlugin.zonedSchedule(
+      event.id!,
       'Événement prévu dans 6 heures !',
       event.title,
       scheduledNotificationDateTime,
       notificationDetails,
       payload: json.encode(param),
-      androidAllowWhileIdle: true,
+      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
       uiLocalNotificationDateInterpretation: UILocalNotificationDateInterpretation.absoluteTime,
-    );
+    );*/
   }
 }

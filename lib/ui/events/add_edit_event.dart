@@ -38,7 +38,7 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 class AddEditEvent extends StatefulWidget {
-  const AddEditEvent({Key key}) : super(key: key);
+  const AddEditEvent({Key? key}) : super(key: key);
 
   @override
   State<StatefulWidget> createState() {
@@ -53,24 +53,22 @@ class _AddEditEventState extends State<AddEditEvent> {
   final TextEditingController _endDatePickerController = new TextEditingController();
   final TracksService _tracksService = new TracksService();
 
-  Future<List<Track>> _futureTracks;
-  Track _selectedTrack;
+  Future<List<Track>>? _futureTracks;
+  Track? _selectedTrack;
 
   initState() {
     final EventCreationProvider _eventCreationProvider = Provider.of<EventCreationProvider>(context, listen: false);
     // fetch the tracks in initState so it is not fetch each time the state change
     _futureTracks = _tracksService.fetchTracks();
-    // set date picker text if set
-    if (_eventCreationProvider.event != null) {
-      _startDatePickerController.text =
-          AppDateUtils.convertToString(_eventCreationProvider.event.startDate, DATE_FORMAT);
-      _endDatePickerController.text = AppDateUtils.convertToString(_eventCreationProvider.event.endDate, DATE_FORMAT);
-    }
+    // set date picker text
+    _startDatePickerController.text =
+        AppDateUtils.convertToString(_eventCreationProvider.event.startDate!, DATE_FORMAT)!;
+    _endDatePickerController.text = AppDateUtils.convertToString(_eventCreationProvider.event.endDate!, DATE_FORMAT)!;
     return super.initState();
   }
 
   /// Initialize and display a Date picker related to the specified [controller] in the specified [context]
-  Future _chooseDate(BuildContext context, TextEditingController controller, DateTime defaultValue) async {
+  Future _chooseDate(BuildContext context, TextEditingController controller, DateTime? defaultValue) async {
     final DateTime currentDate = DateTime.now();
     final TimeOfDay currentTime = TimeOfDay.now();
 
@@ -79,7 +77,7 @@ class _AddEditEventState extends State<AddEditEvent> {
     final TimeOfDay initialTime = defaultValue != null ? TimeOfDay.fromDateTime(defaultValue) : currentTime;
 
     // show the date picker and await for the chosen date
-    final DateTime dateResult = await showDatePicker(
+    final DateTime? dateResult = await showDatePicker(
         context: context,
         initialDate: initialDate,
         firstDate: DateTime(currentDate.year - 5),
@@ -87,7 +85,7 @@ class _AddEditEventState extends State<AddEditEvent> {
     if (dateResult == null) return;
 
     // show the time picker and await for the chosen time
-    final TimeOfDay timeResult = await showTimePicker(context: context, initialTime: initialTime);
+    final TimeOfDay? timeResult = await showTimePicker(context: context, initialTime: initialTime);
     if (timeResult == null) return;
 
     // build final date with time
@@ -102,7 +100,7 @@ class _AddEditEventState extends State<AddEditEvent> {
 
   /// Validate the form then submit data to backend
   void submitForm(Event event) {
-    final FormState _form = _formKey.currentState;
+    final FormState _form = _formKey.currentState!;
 
     if (!_form.validate()) {
       ScaffoldMessenger.of(context)
@@ -120,6 +118,7 @@ class _AddEditEventState extends State<AddEditEvent> {
       if (event.id != null) {
         event.modifiedBy = _loginProvider.loggedMember;
         _eventCreationProvider.updateEvent().then((value) {
+          // update event in related UIs
           _eventListProvider.updateEventInList(_eventCreationProvider.event);
           _eventDetailProvider.setCurrentEvent(_eventCreationProvider.event);
         });
@@ -162,8 +161,8 @@ class _AddEditEventState extends State<AddEditEvent> {
                       ),
                       maxLines: 1,
                       inputFormatters: [LengthLimitingTextInputFormatter(128)],
-                      validator: (val) => val.isEmpty ? AppString.eventTitleMandatory : null,
-                      onSaved: (val) => _eventCreationProvider.event.title = val,
+                      validator: (val) => (val == null || val.isEmpty) ? AppString.eventTitleMandatory : null,
+                      onSaved: (val) => _eventCreationProvider.event.title = val!,
                       initialValue: _eventCreationProvider.event.title,
                     ),
                     TextFormField(
@@ -174,7 +173,7 @@ class _AddEditEventState extends State<AddEditEvent> {
                       ),
                       maxLines: 2,
                       inputFormatters: [LengthLimitingTextInputFormatter(2048)],
-                      validator: (val) => val.isEmpty ? AppString.eventDescriptionMandatory : null,
+                      validator: (val) => (val == null || val.isEmpty) ? AppString.eventDescriptionMandatory : null,
                       onSaved: (val) => _eventCreationProvider.event.description = val,
                       initialValue: _eventCreationProvider.event.description,
                     ),
@@ -187,12 +186,12 @@ class _AddEditEventState extends State<AddEditEvent> {
                       maxLines: 1,
                       keyboardType: TextInputType.numberWithOptions(decimal: true, signed: false),
                       inputFormatters: [LengthLimitingTextInputFormatter(7)],
-                      validator: (val) => val.isEmpty
+                      validator: (val) => (val == null || val.isEmpty)
                           ? AppString.eventPriceMandatory
                           : (StringUtils.isValidPrice(val) ? null : AppString.eventPriceNotValid),
-                      onSaved: (val) => _eventCreationProvider.event.price = double.parse(val),
+                      onSaved: (val) => _eventCreationProvider.event.price = double.parse(val!),
                       initialValue: _eventCreationProvider.event.price != null
-                          ? StringUtils.formatPrice(_eventCreationProvider.event.price)
+                          ? StringUtils.formatPrice(_eventCreationProvider.event.price!)
                           : "",
                     ),
                     FutureBuilder<List<Track>>(
@@ -205,18 +204,18 @@ class _AddEditEventState extends State<AddEditEvent> {
                                 value: _selectedTrack != null
                                     ? _selectedTrack
                                     : _eventCreationProvider.event.id != null
-                                        ? snapshot.data
-                                            .firstWhere((Track t) => t.id == _eventCreationProvider.event.track.id)
-                                        : snapshot.data.first,
+                                        ? snapshot.data!
+                                            .firstWhere((Track t) => t.id == _eventCreationProvider.event.track!.id)
+                                        : snapshot.data!.first,
                                 decoration: const InputDecoration(
                                   icon: const Icon(CustomIcons.track_sample),
                                   hintText: AppString.eventTrackIdHint,
                                   labelText: AppString.eventTrackId,
                                 ),
-                                items: snapshot.data.map((Track val) {
-                                  return DropdownMenuItem<Track>(value: val, child: Text(val.name));
+                                items: snapshot.data!.map((Track val) {
+                                  return DropdownMenuItem<Track>(value: val, child: Text(val.name!));
                                 }).toList(),
-                                onChanged: (Track val) {
+                                onChanged: (Track? val) {
                                   setState(() {
                                     _selectedTrack = val;
                                   });
@@ -241,7 +240,7 @@ class _AddEditEventState extends State<AddEditEvent> {
                       ),
                       maxLines: 1,
                       inputFormatters: [LengthLimitingTextInputFormatter(64)],
-                      validator: (val) => val.isEmpty ? AppString.eventOrganizerMandatory : null,
+                      validator: (val) => (val == null || val.isEmpty) ? AppString.eventOrganizerMandatory : null,
                       onSaved: (val) => _eventCreationProvider.event.organizer = val,
                       initialValue: _eventCreationProvider.event.organizer,
                     ),
@@ -257,9 +256,9 @@ class _AddEditEventState extends State<AddEditEvent> {
                           ),
                           controller: _startDatePickerController,
                           keyboardType: TextInputType.datetime,
-                          validator: (val) => val.isEmpty ? AppString.eventStartDateMandatory : null,
+                          validator: (val) => (val == null || val.isEmpty) ? AppString.eventStartDateMandatory : null,
                           onSaved: (val) =>
-                              _eventCreationProvider.event.startDate = DateFormat(DATE_FORMAT).parseStrict(val),
+                              _eventCreationProvider.event.startDate = DateFormat(DATE_FORMAT).parseStrict(val!),
                         ),
                       ),
                     ),
@@ -274,9 +273,9 @@ class _AddEditEventState extends State<AddEditEvent> {
                           ),
                           controller: _endDatePickerController,
                           keyboardType: TextInputType.datetime,
-                          validator: (val) => val.isEmpty ? AppString.eventEndDateMandatory : null,
+                          validator: (val) => (val == null || val.isEmpty) ? AppString.eventEndDateMandatory : null,
                           onSaved: (val) =>
-                              _eventCreationProvider.event.endDate = DateFormat(DATE_FORMAT).parseStrict(val),
+                              _eventCreationProvider.event.endDate = DateFormat(DATE_FORMAT).parseStrict(val!),
                         ),
                       ),
                     ),

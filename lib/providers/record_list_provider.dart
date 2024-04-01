@@ -25,8 +25,8 @@ import 'package:ccteam/utils/enums.dart';
 import 'package:flutter/foundation.dart';
 import 'package:logging/logging.dart';
 
-class RecordProvider extends ChangeNotifier {
-  final Logger _log = new Logger('RecordProvider');
+class RecordListProvider extends ChangeNotifier {
+  final Logger _log = new Logger('RecordListProvider');
   final RecordsService _recordsService = new RecordsService();
 
   // list of all track records
@@ -47,7 +47,7 @@ class RecordProvider extends ChangeNotifier {
   /// Update the current loading status
   void _updateStatus(LoadingStatus status) {
     _loadingStatus = status;
-    _log.info("Notifying listeners of RecordProvider");
+    _log.info("Notifying listeners of RecordListProvider");
     notifyListeners();
   }
 
@@ -86,7 +86,7 @@ class RecordProvider extends ChangeNotifier {
     await _recordsService.createRecord(record).then((value) {
       _log.fine("New record created : ${record.id}");
       _trackRecords.add(record);
-      _log.info("Notifying listeners of RecordProvider");
+      _log.info("Notifying listeners of RecordListProvider");
       notifyListeners();
     }, onError: (error) {
       _log.severe("Failed to create new record ($error)");
@@ -99,12 +99,11 @@ class RecordProvider extends ChangeNotifier {
     await _recordsService.updateRecord(record).then((value) {
       _log.fine("Record successfully updated : ${record.id}");
       _trackRecords[_trackRecords.indexWhere((m) => m.id == record.id)] = record;
-      _log.info("Notifying listeners of RecordProvider");
+      _log.info("Notifying listeners of RecordListProvider");
       notifyListeners();
     }, onError: (error) {
       _log.severe("Failed to update record ($error)");
       throw (error);
     });
   }
-
 }

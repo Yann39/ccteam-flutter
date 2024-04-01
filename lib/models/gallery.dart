@@ -22,12 +22,12 @@ import 'package:intl/intl.dart';
 
 /// Class representing a photo gallery
 class Gallery {
-  int id;
-  String title;
-  String description;
-  DateTime createdOn;
-  DateTime modifiedOn;
-  List<Photo> photos;
+  int? id;
+  String? title;
+  String? description;
+  DateTime? createdOn;
+  DateTime? modifiedOn;
+  List<Photo>? photos;
 
   Gallery({
     this.id,
@@ -52,12 +52,11 @@ class Gallery {
 
   /// Convert [json] map to the corresponding [Gallery] object
   Gallery.fromJson(Map<String, dynamic> json)
-      : id = json['id'] != null ? int.parse(json['id']) : -1,
+      : id = json['id'] != null ? int.parse(json['id']) : null,
         title = json['title'],
         description = json['description'],
         createdOn = json['createdOn'] != null ? DateFormat("yyyy-MM-dd HH:mm:ss").parseStrict(json['createdOn']) : null,
-        modifiedOn =
-            json['modifiedOn'] != null ? DateFormat("yyyy-MM-dd HH:mm:ss").parseStrict(json['modifiedOn']) : null,
+        modifiedOn = json['modifiedOn'] != null ? DateFormat("yyyy-MM-dd HH:mm:ss").parseStrict(json['modifiedOn']) : null,
         photos = json['photos'] != null ? (json['photos'] as List).map((i) => Photo.fromJson(i)).toList() : null;
 
   /// Convert [Gallery] object to the corresponding JSON map

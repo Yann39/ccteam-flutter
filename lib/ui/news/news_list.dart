@@ -49,7 +49,7 @@ class NewsList extends StatelessWidget {
     Provider.of<NewsDetailProvider>(context, listen: false).fetchNews(news).then((value) => {
           // navigate to the news detail screen
           Navigator.pushNamed(context, '/newsDetail')
-    });
+        });
   }
 
   Widget build(BuildContext context) {
@@ -81,18 +81,14 @@ class NewsList extends StatelessWidget {
                 pinned: false,
                 flexibleSpace: Container(
                   child: FlexibleSpaceBar(
-                    centerTitle: true,
-                    background: Opacity(
-                      child: Image.asset(
-                        'images/ccteam-banner.png',
-                        fit: BoxFit.fitWidth,
-                      ),
-                      opacity: 1.0,
+                    background: Image.asset(
+                      'images/ccteam-banner3.png',
+                      fit: BoxFit.fitWidth,
                     ),
                   ),
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
-                      colors: [Colors.white, Colors.blue[100]],
+                      colors: [Colors.white, Colors.blue[100]!],
                       begin: FractionalOffset(0.0, 0.0),
                       end: FractionalOffset(0.0, 1.0),
                       stops: [0.0, 1.0],

@@ -23,10 +23,10 @@ import 'package:intl/intl.dart';
 
 /// Class representing a liked news
 class LikedNews {
-  int id;
-  News news;
-  Member member;
-  DateTime createdOn;
+  int? id;
+  News? news;
+  Member? member;
+  DateTime? createdOn;
 
   LikedNews({
     this.id,
@@ -39,15 +39,15 @@ class LikedNews {
   String toString() {
     return """{
       id: ${this.id},
-      news: ${this.news?.toString()},
-      member: ${this.member?.toString()},
+      news: ${this.news.toString()},
+      member: ${this.member.toString()},
       createdOn: ${this.createdOn?.toIso8601String()},
     }""";
   }
 
   /// Convert [json] map to the corresponding object
   LikedNews.fromJson(Map<String, dynamic> json)
-      : id = json['id'] != null ? int.parse(json['id']) : -1,
+      : id = json['id'] != null ? int.parse(json['id']) : null,
         news = json['news'] != null ? News.fromJson(json['news']) : null,
         member = json['member'] != null ? Member.fromJson(json['member']) : null,
         createdOn = json['createdOn'] != null ? DateFormat("yyyy-MM-dd HH:mm:ss").parseStrict(json['createdOn']) : null;

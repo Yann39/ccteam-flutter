@@ -17,14 +17,16 @@
  * along with CCTeam. If not, see <http://www.gnu.org/licenses/>.
  */
 
+import 'dart:io';
+
 import 'package:ccteam/providers/avatar_provider.dart';
 import 'package:ccteam/utils/strings.dart';
+import 'package:crop_your_image/crop_your_image.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:simple_image_crop/simple_image_crop.dart';
 
 class ImageCrop extends StatelessWidget {
-  final cropKey = GlobalKey<ImgCropState>();
+  final _controller = CropController();
 
   @override
   Widget build(BuildContext context) {
@@ -36,20 +38,17 @@ class ImageCrop extends StatelessWidget {
         title: Text(AppString.zoomAndCrop),
       ),
       body: Center(
-        child: ImgCrop(
-          key: cropKey,
-          maximumScale: 3,
-          image: FileImage(_drawerProvider.image),
-        ),
+        child: Crop(
+            image: _drawerProvider.image!.readAsBytesSync(),
+            controller: _controller,
+            onCropped: (image) {
+              // do something with cropped image data
+              _drawerProvider.loadImage(File.fromRawPath(image));
+            }),
       ),
       floatingActionButton: FloatingActionButton(
         backgroundColor: Colors.red[700],
-        onPressed: () async {
-          final crop = cropKey.currentState;
-          final croppedFile = await crop.cropCompleted(_drawerProvider.image);
-          _drawerProvider.loadImage(croppedFile);
-          Navigator.pop(context);
-        },
+        onPressed: () => _controller.crop(),
         child: Icon(Icons.check),
       ),
     );

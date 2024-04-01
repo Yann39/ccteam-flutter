@@ -18,7 +18,8 @@
  */
 
 import 'package:ccteam/models/track.dart';
-import 'package:ccteam/providers/track_provider.dart';
+import 'package:ccteam/providers/track_detail_provider.dart';
+import 'package:ccteam/providers/track_list_provider.dart';
 import 'package:ccteam/ui/main/main_action_menu.dart';
 import 'package:ccteam/ui/main/main_drawer.dart';
 import 'package:ccteam/utils/custom_decorations.dart';
@@ -39,7 +40,7 @@ class Tracks extends StatefulWidget {
 
 class _TracksState extends State<Tracks> {
   /// Build the search field
-  TextField buildSearchField(TrackProvider _trackProvider) {
+  TextField buildSearchField(TrackListProvider _trackListProvider) {
     return TextField(
       decoration: InputDecoration(
         filled: true,
@@ -49,7 +50,7 @@ class _TracksState extends State<Tracks> {
       ),
       maxLines: 1,
       onChanged: (String text) {
-        _trackProvider.searchTracks(text);
+        _trackListProvider.searchTracks(text);
       },
     );
   }
@@ -59,8 +60,10 @@ class _TracksState extends State<Tracks> {
     /*Provider.of<EventProvider>(context, listen: false)
         .fetchTrackEvents(track.id);*/
 
+    Provider.of<TrackDetailProvider>(context, listen: false).setCurrentTrack(track);
+
     // Navigator.push returns a Future that will complete after we call Navigator.pop on the target screen
-    final _result = await Navigator.pushNamed(context, '/trackDetail', arguments: track);
+    final _result = await Navigator.pushNamed(context, '/trackDetail');
 
     // after the target screen returns a result, hide any previous snack bars and show the result
     if (_result != null) {
@@ -71,7 +74,7 @@ class _TracksState extends State<Tracks> {
   }
 
   Widget build(BuildContext context) {
-    final _trackProvider = Provider.of<TrackProvider>(context, listen: true);
+    final _trackListProvider = Provider.of<TrackListProvider>(context, listen: true);
 
     return Scaffold(
       appBar: AppBar(
@@ -81,13 +84,13 @@ class _TracksState extends State<Tracks> {
       drawer: MainDrawer(),
       body: Column(
         children: <Widget>[
-          buildSearchField(_trackProvider),
+          buildSearchField(_trackListProvider),
           Expanded(
             child: Container(
               decoration: CustomDecorations.mainContent,
               child: LoadingContent(
                 emptyText: AppString.tracksNotFound,
-                loadingStatus: _trackProvider.loadingStatus,
+                loadingStatus: _trackListProvider.loadingStatus,
                 child: GridView.builder(
                   padding: EdgeInsets.all(4.0),
                   gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
@@ -95,9 +98,9 @@ class _TracksState extends State<Tracks> {
                       crossAxisSpacing: 4,
                       mainAxisSpacing: 4,
                       childAspectRatio: 1),
-                  itemCount: _trackProvider.tracks.length,
+                  itemCount: _trackListProvider.tracks.length,
                   itemBuilder: (BuildContext context, int index) => InkWell(
-                    onTap: () => _navigateToTrackDetailScreen(context, _trackProvider.tracks[index]),
+                    onTap: () => _navigateToTrackDetailScreen(context, _trackListProvider.tracks[index]),
                     child: Card(
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6.0)),
                       clipBehavior: Clip.antiAlias,
@@ -110,8 +113,8 @@ class _TracksState extends State<Tracks> {
                           children: <Widget>[
                             Padding(
                               padding: const EdgeInsets.only(bottom: 5.0),
-                              child: Text(_trackProvider.tracks[index].name,
-                                  style: TextStyle(color: Colors.white), textScaleFactor: 1.1),
+                              child: Text(_trackListProvider.tracks[index].name!,
+                                  style: TextStyle(color: Colors.white), textScaler: TextScaler.linear(1.1)),
                             ),
                             Divider(
                               height: 1.0,
@@ -120,7 +123,7 @@ class _TracksState extends State<Tracks> {
                             Container(
                               height: 90.0,
                               padding: EdgeInsets.all(0),
-                              child: TrackUtils.getTrackIcon(_trackProvider.tracks[index].name),
+                              child: TrackUtils.getTrackIcon(_trackListProvider.tracks[index].name!),
                             ),
                             Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -131,9 +134,9 @@ class _TracksState extends State<Tracks> {
                                     Icon(Icons.straighten, size: 13, color: Colors.white),
                                     SizedBox(width: 6.0),
                                     Text(
-                                        "${AppString.length} : ${(_trackProvider.tracks[index].distance / 1000).toStringAsFixed(2)} km",
+                                        "${AppString.length} : ${(_trackListProvider.tracks[index].distance! / 1000).toStringAsFixed(2)} km",
                                         style: TextStyle(color: Colors.white),
-                                        textScaleFactor: 0.9),
+                                        textScaler: TextScaler.linear(0.9)),
                                   ],
                                 ),
                                 Row(
@@ -141,9 +144,9 @@ class _TracksState extends State<Tracks> {
                                     Icon(Icons.timer, size: 13, color: Colors.white),
                                     SizedBox(width: 6.0),
                                     Text(
-                                        "${AppString.record} : ${AppDateUtils.toLapTimeString(_trackProvider.tracks[index].lapRecord)}",
+                                        "${AppString.record} : ${AppDateUtils.toLapTimeString(_trackListProvider.tracks[index].lapRecord)}",
                                         style: TextStyle(color: Colors.white),
-                                        textScaleFactor: 0.9),
+                                        textScaler: TextScaler.linear(0.9)),
                                   ],
                                 ),
                               ],

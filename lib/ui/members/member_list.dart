@@ -98,11 +98,11 @@ class MemberList extends StatelessWidget {
                               "${_memberListProvider.memberList[index].firstName} ${_memberListProvider.memberList[index].lastName}"),
                           subtitle: Text(_memberListProvider.memberList[index].bike ?? AppString.notDefined),
                           leading: _memberListProvider.memberList[index].avatarUrl != null &&
-                                  _memberListProvider.memberList[index].avatarUrl.length > 0
+                                  _memberListProvider.memberList[index].avatarUrl!.length > 0
                               ? CircleAvatar(
                                   backgroundImage: NetworkImage(
                                       "$SERVER_AVATAR_FOLDER${_memberListProvider.memberList[index].avatarUrl}"))
-                              : CircleAvatar(child: Text(_memberListProvider.memberList[index].firstName[0])),
+                              : CircleAvatar(child: Text(_memberListProvider.memberList[index].firstName![0])),
                         ),
                         onTap: () => _navigateToMemberDetailScreen(context, _memberListProvider.memberList[index]),
                       ),

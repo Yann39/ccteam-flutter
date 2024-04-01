@@ -17,7 +17,6 @@
  * along with CCTeam. If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 const String TEST_INVALID_EMAIL = 'test_example';
 const String TEST_VALID_NO_ACCOUNT_EMAIL = 'test@example.com';
 const String TEST_VALID_ACCOUNT_EMAIL = 'obfuscated';

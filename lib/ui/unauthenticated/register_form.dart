@@ -44,7 +44,7 @@ class _RegisterFormState extends State<RegisterForm> {
   /// Method that pre-register the user according to information specified in the related form.
   /// It updates the login step status according to the result.
   _doPreRegisterUser(BuildContext context) async {
-    final FormState _form = _preRegisterFormKey.currentState;
+    final FormState _form = _preRegisterFormKey.currentState!;
 
     // validate the form
     if (_form.validate()) {
@@ -87,7 +87,7 @@ class _RegisterFormState extends State<RegisterForm> {
         enabledBorder: OutlineInputBorder(),
         focusedBorder: OutlineInputBorder(),
         errorBorder: OutlineInputBorder(
-          borderSide: BorderSide(color: Colors.red[700]),
+          borderSide: BorderSide(color: Colors.red[700]!),
         ),
         focusedErrorBorder: OutlineInputBorder(),
         disabledBorder: OutlineInputBorder(
@@ -100,7 +100,7 @@ class _RegisterFormState extends State<RegisterForm> {
       ),
       maxLines: 1,
       inputFormatters: [LengthLimitingTextInputFormatter(64)],
-      validator: (val) => val.isEmpty ? AppString.memberFirstNameMandatory : null,
+      validator: (val) => (val == null || val.isEmpty) ? AppString.memberFirstNameMandatory : null,
       onSaved: (val) => _loginProvider.firstName = val,
       initialValue: _loginProvider.firstName,
     );
@@ -114,7 +114,7 @@ class _RegisterFormState extends State<RegisterForm> {
         enabledBorder: OutlineInputBorder(),
         focusedBorder: OutlineInputBorder(),
         errorBorder: OutlineInputBorder(
-          borderSide: BorderSide(color: Colors.red[700]),
+          borderSide: BorderSide(color: Colors.red[700]!),
         ),
         focusedErrorBorder: OutlineInputBorder(),
         disabledBorder: OutlineInputBorder(
@@ -127,7 +127,7 @@ class _RegisterFormState extends State<RegisterForm> {
       ),
       maxLines: 1,
       inputFormatters: [LengthLimitingTextInputFormatter(64)],
-      validator: (val) => val.isEmpty ? AppString.memberLastNameMandatory : null,
+      validator: (val) => (val == null || val.isEmpty) ? AppString.memberLastNameMandatory : null,
       onSaved: (val) => _loginProvider.lastName = val,
       initialValue: _loginProvider.lastName,
     );
@@ -141,7 +141,7 @@ class _RegisterFormState extends State<RegisterForm> {
         enabledBorder: OutlineInputBorder(),
         focusedBorder: OutlineInputBorder(),
         errorBorder: OutlineInputBorder(
-          borderSide: BorderSide(color: Colors.red[700]),
+          borderSide: BorderSide(color: Colors.red[700]!),
         ),
         focusedErrorBorder: OutlineInputBorder(),
         disabledBorder: OutlineInputBorder(
@@ -155,7 +155,7 @@ class _RegisterFormState extends State<RegisterForm> {
       maxLines: 1,
       inputFormatters: [LengthLimitingTextInputFormatter(128)],
       validator: (val) {
-        if (val.isEmpty) {
+        if (val == null || val.isEmpty) {
           return AppString.memberEmailMandatory;
         } else if (!StringUtils.isValidEmail(val)) {
           return AppString.memberEmailNotValid;

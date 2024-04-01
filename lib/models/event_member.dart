@@ -23,10 +23,10 @@ import 'package:intl/intl.dart';
 
 /// Class representing an event participant
 class EventMember {
-  int id;
-  Member member;
-  Event event;
-  DateTime createdOn;
+  int? id;
+  Member? member;
+  Event? event;
+  DateTime? createdOn;
 
   EventMember({
     this.id,
@@ -39,15 +39,15 @@ class EventMember {
   String toString() {
     return """{
       id: ${this.id},
-      members: ${this.member?.toString()},
-      members: ${this.event?.toString()},
+      members: ${this.member.toString()},
+      members: ${this.event.toString()},
       createdOn: ${this.createdOn?.toIso8601String()},
     }""";
   }
 
   /// Convert [json] map to the corresponding object
   EventMember.fromJson(Map<String, dynamic> json)
-      : id = json['id'] != null ? int.parse(json['id']) : -1,
+      : id = json['id'] != null ? int.parse(json['id']) : null,
         member = json['member'] != null ? Member.fromJson(json['member']) : null,
         event = json['event'] != null ? Event.fromJson(json['event']) : null,
         createdOn = json['createdOn'] != null ? DateFormat("yyyy-MM-dd HH:mm:ss").parseStrict(json['createdOn']) : null;
@@ -55,8 +55,8 @@ class EventMember {
   /// Convert [EventMember] object to the corresponding JSON map
   Map<String, dynamic> toJson() => {
         "id": id,
-        "member": member.toJson(),
-        "event": event.toJson(),
+        "member": member?.toJson(),
+        "event": event?.toJson(),
         "createdOn": createdOn?.toIso8601String(),
       };
 }

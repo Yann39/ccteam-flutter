@@ -19,7 +19,6 @@
 
 /// Class that holds string constants
 class AppString {
-
   /// Format the specified [source] string according to the given [arguments].
   /// Parameters in the source string must be numbered in the format {x} starting from 0.
   /// Example : format('Hello {0}, your preferred color is {1}.', ['Bob', 'purple'])
@@ -60,8 +59,10 @@ class AppString {
   static const String identification = 'Identification';
   static const String registration = 'Inscription';
   static const String askNewPassword = 'Demande de nouveau mot de passe';
-  static const String infoLoginEmail = 'Pour vous connecter, indiquez l\'adresse e-mail liée à votre compte. Si vous n\'avez pas de compte, vous devez en créer un.';
-  static const String infoRegister = 'Complétez le formulaire ci-dessous pour commencer le processus d\'inscription. Un code vous sera envoyé afin de vérifier votre adresse e-mail.';
+  static const String infoLoginEmail =
+      'Pour vous connecter, indiquez l\'adresse e-mail liée à votre compte. Si vous n\'avez pas de compte, vous devez en créer un.';
+  static const String infoRegister =
+      'Complétez le formulaire ci-dessous pour commencer le processus d\'inscription. Un code vous sera envoyé afin de vérifier votre adresse e-mail.';
   static const String infoLoginOtp = 'Indiquez le code qui vous a été envoyé à l\'adresse';
   static const String timeLeft = 'Temps restant';
   static const String passcodeInfo = 'Veuillez définir un code vous permettant de sécuriser votre compte';
@@ -77,8 +78,10 @@ class AppString {
   static const String alreadyHaveAccount = 'J\'ai déjà un compte';
   static const String loggingIn = 'Connexion en cours';
   static const String understood = 'J\'ai compris';
-  static const String accountWaitingAdmin = 'Votre compte doit maintenant être validé par un administrateur avant que vous puissiez vous connecter. Vous serez averti par e-mail losrque votre compte sera actif';
-  static const String forgotPasswordInfo = 'Veuillez indiquer votre adresse e-mail dans le champ ci-dessous puis cliquez sur "Envoyer", la procédure de réinitialisation de mot de passe vous sera envoyée';
+  static const String accountWaitingAdmin =
+      'Votre compte doit maintenant être validé par un administrateur avant que vous puissiez vous connecter. Vous serez averti par e-mail losrque votre compte sera actif';
+  static const String forgotPasswordInfo =
+      'Veuillez indiquer votre adresse e-mail dans le champ ci-dessous puis cliquez sur "Envoyer", la procédure de réinitialisation de mot de passe vous sera envoyée';
 
   static const String tabHome = 'Accueil';
   static const String tabCalendar = 'Calendrier';
@@ -90,17 +93,23 @@ class AppString {
   static const String loginOtpHint = 'Code';
   static const String loginOtpMandatory = 'Veuillez saisir le code à 6 chiffres reçu par e-mail';
   static const String loginPasswordHint = 'Mot de passe';
-  static const String loginFailed = 'L\'dentification a échouée, vérifiez vos informations et assurez-vous que votre compte soit actif';
+  static const String loginFailed =
+      'L\'dentification a échouée, vérifiez vos informations et assurez-vous que votre compte soit actif';
   static const String loginNoAccountFound = "Aucun compte trouvé avec l'adresse e-mail spécifiée";
   static const String loginAccountEmailAlreadyExist = "Un compte existe déjà avec cette adresse e-mail";
   static const String loginEmailMissing = "L'adresse e-mail doit être spécifiée";
 
-  static const String checkAccountUnexpectedResponse = "Une erreur inattendue est survenue lors de la vérification de votre compte. Si le problème persite, contactez un administrateur";
-  static const String checkAccountError = "Une erreur inattendue est survenue lors de la vérification de votre compte. Si le problème persite, contactez un administrateur";
+  static const String checkAccountUnexpectedResponse =
+      "Une erreur inattendue est survenue lors de la vérification de votre compte. Si le problème persite, contactez un administrateur";
+  static const String checkAccountError =
+      "Une erreur inattendue est survenue lors de la vérification de votre compte. Si le problème persite, contactez un administrateur";
 
-  static const String preRegisterConfirmationEmailNotSent = "Le code de confirmation n'a pas pu être envoyé à l'adresse {0}. Veuillez vérifier que l'adresse e-mail est correcte puis renvoyez le code";
-  static const String preRegisterUnexpectedResponse = "Une erreur inattendue est survenue lors de la création de votre compte. Si le problème persite, contactez un administrateur";
-  static const String preRegisterError = "Une erreur inattendue est survenue lors de la création de votre compte. Si le problème persite, contactez un administrateur";
+  static const String preRegisterConfirmationEmailNotSent =
+      "Le code de confirmation n'a pas pu être envoyé à l'adresse {0}. Veuillez vérifier que l'adresse e-mail est correcte puis renvoyez le code";
+  static const String preRegisterUnexpectedResponse =
+      "Une erreur inattendue est survenue lors de la création de votre compte. Si le problème persite, contactez un administrateur";
+  static const String preRegisterError =
+      "Une erreur inattendue est survenue lors de la création de votre compte. Si le problème persite, contactez un administrateur";
 
   static const String codeHint = 'Code';
   static const String codeMandatory = 'Le code est obligatoire';
@@ -170,7 +179,8 @@ class AppString {
   static const String memberActive = 'Actif ?';
   static const String memberActiveMandatory = 'Le statut du membre (actif ou non) est obligatoire';
   static const String memberPasswordMandatory = 'Le mot de passe est obligatoire';
-  static const String memberLoginFailed = 'Connexion impossible, vérifiez vos informations et assurez-vous que votre compte est actif';
+  static const String memberLoginFailed =
+      'Connexion impossible, vérifiez vos informations et assurez-vous que votre compte est actif';
   static const String membersSearchHint = 'Nom / Prénom';
   static const String membersNotFound = 'Aucun membre trouvé';
   static const String memberNoEvent = 'Ce membre n\'a aucun roulage';
@@ -183,7 +193,8 @@ class AppString {
 
   static const String avatarUploadFailed = 'Échec, la taille du fichier ne doit pas dépasser 500Ko';
   static const String avatarDeleteFailed = 'Échec de la suppression de l\'avatar';
-  static const String avatarResetAreYouSure = 'Cette action va supprimer votre photo de profil et remettre celle par défaut, êtes-vous sûr de vouloir continuer ?';
+  static const String avatarResetAreYouSure =
+      'Cette action va supprimer votre photo de profil et remettre celle par défaut, êtes-vous sûr de vouloir continuer ?';
 
   static const String eventScreenTitle = 'Calendrier';
   static const String eventCreate = 'Ajouter un événement';
@@ -240,7 +251,6 @@ class AppString {
   static const String recordLapTimeHint = 'Chrono';
   static const String recordLapTimeMandatory = 'Le chrono est obligatoire';
   static const String recordLapTimeNotValid = 'Le chrono n\'est pas valide';
-
 
   static const String photoScreenTitle = 'Gallerie';
   static const String photoCreate = 'Ajouter une photo';
@@ -304,9 +314,9 @@ class AppString {
   static const String errorTokenNotFound = 'Votre session n\'est pas valide';
   static const String errorTokenWrongFormat = 'Votre identifiant de session n\'est pas valide';
   static const String errorBadCredentials = 'Nom d\'utilisateur ou mot de passe incorrect';
-  static const String errorServerInternal = 'Erreur interne au serveur. Si le problème persiste, contactez un administrateur';
-  static const String errorServerTimeOut = "Impossible de contacter le serveur, vérifiez votre connection internet. Si le problème persite, contactez un administrateur";
+  static const String errorServerInternal =
+      'Erreur interne au serveur. Si le problème persiste, contactez un administrateur';
+  static const String errorServerTimeOut =
+      "Impossible de contacter le serveur, vérifiez votre connection internet. Si le problème persite, contactez un administrateur";
   static const String errorUnknown = 'Erreur : {0}';
-
-
 }

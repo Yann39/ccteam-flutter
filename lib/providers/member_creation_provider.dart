@@ -35,13 +35,13 @@ class MemberCreationProvider extends ChangeNotifier {
   final MembersService _membersService = new MembersService();
 
   // message provider that can be set from the proxy provider
-  MessageProvider _messageProvider;
+  late MessageProvider _messageProvider;
 
   // login provider that can be set from the proxy provider
-  LoginProvider _loginProvider;
+  late LoginProvider _loginProvider;
 
   // current member
-  Member _currentMember = new Member();
+  late Member _currentMember;
 
   // current loading status
   LoadingStatus _loadingStatus = LoadingStatus.notLoaded;

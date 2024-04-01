@@ -19,8 +19,9 @@
 
 import 'package:ccteam/models/record.dart';
 import 'package:ccteam/models/track.dart';
-import 'package:ccteam/providers/record_provider.dart';
-import 'package:ccteam/providers/track_provider.dart';
+import 'package:ccteam/providers/record_creation_provider.dart';
+import 'package:ccteam/providers/record_list_provider.dart';
+import 'package:ccteam/providers/track_list_provider.dart';
 import 'package:ccteam/utils/constants.dart';
 import 'package:ccteam/utils/custom_decorations.dart';
 import 'package:ccteam/utils/custom_icons.dart';
@@ -28,16 +29,13 @@ import 'package:ccteam/utils/date_utils.dart';
 import 'package:ccteam/utils/string_utils.dart';
 import 'package:ccteam/utils/strings.dart';
 import 'package:ccteam/widgets/save_cancel_bar.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 class AddEditRecord extends StatefulWidget {
-  final Record record;
-
-  const AddEditRecord({Key key, this.record}) : super(key: key);
+  const AddEditRecord({Key? key}) : super(key: key);
 
   @override
   State<StatefulWidget> createState() {
@@ -48,54 +46,49 @@ class AddEditRecord extends StatefulWidget {
 class _AddEditRecordState extends State<AddEditRecord> {
   final GlobalKey<FormState> _formKey = new GlobalKey<FormState>();
   final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
-  final TextEditingController _datePickerController =
-      new TextEditingController();
+  final TextEditingController _datePickerController = new TextEditingController();
 
   // the record to be created
   final Record _newRecord = new Record();
 
   /// Initialize and display a Date picker related to the specified [controller] in the specified [context]
-  Future _chooseDate(BuildContext context, TextEditingController controller,
-      DateTime defaultValue) async {
+  Future _chooseDate(BuildContext context, TextEditingController controller, DateTime? defaultValue) async {
     final DateTime currentDate = DateTime.now();
     final TimeOfDay currentTime = TimeOfDay.now();
 
     // define initial date and time from the specified default DateTime value if set
     final DateTime initialDate = defaultValue ?? currentDate;
-    final TimeOfDay initialTime = defaultValue != null
-        ? TimeOfDay.fromDateTime(defaultValue)
-        : currentTime;
+    final TimeOfDay initialTime = defaultValue != null ? TimeOfDay.fromDateTime(defaultValue) : currentTime;
 
     // show the date picker and await for the chosen date
-    final DateTime dateResult = await showDatePicker(
+    final DateTime? dateResult = await showDatePicker(
         context: context,
         initialDate: initialDate,
         firstDate: DateTime(currentDate.year - 5),
         lastDate: DateTime(currentDate.year + 5));
-    if (dateResult == null) return;
 
     // show the time picker and await for the chosen time
-    final TimeOfDay timeResult =
-        await showTimePicker(context: context, initialTime: initialTime);
-    if (timeResult == null) return;
+    final TimeOfDay? timeResult = await showTimePicker(context: context, initialTime: initialTime);
 
-    // build final date with time
-    final DateTime finalDateTime = DateTime(dateResult.year, dateResult.month,
-        dateResult.day, timeResult.hour, timeResult.minute);
+    if (dateResult != null && timeResult != null) {
+      // build final date with time
+      final DateTime finalDateTime =
+          DateTime(dateResult.year, dateResult.month, dateResult.day, timeResult.hour, timeResult.minute);
 
-    // notify the framework that the internal state of this object has changed
-    setState(() {
-      controller.text = DateFormat(DATE_FORMAT).format(finalDateTime);
-    });
+      // notify the framework that the internal state of this object has changed
+      setState(() {
+        controller.text = DateFormat(DATE_FORMAT).format(finalDateTime);
+      });
+    }
   }
 
   /// Validate the form then submit data to backend
   void submitForm(Record record) {
-    final FormState form = _formKey.currentState;
+    final FormState form = _formKey.currentState!;
 
     if (!form.validate()) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          backgroundColor: Colors.red, content: Text(AppString.formNotValid)));
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(backgroundColor: Colors.red, content: Text(AppString.formNotValid)));
     } else {
       // this invokes each onSaved event
       form.save();
@@ -103,18 +96,14 @@ class _AddEditRecordState extends State<AddEditRecord> {
       // submit data to backend, if id is set this is an update, else a creation
       if (record.id != null) {
         // update the news go back with a message, the result is awaited in caller
-        Provider.of<RecordProvider>(context, listen: false)
-            .updateRecord(record)
-            .then((value) {
+        Provider.of<RecordListProvider>(context, listen: false).updateRecord(record).then((value) {
           Navigator.pop(context, AppString.recordUpdated);
         }, onError: (error) {
           Navigator.pop(context, AppString.recordUpdateFailed);
         });
       } else {
         // create the record go back with a message, the result is awaited in caller
-        Provider.of<RecordProvider>(context, listen: false)
-            .createRecord(record)
-            .then((value) {
+        Provider.of<RecordListProvider>(context, listen: false).createRecord(record).then((value) {
           Navigator.pop(context, AppString.recordCreated);
         }, onError: (error) {
           Navigator.pop(context, AppString.recordCreationFailed);
@@ -124,18 +113,14 @@ class _AddEditRecordState extends State<AddEditRecord> {
   }
 
   Widget build(BuildContext context) {
-    RecordProvider _recordProvider =
-        Provider.of<RecordProvider>(context, listen: true);
-    TrackProvider _trackProvider =
-        Provider.of<TrackProvider>(context, listen: true);
+    RecordCreationProvider _recordCreationProvider = Provider.of<RecordCreationProvider>(context, listen: true);
+    TrackListProvider _trackListProvider = Provider.of<TrackListProvider>(context, listen: true);
 
     // the current record to be edited
-    final Record _currRecord =
-        widget.record != null ? widget.record : _newRecord;
+    final Record _currRecord = _recordCreationProvider.record.id != null ? _recordCreationProvider.record : _newRecord;
 
     final _dateField = GestureDetector(
-      onTap: () =>
-          _chooseDate(context, _datePickerController, _currRecord.recordDate),
+      onTap: () => _chooseDate(context, _datePickerController, _currRecord.recordDate),
       child: AbsorbPointer(
         child: TextFormField(
           decoration: InputDecoration(
@@ -145,32 +130,31 @@ class _AddEditRecordState extends State<AddEditRecord> {
           ),
           controller: _datePickerController,
           keyboardType: TextInputType.datetime,
-          validator: (val) => AppDateUtils.isBeforeNow(val, DATE_FORMAT)
-              ? (val.isEmpty ? AppString.recordDateMandatory : null)
-              : AppString.recordDateNotValid,
-          onSaved: (val) =>
-              _currRecord.recordDate = DateFormat(DATE_FORMAT).parseStrict(val),
+          validator: (val) => (val == null || val.isEmpty)
+              ? AppString.recordDateMandatory
+              : (AppDateUtils.isBeforeNow(val, DATE_FORMAT) ? AppString.recordDateNotValid : null),
+          onSaved: (val) => _currRecord.recordDate = DateFormat(DATE_FORMAT).parseStrict(val!),
         ),
       ),
     );
 
     final _trackField = DropdownButtonFormField<Track>(
-      value: _trackProvider.selectedTrack,
+      value: _trackListProvider.selectedTrack,
       decoration: const InputDecoration(
         icon: const Icon(CustomIcons.track_sample),
         hintText: AppString.eventTrackIdHint,
         labelText: AppString.eventTrackId,
       ),
-      items: _trackProvider.tracks.map((Track value) {
+      items: _trackListProvider.tracks.map((Track value) {
         return DropdownMenuItem<Track>(
           value: value,
-          child: Text(value.name),
+          child: Text(value.name!),
         );
       }).toList(),
-      onChanged: (Track value) {
-        _trackProvider.selectTrack(value);
+      onChanged: (Track? value) {
+        _trackListProvider.selectTrack(value!);
       },
-      onSaved: (val) => _currRecord.track.id = val.id,
+      onSaved: (val) => _currRecord.track!.id = val!.id,
       validator: (val) => val == null ? AppString.eventTrackIdMandatory : null,
     );
 
@@ -187,21 +171,17 @@ class _AddEditRecordState extends State<AddEditRecord> {
         FilteringTextInputFormatter.digitsOnly,
         LapTimeTextInputFormatter()
       ],
-      validator: (val) => val.isEmpty
+      validator: (val) => (val == null || val.isEmpty)
           ? AppString.recordLapTimeMandatory
-          : (StringUtils.isValidLapTime(val)
-              ? null
-              : AppString.recordLapTimeNotValid),
-      onSaved: (val) =>
-          _currRecord.lapTime = AppDateUtils.toLapTimeDuration(val),
+          : (StringUtils.isValidLapTime(val) ? null : AppString.recordLapTimeNotValid),
+      onSaved: (val) => _currRecord.lapTime = AppDateUtils.toLapTimeDuration(val),
       initialValue: AppDateUtils.toLapTimeString(_currRecord.lapTime),
     );
 
     final listView = ListView(
       children: <Widget>[
         Container(
-          padding: const EdgeInsets.only(
-              top: 0, left: 16.0, right: 16.0, bottom: 56.0),
+          padding: const EdgeInsets.only(top: 0, left: 16.0, right: 16.0, bottom: 56.0),
           decoration: CustomDecorations.mainContent,
           child: Form(
             autovalidateMode: AutovalidateMode.disabled,
@@ -240,9 +220,7 @@ class _AddEditRecordState extends State<AddEditRecord> {
       appBar: AppBar(
         elevation: 0.0,
         title: Text(AppString.recordEdit),
-        actions: MediaQuery.of(context).orientation == Orientation.portrait
-            ? null
-            : actionMenu,
+        actions: MediaQuery.of(context).orientation == Orientation.portrait ? null : actionMenu,
       ),
       body: MediaQuery.of(context).orientation == Orientation.portrait
           ? Stack(
@@ -263,16 +241,14 @@ class _AddEditRecordState extends State<AddEditRecord> {
 /// Input formatter class for lap times
 class LapTimeTextInputFormatter extends TextInputFormatter {
   @override
-  TextEditingValue formatEditUpdate(
-      TextEditingValue oldValue, TextEditingValue newValue) {
+  TextEditingValue formatEditUpdate(TextEditingValue oldValue, TextEditingValue newValue) {
     final int _newTextLength = newValue.text.length;
     int _selectionIndex = newValue.selection.end;
     int _usedSubstringIndex = 0;
     final StringBuffer _newText = new StringBuffer();
     // add a space after the 2nd character
     if (_newTextLength >= 3) {
-      _newText
-          .write(newValue.text.substring(0, _usedSubstringIndex = 2) + '\'');
+      _newText.write(newValue.text.substring(0, _usedSubstringIndex = 2) + '\'');
       if (newValue.selection.end >= 2) _selectionIndex++;
     }
     // add a space after the 4rd character
@@ -281,8 +257,7 @@ class LapTimeTextInputFormatter extends TextInputFormatter {
       if (newValue.selection.end >= 3) _selectionIndex++;
     }
     // then write following characters
-    if (_newTextLength >= _usedSubstringIndex)
-      _newText.write(newValue.text.substring(_usedSubstringIndex));
+    if (_newTextLength >= _usedSubstringIndex) _newText.write(newValue.text.substring(_usedSubstringIndex));
     return TextEditingValue(
       text: _newText.toString(),
       selection: TextSelection.collapsed(offset: _selectionIndex),

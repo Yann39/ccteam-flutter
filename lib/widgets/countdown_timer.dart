@@ -6,13 +6,12 @@ class CountDownTimer extends StatelessWidget {
   final TextStyle textStyle;
 
   const CountDownTimer({
-    Key key,
-    this.textStyle,
+    Key? key,
+    required this.textStyle,
   }) : super(key: key);
 
   Widget build(BuildContext context) {
-    final TimerProvider _timerProvider =
-        Provider.of<TimerProvider>(context, listen: true);
+    final TimerProvider _timerProvider = Provider.of<TimerProvider>(context, listen: true);
     return Text(
       "${Duration(seconds: _timerProvider.currentValue).inMinutes.remainder(60).toString().padLeft(2, '0')}:${Duration(seconds: _timerProvider.currentValue).inSeconds.remainder(60).toString().padLeft(2, '0')}",
       style: textStyle,

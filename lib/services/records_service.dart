@@ -30,15 +30,12 @@ class RecordsService {
   /// Return empty array if no data found (404)
   Future<List<Record>> fetchRecords() async {
     // call to API
-    final response =
-        await http.get(Uri.parse(API_BASE_URL + API_GET_ALL_RECORDS_ENDPOINT));
+    final response = await http.get(Uri.parse(API_BASE_URL + API_GET_ALL_RECORDS_ENDPOINT));
 
     if (response.statusCode == 200) {
       // if the call to the server was successful, parse the JSON and return content
       dynamic responseJson = json.decode(response.body);
-      return (responseJson['records'] as List)
-          .map((p) => Record.fromJson(p))
-          .toList();
+      return (responseJson['records'] as List).map((p) => Record.fromJson(p)).toList();
     } else if (response.statusCode == 404) {
       // no data found, return empty array
       return [];
@@ -53,21 +50,17 @@ class RecordsService {
   /// Return empty array if no data found (404)
   Future<List<Record>> fetchTrackRecords(int trackId) async {
     // call to API
-    final response = await http.get(Uri.parse(
-        API_BASE_URL + API_GET_TRACK_RECORDS_ENDPOINT + "?trackId=$trackId"));
+    final response = await http.get(Uri.parse(API_BASE_URL + API_GET_TRACK_RECORDS_ENDPOINT + "?trackId=$trackId"));
 
     if (response.statusCode == 200) {
       // if the call to the server was successful, parse the JSON and return content
       dynamic responseJson = json.decode(response.body);
-      return (responseJson['records'] as List)
-          .map((p) => Record.fromJson(p))
-          .toList();
+      return (responseJson['records'] as List).map((p) => Record.fromJson(p)).toList();
     } else if (response.statusCode == 404) {
       // no data found, return empty array
       return [];
     } else if (response.statusCode == 400) {
-      throw Exception(
-          'Bad request, check that parameter has been specified correctly');
+      throw Exception('Bad request, check that parameter has been specified correctly');
     } else {
       throw Exception('Unexpected server response');
     }
@@ -79,22 +72,17 @@ class RecordsService {
   /// Return empty array if no data found (404)
   Future<List<Record>> fetchMemberRecords(int memberId) async {
     // call to API
-    final response = await http.get(Uri.parse(API_BASE_URL +
-        API_GET_MEMBER_RECORDS_ENDPOINT +
-        "?memberId=$memberId"));
+    final response = await http.get(Uri.parse(API_BASE_URL + API_GET_MEMBER_RECORDS_ENDPOINT + "?memberId=$memberId"));
 
     if (response.statusCode == 200) {
       // if the call to the server was successful, parse the JSON and return content
       dynamic responseJson = json.decode(response.body);
-      return (responseJson['records'] as List)
-          .map((p) => Record.fromJson(p))
-          .toList();
+      return (responseJson['records'] as List).map((p) => Record.fromJson(p)).toList();
     } else if (response.statusCode == 404) {
       // no data found, return empty array
       return [];
     } else if (response.statusCode == 400) {
-      throw Exception(
-          'Bad request, check that parameter has been specified correctly');
+      throw Exception('Bad request, check that parameter has been specified correctly');
     } else {
       throw Exception('Unexpected server response');
     }
@@ -105,10 +93,8 @@ class RecordsService {
   /// Throw an exception if response status code is different from 201
   Future<void> createRecord(Record record) async {
     // call to API
-    final response = await http.post(
-        Uri.parse(API_BASE_URL + API_CREATE_RECORD_ENDPOINT),
-        headers: {'Content-Type': 'application/json'},
-        body: record.toJson());
+    final response = await http.post(Uri.parse(API_BASE_URL + API_CREATE_RECORD_ENDPOINT),
+        headers: {'Content-Type': 'application/json'}, body: record.toJson());
 
     // handle server response code
     if (response.statusCode == 201) {
@@ -118,8 +104,7 @@ class RecordsService {
     } else if (response.statusCode == 400) {
       throw Exception('Bad request, record has not been created');
     } else {
-      throw Exception(
-          'Unexpected server response, record has not been created');
+      throw Exception('Unexpected server response, record has not been created');
     }
   }
 
@@ -128,10 +113,8 @@ class RecordsService {
   /// Throw an exception if response status code is different from 200
   Future<void> updateRecord(Record record) async {
     // call to API
-    final response = await http.post(
-        Uri.parse(API_BASE_URL + API_UPDATE_RECORD_ENDPOINT),
-        headers: {'Content-Type': 'application/json'},
-        body: record.toJson());
+    final response = await http.post(Uri.parse(API_BASE_URL + API_UPDATE_RECORD_ENDPOINT),
+        headers: {'Content-Type': 'application/json'}, body: record.toJson());
 
     // handle server response code
     if (response.statusCode == 200) {
@@ -139,8 +122,7 @@ class RecordsService {
     } else if (response.statusCode == 503) {
       throw Exception('Failed to update the record');
     } else {
-      throw Exception(
-          'Unexpected server response, record has not been updated');
+      throw Exception('Unexpected server response, record has not been updated');
     }
   }
 
@@ -149,10 +131,8 @@ class RecordsService {
   /// Throw an exception if response status code is different from 204
   Future<void> deleteRecord(Record record) async {
     // call to API
-    final response = await http.post(
-        Uri.parse(API_BASE_URL + API_DELETE_RECORD_ENDPOINT),
-        headers: {'Content-Type': 'application/json'},
-        body: record.toJson());
+    final response = await http.post(Uri.parse(API_BASE_URL + API_DELETE_RECORD_ENDPOINT),
+        headers: {'Content-Type': 'application/json'}, body: record.toJson());
 
     if (response.statusCode != 204) {
       throw Exception('Unexpected server response');

@@ -23,9 +23,9 @@ import 'package:flutter/material.dart';
 /// The custom animation allow to bypass any object placed at the left, especially a circle image
 class FlexibleTitle extends StatelessWidget {
   const FlexibleTitle({
-    Key key,
-    this.text,
-    this.padding,
+    Key? key,
+    required this.text,
+    required this.padding,
   }) : super(key: key);
 
   final String text;
@@ -34,8 +34,8 @@ class FlexibleTitle extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final settings = context.dependOnInheritedWidgetOfExactType<FlexibleSpaceBarSettings>();
-    final double deltaExtent = settings.maxExtent - settings.minExtent;
-    final double t = (1.0 - (settings.currentExtent - settings.minExtent) / deltaExtent).clamp(0.0, 1.0) as double;
+    final double deltaExtent = settings!.maxExtent - settings.minExtent;
+    final double t = (1.0 - (settings.currentExtent - settings.minExtent) / deltaExtent).clamp(0.0, 1.0);
     final double scaleValue = Tween<double>(begin: 1.5, end: 1.0).transform(t);
     final double leftPadding = (scaleValue - 1) * (padding.left * (8.5 - scaleValue * 5));
     final double bottomPadding = (scaleValue - 1) * (padding.bottom * (8.5 - scaleValue * 5));

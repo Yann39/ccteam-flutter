@@ -17,8 +17,6 @@
  * along with CCTeam. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import 'dart:ui';
-
 import 'package:ccteam/providers/login_provider.dart';
 import 'package:ccteam/providers/timer_provider.dart';
 import 'package:ccteam/utils/enums.dart';
@@ -36,7 +34,6 @@ class OtpForm extends StatefulWidget {
 }
 
 class _OtpFormState extends State<OtpForm> {
-
   final Logger _log = new Logger('OtpForm');
   final GlobalKey<FormState> _otpFormKey = new GlobalKey<FormState>();
 
@@ -49,10 +46,10 @@ class _OtpFormState extends State<OtpForm> {
   }
 
   // OTP digits
-  String _otpDigit0;
-  String _otpDigit1;
-  String _otpDigit2;
-  String _otpDigit3;
+  late String _otpDigit0;
+  late String _otpDigit1;
+  late String _otpDigit2;
+  late String _otpDigit3;
 
   // each OTP digit will be attributed a focus node so we can focus next field automatically when typing
   var _otpFocusNodes = List.generate(4, (index) => FocusNode());
@@ -72,26 +69,22 @@ class _OtpFormState extends State<OtpForm> {
   /// Method that check the OTP specified in the related form.
   /// It updates the login step status according to the result.
   _doCheckOtp(BuildContext context) async {
-    final FormState _form = _otpFormKey.currentState;
+    final FormState _form = _otpFormKey.currentState!;
 
     // validate the form
     if (!_form.validate()) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          backgroundColor: Colors.red, content: Text(AppString.formNotValid)));
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(backgroundColor: Colors.red, content: Text(AppString.formNotValid)));
     } else {
       _form.save();
 
       // build and set OTP from collected digits
-      Provider.of<LoginProvider>(context, listen: false).otp =
-          "$_otpDigit0$_otpDigit1$_otpDigit2$_otpDigit3";
+      Provider.of<LoginProvider>(context, listen: false).otp = "$_otpDigit0$_otpDigit1$_otpDigit2$_otpDigit3";
 
-      _log.info(
-          "OTP to be sent ${Provider.of<LoginProvider>(context, listen: false).otp}");
+      _log.info("OTP to be sent ${Provider.of<LoginProvider>(context, listen: false).otp}");
 
       // check OTP
-      Provider.of<LoginProvider>(context, listen: false)
-          .confirmEmail()
-          .then((value) {}, onError: (error) {
+      Provider.of<LoginProvider>(context, listen: false).confirmEmail().then((value) {}, onError: (error) {
         _log.severe(error.toString());
       });
     }
@@ -127,13 +120,13 @@ class _OtpFormState extends State<OtpForm> {
         inputFormatters: [LengthLimitingTextInputFormatter(1)],
         onSaved: (val) => {
           if (digitId == 0)
-            _otpDigit0 = val
+            _otpDigit0 = val!
           else if (digitId == 1)
-            _otpDigit1 = val
+            _otpDigit1 = val!
           else if (digitId == 2)
-            _otpDigit2 = val
+            _otpDigit2 = val!
           else if (digitId == 3)
-            _otpDigit3 = val
+            _otpDigit3 = val!
         },
         initialValue: digitId == 0
             ? _otpDigit0
@@ -146,17 +139,15 @@ class _OtpFormState extends State<OtpForm> {
                         : null,
       ),
       decoration: BoxDecoration(
-        border: Border.all(color: Colors.blue[700], width: 2.0),
+        border: Border.all(color: Colors.blue[700]!, width: 2.0),
         borderRadius: BorderRadius.circular(4),
       ),
     );
   }
 
   Widget build(BuildContext context) {
-    final LoginProvider _loginProvider =
-    Provider.of<LoginProvider>(context, listen: false);
-    final TimerProvider _timerProvider =
-    Provider.of<TimerProvider>(context, listen: false);
+    final LoginProvider _loginProvider = Provider.of<LoginProvider>(context, listen: false);
+    final TimerProvider _timerProvider = Provider.of<TimerProvider>(context, listen: false);
 
     _log.info("Building OtpForm...");
 
@@ -177,8 +168,8 @@ class _OtpFormState extends State<OtpForm> {
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(4),
             ),
+            backgroundColor: Colors.blue[700],
             padding: EdgeInsets.fromLTRB(16.0, 12.0, 16.0, 12.0),
-            primary: Colors.blue[700],
           ),
           onPressed: () {
             _doCheckOtp(context);
@@ -258,8 +249,7 @@ class _OtpFormState extends State<OtpForm> {
                 children: <TextSpan>[
                   TextSpan(text: AppString.infoLoginOtp),
                   TextSpan(
-                      text: " ${_loginProvider.email}".toLowerCase(),
-                      style: TextStyle(fontWeight: FontWeight.bold)),
+                      text: " ${_loginProvider.email}".toLowerCase(), style: TextStyle(fontWeight: FontWeight.bold)),
                 ],
               ),
             ),
@@ -273,9 +263,7 @@ class _OtpFormState extends State<OtpForm> {
                   "${AppString.timeLeft} : ",
                   style: TextStyle(fontSize: 14.0),
                 ),
-                CountDownTimer(
-                    textStyle:
-                        TextStyle(fontSize: 14.0, fontWeight: FontWeight.bold)),
+                CountDownTimer(textStyle: TextStyle(fontSize: 14.0, fontWeight: FontWeight.bold)),
               ],
             ),
             SizedBox(height: 16.0),
@@ -285,27 +273,26 @@ class _OtpFormState extends State<OtpForm> {
                 Text(AppString.codeNotReceived),
                 TextButton(
                   onPressed: () {
-                    _loginProvider.resendOtp().then(
-                            (value) {
-                          // OTP resent, restart countdown timer
-                              _timerProvider.startNewCountDown(600);
-                        }, onError: (error) {
+                    _loginProvider.resendOtp().then((value) {
+                      // OTP resent, restart countdown timer
+                      _timerProvider.startNewCountDown(600);
+                    }, onError: (error) {
                       _log.severe(error.toString());
                     });
                   },
                   child: _loginProvider.loginStatus == LoginStatus.Loading
                       ? SizedBox(
-                    child: CircularProgressIndicator(
-                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                      strokeWidth: 2.0,
-                    ),
-                    height: 14.0,
-                    width: 14.0,
-                  )
+                          child: CircularProgressIndicator(
+                            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                            strokeWidth: 2.0,
+                          ),
+                          height: 14.0,
+                          width: 14.0,
+                        )
                       : Text(
-                    AppString.resendOtp.toUpperCase(),
-                    style: TextStyle(color: Colors.blue[900]),
-                  ),
+                          AppString.resendOtp.toUpperCase(),
+                          style: TextStyle(color: Colors.blue[900]),
+                        ),
                 ),
               ],
             ),

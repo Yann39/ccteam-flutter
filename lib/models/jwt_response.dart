@@ -19,7 +19,7 @@
 
 /// Class representing a JWT response
 class JwtResponse {
-  String jwtToken;
+  String? jwtToken;
 
   JwtResponse({
     this.jwtToken,

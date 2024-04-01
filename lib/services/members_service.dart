@@ -96,7 +96,7 @@ class MembersService {
 
   /// Fetch all members from the database according to the specified text [filter].
   /// Returns all records if [filter] is null or empty.
-  Future<List<Member>> fetchMembers(String filter) async {
+  Future<List<Member>> fetchMembers(String? filter) async {
     _log.info("Getting all members from database...");
 
     final String query = """
@@ -124,9 +124,9 @@ class MembersService {
       (result) {
         final List<Member> members = [];
         if (result.hasException) {
-          throw AppUtils.handleGraphQlException(result);
+          throw AppUtils.handleGraphQlException(result)!;
         } else {
-          dynamic memberList = result.data['getMembersFiltered'];
+          dynamic memberList = result.data!['getMembersFiltered'];
           if (memberList == null) {
             _log.info("getMembersFiltered returned null data");
           } else if (memberList is Map<String, dynamic> && memberList.isEmpty) {
@@ -190,12 +190,12 @@ class MembersService {
         .then(
       (result) {
         if (result.hasException) {
-          throw AppUtils.handleGraphQlException(result);
+          throw AppUtils.handleGraphQlException(result)!;
         } else {
-          if (result.data['getMemberById'] == null) {
+          if (result.data!['getMemberById'] == null) {
             throw CustomGraphQlException("member_not_found", "Member not found");
           }
-          return Member.fromJson(result.data['getMemberById']);
+          return Member.fromJson(result.data!['getMemberById']);
         }
       },
       onError: (error) {
@@ -244,12 +244,13 @@ class MembersService {
         .then(
       (result) {
         if (result.hasException) {
-          throw AppUtils.handleGraphQlException(result);
+          throw AppUtils.handleGraphQlException(result)!;
         } else {
-          if (result.data['getMemberByEmail'] == null) {
+          if (result.data!['getMemberByEmail'] == null) {
             throw CustomGraphQlException("member_not_found", "Member not found");
           }
-          return Member.fromJson(result.data['getMemberByEmail']);
+          print(result.data!['getMemberByEmail']);
+          return Member.fromJson(result.data!['getMemberByEmail']);
         }
       },
       onError: (error) {
@@ -315,9 +316,9 @@ class MembersService {
     final QueryResult result = await GraphQLConnection().graphQLClient.mutate(mutationOptions);
 
     if (result.hasException) {
-      throw AppUtils.handleGraphQlException(result);
+      throw AppUtils.handleGraphQlException(result)!;
     } else {
-      return Member.fromJson(result.data['createMember']);
+      return Member.fromJson(result.data!['createMember']);
     }
   }
 
@@ -380,9 +381,9 @@ class MembersService {
     final QueryResult result = await GraphQLConnection().graphQLClient.mutate(mutationOptions);
 
     if (result.hasException) {
-      throw AppUtils.handleGraphQlException(result);
+      throw AppUtils.handleGraphQlException(result)!;
     } else {
-      return Member.fromJson(result.data['updateMember']);
+      return Member.fromJson(result.data!['updateMember']);
     }
   }
 
@@ -428,16 +429,16 @@ class MembersService {
     final QueryResult result = await GraphQLConnection().graphQLClient.mutate(mutationOptions);
 
     if (result.hasException) {
-      throw AppUtils.handleGraphQlException(result);
+      throw AppUtils.handleGraphQlException(result)!;
     } else {
-      return Member.fromJson(result.data['deleteMember']);
+      return Member.fromJson(result.data!['deleteMember']);
     }
   }
 
   /// Ask for a password reset for the account related to the specified [email].
   /// Send a POST request to the Restful API.
   /// Throw an exception if response status code is different from 201.
-  Future<void> askPassword(String email) async {
+  Future<Member> askPassword(String email) async {
     // convert Member object to JSON string
     final String jsonString = '{email:$email}';
 
@@ -483,7 +484,7 @@ class MembersService {
 
     // handle server response code
     if (response.statusCode == 200) {
-      String path;
+      late String path;
       await for (String value in response.stream.transform(utf8.decoder)) {
         path = value;
       }

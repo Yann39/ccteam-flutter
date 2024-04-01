@@ -23,15 +23,15 @@ import 'package:intl/intl.dart';
 
 /// Class representing a member track lap record
 class Record {
-  int id;
-  Track track;
-  Member member;
-  int lapTime;
-  DateTime recordDate;
-  String conditions;
-  String comments;
-  DateTime createdOn;
-  DateTime modifiedOn;
+  int? id;
+  Track? track;
+  Member? member;
+  int? lapTime;
+  DateTime? recordDate;
+  String? conditions;
+  String? comments;
+  DateTime? createdOn;
+  DateTime? modifiedOn;
 
   Record({
     this.id,
@@ -62,16 +62,15 @@ class Record {
 
   /// Convert [json] map to the corresponding object
   Record.fromJson(Map<String, dynamic> json)
-      : id = json['id'] != null ? int.parse(json['id']) : -1,
-        track = Track.fromJson(json['track']),
-        member = Member.fromJson(json['member']),
+      : id = json['id'] != null ? int.parse(json['id']) : null,
+        track = json['track'] != null ? Track.fromJson(json['track']) : null,
+        member = json['member'] != null ? Member.fromJson(json['member']) : null,
         lapTime = json['lapTime'] != null ? int.parse(json['lapTime']) : null,
         recordDate = json['recordDate'] != null ? DateFormat("yyyy-MM-dd").parseStrict(json['recordDate']) : null,
         conditions = json['conditions'],
         comments = json['comments'],
         createdOn = json['createdOn'] != null ? DateFormat("yyyy-MM-dd HH:mm:ss").parseStrict(json['createdOn']) : null,
-        modifiedOn =
-            json['modifiedOn'] != null ? DateFormat("yyyy-MM-dd HH:mm:ss").parseStrict(json['modifiedOn']) : null;
+        modifiedOn = json['modifiedOn'] != null ? DateFormat("yyyy-MM-dd HH:mm:ss").parseStrict(json['modifiedOn']) : null;
 
   /// Convert [Record] object to the corresponding JSON map
   Map<String, dynamic> toJson() => {
@@ -83,6 +82,6 @@ class Record {
         "conditions": conditions,
         "comments": comments,
         "createdOn": createdOn?.toIso8601String(),
-        "modifiedOn": createdOn?.toIso8601String(),
+        "modifiedOn": modifiedOn?.toIso8601String(),
       };
 }

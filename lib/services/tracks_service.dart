@@ -35,7 +35,7 @@ class TracksService {
   Future<List<Track>> fetchTracks() async {
     _log.info("Getting all tracks from database...");
 
-    final String allNewsQuery = """
+    final String allTracksQuery = """
       query GetAllTracks() {
         getAllTracks() {
           id
@@ -53,7 +53,7 @@ class TracksService {
         .graphQLClient
         .query(
           QueryOptions(
-            document: parseString(allNewsQuery),
+            document: parseString(allTracksQuery),
             fetchPolicy: FetchPolicy.noCache,
           ),
         )
@@ -61,9 +61,9 @@ class TracksService {
       (result) {
         final List<Track> tracks = [];
         if (result.hasException) {
-          throw AppUtils.handleGraphQlException(result);
+          throw AppUtils.handleGraphQlException(result)!;
         } else {
-          dynamic trackList = result.data['getAllTracks'];
+          dynamic trackList = result.data!['getAllTracks'];
           if (trackList == null) {
             _log.info("getAllTracks returned null data");
           } else if (trackList is Map<String, dynamic> && trackList.isEmpty) {
@@ -104,6 +104,50 @@ class TracksService {
     } else {
       throw Exception('Unexpected server response');
     }
+  }
+
+  /// Get a track from the database given its [id].
+  Future<Track?> getTrackById(int id) async {
+    _log.info("Getting track $id from database...");
+
+    final String trackByIdQuery = """
+      query GetTrackById(\$id: Long!) {
+        getTrackById(id: \$id) {
+          id
+          name
+          distance
+          lapRecord
+          website
+          latitude
+          longitude 
+        }
+      }
+    """;
+
+    return GraphQLConnection()
+        .graphQLClient
+        .query(
+          QueryOptions(
+            document: parseString(trackByIdQuery),
+            variables: {'id': id},
+            fetchPolicy: FetchPolicy.noCache,
+          ),
+        )
+        .then(
+      (result) {
+        if (result.hasException) {
+          throw AppUtils.handleGraphQlException(result)!;
+        } else {
+          if (result.data!['getTrackById'] == null) {
+            return null;
+          }
+          return Track.fromJson(result.data!['getTrackById']);
+        }
+      },
+      onError: (error) {
+        throw Exception(error);
+      },
+    );
   }
 
   /// Create the specified [track] into the database

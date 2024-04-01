@@ -23,7 +23,7 @@ import 'package:intl/intl.dart';
 class AppDateUtils {
   /// convert the specified [input] string to a DateTime object according to the specified [format]
   /// return null if the specified input string is not a valid date
-  static DateTime convertToDate(String input, String format) {
+  static DateTime? convertToDate(String input, String format) {
     try {
       return DateFormat(format, 'fr').parseStrict(input);
     } catch (e) {
@@ -33,7 +33,7 @@ class AppDateUtils {
 
   /// convert the specified [input] DateTime object to a String according to the specified [format]
   /// return null if the specified input is not a valid date
-  static String convertToString(DateTime input, String format) {
+  static String? convertToString(DateTime input, String format) {
     try {
       return DateFormat(format, 'fr').format(input);
     } catch (e) {
@@ -45,7 +45,7 @@ class AppDateUtils {
   /// also return true if the specified date string is null or empty
   static bool isBeforeNow(String date, String format) {
     if (date.isEmpty) return true;
-    final DateTime d = convertToDate(date, format);
+    final DateTime? d = convertToDate(date, format);
     return d != null && d.isBefore(DateTime.now());
   }
 
@@ -53,22 +53,22 @@ class AppDateUtils {
   /// also return true if the specified date string is null or empty
   static bool isAfterNow(String date, String format) {
     if (date.isEmpty) return true;
-    final DateTime d = convertToDate(date, format);
+    final DateTime? d = convertToDate(date, format);
     return d != null && d.isAfter(DateTime.now());
   }
 
   /// format the specified [duration] (integer representing a number of milliseconds) as string
-  static String toLapTimeString(int duration) {
+  static String? toLapTimeString(int? duration) {
     if (duration == null) return null;
     return "${Duration(milliseconds: duration).inMinutes.remainder(60).toString().padLeft(2, '0')}'${Duration(milliseconds: duration).inSeconds.remainder(60).toString().padLeft(2, '0')}\"${Duration(milliseconds: duration).inMilliseconds.remainder(1000)}";
   }
 
   /// format the specified [lapTime] string to an integer representing the number of milliseconds
-  static int toLapTimeDuration(String lapTime) {
+  static int? toLapTimeDuration(String? lapTime) {
     if (lapTime == null || lapTime.length == 0) return null;
     final int minutes = int.parse(lapTime.substring(0, lapTime.indexOf('\'')));
-    final int seconds = int.parse(lapTime.substring(lapTime.indexOf('\'')+1, lapTime.indexOf('"')));
-    final int milliseconds = int.parse(lapTime.substring(lapTime.indexOf('"')+1));
-    return minutes*60000 + seconds*100 + milliseconds;
+    final int seconds = int.parse(lapTime.substring(lapTime.indexOf('\'') + 1, lapTime.indexOf('"')));
+    final int milliseconds = int.parse(lapTime.substring(lapTime.indexOf('"') + 1));
+    return minutes * 60000 + seconds * 100 + milliseconds;
   }
 }

@@ -34,10 +34,10 @@ class MemberListProvider extends ChangeNotifier {
   final MembersService _membersService = new MembersService();
 
   // message provider that can be set from the proxy provider
-  MessageProvider _messageProvider;
+  late MessageProvider _messageProvider;
 
   // login provider that can be set from the proxy provider
-  LoginProvider _loginProvider;
+  late LoginProvider _loginProvider;
 
   // current members list
   List<Member> _memberList = [];
@@ -72,7 +72,7 @@ class MemberListProvider extends ChangeNotifier {
     _memberList.add(member);
 
     // re-sort the list by first name
-    _memberList.sort((a, b) => a.firstName.compareTo(b.firstName));
+    _memberList.sort((a, b) => a.firstName!.compareTo(b.firstName!));
 
     _notifyListeners();
   }
@@ -93,7 +93,7 @@ class MemberListProvider extends ChangeNotifier {
   }
 
   /// Fetch the list of all members according to the specified [text] filter.
-  void fetchMemberList(String text) async {
+  void fetchMemberList(String? text) async {
     _updateLoadingStatus(LoadingStatus.loading);
     await _membersService.fetchMembers(text).then((value) async {
       _log.fine("Members list of ${value.length} members retrieved successfully");

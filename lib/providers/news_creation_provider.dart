@@ -34,10 +34,10 @@ class NewsCreationProvider extends ChangeNotifier {
   final NewsService _newsService = new NewsService();
 
   // message provider that can be set from the proxy provider
-  MessageProvider _messageProvider;
+  late MessageProvider _messageProvider;
 
   // login provider that can be set from the proxy provider
-  LoginProvider _loginProvider;
+  late LoginProvider _loginProvider;
 
   // current news being created/edited
   News _news = new News();
@@ -84,7 +84,7 @@ class NewsCreationProvider extends ChangeNotifier {
   }
 
   /// Update the current news being edited.
-  Future<News> updateNews() async {
+  Future<News?> updateNews() async {
     _updateStatus(LoadingStatus.loading);
     _news.modifiedBy = _loginProvider.loggedMember;
 
@@ -99,7 +99,7 @@ class NewsCreationProvider extends ChangeNotifier {
       _messageProvider.setMessage(AppString.newsUpdateFailed, MessageType.ERROR);
       AppUtils.handleServiceException(error, _messageProvider, _loginProvider);
       _updateStatus(LoadingStatus.notLoaded);
-      return null;
+      return Future.value(null);
     });
   }
 

@@ -61,9 +61,9 @@ class NewsService {
       (result) {
         final List<News> news = [];
         if (result.hasException) {
-          throw AppUtils.handleGraphQlException(result);
+          throw AppUtils.handleGraphQlException(result)!;
         } else {
-          dynamic newsList = result.data['getAllNews'];
+          dynamic newsList = result.data!['getAllNews'];
           if (newsList == null) {
             _log.info("GetAllNews returned null data");
           } else if (newsList is Map<String, dynamic> && newsList.isEmpty) {
@@ -84,7 +84,7 @@ class NewsService {
   }
 
   /// Get a news from the database given its [id].
-  Future<News> getNewsById(int id) async {
+  Future<News?> getNewsById(int id) async {
     _log.info("Getting news $id from database...");
 
     final String newsByIdQuery = """
@@ -128,12 +128,12 @@ class NewsService {
         .then(
       (result) {
         if (result.hasException) {
-          throw AppUtils.handleGraphQlException(result);
+          throw AppUtils.handleGraphQlException(result)!;
         } else {
-          if (result.data['getNewsById'] == null) {
+          if (result.data!['getNewsById'] == null) {
             return null;
           }
-          return News.fromJson(result.data['getNewsById']);
+          return News.fromJson(result.data!['getNewsById']);
         }
       },
       onError: (error) {
@@ -190,15 +190,15 @@ class NewsService {
     final QueryResult result = await GraphQLConnection().graphQLClient.mutate(mutationOptions);
 
     if (result.hasException) {
-      throw AppUtils.handleGraphQlException(result);
+      throw AppUtils.handleGraphQlException(result)!;
     } else {
-      return News.fromJson(result.data['likeNews']);
+      return News.fromJson(result.data!['likeNews']);
     }
   }
 
   /// Mark the news identified by the specified [newsId] as not liked for the member identified by the specified [memberId].
   /// Return the up-to-date unliked news.
-  Future<News> unlikeNews(int newsId, int memberId) async {
+  Future<News?> unlikeNews(int newsId, int memberId) async {
     _log.info("Unliking news $newsId for member $memberId ...");
 
     final String unlikeNewsMutation = """
@@ -243,11 +243,12 @@ class NewsService {
     final QueryResult result = await GraphQLConnection().graphQLClient.mutate(mutationOptions);
 
     if (result.hasException) {
-      throw AppUtils.handleGraphQlException(result);
+      throw AppUtils.handleGraphQlException(result)!;
     } else {
-      if (result.data['unlikeNews'] != null) {
-        return News.fromJson(result.data['unlikeNews']);
+      if (result.data!['unlikeNews'] != null) {
+        return News.fromJson(result.data!['unlikeNews']);
       }
+      return null;
     }
   }
 
@@ -297,7 +298,7 @@ class NewsService {
         'title': news.title,
         'catchLine': news.catchLine,
         'content': news.content,
-        'newsDate': news.newsDate.toIso8601String()
+        'newsDate': news.newsDate!.toIso8601String()
       },
       fetchPolicy: FetchPolicy.noCache,
     );
@@ -305,9 +306,9 @@ class NewsService {
     final QueryResult result = await GraphQLConnection().graphQLClient.mutate(mutationOptions);
 
     if (result.hasException) {
-      throw AppUtils.handleGraphQlException(result);
+      throw AppUtils.handleGraphQlException(result)!;
     } else {
-      return News.fromJson(result.data['createNews']);
+      return News.fromJson(result.data!['createNews']);
     }
   }
 
@@ -324,6 +325,7 @@ class NewsService {
             catchLine: \$catchLine
             content: \$content
             newsDate: \$newsDate
+            memberId: \$memberId
         )
         {
           id
@@ -359,7 +361,8 @@ class NewsService {
         'title': news.title,
         'catchLine': news.catchLine,
         'content': news.content,
-        'newsDate': news.newsDate.toIso8601String()
+        'newsDate': news.newsDate!.toIso8601String(),
+        'memberId': news.modifiedBy!.id
       },
       fetchPolicy: FetchPolicy.noCache,
     );
@@ -367,9 +370,9 @@ class NewsService {
     final QueryResult result = await GraphQLConnection().graphQLClient.mutate(mutationOptions);
 
     if (result.hasException) {
-      throw AppUtils.handleGraphQlException(result);
+      throw AppUtils.handleGraphQlException(result)!;
     } else {
-      return News.fromJson(result.data['updateNews']);
+      return News.fromJson(result.data!['updateNews']);
     }
   }
 
@@ -421,9 +424,9 @@ class NewsService {
     final QueryResult result = await GraphQLConnection().graphQLClient.mutate(mutationOptions);
 
     if (result.hasException) {
-      throw AppUtils.handleGraphQlException(result);
+      throw AppUtils.handleGraphQlException(result)!;
     } else {
-      return News.fromJson(result.data['deleteNews']);
+      return News.fromJson(result.data!['deleteNews']);
     }
   }
 }

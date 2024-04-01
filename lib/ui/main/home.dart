@@ -51,8 +51,9 @@ class Home extends StatelessWidget {
         onTap: (int index) => _homeProvider.setCurrentIndex(index),
         currentIndex: _homeProvider.currentIndex,
         type: BottomNavigationBarType.shifting,
-        selectedLabelStyle: TextStyle(color: Colors.white),
-        unselectedLabelStyle: TextStyle(color: Colors.white),
+        selectedItemColor: Colors.white,
+        unselectedItemColor: Colors.white,
+        showUnselectedLabels: true,
         items: [
           BottomNavigationBarItem(
             icon: Icon(Icons.home, color: Colors.white),

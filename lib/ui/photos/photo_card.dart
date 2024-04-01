@@ -36,8 +36,7 @@ class PhotoCard extends StatelessWidget {
   /// Method that launches the photo form screen and awaits the result from Navigator.pop
   void _navigateAndDisplaySelection(BuildContext context, Photo photo) async {
     // Navigator.push returns a Future that will complete after we call Navigator.pop on the photo form Screen
-    final result = await Navigator.push(context,
-        MaterialPageRoute(builder: (context) => AddEditPhoto(photo: photo)));
+    final result = await Navigator.push(context, MaterialPageRoute(builder: (context) => AddEditPhoto()));
 
     // after the photo form Screen returns a result, hide any previous snack bars and show the new result
     if (result != null) {
@@ -50,8 +49,7 @@ class PhotoCard extends StatelessWidget {
   /// Method that launches the Photo detail screen and awaits the result from Navigator.pop
   _navigateToPhotoDetailScreen(BuildContext context, Photo photo) async {
     // Navigator.push returns a Future that will complete after we call Navigator.pop on the target screen
-    final result =
-        await Navigator.pushNamed(context, "/photoDetail", arguments: photo);
+    final result = await Navigator.pushNamed(context, "/photoDetail", arguments: photo);
 
     // after the target screen returns a result, hide any previous snack bars and show the new result
     if (result != null) {
@@ -107,17 +105,14 @@ class PhotoCard extends StatelessWidget {
   void _dialogueResult(BuildContext context, ConfirmDialogAction value) {
     if (value == ConfirmDialogAction.yes) {
       // delete photo
-      Provider.of<PhotoProvider>(context, listen: false)
-          .deletePhoto(photo)
-          .then((value) {
+      Provider.of<PhotoProvider>(context, listen: false).deletePhoto(photo).then((value) {
         ScaffoldMessenger.of(context)
           ..removeCurrentSnackBar()
           ..showSnackBar(SnackBar(content: Text(AppString.photoDeleted)));
       }, onError: (error) {
         ScaffoldMessenger.of(context)
           ..removeCurrentSnackBar()
-          ..showSnackBar(
-              SnackBar(content: Text(AppString.photoDeletionFailed)));
+          ..showSnackBar(SnackBar(content: Text(AppString.photoDeletionFailed)));
       });
     }
     Navigator.pop(context);
@@ -132,8 +127,7 @@ class PhotoCard extends StatelessWidget {
         horizontal: 4.0,
       ),
       child: InkWell(
-        onTap: () => /*showPhoto(context),*/ _navigateToPhotoDetailScreen(
-            context, photo),
+        onTap: () => /*showPhoto(context),*/ _navigateToPhotoDetailScreen(context, photo),
         child: Hero(
           flightShuttleBuilder: (
             BuildContext flightContext,
@@ -142,19 +136,19 @@ class PhotoCard extends StatelessWidget {
             BuildContext fromHeroContext,
             BuildContext toHeroContext,
           ) {
-            final Hero toHero = toHeroContext.widget;
+            final Widget toHero = toHeroContext.widget;
             return RotationTransition(
               turns: animation,
-              child: toHero.child,
+              child: toHero,
             );
           },
-          tag: photo.id,
+          tag: photo.id!,
           child: Stack(
             fit: StackFit.expand,
             children: [
               CachedNetworkImage(
                 placeholder: (context, url) => CircularProgressIndicator(),
-                imageUrl: SERVER_PHOTOS_FOLDER + photo.link,
+                imageUrl: SERVER_PHOTOS_FOLDER + photo.link!,
                 fit: BoxFit.fitWidth,
               ),
               Align(
@@ -162,11 +156,9 @@ class PhotoCard extends StatelessWidget {
                 child: Container(
                   height: 20.0,
                   alignment: Alignment.center,
-                  decoration: BoxDecoration(
-                      shape: BoxShape.rectangle,
-                      color: Colors.black.withOpacity(0.5)),
+                  decoration: BoxDecoration(shape: BoxShape.rectangle, color: Colors.black.withOpacity(0.5)),
                   child: Text(
-                    photo.title,
+                    photo.title!,
                     softWrap: false,
                     style: TextStyle(color: Colors.white),
                     maxLines: 1,

@@ -24,7 +24,7 @@ class CustomDecorations {
   /// Decoration for main content
   static BoxDecoration mainContent = BoxDecoration(
     gradient: LinearGradient(
-      colors: [Colors.blue[100], Colors.blue[200]],
+      colors: [Colors.blue[100]!, Colors.blue[200]!],
       begin: Alignment.topCenter,
       end: Alignment.bottomCenter,
       tileMode: TileMode.clamp,
@@ -34,7 +34,7 @@ class CustomDecorations {
   /// Decoration for cards content
   static BoxDecoration cardFull = BoxDecoration(
     gradient: LinearGradient(
-      colors: [Colors.blue[300], Colors.blue[500]],
+      colors: [Colors.blue[300]!, Colors.blue[500]!],
       begin: Alignment.topLeft,
       end: Alignment.bottomRight,
       stops: [0.0, 1.0],
@@ -46,20 +46,19 @@ class CustomDecorations {
   /// Decoration for cards body content (for cards with header)
   static BoxDecoration cardBody = BoxDecoration(
     gradient: LinearGradient(
-      colors: [Colors.blue[300], Colors.blue[500]],
+      colors: [Colors.blue[300]!, Colors.blue[500]!],
       begin: Alignment.topLeft,
       end: Alignment.bottomRight,
       stops: [0.0, 1.0],
     ),
     shape: BoxShape.rectangle,
-    borderRadius: BorderRadius.only(
-        bottomLeft: Radius.circular(6.0), bottomRight: Radius.circular(6.0)),
+    borderRadius: BorderRadius.only(bottomLeft: Radius.circular(6.0), bottomRight: Radius.circular(6.0)),
   );
 
   /// Decoration for light cards
   static BoxDecoration cardLight = BoxDecoration(
     gradient: LinearGradient(
-      colors: [Colors.blue[100].withOpacity(0.5), Colors.blue[100]],
+      colors: [Colors.blue[100]!.withOpacity(0.5), Colors.blue[100]!],
       begin: Alignment.topLeft,
       end: Alignment.bottomRight,
       stops: [0.0, 1.0],
@@ -71,11 +70,10 @@ class CustomDecorations {
 
   static BoxDecoration bluePurpleGradient = BoxDecoration(
     gradient: LinearGradient(
-      colors: [Colors.blue[200], Colors.deepPurple[300]],
+      colors: [Colors.blue[200]!, Colors.deepPurple[300]!],
       begin: const FractionalOffset(0.0, 0.0),
       end: const FractionalOffset(0.0, 1.0),
       tileMode: TileMode.clamp,
     ),
   );
-
 }

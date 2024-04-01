@@ -19,7 +19,6 @@
 
 import 'dart:async';
 import 'dart:convert';
-import 'dart:io';
 
 import 'package:ccteam/models/jwt_response.dart';
 import 'package:ccteam/models/member.dart';
@@ -39,7 +38,7 @@ class LoginProvider extends ChangeNotifier {
   final MembersService _membersService = new MembersService();
 
   // message provider that can be set from the proxy provider
-  MessageProvider _messageProvider;
+  late MessageProvider _messageProvider;
 
   // current authentication status
   AuthStatus _authStatus = AuthStatus.Unauthenticated;
@@ -48,31 +47,31 @@ class LoginProvider extends ChangeNotifier {
   LoginStatus _loginStatus = LoginStatus.EmailStep;
 
   // current passcode being entered for login
-  String _loginPassCode;
+  String? _loginPassCode;
 
   // current passcode being created
-  String _firstPassCode;
+  String? _firstPassCode;
 
   // current passcode confirmation
-  String _secondPassCode;
+  String? _secondPassCode;
 
   // current email being enrolled
-  String _email;
+  String? _email;
 
   // current first name entered when preregistering
-  String firstName;
+  String? firstName;
 
   // current last name entered when preregistering
-  String lastName;
+  String? lastName;
 
   // current OTP being entered when confirming e-mail
-  String otp;
+  String? otp;
 
   // current logged member
-  Member _loggedMember;
+  Member? _loggedMember;
 
   // current JWT token
-  String _jwtToken;
+  String? _jwtToken;
 
   // constructor
   LoginProvider() {
@@ -80,32 +79,32 @@ class LoginProvider extends ChangeNotifier {
     _checkUser();
   }
 
-  Member get loggedMember => _loggedMember;
+  Member? get loggedMember => _loggedMember;
 
   AuthStatus get authStatus => _authStatus;
 
   LoginStatus get loginStatus => _loginStatus;
 
-  String get loginPassCode => _loginPassCode;
+  String? get loginPassCode => _loginPassCode;
 
-  String get firstPassCode => _firstPassCode;
+  String? get firstPassCode => _firstPassCode;
 
-  String get secondPassCode => _secondPassCode;
+  String? get secondPassCode => _secondPassCode;
 
-  String get jwtToken => _jwtToken;
+  String? get jwtToken => _jwtToken;
 
-  String get email => _email;
+  String? get email => _email;
 
-  set email(String email) => this._email = email;
+  set email(String? email) => this._email = email;
 
   /// Set the current [passcode] used for login.
-  set loginPassCode(String passcode) {
+  set loginPassCode(String? passcode) {
     _loginPassCode = passcode;
     _notifyListeners();
   }
 
   /// Set the current [passcode] used in registration process.
-  set firstPassCode(String passcode) {
+  set firstPassCode(String? passcode) {
     _firstPassCode = passcode;
     _notifyListeners();
   }
@@ -212,7 +211,7 @@ class LoginProvider extends ChangeNotifier {
     _log.info("Pre-registering user ${this.firstName} ${this.lastName} ($_email)");
     _setLoginStatus(LoginStatus.Loading);
 
-    await _membersService.preRegister(this.firstName, this.lastName, _email).timeout(Duration(seconds: 5)).then(
+    await _membersService.preRegister(this.firstName!, this.lastName!, _email!).timeout(Duration(seconds: 5)).then(
         (response) async {
       // member has been pre-registered successfully
       if (response.statusCode == 201) {
@@ -254,7 +253,7 @@ class LoginProvider extends ChangeNotifier {
     _log.info("Resending OTP to user $_email");
     _setLoginStatus(LoginStatus.Loading);
 
-    await _membersService.resendOtp(_email).timeout(Duration(seconds: 5)).then((response) async {
+    await _membersService.resendOtp(_email!).timeout(Duration(seconds: 5)).then((response) async {
       // OTP has been resent successfully
       if (response.statusCode == 200) {
         // store the OTP sent date in the shared preferences for timer
@@ -293,7 +292,7 @@ class LoginProvider extends ChangeNotifier {
   Future<void> confirmEmail() async {
     _log.info("Confirming e-mail of user $_email");
 
-    await _membersService.confirmEmail(_email, otp).timeout(Duration(seconds: 5)).then((response) async {
+    await _membersService.confirmEmail(_email!, otp!).timeout(Duration(seconds: 5)).then((response) async {
       // e-mail has been verified successfully
       if (response.statusCode == 202) {
         _setLoginStatus(LoginStatus.CreatePasscodeStep);
@@ -332,7 +331,7 @@ class LoginProvider extends ChangeNotifier {
   /// Complete user registration according to the specified member information.
   Future<void> completeRegistration() async {
     _log.info("Completing registration of user $_email");
-    await _membersService.completeRegistration(_email, _firstPassCode).timeout(Duration(seconds: 5)).then(
+    await _membersService.completeRegistration(_email!, _firstPassCode!).timeout(Duration(seconds: 5)).then(
         (response) async {
       // account has been created successfully
       if (response.statusCode == 200) {
@@ -367,10 +366,10 @@ class LoginProvider extends ChangeNotifier {
     _setLoginStatus(LoginStatus.Loading);
 
     // get email from user preferences
-    String email;
+    String? email;
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     if (prefs.containsKey('email')) {
-      email = prefs.get('email');
+      email = prefs.get('email') as String?;
     }
 
     // no email found in shared preferences, get current email from enrollment
@@ -381,7 +380,7 @@ class LoginProvider extends ChangeNotifier {
 
     _log.info("Logging in user $email");
 
-    await _membersService.authenticate(email, passcode).timeout(Duration(seconds: 5)).then((response) async {
+    await _membersService.authenticate(email!, passcode).timeout(Duration(seconds: 5)).then((response) async {
       // check response and get the JWT token
       if (response.statusCode == 200) {
         _log.info("User $email successfully authenticated and got a JWT token");
@@ -395,13 +394,13 @@ class LoginProvider extends ChangeNotifier {
         _log.info("JWT token set for member $email : $_jwtToken");
 
         // get the full member from the database
-        await _membersService.getMemberByEmail(email).timeout(Duration(seconds: 5)).then((m) async {
+        await _membersService.getMemberByEmail(email!).timeout(Duration(seconds: 5)).then((m) async {
           _log.info("Member ${m.email} successfully retrieved from database");
 
           // store the user's e-mail and token in the shared preferences
           final SharedPreferences prefs = await SharedPreferences.getInstance();
-          prefs.setString('email', m.email);
-          prefs.setString('jwt', _jwtToken);
+          prefs.setString('email', m.email!);
+          prefs.setString('jwt', _jwtToken!);
 
           _loggedMember = m;
           _setAuthStatus(AuthStatus.Authenticated);
@@ -459,79 +458,6 @@ class LoginProvider extends ChangeNotifier {
     });
   }
 
-  /// Upload the specified [avatar] file for the specified [member].
-  /// If the specified [member] is different from the current logged user, it means we are uploading an avatar as admin for a member.
-  /// If the specified [member] is the same as the current logged user, it means the current logged user is uploading an avatar.
-  Future<void> uploadAvatar(File avatar, Member member) async {
-    if (member.id != _loggedMember.id) {
-      _log.fine("Uploaded avatar as admin for user ${member.email}");
-    }
-
-    final Member tmpMember = member;
-
-    await _membersService.uploadAvatar(avatar, tmpMember.id).then((value) async {
-      _log.fine("Avatar uploaded successfully");
-
-      dynamic responseJson = json.decode(value);
-      final String uploadedFileName = responseJson['file'];
-
-      _log.fine("Avatar uploaded file name is : $uploadedFileName");
-
-      tmpMember.avatarUrl = uploadedFileName;
-      tmpMember.modifiedOn = DateTime.now();
-
-      _log.info("Sending user with new avatar : ${tmpMember.toString()}");
-
-      await _membersService.updateMember(tmpMember).then((value) {
-        _log.fine("Avatar updated for member : ${tmpMember.email}");
-        if (member.id == _loggedMember.id) {
-          _loggedMember.avatarUrl = tmpMember.avatarUrl;
-          _loggedMember.modifiedOn = tmpMember.modifiedOn;
-          _notifyListeners();
-        }
-      }, onError: (error) {
-        _log.severe("Failed to update avatar for member ${tmpMember.email} ($error)");
-        throw (error);
-      });
-    }, onError: (error) {
-      _log.severe("Failed to upload avatar ($error)");
-      throw (error);
-    });
-  }
-
-  /// Delete the avatar of the specified [member].
-  /// If the specified [member] is different from the current logged user, it means we are deleting an avatar as admin for a member.
-  /// If the specified [member] is the same as the current logged user, it means the current logged user is deleting its avatar.
-  Future<void> deleteAvatar(Member member) async {
-    if (member.id != _loggedMember.id) {
-      _log.fine("Deleting avatar as admin for user ${member.email}");
-    }
-
-    final Member tmpMember = member;
-
-    await _membersService.deleteAvatar(member.id).then((value) async {
-      _log.fine("Avatar file deleted successfully from server");
-
-      tmpMember.avatarUrl = null;
-      tmpMember.modifiedOn = DateTime.now();
-
-      await _membersService.updateMember(tmpMember).then((value) {
-        _log.fine("Avatar deleted for member : ${tmpMember.email}");
-        if (member.id == _loggedMember.id) {
-          _loggedMember.avatarUrl = null;
-          _loggedMember.modifiedOn = tmpMember.modifiedOn;
-        }
-        _notifyListeners();
-      }, onError: (error) {
-        _log.severe("Failed to delete avatar for member ${tmpMember.email} ($error)");
-        throw (error);
-      });
-    }, onError: (error) {
-      _log.severe("Failed to delete avatar ($error)");
-      throw (error);
-    });
-  }
-
   /// Notify all the registered listeners of this provider.
   void _notifyListeners() {
     _log.info("Notifying listeners of LoginProvider");
@@ -563,8 +489,8 @@ class LoginProvider extends ChangeNotifier {
 
     // read shared preference to get any e-mail and JWT
     final SharedPreferences _prefs = await SharedPreferences.getInstance();
-    final String _email = _prefs.getString('email');
-    final String _jwt = _prefs.getString('jwt');
+    final String? _email = _prefs.getString('email');
+    final String? _jwt = _prefs.getString('jwt');
 
     // no e-mail found in shared preferences, it means user have to identify
     if (_email == null) {

@@ -34,18 +34,18 @@ class MemberDetailProvider extends ChangeNotifier {
   final MembersService _membersService = new MembersService();
 
   // message provider that can be set from the proxy provider
-  MessageProvider _messageProvider;
+  late MessageProvider _messageProvider;
 
   // login provider that can be set from the proxy provider
-  LoginProvider _loginProvider;
+  late LoginProvider _loginProvider;
 
   // current member
-  Member _currentMember;
+  Member? _currentMember;
 
   // current loading status
   LoadingStatus _loadingStatus = LoadingStatus.notLoaded;
 
-  Member get currentMember => _currentMember;
+  Member? get currentMember => _currentMember;
 
   LoadingStatus get loadingStatus => _loadingStatus;
 
@@ -71,7 +71,7 @@ class MemberDetailProvider extends ChangeNotifier {
   Future<void> fetchMember(Member member) async {
     _log.fine("Fetching member ${member.email}...");
     _updateStatus(LoadingStatus.loading);
-    await _membersService.getMemberById(member.id).then((value) async {
+    await _membersService.getMemberById(member.id!).then((value) async {
       _log.fine("Member ID ${member.id} retrieved successfully");
       _currentMember = value;
       _updateStatus(LoadingStatus.loaded);

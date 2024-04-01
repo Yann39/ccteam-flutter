@@ -25,14 +25,14 @@ class MessageProvider extends ChangeNotifier {
   final Logger _log = new Logger('MessageProvider');
 
   // current message
-  String _message;
+  String? _message;
 
   // current message type
-  MessageType _messageType;
+  MessageType? _messageType;
 
-  String get message => _message;
+  String? get message => _message;
 
-  MessageType get messageType => _messageType;
+  MessageType? get messageType => _messageType;
 
   /// Set the current message.
   void setMessage(String message, MessageType messageType) {

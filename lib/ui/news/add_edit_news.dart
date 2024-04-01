@@ -33,7 +33,7 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 class AddEditNews extends StatefulWidget {
-  const AddEditNews({Key key}) : super(key: key);
+  const AddEditNews({Key? key}) : super(key: key);
 
   @override
   State<StatefulWidget> createState() {
@@ -49,14 +49,15 @@ class _AddEditNewsState extends State<AddEditNews> {
   initState() {
     final NewsCreationProvider _newsCreationProvider = Provider.of<NewsCreationProvider>(context, listen: false);
     // set date picker text if set
-    if (_newsCreationProvider.news != null) {
-      _datePickerController.text = AppDateUtils.convertToString(_newsCreationProvider.news.newsDate, DATE_FORMAT);
+    if (_newsCreationProvider.news.newsDate != null) {
+      _datePickerController.text =
+          AppDateUtils.convertToString(_newsCreationProvider.news.newsDate!, DATE_FORMAT) ?? "";
     }
     return super.initState();
   }
 
   /// Initialize and display a date picker related to the specified [controller] in the specified [context].
-  Future _chooseDate(BuildContext context, TextEditingController controller, DateTime defaultValue) async {
+  Future _chooseDate(BuildContext context, TextEditingController controller, DateTime? defaultValue) async {
     final DateTime _currentDate = DateTime.now();
     final TimeOfDay _currentTime = TimeOfDay.now();
 
@@ -65,30 +66,32 @@ class _AddEditNewsState extends State<AddEditNews> {
     final TimeOfDay _initialTime = defaultValue != null ? TimeOfDay.fromDateTime(defaultValue) : _currentTime;
 
     // show the date picker and await for the chosen date
-    final DateTime _dateResult = await showDatePicker(
+    final DateTime? _dateResult = await showDatePicker(
         context: context,
         initialDate: _initialDate,
-        firstDate: DateTime(_currentDate.year - 5),
-        lastDate: DateTime(_currentDate.year + 5));
-    if (_dateResult == null) return;
+        firstDate: DateTime(2010, 1, 1),
+        lastDate: DateTime(_currentDate.year + 1));
 
-    // show the time picker and await for the chosen time
-    final TimeOfDay _timeResult = await showTimePicker(context: context, initialTime: _initialTime);
-    if (_timeResult == null) return;
+    if (_dateResult != null) {
+      // show the time picker and await for the chosen time
+      final TimeOfDay? _timeResult = await showTimePicker(context: context, initialTime: _initialTime);
 
-    // build final date with time
-    final DateTime finalDateTime =
-        DateTime(_dateResult.year, _dateResult.month, _dateResult.day, _timeResult.hour, _timeResult.minute);
+      if (_timeResult != null) {
+        // build final date with time
+        final DateTime finalDateTime =
+            DateTime(_dateResult.year, _dateResult.month, _dateResult.day, _timeResult.hour, _timeResult.minute);
 
-    // notify the framework that the internal state of this object has changed
-    setState(() {
-      controller.text = DateFormat(DATE_FORMAT).format(finalDateTime);
-    });
+        // notify the framework that the internal state of this object has changed
+        setState(() {
+          controller.text = DateFormat(DATE_FORMAT).format(finalDateTime);
+        });
+      }
+    }
   }
 
   /// Validate the form then submit data to backend.
   void submitForm(News news) {
-    final FormState _form = _formKey.currentState;
+    final FormState _form = _formKey.currentState!;
 
     if (!_form.validate()) {
       ScaffoldMessenger.of(context)
@@ -106,8 +109,7 @@ class _AddEditNewsState extends State<AddEditNews> {
           if (value != null) {
             _newsListProvider.updateNewsInList(_newsCreationProvider.news);
             Provider.of<NewsDetailProvider>(context, listen: false).setCurrentNews(_newsCreationProvider.news);
-          } else {
-          }
+          } else {}
         });
       } else {
         _newsCreationProvider.createNews().then((value) {
@@ -140,38 +142,50 @@ class _AddEditNewsState extends State<AddEditNews> {
                   padding: const EdgeInsets.symmetric(horizontal: 16.0),
                   children: <Widget>[
                     TextFormField(
+                      style: TextStyle(color: Colors.black87),
                       decoration: const InputDecoration(
-                        icon: const Icon(Icons.title),
+                        icon: const Icon(Icons.title, color: Colors.black87),
                         hintText: AppString.newsTitleHint,
                         labelText: AppString.newsTitle,
+                        labelStyle: TextStyle(color: Colors.black87),
+                        floatingLabelStyle: TextStyle(color: Colors.black87),
+                        hintStyle: TextStyle(color: Colors.black54),
                       ),
                       maxLines: 1,
                       inputFormatters: [LengthLimitingTextInputFormatter(128)],
-                      validator: (val) => val.isEmpty ? AppString.newsTitleMandatory : null,
+                      validator: (val) => (val == null || val.isEmpty) ? AppString.newsTitleMandatory : null,
                       onSaved: (val) => _newsCreationProvider.news.title = val,
                       initialValue: _newsCreationProvider.news.title,
                     ),
                     TextFormField(
+                      style: TextStyle(color: Colors.black87),
                       decoration: const InputDecoration(
-                        icon: const Icon(Icons.short_text),
+                        icon: const Icon(Icons.short_text, color: Colors.black87),
                         hintText: AppString.newsCatchLineHint,
                         labelText: AppString.newsCatchLine,
+                        labelStyle: TextStyle(color: Colors.black87),
+                        floatingLabelStyle: TextStyle(color: Colors.black87),
+                        hintStyle: TextStyle(color: Colors.black54),
                       ),
                       maxLines: 2,
                       inputFormatters: [LengthLimitingTextInputFormatter(512)],
-                      validator: (val) => val.isEmpty ? AppString.newsContentMandatory : null,
+                      validator: (val) => (val == null || val.isEmpty) ? AppString.newsContentMandatory : null,
                       onSaved: (val) => _newsCreationProvider.news.catchLine = val,
                       initialValue: _newsCreationProvider.news.catchLine,
                     ),
                     TextFormField(
+                      style: TextStyle(color: Colors.black87),
                       decoration: const InputDecoration(
-                        icon: const Icon(Icons.format_align_left),
+                        icon: const Icon(Icons.format_align_left, color: Colors.black87),
                         hintText: AppString.newsContentHint,
                         labelText: AppString.newsContent,
+                        labelStyle: TextStyle(color: Colors.black87),
+                        floatingLabelStyle: TextStyle(color: Colors.black87),
+                        hintStyle: TextStyle(color: Colors.black54),
                       ),
                       maxLines: 5,
                       inputFormatters: [LengthLimitingTextInputFormatter(8128)],
-                      validator: (val) => val.isEmpty ? AppString.newsContentMandatory : null,
+                      validator: (val) => (val == null || val.isEmpty) ? AppString.newsContentMandatory : null,
                       onSaved: (val) => _newsCreationProvider.news.content = val,
                       initialValue: _newsCreationProvider.news.content,
                     ),
@@ -179,19 +193,24 @@ class _AddEditNewsState extends State<AddEditNews> {
                       onTap: () => _chooseDate(context, _datePickerController, _newsCreationProvider.news.newsDate),
                       child: AbsorbPointer(
                         child: TextFormField(
+                          style: TextStyle(color: Colors.black87),
                           decoration: InputDecoration(
-                            icon: const Icon(Icons.calendar_today),
+                            icon: const Icon(Icons.calendar_today, color: Colors.black87),
                             hintText: AppString.newsDateHint,
                             labelText: AppString.newsDate,
+                            labelStyle: TextStyle(color: Colors.black87),
+                            floatingLabelStyle: TextStyle(color: Colors.black87),
+                            hintStyle: TextStyle(color: Colors.black54),
                           ),
                           controller: _datePickerController,
                           keyboardType: TextInputType.datetime,
-                          validator: (val) =>
-                              _newsCreationProvider.news.id == null && !AppDateUtils.isBeforeNow(val, DATE_FORMAT)
-                                  ? AppString.newsDateMustBeFuture
-                                  : (val.isEmpty ? AppString.newsDateMandatory : null),
+                          validator: (val) => _newsCreationProvider.news.id == null &&
+                                  val != null &&
+                                  !AppDateUtils.isBeforeNow(val, DATE_FORMAT)
+                              ? AppString.newsDateMustBeFuture
+                              : ((val == null || val.isEmpty) ? AppString.newsDateMandatory : null),
                           onSaved: (val) =>
-                              _newsCreationProvider.news.newsDate = DateFormat(DATE_FORMAT).parseStrict(val),
+                              _newsCreationProvider.news.newsDate = DateFormat(DATE_FORMAT).parseStrict(val!),
                         ),
                       ),
                     ),

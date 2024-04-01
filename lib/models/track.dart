@@ -19,13 +19,13 @@
 
 /// Class representing a track
 class Track {
-  int id;
-  String name;
-  int distance;
-  int lapRecord;
-  String website;
-  double latitude;
-  double longitude;
+  int? id;
+  String? name;
+  int? distance;
+  int? lapRecord;
+  String? website;
+  double? latitude;
+  double? longitude;
 
   Track({
     this.id,
@@ -52,7 +52,7 @@ class Track {
 
   /// Convert [json] map to the corresponding object
   Track.fromJson(Map<String, dynamic> json)
-      : id = json['id'] != null ? int.parse(json['id']) : -1,
+      : id = json['id'] != null ? int.parse(json['id']) : null,
         name = json['name'],
         distance = json['distance'] != null ? json['distance'] : null,
         lapRecord = json['lapRecord'] != null ? json['lapRecord'] : null,

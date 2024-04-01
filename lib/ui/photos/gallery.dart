@@ -28,15 +28,12 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 class Gallery extends StatelessWidget {
-  final String title;
-
-  const Gallery({Key key, this.title}) : super(key: key);
+  const Gallery({Key? key}) : super(key: key);
 
   /// Method that launches the Add Photo screen and awaits the result from Navigator.pop
   _navigateAndDisplaySelection(BuildContext context) async {
     // Navigator.push returns a Future that will complete after we call Navigator.pop on the Add News Screen
-    final result = await Navigator.push(
-        context, MaterialPageRoute(builder: (context) => AddEditPhoto()));
+    final result = await Navigator.push(context, MaterialPageRoute(builder: (context) => AddEditPhoto()));
 
     // after the Add Photo Screen returns a result, hide any previous snack bars and show the new result
     if (result != null) {
@@ -51,7 +48,7 @@ class Gallery extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(title),
+        title: Text("title"),
         actions: <Widget>[MainActionMenu()],
       ),
       body: Container(
@@ -63,26 +60,21 @@ class Gallery extends StatelessWidget {
           child: GridView.builder(
             padding: EdgeInsets.all(4.0),
             gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount:
-                  MediaQuery.of(context).orientation == Orientation.portrait
-                      ? 2
-                      : 3,
+              crossAxisCount: MediaQuery.of(context).orientation == Orientation.portrait ? 2 : 3,
               crossAxisSpacing: 4,
               mainAxisSpacing: 4,
               childAspectRatio: 1.3,
             ),
             itemCount: _photoProvider.photos.length,
             itemBuilder: (BuildContext context, int index) => InkWell(
-              onTap: () => Navigator.pushNamed(context, "/photoDetail",
-                  arguments: _photoProvider.photos[index]),
+              onTap: () => Navigator.pushNamed(context, "/photoDetail", arguments: _photoProvider.photos[index]),
               child: Stack(
                 alignment: Alignment.bottomCenter,
                 children: [
                   Container(
                     decoration: BoxDecoration(
                       image: DecorationImage(
-                        image: CachedNetworkImageProvider(
-                            _photoProvider.photos[index].link
+                        image: CachedNetworkImageProvider(_photoProvider.photos[index].link!
                             /*placeholder: (context, url) => CircularProgressIndicator(),
                               imageUrl: _photoProvider.photos[index].link,
                               fit: BoxFit.fitWidth,*/
@@ -98,11 +90,9 @@ class Gallery extends StatelessWidget {
                   Container(
                     height: 20.0,
                     alignment: Alignment.center,
-                    decoration: BoxDecoration(
-                        shape: BoxShape.rectangle,
-                        color: Colors.black.withOpacity(0.5)),
+                    decoration: BoxDecoration(shape: BoxShape.rectangle, color: Colors.black.withOpacity(0.5)),
                     child: Text(
-                      _photoProvider.photos[index].title,
+                      _photoProvider.photos[index].title!,
                       softWrap: false,
                       style: TextStyle(color: Colors.white),
                       maxLines: 1,

@@ -17,19 +17,15 @@
  * along with CCTeam. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import 'package:ccteam/models/member.dart';
-import 'package:ccteam/providers/member_provider.dart';
-import 'package:ccteam/providers/record_provider.dart';
 import 'package:ccteam/utils/custom_decorations.dart';
-import 'package:ccteam/utils/enums.dart';
 import 'package:ccteam/utils/strings.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-class MemberEvents extends StatefulWidget {
-  final Member member;
+import '../../providers/member_detail_provider.dart';
 
-  const MemberEvents({Key key, this.member}) : super(key: key);
+class MemberEvents extends StatefulWidget {
+  const MemberEvents({Key? key}) : super(key: key);
 
   @override
   State<StatefulWidget> createState() {
@@ -41,10 +37,6 @@ class _MemberEventsState extends State<MemberEvents> {
   @override
   void initState() {
     super.initState();
-    Provider.of<RecordProvider>(context, listen: false)
-        .fetchMemberRecords(widget.member.id);
-    /*Provider.of<EventProvider>(context, listen: false)
-        .fetchMemberEventsByStatus(widget.member.id);*/
   }
 
   /// Method that launches the Add Event screen and awaits the result from Navigator.pop
@@ -60,52 +52,8 @@ class _MemberEventsState extends State<MemberEvents> {
     }
   }
 
-  /// Display a confirmation popup when trying to delete a member
-  void _showConfirmation(BuildContext context, String value) {
-    showDialog(
-      context: context,
-      builder: (_) => AlertDialog(
-        title: Text(AppString.confirmation),
-        content: Text(value),
-        actions: <Widget>[
-          TextButton(
-            onPressed: () {
-              _dialogueResult(context, ConfirmDialogAction.yes);
-            },
-            child: Text(AppString.confirm),
-          ),
-          TextButton(
-            onPressed: () {
-              _dialogueResult(context, ConfirmDialogAction.no);
-            },
-            child: Text(AppString.cancel),
-          ),
-        ],
-      ),
-    );
-  }
-
-  /// Handle result of the member deletion confirmation dialog
-  void _dialogueResult(BuildContext context, ConfirmDialogAction value) {
-    if (value == ConfirmDialogAction.yes) {
-      // delete member
-      Provider.of<MemberProvider>(context, listen: false)
-          .deleteMember(widget.member)
-          .then((value) {
-        ScaffoldMessenger.of(context)
-          ..removeCurrentSnackBar()
-          ..showSnackBar(SnackBar(content: Text(AppString.memberDeleted)));
-      }, onError: (error) {
-        ScaffoldMessenger.of(context)
-          ..removeCurrentSnackBar()
-          ..showSnackBar(
-              SnackBar(content: Text(AppString.memberDeletionFailed)));
-      });
-    }
-    Navigator.pop(context);
-  }
-
   Widget build(BuildContext context) {
+    final MemberDetailProvider _memberDetailProvider = Provider.of<MemberDetailProvider>(context, listen: true);
     //final EventProvider _eventProvider = Provider.of<EventProvider>(context, listen: true);
 
     /*final _search = SizedBox(

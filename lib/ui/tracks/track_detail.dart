@@ -17,10 +17,10 @@
  * along with CCTeam. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:ccteam/models/record.dart';
 import 'package:ccteam/models/track.dart';
-import 'package:ccteam/providers/record_provider.dart';
+import 'package:ccteam/providers/record_list_provider.dart';
+import 'package:ccteam/providers/track_detail_provider.dart';
 import 'package:ccteam/utils/app_utils.dart';
 import 'package:ccteam/utils/custom_decorations.dart';
 import 'package:ccteam/utils/custom_icons.dart';
@@ -31,9 +31,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 class TrackDetail extends StatefulWidget {
-  final Track track;
-
-  const TrackDetail({Key key, this.track}) : super(key: key);
+  const TrackDetail({Key? key}) : super(key: key);
 
   @override
   State<StatefulWidget> createState() {
@@ -55,8 +53,8 @@ class _TrackDetailState extends State<TrackDetail> {
     }*/
   }
 
-  Widget _recordsTable(RecordProvider recordProvider) {
-    if (recordProvider.trackRecords != null && recordProvider.trackRecords.length > 0) {
+  Widget _recordsTable(RecordListProvider recordListProvider) {
+    if (recordListProvider.trackRecords.length > 0) {
       return Container(
         decoration: CustomDecorations.cardLight,
         child: Table(
@@ -66,24 +64,24 @@ class _TrackDetailState extends State<TrackDetail> {
               horizontalInside: BorderSide(color: Colors.black.withOpacity(0.3), width: 1),
               verticalInside: BorderSide(color: Colors.black.withOpacity(0.3), width: 1)),
           children: [
-            for (Record rec in recordProvider.trackRecords)
+            for (Record rec in recordListProvider.trackRecords)
               TableRow(children: [
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 12.0),
                   child: Text(
-                    "${rec.member.firstName} ${rec.member.lastName}",
+                    "${rec.member!.firstName} ${rec.member!.lastName}",
                     style: TextStyle(color: Colors.black.withOpacity(0.8)),
                     overflow: TextOverflow.ellipsis,
                     textAlign: TextAlign.center,
                   ),
                 ),
                 Text(
-                  AppDateUtils.toLapTimeString(rec.lapTime),
+                  AppDateUtils.toLapTimeString(rec.lapTime) ?? "",
                   style: TextStyle(color: Colors.black.withOpacity(0.8)),
                   textAlign: TextAlign.center,
                 ),
                 Text(
-                  AppDateUtils.convertToString(rec.recordDate, "dd/MM/yyyy"),
+                  rec.recordDate != null ? (AppDateUtils.convertToString(rec.recordDate!, "dd/MM/yyyy") ?? "") : "",
                   style: TextStyle(color: Colors.black.withOpacity(0.8)),
                   textAlign: TextAlign.center,
                 ),
@@ -165,7 +163,8 @@ class _TrackDetailState extends State<TrackDetail> {
   }*/
 
   Widget build(BuildContext context) {
-    final RecordProvider _recordProvider = Provider.of<RecordProvider>(context, listen: true);
+    final RecordListProvider _recordListProvider = Provider.of<RecordListProvider>(context, listen: true);
+    final TrackDetailProvider _trackDetailProvider = Provider.of<TrackDetailProvider>(context, listen: true);
     //final EventProvider _eventProvider = Provider.of<EventProvider>(context, listen: true);
 
     return Scaffold(
@@ -192,13 +191,13 @@ class _TrackDetailState extends State<TrackDetail> {
                 pinned: true,
                 expandedHeight: 200,
                 flexibleSpace: FlexibleSpaceBar(
-                  title: Text(widget.track.name),
+                  title: Text(_trackDetailProvider.currentTrack!.name!),
                   background: Stack(
                     alignment: Alignment.bottomLeft,
                     fit: StackFit.expand,
                     children: <Widget>[
                       Image.asset(
-                        TrackUtils.trackCoverImageUrlFromName(widget.track.name),
+                        TrackUtils.trackCoverImageUrlFromName(_trackDetailProvider.currentTrack!.name),
                         fit: BoxFit.fitWidth,
                       ),
                       DecoratedBox(
@@ -248,7 +247,9 @@ class _TrackDetailState extends State<TrackDetail> {
                                             textAlign: TextAlign.center,
                                           ),
                                           Text(
-                                            AppDateUtils.toLapTimeString(widget.track.lapRecord),
+                                            AppDateUtils.toLapTimeString(
+                                                    _trackDetailProvider.currentTrack!.lapRecord) ??
+                                                "",
                                             textAlign: TextAlign.center,
                                             maxLines: 2,
                                             overflow: TextOverflow.ellipsis,
@@ -277,7 +278,7 @@ class _TrackDetailState extends State<TrackDetail> {
                                             textAlign: TextAlign.center,
                                           ),
                                           Text(
-                                            "${widget.track.distance}",
+                                            "${_trackDetailProvider.currentTrack!.distance}",
                                             textAlign: TextAlign.center,
                                             maxLines: 2,
                                             overflow: TextOverflow.ellipsis,
@@ -289,8 +290,8 @@ class _TrackDetailState extends State<TrackDetail> {
                                   Expanded(
                                     flex: 1,
                                     child: InkWell(
-                                      onTap: () =>
-                                          AppUtils.launchURL("geo:${widget.track.latitude},${widget.track.longitude}"),
+                                      onTap: () => AppUtils.launchURL(
+                                          "geo:${_trackDetailProvider.currentTrack!.latitude},${_trackDetailProvider.currentTrack!.longitude}"),
                                       child: Container(
                                         height: 100,
                                         margin: EdgeInsets.all(4.0),
@@ -305,11 +306,11 @@ class _TrackDetailState extends State<TrackDetail> {
                                               color: Colors.red[700],
                                             ),
                                             Text(
-                                              "${widget.track.latitude}",
+                                              "${_trackDetailProvider.currentTrack!.latitude}",
                                               textAlign: TextAlign.center,
                                             ),
                                             Text(
-                                              "${widget.track.longitude}",
+                                              "${_trackDetailProvider.currentTrack!.longitude}",
                                               textAlign: TextAlign.center,
                                             ),
                                           ],
@@ -327,7 +328,7 @@ class _TrackDetailState extends State<TrackDetail> {
                                   SizedBox(width: 5.0),
                                   Text(
                                     AppString.trackEvents,
-                                    textScaleFactor: 1.2,
+                                    textScaler: TextScaler.linear(1.2),
                                     style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black.withOpacity(0.8)),
                                   ),
                                 ],
@@ -343,14 +344,14 @@ class _TrackDetailState extends State<TrackDetail> {
                                   SizedBox(width: 5.0),
                                   Text(
                                     AppString.chronos,
-                                    textScaleFactor: 1.2,
+                                    textScaler: TextScaler.linear(1.2),
                                     style:
                                         TextStyle(fontWeight: FontWeight.bold, color: Colors.black.withOpacity(0.64)),
                                   ),
                                 ],
                               ),
                               SizedBox(height: 10),
-                              _recordsTable(_recordProvider),
+                              _recordsTable(_recordListProvider),
                             ],
                           ),
                         ),
@@ -393,7 +394,7 @@ class _TrackDetailState extends State<TrackDetail> {
                   ),
                   /*child: Text(
                     "${widget.track.name}",
-                    textScaleFactor: 2,
+                    textScaler: TextScaler.linear(2),
                     style: TextStyle(color: Colors.white),
                     maxLines: 3,
                     overflow: TextOverflow.ellipsis,
@@ -512,7 +513,7 @@ class _TrackDetailState extends State<TrackDetail> {
                           SizedBox(width: 5.0),
                           Text(
                             AppString.trackEvents,
-                            textScaleFactor: 1.2,
+                            textScaler: TextScaler.linear(1.2),
                             style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black.withOpacity(0.8)),
                           ),
                         ],
@@ -528,13 +529,13 @@ class _TrackDetailState extends State<TrackDetail> {
                           SizedBox(width: 5.0),
                           Text(
                             AppString.chronos,
-                            textScaleFactor: 1.2,
+                            textScaler: TextScaler.linear(1.2),
                             style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black.withOpacity(0.64)),
                           ),
                         ],
                       ),
                       SizedBox(height: 10),
-                      _recordsTable(_recordProvider),
+                      _recordsTable(_recordListProvider),
                     ],
                   ),
                 ),

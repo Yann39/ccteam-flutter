@@ -17,8 +17,6 @@
  * along with CCTeam. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import 'dart:ui';
-
 import 'package:ccteam/providers/login_provider.dart';
 import 'package:ccteam/utils/string_utils.dart';
 import 'package:ccteam/utils/strings.dart';
@@ -35,28 +33,25 @@ class ForgotPassword extends StatefulWidget {
 }
 
 class _ForgotPassword extends State<ForgotPassword> {
-  final GlobalKey<FormState> _forgotPasswordFormKey =
-      new GlobalKey<FormState>();
+  final GlobalKey<FormState> _forgotPasswordFormKey = new GlobalKey<FormState>();
   final Logger _log = new Logger('ForgotPassword');
 
-  String _email;
+  late String _email;
 
   /// Method that validates the form then process the login in a loading screen and awaits the result from Navigator.pop
   _doResetPassword(BuildContext context) async {
-    final FormState _form = _forgotPasswordFormKey.currentState;
+    final FormState _form = _forgotPasswordFormKey.currentState!;
 
     // validate the form
     if (!_form.validate()) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          backgroundColor: Colors.red, content: Text(AppString.formNotValid)));
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(backgroundColor: Colors.red, content: Text(AppString.formNotValid)));
     } else {
       // this invokes each onSaved event
       _form.save();
 
       // submit data to backend then display a message
-      Provider.of<LoginProvider>(context, listen: false)
-          .askPassword(_email)
-          .then((value) {
+      Provider.of<LoginProvider>(context, listen: false).askPassword(_email).then((value) {
         Navigator.pop(context, "");
       }, onError: (error) {
         Navigator.pop(context, "");
@@ -82,7 +77,7 @@ class _ForgotPassword extends State<ForgotPassword> {
           Text(
             AppString.applicationTitle,
             style: TextStyle(color: Colors.white),
-            textScaleFactor: 1.3,
+            textScaler: TextScaler.linear(1.3),
           ),
           SizedBox(height: 6.0),
           Text(
@@ -109,10 +104,8 @@ class _ForgotPassword extends State<ForgotPassword> {
         autofocus: false,
         style: TextStyle(color: Colors.white),
         decoration: InputDecoration(
-          enabledBorder:
-              OutlineInputBorder(borderSide: BorderSide(color: Colors.white)),
-          focusedBorder:
-              OutlineInputBorder(borderSide: BorderSide(color: Colors.white)),
+          enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.white)),
+          focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.white)),
           prefixIcon: Icon(Icons.mail, color: Colors.white),
           hintText: AppString.loginEmailHint,
           hintStyle: TextStyle(color: Colors.grey[400]),
@@ -120,12 +113,10 @@ class _ForgotPassword extends State<ForgotPassword> {
         ),
         maxLines: 1,
         inputFormatters: [LengthLimitingTextInputFormatter(128)],
-        validator: (val) => val.isEmpty
+        validator: (val) => (val == null || val.isEmpty)
             ? AppString.memberEmailMandatory
-            : (StringUtils.isValidEmail(val)
-                ? null
-                : AppString.memberEmailNotValid),
-        onSaved: (val) => _email = val,
+            : (StringUtils.isValidEmail(val) ? null : AppString.memberEmailNotValid),
+        onSaved: (val) => _email = val!,
         initialValue: _email,
       ),
     );
@@ -135,8 +126,8 @@ class _ForgotPassword extends State<ForgotPassword> {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(8),
         ),
+        backgroundColor: Colors.grey[700],
         padding: EdgeInsets.fromLTRB(16.0, 12.0, 16.0, 12.0),
-        primary: Colors.grey[700],
       ),
       onPressed: () {
         Navigator.pop(context);
@@ -154,8 +145,8 @@ class _ForgotPassword extends State<ForgotPassword> {
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(8),
             ),
+            backgroundColor: Colors.red[700],
             padding: EdgeInsets.fromLTRB(16.0, 12.0, 16.0, 12.0),
-            primary: Colors.red[700],
           ),
           onPressed: () {
             _doResetPassword(context);

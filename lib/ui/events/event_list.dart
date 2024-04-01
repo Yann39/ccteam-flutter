@@ -63,18 +63,16 @@ class EventList extends StatelessWidget {
           : _eventListProvider.fetchEventListForDayAndMonthAndYear(date.day, date.month, date.year);
     }
 
-    onRefresh() {
+    Future<void> onRefresh() {
       if (_eventListProvider.eventModeSelectorIndex == 0) {
         return _eventListProvider.fetchEventList();
       } else if (_eventListProvider.eventModeSelectorIndex == 1) {
         return _eventListProvider.fetchEventListForYear(DateTime.now().year);
       } else if (_eventListProvider.eventModeSelectorIndex == 2) {
-        if (_eventListProvider.selectedDate != null) {
-          return _eventListProvider.fetchEventListForDayAndMonthAndYear(_eventListProvider.selectedDate.day,
-              _eventListProvider.selectedDate.month, _eventListProvider.selectedDate.year);
-        } else {
-          return new Future(() => null);
-        }
+        return _eventListProvider.fetchEventListForDayAndMonthAndYear(_eventListProvider.selectedDate.day,
+            _eventListProvider.selectedDate.month, _eventListProvider.selectedDate.year);
+      } else {
+        return _eventListProvider.fetchEventList();
       }
     }
 
@@ -104,7 +102,7 @@ class EventList extends StatelessWidget {
         child: Column(
           children: <Widget>[
             Container(
-              decoration: BoxDecoration(border: Border.all(color: Colors.red[700], width: 1)),
+              decoration: BoxDecoration(border: Border.all(color: Colors.red[700]!, width: 1)),
               child: Row(
                 children: <Widget>[
                   Expanded(
@@ -117,7 +115,7 @@ class EventList extends StatelessWidget {
                         padding: EdgeInsets.symmetric(horizontal: 6.0, vertical: 6.0),
                         decoration: BoxDecoration(
                             color: _eventListProvider.eventModeSelectorIndex == 0 ? Colors.red[700] : Colors.white70,
-                            border: Border(right: BorderSide(color: Colors.red[700], width: 1))),
+                            border: Border(right: BorderSide(color: Colors.red[700]!, width: 1))),
                         child: Text(
                           AppString.all,
                           style: TextStyle(
@@ -138,7 +136,7 @@ class EventList extends StatelessWidget {
                         padding: EdgeInsets.symmetric(horizontal: 6.0, vertical: 6.0),
                         decoration: BoxDecoration(
                             color: _eventListProvider.eventModeSelectorIndex == 1 ? Colors.red[700] : Colors.white70,
-                            border: Border(right: BorderSide(color: Colors.red[700], width: 1))),
+                            border: Border(right: BorderSide(color: Colors.red[700]!, width: 1))),
                         child: Text(
                           AppString.currentYear,
                           style: TextStyle(
@@ -181,7 +179,7 @@ class EventList extends StatelessWidget {
                         Map.fromIterable(_eventListProvider.allEvents, key: (v) => v.title, value: (v) => v.startDate),
                     onlyMonthDays: false,
                     locale: "fr",
-                    weekEndDayColor: Colors.blue[700],
+                    weekEndDayColor: Colors.blue[700]!,
                     mode: CalendarMode.month,
                     expandable: true,
                     firstWeekDay: DateTime.monday,
@@ -199,7 +197,7 @@ class EventList extends StatelessWidget {
                     separatorBuilder: (context, index) => SizedBox(height: 8.0),
                     itemCount: _events.length,
                     itemBuilder: (context, index) {
-                      if (index > 0 && _events[index].startDate.year < _events[index - 1].startDate.year) {
+                      if (index > 0 && _events[index].startDate!.year < _events[index - 1].startDate!.year) {
                         return Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: <Widget>[
@@ -209,7 +207,7 @@ class EventList extends StatelessWidget {
                                   Icons.arrow_downward,
                                   size: 16,
                                 ),
-                                Text("${_events[index].startDate.year}"),
+                                Text("${_events[index].startDate!.year}"),
                               ],
                             ),
                             SizedBox(height: 4.0),

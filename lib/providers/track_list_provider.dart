@@ -26,21 +26,21 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:logging/logging.dart';
 
-class TrackProvider extends ChangeNotifier {
-  final Logger _log = new Logger('TrackProvider');
+class TrackListProvider extends ChangeNotifier {
+  final Logger _log = new Logger('TrackListProvider');
   final TracksService _tracksService = new TracksService();
 
   // current list of tracks
   List<Track> _tracks = [];
 
   // current selected track
-  Track _selectedTrack;
+  Track? _selectedTrack;
 
   // current loading status
   LoadingStatus _loadingStatus = LoadingStatus.notLoaded;
 
   // constructor
-  TrackProvider() {
+  TrackListProvider() {
     // as soon as it is instantiated, we fetch all news
     _fetchTracks();
   }
@@ -49,19 +49,19 @@ class TrackProvider extends ChangeNotifier {
 
   LoadingStatus get loadingStatus => _loadingStatus;
 
-  Track get selectedTrack => _selectedTrack;
+  Track? get selectedTrack => _selectedTrack;
 
   /// Update the current loading status
   void _updateStatus(LoadingStatus status) {
     _loadingStatus = status;
-    _log.info("Notifying listeners of TrackProvider");
+    _log.info("Notifying listeners of TrackListProvider");
     notifyListeners();
   }
 
   /// Set the specified [track] as the current selected track
   void selectTrack(Track track) {
     _selectedTrack = track;
-    _log.info("Notifying listeners of TrackProvider");
+    _log.info("Notifying listeners of TrackListProvider");
     notifyListeners();
   }
 
@@ -101,7 +101,7 @@ class TrackProvider extends ChangeNotifier {
     await _tracksService.createTrack(track).then((value) {
       _log.fine("New track created : ${track.name}");
       _tracks.add(track);
-      _log.info("Notifying listeners of TrackProvider");
+      _log.info("Notifying listeners of TrackListProvider");
       notifyListeners();
     }, onError: (error) {
       _log.severe("Failed to create new track ($error)");
@@ -114,23 +114,10 @@ class TrackProvider extends ChangeNotifier {
     await _tracksService.updateTrack(track).then((value) {
       _log.fine("Track successfully updated : ${track.name}");
       _tracks[_tracks.indexWhere((m) => m.id == track.id)] = track;
-      _log.info("Notifying listeners of TrackProvider");
+      _log.info("Notifying listeners of TrackListProvider");
       notifyListeners();
     }, onError: (error) {
       _log.severe("Failed to update track ($error)");
-      throw (error);
-    });
-  }
-
-  /// Delete the specified [track]
-  Future<void> deleteTrack(Track track) async {
-    await _tracksService.deleteTrack(track).then((value) {
-      _log.fine("Track deleted successfully : ${track.name}");
-      _tracks.remove(track);
-      _log.info("Notifying listeners of TrackProvider");
-      notifyListeners();
-    }, onError: (error) {
-      _log.severe("Failed to delete track ($error)");
       throw (error);
     });
   }

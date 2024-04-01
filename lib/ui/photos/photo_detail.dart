@@ -27,12 +27,12 @@ import 'package:ccteam/utils/strings.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../providers/photo_detail_provider.dart';
+
 const double _kMinFlingVelocity = 800.0;
 
 class PhotoDetail extends StatefulWidget {
-  final Photo photo;
-
-  const PhotoDetail({Key key, this.photo}) : super(key: key);
+  const PhotoDetail({Key? key}) : super(key: key);
 
   @override
   State<StatefulWidget> createState() {
@@ -40,13 +40,12 @@ class PhotoDetail extends StatefulWidget {
   }
 }
 
-class _PhotoDetailState extends State<PhotoDetail>
-    with SingleTickerProviderStateMixin {
-  AnimationController _controller;
-  PageController _pageController;
-  Animation<Offset> _flingAnimation;
-  Offset _normalizedOffset;
-  double _previousScale;
+class _PhotoDetailState extends State<PhotoDetail> with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late PageController _pageController;
+  late Animation<Offset> _flingAnimation;
+  late Offset _normalizedOffset;
+  late double _previousScale;
   int _currentPage = 0;
   Offset _offset = Offset.zero;
   double _scale = 1.0;
@@ -56,9 +55,8 @@ class _PhotoDetailState extends State<PhotoDetail>
     super.initState();
     _currentPage = Provider.of<PhotoProvider>(context, listen: false)
         .photos
-        .indexOf(widget.photo);
-    _controller = AnimationController(vsync: this)
-      ..addListener(_handleFlingAnimation);
+        .indexOf(Provider.of<PhotoDetailProvider>(context, listen: false).currentPhoto);
+    _controller = AnimationController(vsync: this)..addListener(_handleFlingAnimation);
     _pageController = PageController(initialPage: _currentPage);
   }
 
@@ -79,10 +77,9 @@ class _PhotoDetailState extends State<PhotoDetail>
   /// The maximum offset value is 0,0. If the size of this renderer's box is w,h
   /// then the minimum offset value is w - _scale * w, h - _scale * h
   Offset _clampOffset(Offset offset) {
-    final Size size = context.size;
+    final Size size = context.size!;
     final Offset minOffset = Offset(size.width, size.height) * (1.0 - _scale);
-    return Offset(
-        offset.dx.clamp(minOffset.dx, 0.0), offset.dy.clamp(minOffset.dy, 0.0));
+    return Offset(offset.dx.clamp(minOffset.dx, 0.0), offset.dy.clamp(minOffset.dy, 0.0));
   }
 
   /// Handle scale start given the gesture [details]
@@ -109,9 +106,9 @@ class _PhotoDetailState extends State<PhotoDetail>
     final double magnitude = details.velocity.pixelsPerSecond.distance;
     if (magnitude < _kMinFlingVelocity) return;
     final Offset direction = details.velocity.pixelsPerSecond / magnitude;
-    final double distance = (Offset.zero & context.size).shortestSide;
-    _flingAnimation = _controller.drive(Tween<Offset>(
-        begin: _offset, end: _clampOffset(_offset + direction * distance)));
+    final double distance = (Offset.zero & context.size!).shortestSide;
+    _flingAnimation =
+        _controller.drive(Tween<Offset>(begin: _offset, end: _clampOffset(_offset + direction * distance)));
     _controller
       ..value = 0.0
       ..fling(velocity: magnitude / 1000.0);
@@ -120,8 +117,7 @@ class _PhotoDetailState extends State<PhotoDetail>
   /// Method that launches the Edit New screen and awaits the result from Navigator.pop
   _navigateToEditPhotoScreen(BuildContext context, Photo photo) async {
     // Navigator.push returns a Future that will complete after we call Navigator.pop on the Add Photo Screen
-    final result =
-        await Navigator.pushNamed(context, "/addEditPhoto", arguments: photo);
+    final result = await Navigator.pushNamed(context, "/addEditPhoto", arguments: photo);
 
     // after the Edit New Screen returns a result, hide any previous snack bars and show the new result
     if (result != null) {
@@ -157,8 +153,7 @@ class _PhotoDetailState extends State<PhotoDetail>
   }
 
   /// Handle result of the photo deletion confirmation dialog
-  void _dialogueResult(
-      BuildContext context, ConfirmDialogAction value, Photo photo) {
+  void _dialogueResult(BuildContext context, ConfirmDialogAction value, Photo photo) {
     if (value == ConfirmDialogAction.yes) {
       final PhotosService photosService = PhotosService();
       // delete photo
@@ -169,14 +164,14 @@ class _PhotoDetailState extends State<PhotoDetail>
       }, onError: (error) {
         ScaffoldMessenger.of(context)
           ..removeCurrentSnackBar()
-          ..showSnackBar(
-              SnackBar(content: Text(AppString.photoDeletionFailed)));
+          ..showSnackBar(SnackBar(content: Text(AppString.photoDeletionFailed)));
       });
     }
     Navigator.pop(context);
   }
 
   Widget build(BuildContext context) {
+    final PhotoDetailProvider _photoDetailProvider = Provider.of<PhotoDetailProvider>(context, listen: true);
     final _photoProvider = Provider.of<PhotoProvider>(context, listen: true);
 
     return Scaffold(
@@ -184,15 +179,12 @@ class _PhotoDetailState extends State<PhotoDetail>
         actions: <Widget>[
           IconButton(
             icon: const Icon(Icons.edit),
-            onPressed: () => _navigateToEditPhotoScreen(
-                context, _photoProvider.photos[_currentPage]),
+            onPressed: () => _navigateToEditPhotoScreen(context, _photoProvider.photos[_currentPage]),
           ),
           IconButton(
             icon: const Icon(Icons.delete_forever),
-            onPressed: () => _showConfirmation(
-                context,
-                AppString.photoDeletionAreYouSure,
-                _photoProvider.photos[_currentPage]),
+            onPressed: () =>
+                _showConfirmation(context, AppString.photoDeletionAreYouSure, _photoProvider.photos[_currentPage]),
           )
         ],
         title: Text(AppString.detail),
@@ -228,10 +220,9 @@ class _PhotoDetailState extends State<PhotoDetail>
                   width: Curves.easeOut.transform(value) * 350,*/
                   child: Column(
                     children: <Widget>[
-                      Text("${_photoProvider.photos[index].title}",
-                          textScaleFactor: 1.6),
+                      Text("${_photoProvider.photos[index].title}", textScaler: TextScaler.linear(1.6)),
                       SizedBox(height: 12.0),
-                      child,
+                      child!,
                       SizedBox(height: 12.0),
                       Text("${_photoProvider.photos[index].description}"),
                     ],
@@ -253,7 +244,7 @@ class _PhotoDetailState extends State<PhotoDetail>
                   ..scale(_scale),
                 child: CachedNetworkImage(
                   placeholder: (context, url) => CircularProgressIndicator(),
-                  imageUrl: _photoProvider.photos[index].link,
+                  imageUrl: _photoProvider.photos[index].link!,
                   fit: BoxFit.cover,
                 ),
               ),

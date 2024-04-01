@@ -25,41 +25,41 @@ class PasscodeProvider extends ChangeNotifier {
   final Logger _log = new Logger('PasscodeProvider');
 
   // current passCode being entered for login
-  String _loginPassCode;
+  String? _loginPassCode;
 
   // current passCode being created
-  String _firstPassCode;
+  String? _firstPassCode;
 
   // current passCode being confirmed
-  String _secondPassCode;
+  String? _secondPassCode;
 
   // current error message
-  String _errorMessage;
+  String? _errorMessage;
 
-  String get loginPassCode => _loginPassCode;
+  String? get loginPassCode => _loginPassCode;
 
-  String get firstPassCode => _firstPassCode;
+  String? get firstPassCode => _firstPassCode;
 
-  String get secondPassCode => _secondPassCode;
+  String? get secondPassCode => _secondPassCode;
 
-  String get errorMessage => _errorMessage;
+  String? get errorMessage => _errorMessage;
 
   /// Set the current [passcode] used for logging in.
-  set loginPassCode(String passcode) {
+  set loginPassCode(String? passcode) {
     _loginPassCode = passcode;
     _log.info("Notifying listeners of PasscodeProvider");
     notifyListeners();
   }
 
   /// Set the current [passcode] used in registration process.
-  set firstPassCode(String passcode) {
+  set firstPassCode(String? passcode) {
     _firstPassCode = passcode;
     _log.info("Notifying listeners of PasscodeProvider");
     notifyListeners();
   }
 
   /// Set the current [passcode] used in registration process (confirmation).
-  set secondPassCode(String passcode) {
+  set secondPassCode(String? passcode) {
     _secondPassCode = passcode;
     _log.info("Notifying listeners of PasscodeProvider");
     notifyListeners();

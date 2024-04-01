@@ -19,19 +19,19 @@
 
 import 'dart:async';
 
-import 'package:ccteam/models/event.dart';
+import 'package:ccteam/models/record.dart';
 import 'package:ccteam/providers/login_provider.dart';
 import 'package:ccteam/providers/message_provider.dart';
-import 'package:ccteam/services/events_service.dart';
+import 'package:ccteam/services/records_service.dart';
 import 'package:ccteam/utils/app_utils.dart';
 import 'package:ccteam/utils/enums.dart';
 import 'package:ccteam/utils/strings.dart';
 import 'package:flutter/foundation.dart';
 import 'package:logging/logging.dart';
 
-class EventDetailProvider extends ChangeNotifier {
-  final Logger _log = new Logger('EventDetailProvider');
-  final EventsService _eventsService = new EventsService();
+class RecordCreationProvider extends ChangeNotifier {
+  final Logger _log = new Logger('RecordCreationProvider');
+  final RecordsService _recordsService = new RecordsService();
 
   // message provider that can be set from the proxy provider
   late MessageProvider _messageProvider;
@@ -39,13 +39,13 @@ class EventDetailProvider extends ChangeNotifier {
   // login provider that can be set from the proxy provider
   late LoginProvider _loginProvider;
 
-  // current event
-  late Event _currentEvent;
+  // current record
+  Record _record = new Record();
 
   // current loading status
   LoadingStatus _loadingStatus = LoadingStatus.notLoaded;
 
-  Event get currentEvent => _currentEvent;
+  Record get record => _record;
 
   LoadingStatus get loadingStatus => _loadingStatus;
 
@@ -61,44 +61,48 @@ class EventDetailProvider extends ChangeNotifier {
     _notifyListeners();
   }
 
-  /// Set the current event to be the specified [event].
-  void setCurrentEvent(Event event) {
-    _currentEvent = event;
-    _notifyListeners();
+  /// Set the [Record] to be edited.
+  void setRecordToEdit(Record record) {
+    _record = record;
+    _updateStatus(LoadingStatus.loaded);
   }
 
-  /// Fetch the specified [event] from the database.
-  Future<void> fetchEvent(Event event) async {
-    _log.fine("Fetching event ${event.title}...");
+  /// Create the current record being edited.
+  Future<void> createRecord() async {
     _updateStatus(LoadingStatus.loading);
-    await _eventsService.getEventById(event.id!).then((value) async {
-      _log.fine("Event ID ${event.id} retrieved successfully");
-      _currentEvent = value;
+    await _recordsService.createRecord(_record).then((value) async {
+      _log.fine("Record created successfully");
+      //_record = value;
       _updateStatus(LoadingStatus.loaded);
+      _messageProvider.setMessage(AppString.recordCreated, MessageType.SUCCESS);
     }, onError: (error) {
-      _log.warning("Error when retrieving event ($error)");
+      _log.warning("Error when creating record ($error)");
+      _messageProvider.setMessage(AppString.recordCreationFailed, MessageType.ERROR);
       AppUtils.handleServiceException(error, _messageProvider, _loginProvider);
       _updateStatus(LoadingStatus.notLoaded);
     });
   }
 
-  /// Delete the specified [event].
-  Future<void> deleteEvent(Event event) async {
-    await _eventsService.deleteEvent(event).then((value) {
-      _log.fine("Event deleted successfully : ${event.title}");
-      _messageProvider.setMessage(AppString.eventDeleted, MessageType.SUCCESS);
-      _notifyListeners();
+  /// Update the current record being edited.
+  Future<void> updateRecord() async {
+    _updateStatus(LoadingStatus.loading);
+    await _recordsService.updateRecord(_record).then((value) {
+      _log.fine("Record successfully updated : ${_record.id}");
+      //_record = value;
+      _updateStatus(LoadingStatus.loaded);
+      _messageProvider.setMessage(AppString.recordUpdated, MessageType.SUCCESS);
     }, onError: (error) {
-      _log.warning("Failed to delete event ($error)");
-      _messageProvider.setMessage(AppString.eventDeletionFailed, MessageType.ERROR);
+      // todo here we should reload the original record as it has not been updated in db ?
+      _log.warning("Error when updating record ($error)");
+      _messageProvider.setMessage(AppString.recordUpdateFailed, MessageType.ERROR);
       AppUtils.handleServiceException(error, _messageProvider, _loginProvider);
-      _notifyListeners();
+      _updateStatus(LoadingStatus.notLoaded);
     });
   }
 
   /// Notify all the registered listeners of this provider.
   void _notifyListeners() {
-    _log.info("Notifying listeners of EventDetailProvider");
+    _log.info("Notifying listeners of RecordCreationProvider");
     notifyListeners();
   }
 

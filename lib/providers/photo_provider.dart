@@ -82,7 +82,7 @@ class PhotoProvider extends ChangeNotifier {
   void fetchPhotosFromGallery(int galleryId) async {
     _updateStatus(LoadingStatus.loading);
     _log.fine("Fetching photos for gallery ID $galleryId");
-    _photos = _galleries.singleWhere((element) => element.id == galleryId).photos;
+    _photos = _galleries.singleWhere((element) => element.id == galleryId).photos!;
     _updateStatus(LoadingStatus.loaded);
   }
 

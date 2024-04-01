@@ -50,7 +50,7 @@ class TrackUtils {
   }
 
   /// Get the right track icon according to the specified [trackName]
-  static IconData trackIconFromName(String trackName) {
+  static IconData trackIconFromName(String? trackName) {
     if (trackName == 'Alès') {
       return CustomIcons.track_ales_simple;
     } else if (trackName == 'Bresse') {
@@ -77,7 +77,7 @@ class TrackUtils {
   }
 
   /// Get the right track cover image according to the specified [trackName]
-  static String trackCoverImageUrlFromName(String trackName) {
+  static String trackCoverImageUrlFromName(String? trackName) {
     if (trackName == 'Alès') {
       return "images/tracks/ales_cover.jpg";
     } else if (trackName == 'Bresse') {

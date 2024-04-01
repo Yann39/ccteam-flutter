@@ -34,10 +34,10 @@ class EventCreationProvider extends ChangeNotifier {
   final EventsService _eventsService = new EventsService();
 
   // message provider that can be set from the proxy provider
-  MessageProvider _messageProvider;
+  late MessageProvider _messageProvider;
 
   // login provider that can be set from the proxy provider
-  LoginProvider _loginProvider;
+  late LoginProvider _loginProvider;
 
   // current event
   Event _event = new Event();

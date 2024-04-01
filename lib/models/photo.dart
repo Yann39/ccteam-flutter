@@ -22,12 +22,12 @@ import 'package:intl/intl.dart';
 /// Class representing a photo
 /// todo Add Gallery property ?
 class Photo {
-  int id;
-  String title;
-  String description;
-  String link;
-  DateTime createdOn;
-  DateTime modifiedOn;
+  int? id;
+  String? title;
+  String? description;
+  String? link;
+  DateTime? createdOn;
+  DateTime? modifiedOn;
 
   Photo({
     this.id,
@@ -52,13 +52,12 @@ class Photo {
 
   /// Convert [json] map to the corresponding [photo] object
   Photo.fromJson(Map<String, dynamic> json)
-      : id = json['id'] != null ? int.parse(json['id']) : -1,
+      : id = json['id'] != null ? int.parse(json['id']) : null,
         title = json['title'],
         description = json['description'],
         link = json['link'],
         createdOn = json['createdOn'] != null ? DateFormat("yyyy-MM-dd HH:mm:ss").parseStrict(json['createdOn']) : null,
-        modifiedOn =
-            json['modifiedOn'] != null ? DateFormat("yyyy-MM-dd HH:mm:ss").parseStrict(json['modifiedOn']) : null;
+        modifiedOn = json['modifiedOn'] != null ? DateFormat("yyyy-MM-dd HH:mm:ss").parseStrict(json['modifiedOn']) : null;
 
   /// Convert [Photo] object to the corresponding JSON map
   Map<String, dynamic> toJson() => {

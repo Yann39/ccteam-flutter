@@ -2,7 +2,7 @@ import 'package:ccteam/utils/enums.dart';
 import 'package:flutter/material.dart';
 
 class ErrorDialog extends StatelessWidget {
-  const ErrorDialog({Key key, this.text, this.type}) : super(key: key);
+  const ErrorDialog({Key? key, required this.text, required this.type}) : super(key: key);
 
   final String text;
   final DialogType type;
@@ -37,19 +37,13 @@ class ErrorDialog extends StatelessWidget {
           Container(
             decoration: BoxDecoration(
                 gradient: LinearGradient(
-                  colors: [Colors.blue[50], Colors.deepPurple[200]],
+                  colors: [Colors.blue[50]!, Colors.deepPurple[200]!],
                   begin: const FractionalOffset(0.0, 0.0),
                   end: const FractionalOffset(0.0, 1.0),
                   tileMode: TileMode.clamp,
                 ),
                 borderRadius: BorderRadius.circular(4.0),
-                boxShadow: [
-                  BoxShadow(
-                      color: Colors.black45,
-                      spreadRadius: 1,
-                      blurRadius: 10,
-                      offset: Offset(2, 3))
-                ]),
+                boxShadow: [BoxShadow(color: Colors.black45, spreadRadius: 1, blurRadius: 10, offset: Offset(2, 3))]),
             padding: EdgeInsets.fromLTRB(10, 40, 10, 10),
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -57,7 +51,7 @@ class ErrorDialog extends StatelessWidget {
                 Text(
                   "Erreur",
                   style: TextStyle(color: color, fontWeight: FontWeight.bold),
-                  textScaleFactor: 2,
+                  textScaler: TextScaler.linear(2),
                 ),
                 Divider(
                   color: color,
@@ -72,7 +66,7 @@ class ErrorDialog extends StatelessWidget {
                   onPressed: () {
                     Navigator.of(context).pop();
                   },
-                  style: ElevatedButton.styleFrom(primary: color),
+                  style: ElevatedButton.styleFrom(backgroundColor: color),
                   child: Text('OK', style: TextStyle(color: Colors.white)),
                 )
               ],
@@ -80,8 +74,7 @@ class ErrorDialog extends StatelessWidget {
           ),
           Positioned(
             top: -30,
-            child:
-                CircleAvatar(backgroundColor: color, radius: 30, child: icon),
+            child: CircleAvatar(backgroundColor: color, radius: 30, child: icon),
           ),
         ],
       ),

@@ -54,7 +54,7 @@ class EventCard extends StatelessWidget {
                       ClipRRect(
                         borderRadius: BorderRadius.all(Radius.circular(8.0)),
                         child: Image.asset(
-                          TrackUtils.trackCoverImageUrlFromName(event.track.name),
+                          TrackUtils.trackCoverImageUrlFromName(event.track?.name),
                           width: 50,
                           //fit: BoxFit.fill,
                         ),
@@ -65,7 +65,7 @@ class EventCard extends StatelessWidget {
                             RotatedBox(
                               quarterTurns: -1,
                               child: Text(
-                                "${DateFormat('EEEE', 'fr').format(event.startDate).substring(0, 3)}",
+                                "${DateFormat('EEEE', 'fr').format(event.startDate!).substring(0, 3)}",
                                 style: TextStyle(color: Colors.white, height: 1),
                               ),
                             ),
@@ -73,10 +73,12 @@ class EventCard extends StatelessWidget {
                               mainAxisAlignment: MainAxisAlignment.center,
                               crossAxisAlignment: CrossAxisAlignment.center,
                               children: <Widget>[
-                                Text("${DateFormat('dd', 'fr').format(event.startDate)}",
-                                    textScaleFactor: 1.5, style: TextStyle(color: Colors.white, height: 1)),
-                                Text("${DateFormat('MMM', 'fr').format(event.startDate)}",
-                                    textScaleFactor: 0.9, style: TextStyle(color: Colors.white, height: 0.8)),
+                                Text("${DateFormat('dd', 'fr').format(event.startDate!)}",
+                                    textScaler: TextScaler.linear(1.5),
+                                    style: TextStyle(color: Colors.white, height: 1)),
+                                Text("${DateFormat('MMM', 'fr').format(event.startDate!)}",
+                                    textScaler: TextScaler.linear(0.9),
+                                    style: TextStyle(color: Colors.white, height: 0.8)),
                               ],
                             ),
                           ],
@@ -90,7 +92,7 @@ class EventCard extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: <Widget>[
-                        Text(event.title, textScaleFactor: 1.2, style: TextStyle(color: Colors.white)),
+                        Text(event.title!, textScaler: TextScaler.linear(1.2), style: TextStyle(color: Colors.white)),
                         Divider(height: 12.0, color: Colors.white),
                         Expanded(
                           child: ListView(
@@ -104,8 +106,8 @@ class EventCard extends StatelessWidget {
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: <Widget>[
                                       Icon(Icons.location_on, size: 15, color: Colors.red[700]),
-                                      Text("${event.track.name}",
-                                          textScaleFactor: 0.9, style: TextStyle(color: Colors.white)),
+                                      Text("${event.track!.name}",
+                                          textScaler: TextScaler.linear(0.9), style: TextStyle(color: Colors.white)),
                                     ],
                                   ),
                                   VerticalDivider(color: Colors.white),
@@ -113,8 +115,8 @@ class EventCard extends StatelessWidget {
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: <Widget>[
                                       Icon(Icons.euro_symbol, size: 15, color: Colors.purple[700]),
-                                      Text("${StringUtils.formatPrice(event.price)}€",
-                                          textScaleFactor: 0.9, style: TextStyle(color: Colors.white)),
+                                      Text("${StringUtils.formatPrice(event.price!)}€",
+                                          textScaler: TextScaler.linear(0.9), style: TextStyle(color: Colors.white)),
                                     ],
                                   ),
                                   VerticalDivider(color: Colors.white),
@@ -122,8 +124,8 @@ class EventCard extends StatelessWidget {
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: <Widget>[
                                       Icon(Icons.perm_contact_calendar, size: 15, color: Colors.teal[700]),
-                                      Text(event.organizer,
-                                          textScaleFactor: 0.9, style: TextStyle(color: Colors.white)),
+                                      Text(event.organizer!,
+                                          textScaler: TextScaler.linear(0.9), style: TextStyle(color: Colors.white)),
                                     ],
                                   ),
                                 ],
@@ -140,8 +142,12 @@ class EventCard extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.center,
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: <Widget>[
-                        Icon(event.participants.length > 1 ? Icons.group : Icons.person, color: Colors.white, size: 18),
-                        Text("${event.participants.length}", textScaleFactor: 0.8, style: TextStyle(color: Colors.white)),
+                        Icon(
+                            (event.participants != null && event.participants!.length > 1) ? Icons.group : Icons.person,
+                            color: Colors.white,
+                            size: 18),
+                        Text("${event.participants != null ? event.participants!.length : 0}",
+                            textScaler: TextScaler.linear(0.8), style: TextStyle(color: Colors.white)),
                       ],
                     ),
                   ),
@@ -153,7 +159,7 @@ class EventCard extends StatelessWidget {
           Container(
             decoration: BoxDecoration(
               shape: BoxShape.rectangle,
-              color: event.endDate.isAfter(DateTime.now()) ? Colors.green[700] : Colors.grey[600],
+              color: event.endDate!.isAfter(DateTime.now()) ? Colors.green[700] : Colors.grey[600],
               borderRadius: BorderRadius.only(topRight: Radius.circular(4.0), bottomRight: Radius.circular(4.0)),
             ),
             width: 5,

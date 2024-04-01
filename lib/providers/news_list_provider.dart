@@ -34,10 +34,10 @@ class NewsListProvider extends ChangeNotifier {
   final NewsService _newsService = new NewsService();
 
   // message provider that can be set from the proxy provider
-  MessageProvider _messageProvider;
+  late MessageProvider _messageProvider;
 
   // login provider that can be set from the proxy provider
-  LoginProvider _loginProvider;
+  late LoginProvider _loginProvider;
 
   // current news list
   List<News> _newsList = [];
@@ -72,7 +72,7 @@ class NewsListProvider extends ChangeNotifier {
     _newsList.add(news);
 
     // re-sort the list by date
-    _newsList.sort((a, b) => a.newsDate.compareTo(b.newsDate));
+    _newsList.sort((a, b) => a.newsDate!.compareTo(b.newsDate!));
 
     _notifyListeners();
   }

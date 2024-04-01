@@ -42,13 +42,13 @@ class NewsCard extends StatelessWidget {
 
     // the icon color
     final Color _color = index % 3 == 0
-        ? Colors.red[900]
+        ? Colors.red[900]!
         : index % 3 == 1
-            ? Colors.green[600]
-            : Colors.blue[600];
+            ? Colors.green[600]!
+            : Colors.blue[600]!;
 
     return Container(
-      height: 76.0,
+      height: 84.0,
       padding: EdgeInsets.symmetric(vertical: 8.0, horizontal: 12.0),
       margin: EdgeInsets.symmetric(vertical: 4.0, horizontal: 10.0),
       decoration: CustomDecorations.cardFull,
@@ -67,7 +67,7 @@ class NewsCard extends StatelessWidget {
                   begin: const FractionalOffset(0.0, 0.0),
                   end: const FractionalOffset(0.0, 1.0),
                   stops: [0.0, 1.0],
-                  colors: [_color, Colors.purple[700]],
+                  colors: [_color, Colors.purple[700]!],
                 ).createShader(bounds),
                 child: Icon(
                   CustomIcons.helmet,
@@ -78,7 +78,8 @@ class NewsCard extends StatelessWidget {
               Row(
                 children: <Widget>[
                   Icon(
-                    news.likedNews.any((element) => element.member.id == _loginProvider.loggedMember.id)
+                    news.likedNews != null &&
+                            news.likedNews!.any((element) => element.member!.id == _loginProvider.loggedMember!.id)
                         ? Icons.favorite
                         : Icons.favorite_border,
                     color: Colors.pink,
@@ -86,9 +87,9 @@ class NewsCard extends StatelessWidget {
                   ),
                   SizedBox(width: 2.0),
                   Text(
-                    "${news.likedNews != null ? news.likedNews.length : 0}",
+                    "${news.likedNews != null ? news.likedNews!.length : 0}",
                     softWrap: false,
-                    textScaleFactor: 0.9,
+                    textScaler: TextScaler.linear(0.9),
                     style: TextStyle(color: Colors.white),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
@@ -103,14 +104,14 @@ class NewsCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[
-                Text(news.title,
-                    textScaleFactor: 1.2,
+                Text(news.title ?? "",
+                    textScaler: TextScaler.linear(1.2),
                     style: TextStyle(color: Colors.white),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis),
                 SizedBox(height: 4.0),
-                Text(news.catchLine,
-                    textScaleFactor: 0.9,
+                Text(news.catchLine ?? "",
+                    textScaler: TextScaler.linear(0.9),
                     style: TextStyle(color: Colors.white),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis),
@@ -122,9 +123,9 @@ class NewsCard extends StatelessWidget {
                     Icon(Icons.access_time, color: Colors.lime, size: 12.0),
                     SizedBox(width: 2.0),
                     Text(
-                      AppDateUtils.convertToString(news.newsDate, DATE_FORMAT),
+                      news.newsDate != null ? AppDateUtils.convertToString(news.newsDate!, DATE_FORMAT) ?? "" : "",
                       softWrap: false,
-                      textScaleFactor: 0.9,
+                      textScaler: TextScaler.linear(0.9),
                       style: TextStyle(color: Colors.white),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,

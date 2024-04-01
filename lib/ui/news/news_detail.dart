@@ -40,8 +40,6 @@ class NewsDetail extends StatelessWidget {
 
   /// Navigate to the news creation form screen to edit the specified [news].
   _navigateToEditNewsScreen(BuildContext context, News news) async {
-    // set the news to be edited
-    final News newNews = new News();
     //todo need deep copy here else the reference will be updated even on error
     Provider.of<NewsCreationProvider>(context, listen: false).setNewsToEdit(News.clone(news));
 
@@ -51,21 +49,21 @@ class NewsDetail extends StatelessWidget {
 
   /// Set the specified [news] as liked by the current logged member.
   _likeNews(BuildContext context, News news) async {
-    final Member member = Provider.of<LoginProvider>(context, listen: false).loggedMember;
+    final Member member = Provider.of<LoginProvider>(context, listen: false).loggedMember!;
     Provider.of<NewsDetailProvider>(context, listen: false).likeNews(news, member).then((value) => {
           // update the news in the news list
           Provider.of<NewsListProvider>(context, listen: false)
-              .updateNewsInList(Provider.of<NewsDetailProvider>(context, listen: false).currentNews)
+              .updateNewsInList(Provider.of<NewsDetailProvider>(context, listen: false).currentNews!)
         });
   }
 
   /// Set the specified [news] as not liked by the current logged member.
   _unlikeNews(BuildContext context, News news) async {
-    final Member member = Provider.of<LoginProvider>(context, listen: false).loggedMember;
+    final Member member = Provider.of<LoginProvider>(context, listen: false).loggedMember!;
     Provider.of<NewsDetailProvider>(context, listen: false).unlikeNews(news, member).then((value) => {
           // update the news in the news list
           Provider.of<NewsListProvider>(context, listen: false)
-              .updateNewsInList(Provider.of<NewsDetailProvider>(context, listen: false).currentNews)
+              .updateNewsInList(Provider.of<NewsDetailProvider>(context, listen: false).currentNews!)
         });
   }
 
@@ -81,7 +79,7 @@ class NewsDetail extends StatelessWidget {
             onPressed: () {
               final NewsDetailProvider newsDetailProvider = Provider.of<NewsDetailProvider>(context, listen: false);
               final NewsListProvider newsListProvider = Provider.of<NewsListProvider>(context, listen: false);
-              final News newsToDelete = newsDetailProvider.currentNews;
+              final News newsToDelete = newsDetailProvider.currentNews!;
               // delete news
               newsDetailProvider.deleteNews(newsToDelete).then((value) {
                 // remove news from the news list
@@ -111,8 +109,8 @@ class NewsDetail extends StatelessWidget {
     final LoginProvider _loginProvider = Provider.of<LoginProvider>(context, listen: false);
 
     // get if that news is liked for current logged member
-    final bool isLiked = _newsDetailProvider.currentNews.likedNews
-            ?.any((element) => element.member.id == _loginProvider.loggedMember.id) ??
+    final bool isLiked = _newsDetailProvider.currentNews!.likedNews
+            ?.any((element) => element.member!.id == _loginProvider.loggedMember!.id) ??
         false;
 
     return Scaffold(
@@ -123,13 +121,13 @@ class NewsDetail extends StatelessWidget {
               icon: Icon(Icons.notifications_active),
               onPressed: () =>
                   // send a push notification
-                  NotificationsService.pushInstantNewsNotification(_newsDetailProvider.currentNews),
+                  NotificationsService.pushInstantNewsNotification(_newsDetailProvider.currentNews!),
             ),
           ),
           Builder(
             builder: (context) => IconButton(
               icon: Icon(Icons.edit),
-              onPressed: () => _navigateToEditNewsScreen(context, _newsDetailProvider.currentNews),
+              onPressed: () => _navigateToEditNewsScreen(context, _newsDetailProvider.currentNews!),
             ),
           ),
           Builder(
@@ -168,7 +166,7 @@ class NewsDetail extends StatelessWidget {
                 padding: EdgeInsets.only(left: 8.0, right: 8.0, bottom: 8.0),
                 child: Column(
                   children: <Widget>[
-                    if (_newsDetailProvider.currentNews.createdBy != null)
+                    if (_newsDetailProvider.currentNews!.createdBy != null)
                       Row(
                         mainAxisAlignment: MainAxisAlignment.end,
                         crossAxisAlignment: CrossAxisAlignment.center,
@@ -176,8 +174,9 @@ class NewsDetail extends StatelessWidget {
                           Icon(Icons.person, color: Colors.purple[700], size: 13.0),
                           SizedBox(width: 2.0),
                           Text(
-                            "${AppString.by} ${_newsDetailProvider.currentNews.createdBy.firstName} ${_newsDetailProvider.currentNews.createdBy.lastName}",
+                            "${AppString.by} ${_newsDetailProvider.currentNews!.createdBy!.firstName} ${_newsDetailProvider.currentNews!.createdBy!.lastName}",
                             textAlign: TextAlign.left,
+                            style: TextStyle(color: Colors.black87),
                           ),
                         ],
                       ),
@@ -188,8 +187,9 @@ class NewsDetail extends StatelessWidget {
                         Icon(Icons.access_time, color: Colors.red[700], size: 13.0),
                         SizedBox(width: 2.0),
                         Text(
-                          "${AppString.on} ${AppDateUtils.convertToString(_newsDetailProvider.currentNews.newsDate, DATE_FORMAT_TXT)}",
+                          "${AppString.on} ${AppDateUtils.convertToString(_newsDetailProvider.currentNews!.newsDate!, DATE_FORMAT_TXT)}",
                           textAlign: TextAlign.left,
+                          style: TextStyle(color: Colors.black87),
                         ),
                       ],
                     ),
@@ -204,8 +204,8 @@ class NewsDetail extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: Text(
-                  _newsDetailProvider.currentNews.title,
-                  textScaleFactor: 2,
+                  _newsDetailProvider.currentNews!.title!,
+                  textScaler: TextScaler.linear(2),
                   style: TextStyle(color: Colors.black87),
                 ),
               ),
@@ -224,8 +224,8 @@ class NewsDetail extends StatelessWidget {
                           backgroundColor: Colors.blue[700],
                         ),
                         onPressed: () => {
-                          Share.share(_newsDetailProvider.currentNews.catchLine,
-                              subject: _newsDetailProvider.currentNews.title)
+                          Share.share(_newsDetailProvider.currentNews!.catchLine!,
+                              subject: _newsDetailProvider.currentNews!.title)
                         },
                         child: Row(
                           children: <Widget>[
@@ -251,8 +251,8 @@ class NewsDetail extends StatelessWidget {
                           backgroundColor: Colors.blue[700],
                         ),
                         onPressed: () => isLiked
-                            ? _unlikeNews(context, _newsDetailProvider.currentNews)
-                            : _likeNews(context, _newsDetailProvider.currentNews),
+                            ? _unlikeNews(context, _newsDetailProvider.currentNews!)
+                            : _likeNews(context, _newsDetailProvider.currentNews!),
                         child: Row(
                           children: <Widget>[
                             Icon(isLiked ? Icons.favorite : Icons.favorite_border,
@@ -272,7 +272,14 @@ class NewsDetail extends StatelessWidget {
               Flexible(
                 child: Markdown(
                   padding: EdgeInsets.all(8.0),
-                  data: _newsDetailProvider.currentNews.content,
+                  data: _newsDetailProvider.currentNews!.content!,
+                  styleSheet: MarkdownStyleSheet.fromTheme(
+                    ThemeData(
+                      textTheme: TextTheme(
+                        bodyMedium: TextStyle(fontSize: 14.0, color: Colors.black87),
+                      ),
+                    ),
+                  ),
                 ),
               ),
             ],
@@ -305,7 +312,7 @@ class HeaderPainter extends CustomPainter {
         begin: Alignment.topCenter,
         end: Alignment.bottomCenter,
         stops: [0, 1],
-        colors: [Colors.red[700].withOpacity(0.4), Colors.purple[700].withOpacity(0.7)],
+        colors: [Colors.red[700]!.withOpacity(0.4), Colors.purple[700]!.withOpacity(0.7)],
       ).createShader(Rect.fromLTRB(0, 0, size.width, size.height));
 
     canvas.drawPath(path, paint);

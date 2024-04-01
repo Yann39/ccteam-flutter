@@ -43,12 +43,10 @@ class _ConfirmPasscodeFormState extends State<ConfirmPasscodeForm> {
       _log.severe("Passcodes do not match");
     } else {
       // set password
-      Provider.of<LoginProvider>(context, listen: false).loggedMember.password =
+      Provider.of<LoginProvider>(context, listen: false).loggedMember!.password =
           Provider.of<LoginProvider>(context, listen: false).secondPassCode;
       // complete registration
-      Provider.of<LoginProvider>(context, listen: false)
-          .completeRegistration()
-          .then((value) {}, onError: (error) {
+      Provider.of<LoginProvider>(context, listen: false).completeRegistration().then((value) {}, onError: (error) {
         _log.severe(error.toString());
       });
     }
@@ -68,8 +66,7 @@ class _ConfirmPasscodeFormState extends State<ConfirmPasscodeForm> {
   );
 
   Widget build(BuildContext context) {
-    final LoginProvider _loginProvider =
-        Provider.of<LoginProvider>(context, listen: false);
+    final LoginProvider _loginProvider = Provider.of<LoginProvider>(context, listen: false);
 
     _log.info("Building ConfirmPasscodeForm...");
 

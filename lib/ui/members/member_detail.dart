@@ -26,7 +26,7 @@ import 'package:ccteam/models/track.dart';
 import 'package:ccteam/providers/member_creation_provider.dart';
 import 'package:ccteam/providers/member_detail_provider.dart';
 import 'package:ccteam/providers/member_list_provider.dart';
-import 'package:ccteam/providers/record_provider.dart';
+import 'package:ccteam/providers/record_list_provider.dart';
 import 'package:ccteam/utils/app_utils.dart';
 import 'package:ccteam/utils/constants.dart';
 import 'package:ccteam/utils/custom_decorations.dart';
@@ -39,6 +39,7 @@ import 'package:flutter/material.dart';
 import 'package:logging/logging.dart';
 import 'package:provider/provider.dart';
 
+import '../../providers/track_detail_provider.dart';
 import '../../utils/track_utils.dart';
 
 class MemberDetail extends StatelessWidget {
@@ -69,12 +70,14 @@ class MemberDetail extends StatelessWidget {
   /// Navigate to the specified [track] detail screen.
   void _navigateToTrackDetailScreen(BuildContext context, Track track) async {
     // todo Maybe better to do it in detail screen init method instead of each time here ?
-    Provider.of<RecordProvider>(context, listen: false).fetchTrackRecords(track.id);
+    Provider.of<RecordListProvider>(context, listen: false).fetchTrackRecords(track.id!);
     /*Provider.of<EventProvider>(context, listen: false)
         .fetchTrackEvents(track.id);*/
 
+    Provider.of<TrackDetailProvider>(context, listen: false).setCurrentTrack(track);
+
     // Navigator.push returns a Future that will complete after we call Navigator.pop on the target screen
-    final _result = await Navigator.pushNamed(context, '/trackDetail', arguments: track);
+    final _result = await Navigator.pushNamed(context, '/trackDetail');
 
     // after the target screen returns a result, hide any previous snack bars and show the result
     if (_result != null) {
@@ -97,7 +100,7 @@ class MemberDetail extends StatelessWidget {
               final MemberDetailProvider memberDetailProvider =
                   Provider.of<MemberDetailProvider>(context, listen: false);
               final MemberListProvider memberListProvider = Provider.of<MemberListProvider>(context, listen: false);
-              final Member memberToDelete = memberDetailProvider.currentMember;
+              final Member memberToDelete = memberDetailProvider.currentMember!;
               // delete member
               memberDetailProvider.deleteMember(memberToDelete).then((value) {
                 // remove member from the members list
@@ -120,8 +123,8 @@ class MemberDetail extends StatelessWidget {
     );
   }
 
-  Widget _recordsTable(RecordProvider recordProvider) {
-    if (recordProvider.memberRecords != null && recordProvider.memberRecords.length > 0) {
+  Widget _recordsTable(RecordListProvider recordListProvider) {
+    if (recordListProvider.memberRecords.length > 0) {
       return Container(
         decoration: CustomDecorations.cardLight,
         child: Table(
@@ -131,26 +134,26 @@ class MemberDetail extends StatelessWidget {
               horizontalInside: BorderSide(color: Colors.black.withOpacity(0.3), width: 1),
               verticalInside: BorderSide(color: Colors.black.withOpacity(0.3), width: 1)),
           children: [
-            for (Record rec in recordProvider.memberRecords)
+            for (Record rec in recordListProvider.memberRecords)
               TableRow(children: [
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 12.0),
                   child: Text(
-                    rec.track.name,
+                    rec.track!.name ?? "",
                     style: TextStyle(color: Colors.black.withOpacity(0.8)),
                     overflow: TextOverflow.ellipsis,
                     textAlign: TextAlign.center,
                   ),
                 ),
                 Text(
-                  AppDateUtils.convertToString(rec.recordDate, "dd/MM/yyyy"),
+                  rec.recordDate != null ? AppDateUtils.convertToString(rec.recordDate!, "dd/MM/yyyy")! : "",
                   style: TextStyle(color: Colors.black.withOpacity(0.8)),
                   textAlign: TextAlign.center,
                 ),
                 Text(
-                  AppDateUtils.toLapTimeString(rec.lapTime),
+                  AppDateUtils.toLapTimeString(rec.lapTime) ?? "",
                   style: TextStyle(color: Colors.black.withOpacity(1), fontFamily: "AlarmClock", letterSpacing: -1),
-                  textScaleFactor: 1,
+                  textScaler: TextScaler.linear(1),
                   textAlign: TextAlign.center,
                 ),
                 SizedBox(
@@ -172,19 +175,19 @@ class MemberDetail extends StatelessWidget {
   }
 
   Widget _eventsTimeline(MemberDetailProvider memberDetailProvider) {
-    if (memberDetailProvider.currentMember.eventMembers != null &&
-        memberDetailProvider.currentMember.eventMembers.length > 0) {
+    if (memberDetailProvider.currentMember!.eventMembers != null &&
+        memberDetailProvider.currentMember!.eventMembers!.length > 0) {
       return SizedBox(
         height: 142,
         child: ListView.builder(
           scrollDirection: Axis.horizontal,
-          itemCount: memberDetailProvider.currentMember.eventMembers.length,
+          itemCount: memberDetailProvider.currentMember!.eventMembers!.length,
           itemBuilder: (BuildContext context, int index) {
             // if list view is not large enough, add padding so it fills the whole screen width
-            final double pad = index >= memberDetailProvider.currentMember.eventMembers.length - 1
+            final double pad = index >= memberDetailProvider.currentMember!.eventMembers!.length - 1
                 ? max(
                     MediaQuery.of(context).size.width -
-                        ((_eventCardSize + 16) * memberDetailProvider.currentMember.eventMembers.length) -
+                        ((_eventCardSize + 16) * memberDetailProvider.currentMember!.eventMembers!.length) -
                         16,
                     0)
                 : 0.0;
@@ -198,7 +201,7 @@ class MemberDetail extends StatelessWidget {
                       margin: EdgeInsets.only(right: pad),
                       child: InkWell(
                         onTap: () => _navigateToTrackDetailScreen(
-                            context, memberDetailProvider.currentMember.eventMembers[index].event.track),
+                            context, memberDetailProvider.currentMember!.eventMembers![index].event!.track!),
                         child: Container(
                           decoration: CustomDecorations.cardLight,
                           width: _eventCardSize,
@@ -210,20 +213,20 @@ class MemberDetail extends StatelessWidget {
                             children: <Widget>[
                               Icon(
                                 TrackUtils.trackIconFromName(
-                                    memberDetailProvider.currentMember.eventMembers[index].event.track.name),
+                                    memberDetailProvider.currentMember!.eventMembers![index].event!.track!.name),
                                 size: 30,
                                 color: Colors.red[700],
                               ),
                               Text(
-                                "${memberDetailProvider.currentMember.eventMembers[index].event.track.name}",
+                                "${memberDetailProvider.currentMember!.eventMembers![index].event!.track!.name}",
                                 textAlign: TextAlign.center,
                                 overflow: TextOverflow.ellipsis,
                                 style: TextStyle(fontWeight: FontWeight.bold),
                                 maxLines: 2,
                               ),
                               Text(
-                                "${memberDetailProvider.currentMember.eventMembers[index].event.organizer}",
-                                textScaleFactor: 0.8,
+                                "${memberDetailProvider.currentMember!.eventMembers![index].event!.organizer}",
+                                textScaler: TextScaler.linear(0.8),
                                 textAlign: TextAlign.center,
                                 overflow: TextOverflow.ellipsis,
                                 maxLines: 2,
@@ -242,8 +245,8 @@ class MemberDetail extends StatelessWidget {
                         color: Colors.red[700],
                       ),
                     ),
-                    if (memberDetailProvider.currentMember.eventMembers.length > 1 &&
-                        index != memberDetailProvider.currentMember.eventMembers.length - 1)
+                    if (memberDetailProvider.currentMember!.eventMembers!.length > 1 &&
+                        index != memberDetailProvider.currentMember!.eventMembers!.length - 1)
                       Positioned(
                         top: 6.0,
                         left: _eventCardSize,
@@ -272,8 +275,8 @@ class MemberDetail extends StatelessWidget {
                                 ),
                                 child: Center(
                                   child: Text(
-                                    "${AppDateUtils.convertToString(memberDetailProvider.currentMember.eventMembers[index].event.startDate, "MMM yy")}",
-                                    textScaleFactor: 0.75,
+                                    "${AppDateUtils.convertToString(memberDetailProvider.currentMember!.eventMembers![index].event!.startDate!, "MMM yy")}",
+                                    textScaler: TextScaler.linear(0.75),
                                     style: TextStyle(color: Colors.white),
                                   ),
                                 ),
@@ -283,7 +286,7 @@ class MemberDetail extends StatelessWidget {
                                   decoration: CustomDecorations.cardBody,
                                   child: Center(
                                     child: Text(
-                                      "${AppDateUtils.convertToString(memberDetailProvider.currentMember.eventMembers[index].event.startDate, "dd")}",
+                                      "${AppDateUtils.convertToString(memberDetailProvider.currentMember!.eventMembers![index].event!.startDate!, "dd")}",
                                       style: TextStyle(color: Colors.white),
                                     ),
                                   ),
@@ -328,7 +331,7 @@ class MemberDetail extends StatelessWidget {
                     child: Text(
                       "${_memberDetailProvider.currentMember?.bike}",
                       style: TextStyle(color: Colors.black.withOpacity(0.8)),
-                      textScaleFactor: 1.1,
+                      textScaler: TextScaler.linear(1.1),
                     ),
                   )
                 ],
@@ -336,7 +339,7 @@ class MemberDetail extends StatelessWidget {
             ),
             SizedBox(
               width: 72.0,
-              child: Icon(CustomIcons.motorbike, color: Colors.red[700].withOpacity(0.8)),
+              child: Icon(CustomIcons.motorbike, color: Colors.red[700]!.withOpacity(0.8)),
             )
           ],
         ),
@@ -358,7 +361,7 @@ class MemberDetail extends StatelessWidget {
                     child: Text(
                       "${_memberDetailProvider.currentMember?.phone}",
                       style: TextStyle(color: Colors.black.withOpacity(0.8)),
-                      textScaleFactor: 1.1,
+                      textScaler: TextScaler.linear(1.1),
                     ),
                   )
                 ],
@@ -400,7 +403,7 @@ class MemberDetail extends StatelessWidget {
                     child: Text(
                       "${_memberDetailProvider.currentMember?.email}",
                       style: TextStyle(color: Colors.black.withOpacity(0.8)),
-                      textScaleFactor: 1.1,
+                      textScaler: TextScaler.linear(1.1),
                     ),
                   )
                 ],
@@ -433,9 +436,9 @@ class MemberDetail extends StatelessWidget {
                   expandedHeight: _expandedHeight,
                   title: _showTitle
                       ? Text(
-                    _memberDetailProvider.currentMember.firstName +
+                          _memberDetailProvider.currentMember!.firstName! +
                               ' ' +
-                              _memberDetailProvider.currentMember.lastName,
+                              _memberDetailProvider.currentMember!.lastName!,
                           overflow: TextOverflow.ellipsis,
                         )
                       : null,
@@ -444,7 +447,7 @@ class MemberDetail extends StatelessWidget {
                       : FlexibleSpaceBar(
                           title: FlexibleTitle(
                             text:
-                                "${_memberDetailProvider.currentMember.firstName} ${_memberDetailProvider.currentMember.lastName}",
+                                "${_memberDetailProvider.currentMember!.firstName} ${_memberDetailProvider.currentMember!.lastName}",
                             padding: EdgeInsets.only(left: 84, bottom: 44),
                           ),
                           background: Stack(
@@ -477,12 +480,12 @@ class MemberDetail extends StatelessWidget {
                                 child: Container(
                                   decoration: ShapeDecoration(shape: CircleBorder(), color: Colors.white),
                                   padding: EdgeInsets.all(3.0),
-                                  child: _memberDetailProvider.currentMember.avatarUrl != null &&
-                                          _memberDetailProvider.currentMember.avatarUrl.length > 0
+                                  child: _memberDetailProvider.currentMember!.avatarUrl != null &&
+                                          _memberDetailProvider.currentMember!.avatarUrl!.length > 0
                                       ? CircleAvatar(
                                           radius: 50,
                                           backgroundImage: NetworkImage(
-                                              "$SERVER_AVATAR_FOLDER${_memberDetailProvider.currentMember.avatarUrl}"),
+                                              "$SERVER_AVATAR_FOLDER${_memberDetailProvider.currentMember!.avatarUrl}"),
                                         )
                                       : CircleAvatar(
                                           radius: 50,
@@ -493,7 +496,7 @@ class MemberDetail extends StatelessWidget {
                                               begin: const FractionalOffset(0.0, 0.0),
                                               end: const FractionalOffset(0.0, 1.0),
                                               stops: [0.0, 1.0],
-                                              colors: [Colors.red[700], Colors.blue[700]],
+                                              colors: [Colors.red[700]!, Colors.blue[700]!],
                                             ).createShader(bounds),
                                             child: Icon(CustomIcons.pilot, size: 75),
                                           ),
@@ -506,7 +509,7 @@ class MemberDetail extends StatelessWidget {
                   actions: <Widget>[
                     IconButton(
                       icon: const Icon(Icons.edit),
-                      onPressed: () => _navigateToEditMemberScreen(context, _memberDetailProvider.currentMember),
+                      onPressed: () => _navigateToEditMemberScreen(context, _memberDetailProvider.currentMember!),
                     ),
                     IconButton(
                       icon: const Icon(Icons.delete_forever),
@@ -535,7 +538,7 @@ class MemberDetail extends StatelessWidget {
                                   SizedBox(width: 5.0),
                                   Text(
                                     AppString.personalInformation,
-                                    textScaleFactor: 1.2,
+                                    textScaler: TextScaler.linear(1.2),
                                     style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black.withOpacity(0.8)),
                                   ),
                                 ],
@@ -561,7 +564,7 @@ class MemberDetail extends StatelessWidget {
                                   SizedBox(width: 5.0),
                                   Text(
                                     AppString.rides,
-                                    textScaleFactor: 1.2,
+                                    textScaler: TextScaler.linear(1.2),
                                     style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black.withOpacity(0.8)),
                                   ),
                                 ],
@@ -575,13 +578,13 @@ class MemberDetail extends StatelessWidget {
                                   SizedBox(width: 5.0),
                                   Text(
                                     AppString.chronos,
-                                    textScaleFactor: 1.2,
+                                    textScaler: TextScaler.linear(1.2),
                                     style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black.withOpacity(0.8)),
                                   ),
                                 ],
                               ),
                               SizedBox(height: 10),
-                              //_recordsTable(_recordProvider),
+                              //_recordsTable(_recordListProvider),
                             ],
                           ),
                         ),

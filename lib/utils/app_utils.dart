@@ -51,37 +51,37 @@ class AppUtils {
 
   /// Handle exception encountered during a GraphQL request.
   /// It parses the specified [QueryResult] and return the appropriate exception.
-  static Exception handleGraphQlException(QueryResult result) {
+  static Exception? handleGraphQlException(QueryResult result) {
     // error encountered during execution such as network or cache errors
-    if (result.exception.linkException != null) {
+    if (result.exception?.linkException != null) {
       // network exception, usually server down or not accessible
-      if (result.exception.linkException is NetworkException) {
+      if (result.exception?.linkException is NetworkException) {
         // simply return the network exception
-        return result.exception.linkException;
+        return result.exception?.linkException;
       }
       // server exception, usually invalid or expired token
-      else if (result.exception.linkException is ServerException) {
+      else if (result.exception?.linkException is ServerException) {
         // try to get first GraphQL error
-        final GraphQLError first = (result.exception.linkException as ServerException)?.parsedResponse?.errors?.first;
+        final GraphQLError? first = (result.exception?.linkException as ServerException).parsedResponse?.errors?.first;
         if (first != null) {
           // custom GraphQl exception from our server should return an error code
-          _log.info("message : ${first.message}, errorCode : ${first.extensions["errorCode"]}");
-          return CustomGraphQlException(first.extensions["errorCode"], first.message);
+          _log.info("message : ${first.message}, errorCode : ${first.extensions!["errorCode"]}");
+          return CustomGraphQlException(first.extensions!["errorCode"], first.message);
         }
         // simply return the server exception
-        return result.exception.linkException;
+        return result.exception?.linkException;
       }
       // any other link exception
       else {
-        return result.exception.linkException;
+        return result.exception?.linkException;
       }
     }
     // error encountered during operation
-    else if (result.exception.graphqlErrors != null && result.exception.graphqlErrors.isNotEmpty) {
-      final GraphQLError first = result.exception.graphqlErrors.first;
+    else if (result.exception?.graphqlErrors != null && result.exception!.graphqlErrors.isNotEmpty) {
+      final GraphQLError first = result.exception!.graphqlErrors.first;
       // custom GraphQl exception from our server should return an error code
-      _log.info("message : ${first.message}, errorCode : ${first.extensions["errorCode"]}");
-      return CustomGraphQlException(first.extensions["errorCode"], first.message);
+      _log.info("message : ${first.message}, errorCode : ${first.extensions!["errorCode"]}");
+      return CustomGraphQlException(first.extensions!["errorCode"], first.message);
     }
     // any other error
     else {
@@ -115,5 +115,4 @@ class AppUtils {
       messageProvider.setMessage(AppString.format(AppString.errorUnknown, [error.toString()]), MessageType.ERROR);
     }
   }
-
 }

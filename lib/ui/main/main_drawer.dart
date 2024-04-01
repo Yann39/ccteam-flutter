@@ -25,6 +25,8 @@ import 'package:ccteam/utils/strings.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../providers/member_creation_provider.dart';
+
 class MainDrawer extends StatelessWidget {
   /// Log out the current user
   void _logout(BuildContext context) async {
@@ -33,28 +35,22 @@ class MainDrawer extends StatelessWidget {
 
   /// Method that launches the Edit Member screen and awaits the result from Navigator.pop
   _navigateToEditMemberScreen(BuildContext context, Member member) async {
-    // Navigator.push returns a Future that will complete after we call Navigator.pop on the target screen
-    final result =
-        await Navigator.pushNamed(context, '/addEditMember', arguments: member);
+    // set the member to edit
+    Provider.of<MemberCreationProvider>(context, listen: false).setMemberToEdit(member);
 
-    // after the target screen returns a result, hide any previous snack bars and show the new result
-    if (result != null) {
-      ScaffoldMessenger.of(context)
-        ..removeCurrentSnackBar()
-        ..showSnackBar(SnackBar(content: Text("$result")));
-    }
+    // navigate to the edit member screen
+    Navigator.pushNamed(context, '/addEditMember');
   }
 
   @override
   Widget build(BuildContext context) {
-    final LoginProvider _loginProvider =
-        Provider.of<LoginProvider>(context, listen: false);
+    final LoginProvider _loginProvider = Provider.of<LoginProvider>(context, listen: false);
 
     return Drawer(
       child: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
-            colors: [Colors.white, Colors.blue[500]],
+            colors: [Colors.white, Colors.blue[500]!],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             stops: [0.0, 1.0],
@@ -70,43 +66,42 @@ class MainDrawer extends StatelessWidget {
                 UserAccountsDrawerHeader(
                   accountName: Row(
                     children: <Widget>[
-                      Icon(Icons.person_outline, color: Colors.white, size: 12),
+                      Icon(Icons.person_outline, size: 12),
                       SizedBox(width: 5),
-                      Text(
-                          "${_loginProvider.loggedMember.firstName} ${_loginProvider.loggedMember.lastName}"),
+                      Text("${_loginProvider.loggedMember!.firstName} ${_loginProvider.loggedMember!.lastName}"),
                     ],
                   ),
                   accountEmail: Row(
                     children: <Widget>[
-                      Icon(Icons.mail_outline, color: Colors.white, size: 12),
+                      Icon(Icons.mail_outline, size: 12),
                       SizedBox(width: 5),
-                      Text(_loginProvider.loggedMember.email),
+                      Text(_loginProvider.loggedMember!.email!),
                     ],
                   ),
                   arrowColor: Colors.green,
                   currentAccountPicture: Container(
-                    decoration: ShapeDecoration(
-                        shape: CircleBorder(), color: Colors.white),
+                    decoration: ShapeDecoration(shape: CircleBorder(), color: Colors.white),
                     padding: EdgeInsets.all(2.0),
-                    child: _loginProvider.loggedMember.avatarUrl != null &&
-                            _loginProvider.loggedMember.avatarUrl.length > 0
+                    child: _loginProvider.loggedMember!.avatarUrl != null &&
+                        _loginProvider.loggedMember!.avatarUrl!.length > 0
                         ? CircleAvatar(
-                            backgroundColor: Colors.blue[100],
-                            backgroundImage: NetworkImage(
-                                "$SERVER_AVATAR_FOLDER${_loginProvider.loggedMember.avatarUrl}"),
-                          )
+                      backgroundColor: Colors.blue[100],
+                      backgroundImage:
+                      NetworkImage("$SERVER_AVATAR_FOLDER${_loginProvider.loggedMember!.avatarUrl}"),
+                    )
                         : CircleAvatar(
-                            backgroundColor: Colors.blue[100],
-                            child: ShaderMask(
-                              shaderCallback: (bounds) => LinearGradient(
-                                begin: const FractionalOffset(0.0, 0.0),
-                                end: const FractionalOffset(0.0, 1.0),
-                                stops: [0.0, 1.0],
-                                colors: [Colors.red[700], Colors.white],
-                              ).createShader(bounds),
-                              child: Icon(CustomIcons.pilot, size: 50),
-                            ),
-                          ),
+                      backgroundColor: Colors.blue[100],
+                      child: ShaderMask(
+                        shaderCallback: (bounds) =>
+                            LinearGradient(
+                              begin: const FractionalOffset(0.0, 0.0),
+                              end: const FractionalOffset(0.0, 1.0),
+                              stops: [0.0, 1.0],
+                              colors: [Colors.red[700]!, Colors.white],
+                            ).createShader(bounds),
+                        child: Icon(CustomIcons.pilot, size: 50),
+                      ),
+                    ),
                   ),
                 ),
                 Container(
@@ -132,11 +127,10 @@ class MainDrawer extends StatelessWidget {
                     Icons.person,
                     color: Colors.green[700],
                   ),
-                  trailing: Icon(Icons.arrow_right),
-                  title: Text(AppString.profile),
+                  trailing: Icon(Icons.arrow_right, color: Colors.black),
+                  title: Text(AppString.profile, style: TextStyle(color: Colors.black)),
                   onTap: () {
-                    _navigateToEditMemberScreen(
-                        context, _loginProvider.loggedMember);
+                    _navigateToEditMemberScreen(context, _loginProvider.loggedMember!);
                   },
                 ),
                 ListTile(
@@ -144,11 +138,10 @@ class MainDrawer extends StatelessWidget {
                     Icons.event,
                     color: Colors.purple[600],
                   ),
-                  trailing: Icon(Icons.arrow_right),
-                  title: Text(AppString.myTrackEvents),
+                  trailing: Icon(Icons.arrow_right, color: Colors.black),
+                  title: Text(AppString.myTrackEvents, style: TextStyle(color: Colors.black)),
                   onTap: () {
-                    Navigator.pushNamed(context, '/memberEvents',
-                        arguments: _loginProvider.loggedMember);
+                    Navigator.pushNamed(context, '/memberEvents', arguments: _loginProvider.loggedMember);
                   },
                 ),
                 ListTile(
@@ -156,11 +149,10 @@ class MainDrawer extends StatelessWidget {
                     Icons.timer,
                     color: Colors.orange[800],
                   ),
-                  trailing: Icon(Icons.arrow_right),
-                  title: Text(AppString.myChronos),
+                  trailing: Icon(Icons.arrow_right, color: Colors.black),
+                  title: Text(AppString.myChronos, style: TextStyle(color: Colors.black)),
                   onTap: () {
-                    Navigator.pushNamed(context, '/memberChronos',
-                        arguments: _loginProvider.loggedMember);
+                    Navigator.pushNamed(context, '/memberChronos', arguments: _loginProvider.loggedMember);
                   },
                 ),
                 Divider(),
@@ -169,8 +161,8 @@ class MainDrawer extends StatelessWidget {
                     Icons.notifications,
                     color: Colors.blue[700],
                   ),
-                  trailing: Icon(Icons.arrow_right),
-                  title: Text(AppString.notifications),
+                  trailing: Icon(Icons.arrow_right, color: Colors.black),
+                  title: Text(AppString.notifications, style: TextStyle(color: Colors.black)),
                   onTap: () {
                     Navigator.pop(context);
                   },
@@ -180,8 +172,8 @@ class MainDrawer extends StatelessWidget {
                     Icons.settings,
                     color: Colors.teal[700],
                   ),
-                  trailing: Icon(Icons.arrow_right),
-                  title: Text(AppString.preferences),
+                  trailing: Icon(Icons.arrow_right, color: Colors.black),
+                  title: Text(AppString.preferences, style: TextStyle(color: Colors.black)),
                   onTap: () {
                     Navigator.pop(context);
                   },
@@ -192,8 +184,8 @@ class MainDrawer extends StatelessWidget {
                     Icons.lock,
                     color: Colors.red[900],
                   ),
-                  trailing: Icon(Icons.arrow_right),
-                  title: Text(AppString.disconnect),
+                  trailing: Icon(Icons.arrow_right, color: Colors.black,),
+                  title: Text(AppString.disconnect, style: TextStyle(color: Colors.black)),
                   onTap: () {
                     _logout(context);
                   },

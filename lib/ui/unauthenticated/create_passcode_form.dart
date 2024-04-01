@@ -17,8 +17,6 @@
  * along with CCTeam. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import 'dart:ui';
-
 import 'package:ccteam/providers/login_provider.dart';
 import 'package:ccteam/utils/enums.dart';
 import 'package:ccteam/utils/strings.dart';
@@ -43,8 +41,7 @@ class _CreatePasscodeFormState extends State<CreatePasscodeForm> {
 
   /// Method that update the current login status to go to the confirm passcode step
   _goToConfirmPasscode() {
-    _log.info(
-        "passcode is ${Provider.of<LoginProvider>(context, listen: false).firstPassCode}");
+    _log.info("passcode is ${Provider.of<LoginProvider>(context, listen: false).firstPassCode}");
     Provider.of<LoginProvider>(context, listen: false).goToConfirmPassword();
   }
 
@@ -57,8 +54,7 @@ class _CreatePasscodeFormState extends State<CreatePasscodeForm> {
   );
 
   Widget build(BuildContext context) {
-    final LoginProvider _loginProvider =
-        Provider.of<LoginProvider>(context, listen: false);
+    final LoginProvider _loginProvider = Provider.of<LoginProvider>(context, listen: false);
 
     _log.info("Building CreatePasscodeForm...");
 

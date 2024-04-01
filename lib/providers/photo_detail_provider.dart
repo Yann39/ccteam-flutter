@@ -19,19 +19,20 @@
 
 import 'dart:async';
 
-import 'package:ccteam/models/event.dart';
 import 'package:ccteam/providers/login_provider.dart';
 import 'package:ccteam/providers/message_provider.dart';
-import 'package:ccteam/services/events_service.dart';
 import 'package:ccteam/utils/app_utils.dart';
 import 'package:ccteam/utils/enums.dart';
 import 'package:ccteam/utils/strings.dart';
 import 'package:flutter/foundation.dart';
 import 'package:logging/logging.dart';
 
-class EventDetailProvider extends ChangeNotifier {
-  final Logger _log = new Logger('EventDetailProvider');
-  final EventsService _eventsService = new EventsService();
+import '../models/photo.dart';
+import '../services/photos_service.dart';
+
+class PhotoDetailProvider extends ChangeNotifier {
+  final Logger _log = new Logger('PhotoDetailProvider');
+  final PhotosService _photosService = new PhotosService();
 
   // message provider that can be set from the proxy provider
   late MessageProvider _messageProvider;
@@ -39,13 +40,13 @@ class EventDetailProvider extends ChangeNotifier {
   // login provider that can be set from the proxy provider
   late LoginProvider _loginProvider;
 
-  // current event
-  late Event _currentEvent;
+  // current photo
+  late Photo _currentPhoto;
 
   // current loading status
   LoadingStatus _loadingStatus = LoadingStatus.notLoaded;
 
-  Event get currentEvent => _currentEvent;
+  Photo get currentPhoto => _currentPhoto;
 
   LoadingStatus get loadingStatus => _loadingStatus;
 
@@ -61,36 +62,21 @@ class EventDetailProvider extends ChangeNotifier {
     _notifyListeners();
   }
 
-  /// Set the current event to be the specified [event].
-  void setCurrentEvent(Event event) {
-    _currentEvent = event;
+  /// Set the current photo to be the specified [photo].
+  void setCurrentPhoto(Photo photo) {
+    _currentPhoto = photo;
     _notifyListeners();
   }
 
-  /// Fetch the specified [event] from the database.
-  Future<void> fetchEvent(Event event) async {
-    _log.fine("Fetching event ${event.title}...");
-    _updateStatus(LoadingStatus.loading);
-    await _eventsService.getEventById(event.id!).then((value) async {
-      _log.fine("Event ID ${event.id} retrieved successfully");
-      _currentEvent = value;
-      _updateStatus(LoadingStatus.loaded);
-    }, onError: (error) {
-      _log.warning("Error when retrieving event ($error)");
-      AppUtils.handleServiceException(error, _messageProvider, _loginProvider);
-      _updateStatus(LoadingStatus.notLoaded);
-    });
-  }
-
-  /// Delete the specified [event].
-  Future<void> deleteEvent(Event event) async {
-    await _eventsService.deleteEvent(event).then((value) {
-      _log.fine("Event deleted successfully : ${event.title}");
-      _messageProvider.setMessage(AppString.eventDeleted, MessageType.SUCCESS);
+  /// Delete the specified [photo].
+  Future<void> deletePhoto(Photo photo) async {
+    await _photosService.deletePhoto(photo).then((value) {
+      _log.fine("Photo deleted successfully : ${photo.title}");
+      _messageProvider.setMessage(AppString.photoDeleted, MessageType.SUCCESS);
       _notifyListeners();
     }, onError: (error) {
-      _log.warning("Failed to delete event ($error)");
-      _messageProvider.setMessage(AppString.eventDeletionFailed, MessageType.ERROR);
+      _log.warning("Failed to delete photo ($error)");
+      _messageProvider.setMessage(AppString.photoDeletionFailed, MessageType.ERROR);
       AppUtils.handleServiceException(error, _messageProvider, _loginProvider);
       _notifyListeners();
     });
@@ -98,7 +84,7 @@ class EventDetailProvider extends ChangeNotifier {
 
   /// Notify all the registered listeners of this provider.
   void _notifyListeners() {
-    _log.info("Notifying listeners of EventDetailProvider");
+    _log.info("Notifying listeners of PhotoDetailProvider");
     notifyListeners();
   }
 
