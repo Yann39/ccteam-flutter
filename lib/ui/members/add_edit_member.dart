@@ -249,10 +249,11 @@ class _AddEditMemberState extends State<AddEditMember> {
           left: 75,
           child: FloatingActionButton(
             backgroundColor: Colors.red[700],
-            child: Icon(Icons.edit, size: 12),
+            child: Icon(Icons.edit, size: 12, color: Colors.white),
             onPressed: () {
               _drawerProvider.loadImage(null);
-              Provider.of<AvatarProvider>(context, listen: false).setMemberToEdit(_memberCreationProvider.currentMember);
+              Provider.of<AvatarProvider>(context, listen: false)
+                  .setMemberToEdit(_memberCreationProvider.currentMember);
               Navigator.of(context).pushNamed('/editAvatar');
             },
           ),

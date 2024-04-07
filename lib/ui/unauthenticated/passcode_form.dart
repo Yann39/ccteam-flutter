@@ -238,7 +238,7 @@ class _PasscodeFormState extends State<PasscodeForm> {
           SizedBox(height: 36.0),
           Text(
             AppString.enterPasscode,
-            style: TextStyle(fontSize: 20.0, fontWeight: FontWeight.bold),
+            style: TextStyle(fontSize: 20.0, fontWeight: FontWeight.bold, color: Colors.black87),
             textAlign: TextAlign.center,
           ),
           SizedBox(height: 32.0),

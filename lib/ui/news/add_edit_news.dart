@@ -108,7 +108,7 @@ class _AddEditNewsState extends State<AddEditNews> {
         _newsCreationProvider.updateNews().then((value) {
           if (value != null) {
             _newsListProvider.updateNewsInList(_newsCreationProvider.news);
-            Provider.of<NewsDetailProvider>(context, listen: false).setCurrentNews(_newsCreationProvider.news);
+            Provider.of<NewsDetailProvider>(context, listen: false).setCurrentNews(value);
           } else {}
         });
       } else {

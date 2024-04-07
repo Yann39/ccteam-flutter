@@ -168,6 +168,7 @@ class MembersService {
               title
               startDate
               track {
+                id
                 name
               }
               organizer

@@ -61,9 +61,14 @@ class _AddEditEventState extends State<AddEditEvent> {
     // fetch the tracks in initState so it is not fetch each time the state change
     _futureTracks = _tracksService.fetchTracks();
     // set date picker text
-    _startDatePickerController.text =
-        AppDateUtils.convertToString(_eventCreationProvider.event.startDate!, DATE_FORMAT)!;
-    _endDatePickerController.text = AppDateUtils.convertToString(_eventCreationProvider.event.endDate!, DATE_FORMAT)!;
+    _startDatePickerController.text = AppDateUtils.convertToString(
+        _eventCreationProvider.event.startDate != null ? _eventCreationProvider.event.startDate! : DateTime.now(),
+        DATE_FORMAT)!;
+    _endDatePickerController.text = AppDateUtils.convertToString(
+        _eventCreationProvider.event.startDate != null
+            ? _eventCreationProvider.event.endDate!
+            : DateTime.now().add(Duration(days: 1)),
+        DATE_FORMAT)!;
     return super.initState();
   }
 

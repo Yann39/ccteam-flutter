@@ -70,6 +70,8 @@ class NewsCreationProvider extends ChangeNotifier {
   /// Create the current news being edited.
   Future<void> createNews() async {
     _updateStatus(LoadingStatus.loading);
+    _news.createdBy = _loginProvider.loggedMember;
+
     await _newsService.createNews(_news).then((value) async {
       _log.fine("News created successfully");
       _news = value;

@@ -84,7 +84,8 @@ class NewsDetail extends StatelessWidget {
               newsDetailProvider.deleteNews(newsToDelete).then((value) {
                 // remove news from the news list
                 newsListProvider.removeNewsFromList(newsToDelete);
-                // close this dialog
+                // back to news list
+                Navigator.pop(context);
                 Navigator.pop(context);
               });
             },

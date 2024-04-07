@@ -93,23 +93,34 @@ class CalendarSelectorState extends State<CalendarSelector> with TickerProviderS
         return Text(
           "${DateFormat('yyyy', widget.locale).format(_centerDate!)} - ${DateFormat('yyyy', widget.locale).format(DateTime(_centerDate!.year + 10, _centerDate!.month, _centerDate!.day))}",
           textScaler: TextScaler.linear(1.2),
+          style: TextStyle(color: Colors.black87),
         );
       case CalendarMode.year:
         return InkWell(
           onTap: () => setCalendarMode(CalendarMode.decade, _centerDate!),
-          child: Text(DateFormat('yyyy', widget.locale).format(_centerDate!), textScaler: TextScaler.linear(1.2)),
+          child: Text(
+            DateFormat('yyyy', widget.locale).format(_centerDate!),
+            textScaler: TextScaler.linear(1.2),
+            style: TextStyle(color: Colors.black87),
+          ),
         );
       case CalendarMode.month:
         return InkWell(
           onTap: () => setCalendarMode(CalendarMode.year, _centerDate!),
-          child: Text(capitalize(DateFormat('MMMM yyyy', widget.locale).format(_centerDate!)),
-              textScaler: TextScaler.linear(1.2)),
+          child: Text(
+            capitalize(DateFormat('MMMM yyyy', widget.locale).format(_centerDate!)),
+            textScaler: TextScaler.linear(1.2),
+            style: TextStyle(color: Colors.black87),
+          ),
         );
       case CalendarMode.week:
         return InkWell(
           onTap: () => setCalendarMode(CalendarMode.year, _centerDate!),
-          child: Text(capitalize(DateFormat('MMMM yyyy', widget.locale).format(_centerDate!)),
-              textScaler: TextScaler.linear(1.2)),
+          child: Text(
+            capitalize(DateFormat('MMMM yyyy', widget.locale).format(_centerDate!)),
+            textScaler: TextScaler.linear(1.2),
+            style: TextStyle(color: Colors.black87),
+          ),
         );
       default:
         return Text("Unsupported mode");
@@ -165,7 +176,7 @@ class CalendarSelectorState extends State<CalendarSelector> with TickerProviderS
         InkWell(
           onTap: () => setCalendarMode(CalendarMode.year, dt),
           child: Container(
-            height: 45,
+            height: 48,
             width: 45,
             padding: EdgeInsets.symmetric(vertical: 9.0, horizontal: 2.0),
             decoration: (df.format(_selectedDate!) == df.format(dt))
@@ -181,7 +192,7 @@ class CalendarSelectorState extends State<CalendarSelector> with TickerProviderS
                 nbEvents > 0
                     ? Container(
                         padding: EdgeInsets.symmetric(horizontal: 1.0),
-                        decoration: BoxDecoration(color: Colors.white54, borderRadius: BorderRadius.circular(2.0)),
+                        decoration: BoxDecoration(color: Colors.red[700], borderRadius: BorderRadius.circular(2.0)),
                         child: Text(
                           "$nbEvents",
                           textScaler: TextScaler.linear(0.6),
@@ -236,7 +247,7 @@ class CalendarSelectorState extends State<CalendarSelector> with TickerProviderS
         InkWell(
           onTap: () => setCalendarMode(widget.mode == CalendarMode.month ? CalendarMode.month : CalendarMode.week, dt),
           child: Container(
-            height: 45,
+            height: 48,
             width: 45,
             padding: EdgeInsets.symmetric(vertical: 8.0, horizontal: 2.0),
             decoration: (df.format(_selectedDate!) == df.format(dt))
@@ -251,7 +262,7 @@ class CalendarSelectorState extends State<CalendarSelector> with TickerProviderS
                 nbEvents > 0
                     ? Container(
                         padding: EdgeInsets.symmetric(horizontal: 1.0),
-                        decoration: BoxDecoration(color: Colors.white54, borderRadius: BorderRadius.circular(2.0)),
+                        decoration: BoxDecoration(color: Colors.red[700], borderRadius: BorderRadius.circular(2.0)),
                         child: Text(
                           "$nbEvents",
                           textScaler: TextScaler.linear(0.6),
@@ -337,7 +348,7 @@ class CalendarSelectorState extends State<CalendarSelector> with TickerProviderS
                 onTap: () => onSelectDate(dt),
                 child: Container(
                   width: 34,
-                  height: 34,
+                  height: 38,
                   padding: EdgeInsets.symmetric(vertical: 3.0, horizontal: 2.0),
                   decoration: (df.format(_selectedDate!) == df.format(dt))
                       ? BoxDecoration(color: Colors.white54, borderRadius: BorderRadius.circular(4.0))
@@ -351,7 +362,7 @@ class CalendarSelectorState extends State<CalendarSelector> with TickerProviderS
                           ? Container(
                               padding: EdgeInsets.symmetric(horizontal: 1.0),
                               decoration:
-                                  BoxDecoration(color: Colors.white54, borderRadius: BorderRadius.circular(2.0)),
+                                  BoxDecoration(color: Colors.red[700], borderRadius: BorderRadius.circular(2.0)),
                               child: Text(
                                 "$nbEvents",
                                 textScaler: TextScaler.linear(0.6),
@@ -453,7 +464,7 @@ class CalendarSelectorState extends State<CalendarSelector> with TickerProviderS
                 nbEvents > 0
                     ? Container(
                         padding: EdgeInsets.symmetric(horizontal: 1.0),
-                        decoration: BoxDecoration(color: Colors.white54, borderRadius: BorderRadius.circular(2.0)),
+                        decoration: BoxDecoration(color: Colors.red[700], borderRadius: BorderRadius.circular(2.0)),
                         child: Text(
                           "$nbEvents",
                           textScaler: TextScaler.linear(0.6),
@@ -545,7 +556,7 @@ class CalendarSelectorState extends State<CalendarSelector> with TickerProviderS
       case CalendarMode.year:
         return 195;
       case CalendarMode.month:
-        return widget.expandable ? 330 : 310;
+        return widget.expandable ? 345 : 310;
       case CalendarMode.week:
         return widget.expandable ? 130 : 105;
       default:

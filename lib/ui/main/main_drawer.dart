@@ -64,21 +64,21 @@ class MainDrawer extends StatelessWidget {
               alignment: Alignment.centerRight,
               children: <Widget>[
                 UserAccountsDrawerHeader(
+                  decoration: BoxDecoration(color: Colors.red[700]),
                   accountName: Row(
                     children: <Widget>[
-                      Icon(Icons.person_outline, size: 12),
+                      Icon(Icons.person_outline, size: 12, color: Colors.white),
                       SizedBox(width: 5),
                       Text("${_loginProvider.loggedMember!.firstName} ${_loginProvider.loggedMember!.lastName}"),
                     ],
                   ),
                   accountEmail: Row(
                     children: <Widget>[
-                      Icon(Icons.mail_outline, size: 12),
+                      Icon(Icons.mail_outline, size: 12, color: Colors.white),
                       SizedBox(width: 5),
                       Text(_loginProvider.loggedMember!.email!),
                     ],
                   ),
-                  arrowColor: Colors.green,
                   currentAccountPicture: Container(
                     decoration: ShapeDecoration(shape: CircleBorder(), color: Colors.white),
                     padding: EdgeInsets.all(2.0),
@@ -92,14 +92,14 @@ class MainDrawer extends StatelessWidget {
                         : CircleAvatar(
                       backgroundColor: Colors.blue[100],
                       child: ShaderMask(
-                        shaderCallback: (bounds) =>
-                            LinearGradient(
-                              begin: const FractionalOffset(0.0, 0.0),
-                              end: const FractionalOffset(0.0, 1.0),
-                              stops: [0.0, 1.0],
-                              colors: [Colors.red[700]!, Colors.white],
-                            ).createShader(bounds),
-                        child: Icon(CustomIcons.pilot, size: 50),
+                        blendMode: BlendMode.srcATop,
+                        shaderCallback: (bounds) => LinearGradient(
+                          begin: const FractionalOffset(0.0, 0.0),
+                          end: const FractionalOffset(0.0, 1.0),
+                          stops: [0.0, 1.0],
+                          colors: [Colors.red[700]!, Colors.blue[700]!],
+                        ).createShader(bounds),
+                        child: Icon(CustomIcons.pilot, size: 50, color: Colors.white),
                       ),
                     ),
                   ),
@@ -120,77 +120,79 @@ class MainDrawer extends StatelessWidget {
                 ),
               ],
             ),
-            Column(
-              children: <Widget>[
-                ListTile(
-                  leading: Icon(
-                    Icons.person,
-                    color: Colors.green[700],
+            Container(
+              child: Column(
+                children: <Widget>[
+                  ListTile(
+                    leading: Icon(
+                      Icons.person,
+                      color: Colors.green[700],
+                    ),
+                    trailing: Icon(Icons.arrow_right, color: Colors.black),
+                    title: Text(AppString.profile, style: TextStyle(color: Colors.black)),
+                    onTap: () {
+                      _navigateToEditMemberScreen(context, _loginProvider.loggedMember!);
+                    },
                   ),
-                  trailing: Icon(Icons.arrow_right, color: Colors.black),
-                  title: Text(AppString.profile, style: TextStyle(color: Colors.black)),
-                  onTap: () {
-                    _navigateToEditMemberScreen(context, _loginProvider.loggedMember!);
-                  },
-                ),
-                ListTile(
-                  leading: Icon(
-                    Icons.event,
-                    color: Colors.purple[600],
+                  ListTile(
+                    leading: Icon(
+                      Icons.event,
+                      color: Colors.purple[600],
+                    ),
+                    trailing: Icon(Icons.arrow_right, color: Colors.black),
+                    title: Text(AppString.myTrackEvents, style: TextStyle(color: Colors.black)),
+                    onTap: () {
+                      Navigator.pushNamed(context, '/memberEvents', arguments: _loginProvider.loggedMember);
+                    },
                   ),
-                  trailing: Icon(Icons.arrow_right, color: Colors.black),
-                  title: Text(AppString.myTrackEvents, style: TextStyle(color: Colors.black)),
-                  onTap: () {
-                    Navigator.pushNamed(context, '/memberEvents', arguments: _loginProvider.loggedMember);
-                  },
-                ),
-                ListTile(
-                  leading: Icon(
-                    Icons.timer,
-                    color: Colors.orange[800],
+                  ListTile(
+                    leading: Icon(
+                      Icons.timer,
+                      color: Colors.orange[800],
+                    ),
+                    trailing: Icon(Icons.arrow_right, color: Colors.black),
+                    title: Text(AppString.myChronos, style: TextStyle(color: Colors.black)),
+                    onTap: () {
+                      Navigator.pushNamed(context, '/memberChronos', arguments: _loginProvider.loggedMember);
+                    },
                   ),
-                  trailing: Icon(Icons.arrow_right, color: Colors.black),
-                  title: Text(AppString.myChronos, style: TextStyle(color: Colors.black)),
-                  onTap: () {
-                    Navigator.pushNamed(context, '/memberChronos', arguments: _loginProvider.loggedMember);
-                  },
-                ),
-                Divider(),
-                ListTile(
-                  leading: Icon(
-                    Icons.notifications,
-                    color: Colors.blue[700],
+                  Divider(),
+                  ListTile(
+                    leading: Icon(
+                      Icons.notifications,
+                      color: Colors.blue[700],
+                    ),
+                    trailing: Icon(Icons.arrow_right, color: Colors.black),
+                    title: Text(AppString.notifications, style: TextStyle(color: Colors.black)),
+                    onTap: () {
+                      Navigator.pop(context);
+                    },
                   ),
-                  trailing: Icon(Icons.arrow_right, color: Colors.black),
-                  title: Text(AppString.notifications, style: TextStyle(color: Colors.black)),
-                  onTap: () {
-                    Navigator.pop(context);
-                  },
-                ),
-                ListTile(
-                  leading: Icon(
-                    Icons.settings,
-                    color: Colors.teal[700],
+                  ListTile(
+                    leading: Icon(
+                      Icons.settings,
+                      color: Colors.teal[700],
+                    ),
+                    trailing: Icon(Icons.arrow_right, color: Colors.black),
+                    title: Text(AppString.preferences, style: TextStyle(color: Colors.black)),
+                    onTap: () {
+                      Navigator.pop(context);
+                    },
                   ),
-                  trailing: Icon(Icons.arrow_right, color: Colors.black),
-                  title: Text(AppString.preferences, style: TextStyle(color: Colors.black)),
-                  onTap: () {
-                    Navigator.pop(context);
-                  },
-                ),
-                Divider(),
-                ListTile(
-                  leading: Icon(
-                    Icons.lock,
-                    color: Colors.red[900],
+                  Divider(),
+                  ListTile(
+                    leading: Icon(
+                      Icons.lock,
+                      color: Colors.red[900],
+                    ),
+                    trailing: Icon(Icons.arrow_right, color: Colors.black,),
+                    title: Text(AppString.disconnect, style: TextStyle(color: Colors.black)),
+                    onTap: () {
+                      _logout(context);
+                    },
                   ),
-                  trailing: Icon(Icons.arrow_right, color: Colors.black,),
-                  title: Text(AppString.disconnect, style: TextStyle(color: Colors.black)),
-                  onTap: () {
-                    _logout(context);
-                  },
-                ),
-              ],
+                ],
+              ),
             ),
           ],
         ),

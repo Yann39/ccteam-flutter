@@ -210,11 +210,11 @@ class _RegisterFormState extends State<RegisterForm> {
             SizedBox(height: 36.0),
             Text(
               AppString.registration,
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.black87),
               textAlign: TextAlign.center,
             ),
             SizedBox(height: 32.0),
-            Text(AppString.infoRegister),
+            Text(AppString.infoRegister, style: TextStyle( color: Colors.black87)),
             SizedBox(height: 32.0),
             _firstNameField,
             SizedBox(height: 8.0),

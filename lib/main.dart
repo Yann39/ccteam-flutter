@@ -53,6 +53,7 @@ import 'package:ccteam/ui/members/member_detail.dart';
 import 'package:ccteam/ui/members/member_events.dart';
 import 'package:ccteam/ui/news/add_edit_news.dart';
 import 'package:ccteam/ui/news/news_detail.dart';
+import 'package:ccteam/ui/news/news_list.dart';
 import 'package:ccteam/ui/photos/add_edit_photo.dart';
 import 'package:ccteam/ui/photos/gallery.dart';
 import 'package:ccteam/ui/photos/photo_detail.dart';
@@ -221,6 +222,7 @@ class CCTeamApp extends StatelessWidget {
           '/addEditMember': (context) => AddEditMember(),
           '/addEditPhoto': (context) => AddEditPhoto(),
           '/addEditRecord': (context) => AddEditRecord(),
+          '/newsList': (context) => NewsList(),
           '/newsDetail': (context) => NewsDetail(),
           '/eventDetail': (context) => EventDetail(),
           '/memberDetail': (context) => MemberDetail(),
@@ -275,9 +277,17 @@ class CCTeamApp extends StatelessWidget {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(notificationTitle, textScaler: TextScaler.linear(1.3)),
+                            Text(
+                              notificationTitle,
+                              textScaler: TextScaler.linear(1.3),
+                              style: TextStyle(color: Colors.white),
+                            ),
                             SizedBox(height: 8),
-                            Text(messageProvider.message!, textScaler: TextScaler.linear(0.9)),
+                            Text(
+                              messageProvider.message!,
+                              textScaler: TextScaler.linear(0.9),
+                              style: TextStyle(color: Colors.white),
+                            ),
                           ],
                         ),
                       ),
@@ -303,21 +313,30 @@ class CCTeamApp extends StatelessWidget {
             }
           },
         ),
-        theme: ThemeData(
+        theme: ThemeData().copyWith(
+          appBarTheme: AppBarTheme(
+            backgroundColor: Colors.red[700]!,
+            iconTheme: IconThemeData(color: Colors.white),
+            titleTextStyle: TextStyle(color: Colors.white, fontSize: 18),
+          ),
 
-          colorScheme: ColorScheme(
+          /*colorScheme: ColorScheme(
             brightness: Brightness.dark,
-            surface: Colors.red[700]!, // header
-            onSurface: Colors.white, // text
-            primary: Colors.red[700]!, // drawer header background, reload icon color
+            surface: Colors.red[700]!,
+            // header
+            onSurface: Colors.white,
+            // text
+            primary: Colors.red[700]!,
+            // drawer header background, reload icon color
             onPrimary: Colors.grey,
             secondary: Colors.grey,
             onSecondary: Colors.grey,
-            background: Colors.blue[100]!, // reload icon background
-            onBackground: Colors.grey,
+            background: Colors.blue[100]!,
+            // reload icon background
+            onBackground: Colors.red[200]!,
             error: Colors.grey,
             onError: Colors.grey,
-          )
+          ),*/
         ),
         supportedLocales: [
           const Locale('en', 'US'),

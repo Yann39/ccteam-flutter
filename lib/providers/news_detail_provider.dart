@@ -115,7 +115,10 @@ class NewsDetailProvider extends ChangeNotifier {
   Future<void> deleteNews(News news) async {
     await _newsService.deleteNews(news).then((value) {
       _log.fine("News deleted successfully : ${news.title}");
-      _currentNews = null;
+      // this shouldn't be a problem to not set _currentNews to null but keep the deleted news,
+      // because _currentNews is initialized before each display of the NewsDetail view,
+      // setting _currentNews to null would require NewsDetail view to handle a null news
+       _currentNews = value;
       _messageProvider.setMessage(AppString.newsDeleted, MessageType.SUCCESS);
       _notifyListeners();
     }, onError: (error) {

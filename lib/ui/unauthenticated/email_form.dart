@@ -38,7 +38,7 @@ class _EmailFormState extends State<EmailForm> {
 
   final GlobalKey<FormState> _emailFormKey = new GlobalKey<FormState>();
 
-  late String _email;
+  String? _email;
 
   /// Method that check the account associated to the e-mail address specified in the related form.
   /// It updates the login step status according to the result.
@@ -51,7 +51,7 @@ class _EmailFormState extends State<EmailForm> {
       _form.save();
 
       // check account, this will update login status and change page
-      Provider.of<LoginProvider>(context, listen: false).checkAccountEmail(_email);
+      Provider.of<LoginProvider>(context, listen: false).checkAccountEmail(_email!);
     }
   }
 
@@ -128,7 +128,7 @@ class _EmailFormState extends State<EmailForm> {
             SizedBox(height: 36.0),
             Text(
               AppString.identification,
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.black87),
               textAlign: TextAlign.center,
             ),
             SizedBox(height: 32.0),
@@ -136,7 +136,7 @@ class _EmailFormState extends State<EmailForm> {
             SizedBox(height: 16.0),
             Text(
               AppString.infoLoginEmail,
-              style: TextStyle(fontSize: 15.0, fontStyle: FontStyle.italic),
+              style: TextStyle(fontSize: 15.0, fontStyle: FontStyle.italic, color: Colors.black87),
             ),
             SizedBox(height: 32.0),
             _emailContinueButton,
@@ -147,7 +147,7 @@ class _EmailFormState extends State<EmailForm> {
               },
               child: Text(
                 AppString.createAccount,
-                style: TextStyle(color: Colors.black87),
+                style: TextStyle(color: Colors.blue[900]),
               ),
             ),
           ],

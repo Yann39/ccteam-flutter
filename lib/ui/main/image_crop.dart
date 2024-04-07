@@ -39,12 +39,15 @@ class ImageCrop extends StatelessWidget {
       ),
       body: Center(
         child: Crop(
-            image: _drawerProvider.image!.readAsBytesSync(),
-            controller: _controller,
-            onCropped: (image) {
-              // do something with cropped image data
-              _drawerProvider.loadImage(File.fromRawPath(image));
-            }),
+          image: _drawerProvider.image!.readAsBytesSync(),
+          controller: _controller,
+          progressIndicator: CircularProgressIndicator(),
+          onCropped: (image) {
+            // do something with cropped image data
+            _drawerProvider.loadImage(File.fromRawPath(image));
+            Navigator.pop(context);
+          },
+        ),
       ),
       floatingActionButton: FloatingActionButton(
         backgroundColor: Colors.red[700],

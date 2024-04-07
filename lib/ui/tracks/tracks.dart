@@ -121,7 +121,7 @@ class _TracksState extends State<Tracks> {
                               color: Colors.white,
                             ),
                             Container(
-                              height: 90.0,
+                              height: 86.0,
                               padding: EdgeInsets.all(0),
                               child: TrackUtils.getTrackIcon(_trackListProvider.tracks[index].name!),
                             ),

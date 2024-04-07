@@ -258,12 +258,13 @@ class NewsService {
     _log.info("Creating news ${news.title} ...");
 
     final String newNewsMutation = """
-      mutation CreateNews(\$title: String!, \$catchLine: String!, \$content: String!, \$newsDate: String!) {
+      mutation CreateNews(\$title: String!, \$catchLine: String!, \$content: String!, \$newsDate: String!, \$memberId: Long!) {
         createNews(
             title: \$title
             catchLine: \$catchLine
             content: \$content
             newsDate: \$newsDate
+            memberId: \$memberId
         )
         {
           id
@@ -298,7 +299,8 @@ class NewsService {
         'title': news.title,
         'catchLine': news.catchLine,
         'content': news.content,
-        'newsDate': news.newsDate!.toIso8601String()
+        'newsDate': news.newsDate!.toIso8601String(),
+        'memberId': news.createdBy!.id
       },
       fetchPolicy: FetchPolicy.noCache,
     );
