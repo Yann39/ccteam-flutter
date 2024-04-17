@@ -32,8 +32,8 @@ class StringUtils {
   /// Check that the specified [input] string is a valid E.164 formatted phone number
   static bool isValidPhoneNumber(String input) => RegExp(r'^\+\d\d \d\d\d\d\d\d\d\d\d$').hasMatch(input);
 
-  /// Check that the specified [input] string is a valid E.164 formatted phone number
-  static bool isValidLapTime(String input) => RegExp(r'^\+\d\d \d\d\d\d\d\d\d\d\d$').hasMatch(input);
+  /// Check that the specified [input] string is a valid lap time
+  static bool isValidLapTime(String input) => RegExp(r'^\d\d\d\d\d\d\d$').hasMatch(input);
 
   /// Check if the specified [input] string is a valid e-mail address
   /// It uses standard HTML5 validation spec, see https://stackoverflow.com/a/16888554/1274485

@@ -130,7 +130,7 @@ class _MemberEventsState extends State<MemberEvents> {
       ),
       floatingActionButton: FloatingActionButton(
         elevation: 0.0,
-        child: Icon(Icons.add),
+        child: Icon(Icons.add, color: Colors.white),
         backgroundColor: Colors.red[700],
         onPressed: () {
           _navigateToAddEventScreen(context);

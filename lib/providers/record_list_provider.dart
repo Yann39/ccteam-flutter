@@ -81,29 +81,4 @@ class RecordListProvider extends ChangeNotifier {
     });
   }
 
-  /// Create the specified [record]
-  Future<void> createRecord(Record record) async {
-    await _recordsService.createRecord(record).then((value) {
-      _log.fine("New record created : ${record.id}");
-      _trackRecords.add(record);
-      _log.info("Notifying listeners of RecordListProvider");
-      notifyListeners();
-    }, onError: (error) {
-      _log.severe("Failed to create new record ($error)");
-      throw (error);
-    });
-  }
-
-  /// Update the specified [record]
-  Future<void> updateRecord(Record record) async {
-    await _recordsService.updateRecord(record).then((value) {
-      _log.fine("Record successfully updated : ${record.id}");
-      _trackRecords[_trackRecords.indexWhere((m) => m.id == record.id)] = record;
-      _log.info("Notifying listeners of RecordListProvider");
-      notifyListeners();
-    }, onError: (error) {
-      _log.severe("Failed to update record ($error)");
-      throw (error);
-    });
-  }
 }

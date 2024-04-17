@@ -251,6 +251,9 @@ class AppString {
   static const String recordLapTimeHint = 'Chrono';
   static const String recordLapTimeMandatory = 'Le chrono est obligatoire';
   static const String recordLapTimeNotValid = 'Le chrono n\'est pas valide';
+  static const String recordConditionLabel = 'Conditions';
+  static const String recordConditionHint = 'Conditions de la piste';
+  static const String recordConditionMandatory = 'La condition de la piste doit être indiquée';
 
   static const String photoScreenTitle = 'Gallerie';
   static const String photoCreate = 'Ajouter une photo';

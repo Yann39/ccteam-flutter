@@ -42,6 +42,7 @@ class EventDetail extends StatelessWidget {
   /// Navigate to the event creation form screen to edit the specified [event].
   _navigateToEditEventScreen(BuildContext context, Event event) async {
     // set the event to be edited
+    // todo : need deep copy here else the reference will be updated even on error ?
     Provider.of<EventCreationProvider>(context, listen: false).setEventToEdit(event);
 
     // navigate to the event creation form screen
@@ -74,9 +75,10 @@ class EventDetail extends StatelessWidget {
               // delete event
               final Event eventToDelete = eventDetailProvider.currentEvent;
               eventDetailProvider.deleteEvent(eventToDelete).then((value) {
-                // remove event from the news list
+                // remove event from the event list
                 eventListProvider.removeEventFromList(eventToDelete);
-                // close this dialog
+                // back to event list (need to pop 2 times)
+                Navigator.pop(context);
                 Navigator.pop(context);
               });
             },

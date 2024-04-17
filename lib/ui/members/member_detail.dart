@@ -315,6 +315,7 @@ class MemberDetail extends StatelessWidget {
 
   Widget build(BuildContext context) {
     final MemberDetailProvider _memberDetailProvider = Provider.of<MemberDetailProvider>(context, listen: true);
+    final RecordListProvider _recordListProvider = Provider.of<RecordListProvider>(context, listen: true);
 
     final _motoInfo = MergeSemantics(
       child: Padding(
@@ -415,7 +416,7 @@ class MemberDetail extends StatelessWidget {
                     icon: Icon(Icons.mail),
                     color: Colors.purple.withOpacity(0.6),
                     onPressed: () {
-                      AppUtils.launchURL("mailto:${_memberDetailProvider.currentMember?.email}");
+                      AppUtils.mailTo(_memberDetailProvider.currentMember!.email!);
                     }))
           ],
         ),
@@ -426,174 +427,175 @@ class MemberDetail extends StatelessWidget {
       body: Container(
         decoration: CustomDecorations.mainContent,
         child: LoadingContent(
-            loadingStatus: _memberDetailProvider.loadingStatus,
-            emptyText: AppString.contentNotLoaded,
-            child: CustomScrollView(
-              controller: _scrollController,
-              slivers: <Widget>[
-                SliverAppBar(
-                  pinned: true,
-                  expandedHeight: _expandedHeight,
-                  title: _showTitle
-                      ? Text(
-                          _memberDetailProvider.currentMember!.firstName! +
-                              ' ' +
-                              _memberDetailProvider.currentMember!.lastName!,
-                          overflow: TextOverflow.ellipsis,
-                        )
-                      : null,
-                  flexibleSpace: _showTitle
-                      ? null
-                      : FlexibleSpaceBar(
-                          title: FlexibleTitle(
-                            text:
-                                "${_memberDetailProvider.currentMember!.firstName} ${_memberDetailProvider.currentMember!.lastName}",
-                            padding: EdgeInsets.only(left: 84, bottom: 44),
-                          ),
-                          background: Stack(
-                            alignment: Alignment.bottomLeft,
-                            fit: StackFit.expand,
-                            children: <Widget>[
-                              CachedNetworkImage(
-                                placeholder: (context, url) => Center(
-                                  child: SizedBox(
-                                    child: CircularProgressIndicator(),
-                                    height: 20.0,
-                                    width: 20.0,
-                                  ),
-                                ),
-                                imageUrl: 'https://images.freeimages.com/images/small-previews/e71/frog-1371919.jpg',
-                                fit: BoxFit.fitWidth,
-                              ),
-                              DecoratedBox(
-                                decoration: BoxDecoration(
-                                  gradient: LinearGradient(
-                                    begin: Alignment(0.0, 1.0),
-                                    end: Alignment(0.0, -1.0),
-                                    colors: <Color>[Colors.black.withOpacity(0.4), Colors.transparent],
-                                  ),
+          loadingStatus: _memberDetailProvider.loadingStatus,
+          emptyText: AppString.contentNotLoaded,
+          child: CustomScrollView(
+            controller: _scrollController,
+            slivers: <Widget>[
+              SliverAppBar(
+                pinned: true,
+                expandedHeight: _expandedHeight,
+                title: _showTitle
+                    ? Text(
+                        _memberDetailProvider.currentMember!.firstName! +
+                            ' ' +
+                            _memberDetailProvider.currentMember!.lastName!,
+                        overflow: TextOverflow.ellipsis,
+                      )
+                    : null,
+                flexibleSpace: _showTitle
+                    ? null
+                    : FlexibleSpaceBar(
+                        title: FlexibleTitle(
+                          text:
+                              "${_memberDetailProvider.currentMember!.firstName} ${_memberDetailProvider.currentMember!.lastName}",
+                          padding: EdgeInsets.only(left: 84, bottom: 44),
+                        ),
+                        background: Stack(
+                          alignment: Alignment.bottomLeft,
+                          fit: StackFit.expand,
+                          children: <Widget>[
+                            CachedNetworkImage(
+                              placeholder: (context, url) => Center(
+                                child: SizedBox(
+                                  child: CircularProgressIndicator(),
+                                  height: 20.0,
+                                  width: 20.0,
                                 ),
                               ),
-                              Positioned(
-                                bottom: 15,
-                                left: 15,
-                                child: Container(
-                                  decoration: ShapeDecoration(shape: CircleBorder(), color: Colors.white),
-                                  padding: EdgeInsets.all(3.0),
-                                  child: _memberDetailProvider.currentMember!.avatarUrl != null &&
-                                          _memberDetailProvider.currentMember!.avatarUrl!.length > 0
-                                      ? CircleAvatar(
-                                          radius: 50,
-                                          backgroundImage: NetworkImage(
-                                              "$SERVER_AVATAR_FOLDER${_memberDetailProvider.currentMember!.avatarUrl}"),
-                                        )
-                                      : CircleAvatar(
-                                          radius: 50,
-                                          backgroundColor: Colors.blue[100],
-                                          child: ShaderMask(
-                                            blendMode: BlendMode.srcATop,
-                                            shaderCallback: (bounds) => LinearGradient(
-                                              begin: const FractionalOffset(0.0, 0.0),
-                                              end: const FractionalOffset(0.0, 1.0),
-                                              stops: [0.0, 1.0],
-                                              colors: [Colors.red[700]!, Colors.blue[700]!],
-                                            ).createShader(bounds),
-                                            child: Icon(CustomIcons.pilot, size: 75),
-                                          ),
+                              imageUrl: 'https://images.freeimages.com/images/small-previews/e71/frog-1371919.jpg',
+                              fit: BoxFit.fitWidth,
+                            ),
+                            DecoratedBox(
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  begin: Alignment(0.0, 1.0),
+                                  end: Alignment(0.0, -1.0),
+                                  colors: <Color>[Colors.black.withOpacity(0.4), Colors.transparent],
+                                ),
+                              ),
+                            ),
+                            Positioned(
+                              bottom: 15,
+                              left: 15,
+                              child: Container(
+                                decoration: ShapeDecoration(shape: CircleBorder(), color: Colors.white),
+                                padding: EdgeInsets.all(3.0),
+                                child: _memberDetailProvider.currentMember!.avatarUrl != null &&
+                                        _memberDetailProvider.currentMember!.avatarUrl!.length > 0
+                                    ? CircleAvatar(
+                                        radius: 50,
+                                        backgroundImage: NetworkImage(
+                                            "$SERVER_AVATAR_FOLDER${_memberDetailProvider.currentMember!.avatarUrl}"),
+                                      )
+                                    : CircleAvatar(
+                                        radius: 50,
+                                        backgroundColor: Colors.blue[100],
+                                        child: ShaderMask(
+                                          blendMode: BlendMode.srcATop,
+                                          shaderCallback: (bounds) => LinearGradient(
+                                            begin: const FractionalOffset(0.0, 0.0),
+                                            end: const FractionalOffset(0.0, 1.0),
+                                            stops: [0.0, 1.0],
+                                            colors: [Colors.red[700]!, Colors.blue[700]!],
+                                          ).createShader(bounds),
+                                          child: Icon(CustomIcons.pilot, size: 75),
                                         ),
-                                ),
+                                      ),
                               ),
-                            ],
-                          ),
+                            ),
+                          ],
                         ),
-                  actions: <Widget>[
-                    IconButton(
-                      icon: const Icon(Icons.edit),
-                      onPressed: () => _navigateToEditMemberScreen(context, _memberDetailProvider.currentMember!),
-                    ),
-                    IconButton(
-                      icon: const Icon(Icons.delete_forever),
-                      onPressed: () => _showDeleteMemberConfirmation(context, AppString.memberDeletionAreYouSure),
-                    )
-                  ],
-                ),
-                SliverPadding(
-                  padding: EdgeInsets.all(8.0),
-                  sliver: SliverList(
-                    delegate: SliverChildListDelegate(
-                      <Widget>[
-                        ConstrainedBox(
-                          // set minimum height : screen height - app bar height - status bar height - padding
-                          constraints: BoxConstraints(
-                              minHeight: MediaQuery.of(context).size.height -
-                                  kToolbarHeight -
-                                  MediaQuery.of(context).padding.top -
-                                  16),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.stretch,
-                            children: <Widget>[
-                              Row(
-                                children: <Widget>[
-                                  Icon(Icons.person, size: 16, color: Colors.black.withOpacity(0.8)),
-                                  SizedBox(width: 5.0),
-                                  Text(
-                                    AppString.personalInformation,
-                                    textScaler: TextScaler.linear(1.2),
-                                    style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black.withOpacity(0.8)),
-                                  ),
-                                ],
-                              ),
-                              SizedBox(height: 10),
-                              Container(
-                                padding: EdgeInsets.all(8.0),
-                                decoration: CustomDecorations.cardLight,
-                                child: Column(
-                                  children: <Widget>[
-                                    _motoInfo,
-                                    Divider(color: Colors.black.withOpacity(0.8), height: 5),
-                                    _mobileInfo,
-                                    Divider(color: Colors.black.withOpacity(0.8), height: 5),
-                                    _emailInfo,
-                                  ],
+                      ),
+                actions: <Widget>[
+                  IconButton(
+                    icon: const Icon(Icons.edit),
+                    onPressed: () => _navigateToEditMemberScreen(context, _memberDetailProvider.currentMember!),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.delete_forever),
+                    onPressed: () => _showDeleteMemberConfirmation(context, AppString.memberDeletionAreYouSure),
+                  )
+                ],
+              ),
+              SliverPadding(
+                padding: EdgeInsets.all(8.0),
+                sliver: SliverList(
+                  delegate: SliverChildListDelegate(
+                    <Widget>[
+                      ConstrainedBox(
+                        // set minimum height : screen height - app bar height - status bar height - padding
+                        constraints: BoxConstraints(
+                            minHeight: MediaQuery.of(context).size.height -
+                                kToolbarHeight -
+                                MediaQuery.of(context).padding.top -
+                                16),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: <Widget>[
+                            Row(
+                              children: <Widget>[
+                                Icon(Icons.person, size: 16, color: Colors.black.withOpacity(0.8)),
+                                SizedBox(width: 5.0),
+                                Text(
+                                  AppString.personalInformation,
+                                  textScaler: TextScaler.linear(1.2),
+                                  style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black.withOpacity(0.8)),
                                 ),
-                              ),
-                              SizedBox(height: 15),
-                              Row(
+                              ],
+                            ),
+                            SizedBox(height: 10),
+                            Container(
+                              padding: EdgeInsets.all(8.0),
+                              decoration: CustomDecorations.cardLight,
+                              child: Column(
                                 children: <Widget>[
-                                  Icon(Icons.event, size: 16, color: Colors.black.withOpacity(0.8)),
-                                  SizedBox(width: 5.0),
-                                  Text(
-                                    AppString.rides,
-                                    textScaler: TextScaler.linear(1.2),
-                                    style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black.withOpacity(0.8)),
-                                  ),
+                                  _motoInfo,
+                                  Divider(color: Colors.black.withOpacity(0.8), height: 5),
+                                  _mobileInfo,
+                                  Divider(color: Colors.black.withOpacity(0.8), height: 5),
+                                  _emailInfo,
                                 ],
                               ),
-                              SizedBox(height: 10),
-                              _eventsTimeline(_memberDetailProvider),
-                              SizedBox(height: 10),
-                              Row(
-                                children: <Widget>[
-                                  Icon(Icons.timer, size: 16, color: Colors.black.withOpacity(0.8)),
-                                  SizedBox(width: 5.0),
-                                  Text(
-                                    AppString.chronos,
-                                    textScaler: TextScaler.linear(1.2),
-                                    style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black.withOpacity(0.8)),
-                                  ),
-                                ],
-                              ),
-                              SizedBox(height: 10),
-                              //_recordsTable(_recordListProvider),
-                            ],
-                          ),
+                            ),
+                            SizedBox(height: 15),
+                            Row(
+                              children: <Widget>[
+                                Icon(Icons.event, size: 16, color: Colors.black.withOpacity(0.8)),
+                                SizedBox(width: 5.0),
+                                Text(
+                                  AppString.rides,
+                                  textScaler: TextScaler.linear(1.2),
+                                  style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black.withOpacity(0.8)),
+                                ),
+                              ],
+                            ),
+                            SizedBox(height: 10),
+                            _eventsTimeline(_memberDetailProvider),
+                            SizedBox(height: 10),
+                            Row(
+                              children: <Widget>[
+                                Icon(Icons.timer, size: 16, color: Colors.black.withOpacity(0.8)),
+                                SizedBox(width: 5.0),
+                                Text(
+                                  AppString.chronos,
+                                  textScaler: TextScaler.linear(1.2),
+                                  style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black.withOpacity(0.8)),
+                                ),
+                              ],
+                            ),
+                            SizedBox(height: 10),
+                            _recordsTable(_recordListProvider),
+                          ],
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
                 ),
-              ],
-            )),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

@@ -85,10 +85,7 @@ class MemberList extends StatelessWidget {
                 loadingStatus: _memberListProvider.loadingStatus,
                 emptyText: AppString.membersNotFound,
                 child: ListView.separated(
-                  separatorBuilder: (context, index) => Divider(
-                    color: Colors.black,
-                    height: 4,
-                  ),
+                  separatorBuilder: (context, index) => Divider(color: Colors.black, height: 4),
                   itemCount: _memberListProvider.memberList.length,
                   itemBuilder: (context, index) {
                     return Material(
@@ -102,7 +99,13 @@ class MemberList extends StatelessWidget {
                               ? CircleAvatar(
                                   backgroundImage: NetworkImage(
                                       "$SERVER_AVATAR_FOLDER${_memberListProvider.memberList[index].avatarUrl}"))
-                              : CircleAvatar(child: Text(_memberListProvider.memberList[index].firstName![0])),
+                              : CircleAvatar(
+                                  child: Text(
+                                    _memberListProvider.memberList[index].firstName![0],
+                                    style: TextStyle(color: Colors.white),
+                                  ),
+                                  backgroundColor: Colors.red[700],
+                                ),
                         ),
                         onTap: () => _navigateToMemberDetailScreen(context, _memberListProvider.memberList[index]),
                       ),
@@ -117,7 +120,7 @@ class MemberList extends StatelessWidget {
       ),
       floatingActionButton: FloatingActionButton(
         elevation: 0.0,
-        child: Icon(Icons.add),
+        child: Icon(Icons.add, color: Colors.white),
         backgroundColor: Colors.red[700],
         onPressed: () {
           _navigateToAddMemberScreen(context);

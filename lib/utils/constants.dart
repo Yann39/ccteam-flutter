@@ -59,13 +59,6 @@ const String API_CREATE_PHOTO_ENDPOINT = '/photos/create.php';
 const String API_UPDATE_PHOTO_ENDPOINT = '/photos/update.php';
 const String API_DELETE_PHOTO_ENDPOINT = '/photos/delete.php';
 
-const String API_GET_ALL_RECORDS_ENDPOINT = '/records/read.php';
-const String API_GET_TRACK_RECORDS_ENDPOINT = '/records/read_by_track.php';
-const String API_GET_MEMBER_RECORDS_ENDPOINT = '/records/read_by_member.php';
-const String API_CREATE_RECORD_ENDPOINT = '/records/create.php';
-const String API_UPDATE_RECORD_ENDPOINT = '/records/update.php';
-const String API_DELETE_RECORD_ENDPOINT = '/records/delete.php';
-
 const String DATE_FORMAT = 'dd/MM/yyyy HH:mm';
 const String DATE_FORMAT_TXT = 'dd MMM yyyy HH:mm';
 const String PRICE_FORMAT = '####.##';

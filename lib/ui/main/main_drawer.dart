@@ -19,6 +19,7 @@
 
 import 'package:ccteam/models/member.dart';
 import 'package:ccteam/providers/login_provider.dart';
+import 'package:ccteam/providers/record_list_provider.dart';
 import 'package:ccteam/utils/constants.dart';
 import 'package:ccteam/utils/custom_icons.dart';
 import 'package:ccteam/utils/strings.dart';
@@ -153,7 +154,9 @@ class MainDrawer extends StatelessWidget {
                     trailing: Icon(Icons.arrow_right, color: Colors.black),
                     title: Text(AppString.myChronos, style: TextStyle(color: Colors.black)),
                     onTap: () {
-                      Navigator.pushNamed(context, '/memberChronos', arguments: _loginProvider.loggedMember);
+                      // fetch member records
+                      Provider.of<RecordListProvider>(context, listen: false).fetchMemberRecords(_loginProvider.loggedMember!.id!);
+                      Navigator.pushNamed(context, '/memberChronos');
                     },
                   ),
                   Divider(),

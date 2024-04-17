@@ -40,7 +40,7 @@ class NewsDetail extends StatelessWidget {
 
   /// Navigate to the news creation form screen to edit the specified [news].
   _navigateToEditNewsScreen(BuildContext context, News news) async {
-    //todo need deep copy here else the reference will be updated even on error
+    // need deep copy here else the reference will be updated even on error
     Provider.of<NewsCreationProvider>(context, listen: false).setNewsToEdit(News.clone(news));
 
     // navigate to the news creation form screen
@@ -84,7 +84,7 @@ class NewsDetail extends StatelessWidget {
               newsDetailProvider.deleteNews(newsToDelete).then((value) {
                 // remove news from the news list
                 newsListProvider.removeNewsFromList(newsToDelete);
-                // back to news list
+                // back to news list (need to pop 2 times)
                 Navigator.pop(context);
                 Navigator.pop(context);
               });

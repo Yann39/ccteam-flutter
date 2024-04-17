@@ -17,125 +17,348 @@
  * along with CCTeam. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import 'dart:convert';
-
 import 'package:ccteam/models/record.dart';
-import 'package:ccteam/utils/constants.dart';
-import 'package:http/http.dart' as http;
+import 'package:ccteam/utils/app_utils.dart';
+import 'package:ccteam/utils/graphql_connection.dart';
+import 'package:gql/language.dart';
+import 'package:graphql_flutter/graphql_flutter.dart';
+import 'package:logging/logging.dart';
 
 class RecordsService {
-  /// Fetch all records from the database
-  /// Send a GET request to the Restful API
-  /// Throw an exception if response status code is different from 200 or 404
-  /// Return empty array if no data found (404)
+  static final Logger _log = new Logger('LapRecordService');
+
+  /// Fetch all records from the database.
   Future<List<Record>> fetchRecords() async {
-    // call to API
-    final response = await http.get(Uri.parse(API_BASE_URL + API_GET_ALL_RECORDS_ENDPOINT));
+    _log.info("Getting all lap records from database...");
 
-    if (response.statusCode == 200) {
-      // if the call to the server was successful, parse the JSON and return content
-      dynamic responseJson = json.decode(response.body);
-      return (responseJson['records'] as List).map((p) => Record.fromJson(p)).toList();
-    } else if (response.statusCode == 404) {
-      // no data found, return empty array
-      return [];
-    } else {
-      throw Exception('Unexpected server response');
-    }
+    final String query = """
+      query GetAllLapRecords() {
+        getAllLapRecords {
+          id
+          recordDate
+          lapTime
+          conditions
+          member {
+            id
+            email
+          }
+          track {
+            id
+            name
+          }
+          comments
+          createdOn
+          modifiedOn
+        }
+      }
+    """;
+
+    return GraphQLConnection()
+        .graphQLClient
+        .query(QueryOptions(
+          document: parseString(query),
+          fetchPolicy: FetchPolicy.noCache,
+        ))
+        .then(
+      (result) {
+        final List<Record> records = [];
+        if (result.hasException) {
+          throw AppUtils.handleGraphQlException(result)!;
+        } else {
+          dynamic lapRecordList = result.data!['getAllLapRecords'];
+          if (lapRecordList == null) {
+            _log.info("getAllLapRecords returned null data");
+          } else if (lapRecordList is Map<String, dynamic> && lapRecordList.isEmpty) {
+            _log.info("getAllLapRecords returned empty data");
+          } else {
+            for (dynamic record in lapRecordList) {
+              records.add(Record.fromJson(record));
+            }
+          }
+          return records;
+        }
+      },
+      onError: (error) {
+        _log.severe("Error while fetching lap record list : $error");
+        throw Exception(error);
+      },
+    );
   }
 
-  /// Fetch all records for the specified [trackId] from the database
-  /// Send a GET request to the Restful API
-  /// Throw an exception if response status code is different from 200 or 404
-  /// Return empty array if no data found (404)
+  /// Fetch all records for the specified [trackId] from the database.
   Future<List<Record>> fetchTrackRecords(int trackId) async {
-    // call to API
-    final response = await http.get(Uri.parse(API_BASE_URL + API_GET_TRACK_RECORDS_ENDPOINT + "?trackId=$trackId"));
+    _log.info("Getting lap records from database for track ID $trackId...");
 
-    if (response.statusCode == 200) {
-      // if the call to the server was successful, parse the JSON and return content
-      dynamic responseJson = json.decode(response.body);
-      return (responseJson['records'] as List).map((p) => Record.fromJson(p)).toList();
-    } else if (response.statusCode == 404) {
-      // no data found, return empty array
-      return [];
-    } else if (response.statusCode == 400) {
-      throw Exception('Bad request, check that parameter has been specified correctly');
-    } else {
-      throw Exception('Unexpected server response');
-    }
+    final String query = """
+      query GetTrackLapRecords(\$trackId: Long!) {
+        getTrackLapRecords(trackId: \$trackId) {
+          id
+          recordDate
+          lapTime
+          conditions
+          member {
+            id
+            email
+          }
+          track {
+            id
+            name
+          }
+          comments
+          createdOn
+          modifiedOn
+        }
+      }
+    """;
+
+    return GraphQLConnection()
+        .graphQLClient
+        .query(QueryOptions(
+          document: parseString(query),
+          variables: {
+            'trackId': trackId,
+          },
+          fetchPolicy: FetchPolicy.noCache,
+        ))
+        .then(
+      (result) {
+        final List<Record> records = [];
+        if (result.hasException) {
+          throw AppUtils.handleGraphQlException(result)!;
+        } else {
+          dynamic lapRecordList = result.data!['getTrackLapRecords'];
+          if (lapRecordList == null) {
+            _log.info("getTrackLapRecords returned null data");
+          } else if (lapRecordList is Map<String, dynamic> && lapRecordList.isEmpty) {
+            _log.info("getTrackLapRecords returned empty data");
+          } else {
+            for (dynamic record in lapRecordList) {
+              records.add(Record.fromJson(record));
+            }
+          }
+          return records;
+        }
+      },
+      onError: (error) {
+        _log.severe("Error while fetching lap record list for track ID $trackId: $error");
+        throw Exception(error);
+      },
+    );
   }
 
-  /// Fetch all records for the specified [memberId] from the database
-  /// Send a GET request to the Restful API
-  /// Throw an exception if response status code is different from 200 or 404
-  /// Return empty array if no data found (404)
+  /// Fetch all records for the specified [memberId] from the database.
   Future<List<Record>> fetchMemberRecords(int memberId) async {
-    // call to API
-    final response = await http.get(Uri.parse(API_BASE_URL + API_GET_MEMBER_RECORDS_ENDPOINT + "?memberId=$memberId"));
+    _log.info("Getting lap records from database for member ID $memberId...");
 
-    if (response.statusCode == 200) {
-      // if the call to the server was successful, parse the JSON and return content
-      dynamic responseJson = json.decode(response.body);
-      return (responseJson['records'] as List).map((p) => Record.fromJson(p)).toList();
-    } else if (response.statusCode == 404) {
-      // no data found, return empty array
-      return [];
-    } else if (response.statusCode == 400) {
-      throw Exception('Bad request, check that parameter has been specified correctly');
+    final String query = """
+      query GetMemberLapRecords(\$memberId: Long!) {
+        getMemberLapRecords(memberId: \$memberId) {
+          id
+          recordDate
+          lapTime
+          conditions
+          member {
+            id
+            email
+          }
+          track {
+            id
+            name
+          }
+          comments
+          createdOn
+          modifiedOn
+        }
+      }
+    """;
+
+    return GraphQLConnection()
+        .graphQLClient
+        .query(QueryOptions(
+          document: parseString(query),
+          variables: {
+            'memberId': memberId,
+          },
+          fetchPolicy: FetchPolicy.noCache,
+        ))
+        .then(
+      (result) {
+        final List<Record> records = [];
+        if (result.hasException) {
+          throw AppUtils.handleGraphQlException(result)!;
+        } else {
+          dynamic lapRecordList = result.data!['getMemberLapRecords'];
+          if (lapRecordList == null) {
+            _log.info("getMemberLapRecords returned null data");
+          } else if (lapRecordList is Map<String, dynamic> && lapRecordList.isEmpty) {
+            _log.info("getMemberLapRecords returned empty data");
+          } else {
+            for (dynamic record in lapRecordList) {
+              records.add(Record.fromJson(record));
+            }
+          }
+          return records;
+        }
+      },
+      onError: (error) {
+        _log.severe("Error while fetching lap record list for member ID $memberId: $error");
+        throw Exception(error);
+      },
+    );
+  }
+
+  /// Create the specified [record] into the database.
+  Future<Record> createRecord(Record record) async {
+    _log.info("Creating lap record for member ID ${record.member!.id} on track ID ${record.track!.id} ...");
+
+    final String newLapRecordMutation = """
+      mutation CreateLapRecord(\$memberId: Long!, \$trackId: Long!, \$recordDate: String!, \$lapTime: Int!, \$conditions: String!, \$comments: String) {
+        createLapRecord(
+          memberId: \$memberId
+          trackId: \$trackId
+          recordDate: \$recordDate
+          lapTime: \$lapTime
+          conditions: \$conditions
+          comments: \$comments
+        ) {
+          id
+          recordDate
+          lapTime
+          conditions
+          member {
+            id
+            email
+          }
+          track {
+            id
+            name
+          }
+          comments
+          createdOn
+          modifiedOn
+        }
+      }
+    """;
+
+    final MutationOptions mutationOptions = new MutationOptions(
+      document: parseString(newLapRecordMutation),
+      variables: {
+        'memberId': record.member!.id,
+        'trackId': record.track!.id,
+        'recordDate': record.recordDate!.toIso8601String(),
+        'lapTime': record.lapTime,
+        'conditions': record.conditions,
+        'comments': record.comments
+      },
+      fetchPolicy: FetchPolicy.noCache,
+    );
+
+    final QueryResult result = await GraphQLConnection().graphQLClient.mutate(mutationOptions);
+
+    if (result.hasException) {
+      throw AppUtils.handleGraphQlException(result)!;
     } else {
-      throw Exception('Unexpected server response');
+      return Record.fromJson(result.data!['createLapRecord']);
     }
   }
 
-  /// Create the specified [record] into the database
-  /// Send a POST request to the Restful API
-  /// Throw an exception if response status code is different from 201
-  Future<void> createRecord(Record record) async {
-    // call to API
-    final response = await http.post(Uri.parse(API_BASE_URL + API_CREATE_RECORD_ENDPOINT),
-        headers: {'Content-Type': 'application/json'}, body: record.toJson());
+  /// Update the specified [record] into the database.
+  Future<Record> updateRecord(Record record) async {
+    _log.info("Updating lap record with ID ${record.id} ...");
 
-    // handle server response code
-    if (response.statusCode == 201) {
-      return;
-    } else if (response.statusCode == 503) {
-      throw Exception('Failed to create the record');
-    } else if (response.statusCode == 400) {
-      throw Exception('Bad request, record has not been created');
+    final String newLapRecordMutation = """
+      mutation UpdateLapRecord(\$lapRecordId: Long!, \$trackId: Long!, \$recordDate: String!, \$lapTime: Int!, \$conditions: String!, \$comments: String) {
+        updateLapRecord(
+          lapRecordId: \$lapRecordId
+          trackId: \$trackId
+          recordDate: \$recordDate
+          lapTime: \$lapTime
+          conditions: \$conditions
+          comments: \$comments
+        ) {
+          id
+          recordDate
+          lapTime
+          conditions
+          member {
+            id
+            email
+          }
+          track {
+            id
+            name
+          }
+          comments
+          createdOn
+          modifiedOn
+        }
+      }
+    """;
+
+    final MutationOptions mutationOptions = new MutationOptions(
+      document: parseString(newLapRecordMutation),
+      variables: {
+        'lapRecordId': record.id,
+        'trackId': record.track!.id,
+        'recordDate': record.recordDate!.toIso8601String(),
+        'lapTime': record.lapTime,
+        'conditions': record.conditions,
+        'comments': record.comments
+      },
+      fetchPolicy: FetchPolicy.noCache,
+    );
+
+    final QueryResult result = await GraphQLConnection().graphQLClient.mutate(mutationOptions);
+
+    if (result.hasException) {
+      throw AppUtils.handleGraphQlException(result)!;
     } else {
-      throw Exception('Unexpected server response, record has not been created');
+      return Record.fromJson(result.data!['updateLapRecord']);
     }
   }
 
-  /// Update the specified [record] into the database
-  /// Send a POST request to the Restful API
-  /// Throw an exception if response status code is different from 200
-  Future<void> updateRecord(Record record) async {
-    // call to API
-    final response = await http.post(Uri.parse(API_BASE_URL + API_UPDATE_RECORD_ENDPOINT),
-        headers: {'Content-Type': 'application/json'}, body: record.toJson());
+  /// Delete specified [record] from the database.
+  Future<Record> deleteRecord(Record record) async {
+    _log.info("Deleting lap record with ID ${record.id} ...");
 
-    // handle server response code
-    if (response.statusCode == 200) {
-      return;
-    } else if (response.statusCode == 503) {
-      throw Exception('Failed to update the record');
+    final String lapRecordMutation = """
+      mutation DeleteLapRecord(\$lapRecordId: Long!) {
+        deleteLapRecord(
+          lapRecordId: \$lapRecordId
+        ) {
+          id
+          recordDate
+          lapTime
+          conditions
+          member {
+            id
+            email
+          }
+          track {
+            id
+            name
+          }
+          comments
+          createdOn
+          modifiedOn
+        }
+      }
+    """;
+
+    final MutationOptions mutationOptions = new MutationOptions(
+      document: parseString(lapRecordMutation),
+      variables: {
+        'lapRecordId': record.id,
+      },
+      fetchPolicy: FetchPolicy.noCache,
+    );
+
+    final QueryResult result = await GraphQLConnection().graphQLClient.mutate(mutationOptions);
+
+    if (result.hasException) {
+      throw AppUtils.handleGraphQlException(result)!;
     } else {
-      throw Exception('Unexpected server response, record has not been updated');
-    }
-  }
-
-  /// Delete specified [record] from the database
-  /// Send a POST request to the Restful API
-  /// Throw an exception if response status code is different from 204
-  Future<void> deleteRecord(Record record) async {
-    // call to API
-    final response = await http.post(Uri.parse(API_BASE_URL + API_DELETE_RECORD_ENDPOINT),
-        headers: {'Content-Type': 'application/json'}, body: record.toJson());
-
-    if (response.statusCode != 204) {
-      throw Exception('Unexpected server response');
+      return Record.fromJson(result.data!['deleteLapRecord']);
     }
   }
 }

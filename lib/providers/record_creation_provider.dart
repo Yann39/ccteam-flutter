@@ -42,10 +42,15 @@ class RecordCreationProvider extends ChangeNotifier {
   // current record
   Record _record = new Record();
 
+  // selected track condition in the dropdown list
+  TrackCondition _selectedTrackCondition = TrackCondition.dry;
+
   // current loading status
   LoadingStatus _loadingStatus = LoadingStatus.notLoaded;
 
   Record get record => _record;
+
+  TrackCondition get selectedTrackCondition => _selectedTrackCondition;
 
   LoadingStatus get loadingStatus => _loadingStatus;
 
@@ -65,6 +70,12 @@ class RecordCreationProvider extends ChangeNotifier {
   void setRecordToEdit(Record record) {
     _record = record;
     _updateStatus(LoadingStatus.loaded);
+  }
+
+  /// Set the specified [trackCondition] as the current selected track condition
+  void selectTrackCondition(TrackCondition trackCondition) {
+    _selectedTrackCondition = trackCondition;
+    _notifyListeners();
   }
 
   /// Create the current record being edited.

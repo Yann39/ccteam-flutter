@@ -56,7 +56,8 @@ class _AddEditNewsState extends State<AddEditNews> {
     return super.initState();
   }
 
-  /// Initialize and display a date picker related to the specified [controller] in the specified [context].
+  /// Initialize and display a date picker, related to the specified [controller] in the specified [context].
+  /// Default value can be specified through the [defaultValue] parameter, else it will be initialized with current date.
   Future _chooseDate(BuildContext context, TextEditingController controller, DateTime? defaultValue) async {
     final DateTime _currentDate = DateTime.now();
     final TimeOfDay _currentTime = TimeOfDay.now();

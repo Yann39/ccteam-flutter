@@ -18,6 +18,7 @@
  */
 
 import 'package:ccteam/models/record.dart';
+import 'package:ccteam/providers/record_creation_provider.dart';
 import 'package:ccteam/providers/record_list_provider.dart';
 import 'package:ccteam/utils/custom_decorations.dart';
 import 'package:ccteam/utils/custom_icons.dart';
@@ -46,65 +47,21 @@ class _MemberChronosState extends State<MemberChronos> {
 
   /// Method that launches the Add Record screen and awaits the result from Navigator.pop
   _navigateToAddRecordScreen(BuildContext context) async {
+    // set a new record to be created
+    Provider.of<RecordCreationProvider>(context, listen: false).setRecordToEdit(new Record());
     // Navigator.push returns a Future that will complete after we call Navigator.pop on the target screen
-    final _result = await Navigator.pushNamed(context, '/addEditRecord');
+    await Navigator.pushNamed(context, '/addEditRecord');
 
-    // after the target screen returns a result, hide any previous snack bars and show the new result
-    if (_result != null) {
-      ScaffoldMessenger.of(context)
-        ..removeCurrentSnackBar()
-        ..showSnackBar(SnackBar(content: Text("$_result")));
-    }
   }
 
-  Widget _recordsTable(RecordListProvider recordListProvider) {
-    if (recordListProvider.memberRecords.length > 0) {
-      return Container(
-        decoration: CustomDecorations.cardLight,
-        child: Table(
-          columnWidths: {0: FlexColumnWidth(3), 1: FlexColumnWidth(2), 2: FlexColumnWidth(2), 3: FlexColumnWidth(1)},
-          defaultVerticalAlignment: TableCellVerticalAlignment.middle,
-          border: TableBorder(
-              horizontalInside: BorderSide(color: Colors.black.withOpacity(0.3), width: 1),
-              verticalInside: BorderSide(color: Colors.black.withOpacity(0.3), width: 1)),
-          children: [
-            for (Record rec in recordListProvider.memberRecords)
-              TableRow(children: [
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 12.0),
-                  child: Text(
-                    rec.track!.name ?? "",
-                    style: TextStyle(color: Colors.black.withOpacity(0.8)),
-                    overflow: TextOverflow.ellipsis,
-                    textAlign: TextAlign.center,
-                  ),
-                ),
-                Text(
-                  AppDateUtils.toLapTimeString(rec.lapTime) ?? "",
-                  style: TextStyle(color: Colors.black.withOpacity(0.8)),
-                  textAlign: TextAlign.center,
-                ),
-                Text(
-                  AppDateUtils.convertToString(rec.recordDate!, "dd/MM/yyyy") ?? "",
-                  style: TextStyle(color: Colors.black.withOpacity(0.8)),
-                  textAlign: TextAlign.center,
-                ),
-                SizedBox(
-                    width: 10,
-                    child: rec.conditions == "dry"
-                        ? Icon(Icons.wb_sunny, color: Colors.black.withOpacity(0.6), size: 15)
-                        : Icon(CustomIcons.rain, color: Colors.black.withOpacity(0.6), size: 15))
-              ])
-          ],
-        ),
-      );
-    } else {
-      return Container(
-        padding: EdgeInsets.all(12.0),
-        decoration: CustomDecorations.cardLight,
-        child: Text(AppString.memberNoChrono),
-      );
-    }
+  List<DropdownMenuItem<String>> get dropdownItems{
+    List<DropdownMenuItem<String>> menuItems = [
+      DropdownMenuItem(child: Text("USA"),value: "USA"),
+      DropdownMenuItem(child: Text("Canada"),value: "Canada"),
+      DropdownMenuItem(child: Text("Brazil"),value: "Brazil"),
+      DropdownMenuItem(child: Text("England"),value: "England"),
+    ];
+    return menuItems;
   }
 
   Widget build(BuildContext context) {
@@ -122,96 +79,91 @@ class _MemberChronosState extends State<MemberChronos> {
       body: Container(
         padding: const EdgeInsets.all(8.0),
         decoration: CustomDecorations.mainContent,
-        child: Column(
-          children: <Widget>[
-            //_recordsTable(_recordListProvider),
-            Expanded(
-              child: RefreshIndicator(
-                onRefresh: () => _recordListProvider.fetchMemberRecords(_memberDetailProvider.currentMember!.id!),
-                child: LoadingContent(
-                  emptyText: AppString.eventsNotFound,
-                  loadingStatus: _recordListProvider.loadingStatus,
-                  child: ListView.separated(
-                    separatorBuilder: (context, index) => SizedBox(height: 8.0),
-                    itemCount: _recordListProvider.memberRecords.length,
-                    itemBuilder: (context, index) {
-                      return Container(
-                        padding: EdgeInsets.all(8.0),
-                        decoration: CustomDecorations.cardFull,
-                        height: 80,
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        child: Expanded(
+          child: RefreshIndicator(
+            onRefresh: () => _recordListProvider.fetchMemberRecords(_memberDetailProvider.currentMember!.id!),
+            child: LoadingContent(
+              emptyText: AppString.eventsNotFound,
+              loadingStatus: _recordListProvider.loadingStatus,
+              child: ListView.separated(
+                separatorBuilder: (context, index) => SizedBox(height: 8.0),
+                itemCount: _recordListProvider.memberRecords.length,
+                itemBuilder: (context, index) {
+                  return Container(
+                    padding: EdgeInsets.all(8.0),
+                    decoration: CustomDecorations.cardFull,
+                    height: 91,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: <Widget>[
+                        //Icon(TrackUtils.trackIconFromName(_recordListProvider.memberRecords[index].track.name), size: 38, color: Colors.red[700]),
+                        Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: <Widget>[
-                            //Icon(TrackUtils.trackIconFromName(_recordListProvider.memberRecords[index].track.name), size: 38, color: Colors.red[700]),
-                            Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              crossAxisAlignment: CrossAxisAlignment.start,
+                            Row(
                               children: <Widget>[
-                                Row(
-                                  children: <Widget>[
-                                    //Icon(Icons.location_on, size: 16, color: Colors.deepPurple),
-                                    //SizedBox(width: 5.0),
-                                    Text(
-                                      _recordListProvider.memberRecords[index].track!.name!,
-                                      textScaler: TextScaler.linear(1.3),
-                                      style: TextStyle(color: Colors.white),
-                                    ),
-                                  ],
-                                ),
-                                SizedBox(
-                                  height: 8.0,
-                                ),
-                                Row(
-                                  children: <Widget>[
-                                    Icon(Icons.event, size: 16, color: Colors.teal[700]),
-                                    SizedBox(width: 5.0),
-                                    Text(
-                                      AppDateUtils.convertToString(
-                                              _recordListProvider.memberRecords[index].recordDate!, 'dd MMM yyyy') ??
-                                          "",
-                                      style: TextStyle(color: Colors.white),
-                                    ),
-                                  ],
-                                ),
-                                Row(
-                                  children: <Widget>[
-                                    Icon(CustomIcons.motorbike, size: 16, color: Colors.deepPurple),
-                                    SizedBox(width: 5.0),
-                                    Text(
-                                      _recordListProvider.memberRecords[index].member!.bike ?? "",
-                                      style: TextStyle(color: Colors.white),
-                                    ),
-                                  ],
+                                //Icon(Icons.location_on, size: 16, color: Colors.deepPurple),
+                                //SizedBox(width: 5.0),
+                                Text(
+                                  _recordListProvider.memberRecords[index].track!.name!,
+                                  textScaler: TextScaler.linear(1.3),
+                                  style: TextStyle(color: Colors.white),
                                 ),
                               ],
                             ),
-                            Container(
-                              padding: EdgeInsets.symmetric(horizontal: 4.0, vertical: 0.0),
-                              decoration: BoxDecoration(
-                                shape: BoxShape.rectangle,
-                                borderRadius: BorderRadius.circular(4.0),
-                                border: Border.all(color: Colors.white),
-                              ),
-                              child: Text(
-                                AppDateUtils.toLapTimeString(_recordListProvider.memberRecords[index].lapTime) ?? "",
-                                style: TextStyle(fontFamily: "AlarmClock", color: Colors.white),
-                                textScaler: TextScaler.linear(1.6),
-                              ),
+                            SizedBox(
+                              height: 8.0,
+                            ),
+                            Row(
+                              children: <Widget>[
+                                Icon(Icons.event, size: 16, color: Colors.teal[700]),
+                                SizedBox(width: 5.0),
+                                Text(
+                                  AppDateUtils.convertToString(
+                                          _recordListProvider.memberRecords[index].recordDate!, 'dd MMM yyyy') ??
+                                      "",
+                                  style: TextStyle(color: Colors.white),
+                                ),
+                              ],
+                            ),
+                            Row(
+                              children: <Widget>[
+                                Icon(CustomIcons.motorbike, size: 16, color: Colors.deepPurple),
+                                SizedBox(width: 5.0),
+                                Text(
+                                  _recordListProvider.memberRecords[index].member!.bike ?? "",
+                                  style: TextStyle(color: Colors.white),
+                                ),
+                              ],
                             ),
                           ],
                         ),
-                      );
-                    },
-                  ),
-                ),
+                        Container(
+                          padding: EdgeInsets.symmetric(horizontal: 4.0, vertical: 0.0),
+                          decoration: BoxDecoration(
+                            shape: BoxShape.rectangle,
+                            borderRadius: BorderRadius.circular(4.0),
+                            border: Border.all(color: Colors.white),
+                          ),
+                          child: Text(
+                            AppDateUtils.toLapTimeString(_recordListProvider.memberRecords[index].lapTime) ?? "",
+                            style: TextStyle(fontFamily: "AlarmClock", color: Colors.white),
+                            textScaler: TextScaler.linear(1.6),
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                },
               ),
-            )
-          ],
+            ),
+          ),
         ),
       ),
       floatingActionButton: FloatingActionButton(
         elevation: 0.0,
-        child: Icon(Icons.add),
+        child: Icon(Icons.add, color: Colors.white),
         backgroundColor: Colors.red[700],
         onPressed: () {
           _navigateToAddRecordScreen(context);

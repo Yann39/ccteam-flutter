@@ -42,6 +42,12 @@ class AppUtils {
     }
   }
 
+  /// Launch mailto link for the specified [email].
+  static void mailTo(String email) async {
+    final Uri uri = Uri(scheme: 'mailto', path: email);
+    launchUrl(uri);
+  }
+
   /// Return the message string from a given [Exception].
   /// By default the [Exception]'s [toString] method appends "Exception: " string before the message,
   /// so simply remove it.

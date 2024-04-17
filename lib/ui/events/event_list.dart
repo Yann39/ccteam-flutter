@@ -56,13 +56,15 @@ class EventList extends StatelessWidget {
     _log.info("Building Event list");
     final _eventListProvider = Provider.of<EventListProvider>(context, listen: true);
 
-    onSelect(DateTime date, CalendarMode calendarMode) {
+    // on date selection in calendar, fetch events for that date
+    void onSelect(DateTime date, CalendarMode calendarMode) {
       _eventListProvider.setSelectedDate(date);
       calendarMode == CalendarMode.year
           ? _eventListProvider.fetchEventListForYear(date.year)
           : _eventListProvider.fetchEventListForDayAndMonthAndYear(date.day, date.month, date.year);
     }
 
+    // on refresh, fetch events depending on display mode
     Future<void> onRefresh() {
       if (_eventListProvider.eventModeSelectorIndex == 0) {
         return _eventListProvider.fetchEventList();
@@ -76,6 +78,7 @@ class EventList extends StatelessWidget {
       }
     }
 
+    // assign fetched events depending on display mode
     final List<Event> _events = _eventListProvider.eventModeSelectorIndex == 0
         ? _eventListProvider.allEvents
         : _eventListProvider.eventModeSelectorIndex == 1
@@ -175,8 +178,11 @@ class EventList extends StatelessWidget {
                   SizedBox(height: 8.0),
                   CalendarSelector(
                     onDateSelected: onSelect,
-                    eventsDates:
-                        Map.fromIterable(_eventListProvider.allEvents, key: (v) => v.title, value: (v) => v.startDate),
+                    eventsDates: Map.fromIterable(
+                      _eventListProvider.allEvents,
+                      key: (v) => v.title,
+                      value: (v) => v.startDate,
+                    ),
                     onlyMonthDays: false,
                     locale: "fr",
                     weekEndDayColor: Colors.blue[700]!,

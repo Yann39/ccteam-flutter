@@ -86,6 +86,10 @@ class EventDetailProvider extends ChangeNotifier {
   Future<void> deleteEvent(Event event) async {
     await _eventsService.deleteEvent(event).then((value) {
       _log.fine("Event deleted successfully : ${event.title}");
+      // this shouldn't be a problem to not set _currentEvent to null but keep the deleted event,
+      // because _currentEvent is initialized before each display of the EventDetail view,
+      // setting _currentEvent to null would require EventDetail view to handle a null event
+      _currentEvent = value;
       _messageProvider.setMessage(AppString.eventDeleted, MessageType.SUCCESS);
       _notifyListeners();
     }, onError: (error) {
