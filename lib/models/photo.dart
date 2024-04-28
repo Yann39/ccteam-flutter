@@ -17,7 +17,7 @@
  * along with CCTeam. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import 'package:intl/intl.dart';
+
 
 /// Class representing a photo
 /// todo Add Gallery property ?
@@ -41,7 +41,7 @@ class Photo {
   @override
   String toString() {
     return """{
-      id: ${this.id},
+      id: ${this.id.toString()},
       title: ${this.title},
       description: ${this.description},
       link: ${this.link},
@@ -56,12 +56,12 @@ class Photo {
         title = json['title'],
         description = json['description'],
         link = json['link'],
-        createdOn = json['createdOn'] != null ? DateFormat("yyyy-MM-dd HH:mm:ss").parseStrict(json['createdOn']) : null,
-        modifiedOn = json['modifiedOn'] != null ? DateFormat("yyyy-MM-dd HH:mm:ss").parseStrict(json['modifiedOn']) : null;
+        createdOn = json['createdOn'] != null ? DateTime.parse(json['createdOn']) : null,
+        modifiedOn = json['modifiedOn'] != null ? DateTime.parse(json['modifiedOn']) : null;
 
   /// Convert [Photo] object to the corresponding JSON map
   Map<String, dynamic> toJson() => {
-        "id": id,
+        "id": id.toString(),
         "title": title,
         "description": description,
         "link": link,

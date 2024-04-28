@@ -19,7 +19,6 @@
 
 import 'package:ccteam/models/member.dart';
 import 'package:ccteam/models/news.dart';
-import 'package:intl/intl.dart';
 
 /// Class representing a liked news
 class LikedNews {
@@ -38,7 +37,7 @@ class LikedNews {
   @override
   String toString() {
     return """{
-      id: ${this.id},
+      id: ${this.id.toString()},
       news: ${this.news.toString()},
       member: ${this.member.toString()},
       createdOn: ${this.createdOn?.toIso8601String()},
@@ -50,11 +49,11 @@ class LikedNews {
       : id = json['id'] != null ? int.parse(json['id']) : null,
         news = json['news'] != null ? News.fromJson(json['news']) : null,
         member = json['member'] != null ? Member.fromJson(json['member']) : null,
-        createdOn = json['createdOn'] != null ? DateFormat("yyyy-MM-dd HH:mm:ss").parseStrict(json['createdOn']) : null;
+        createdOn = json['createdOn'] != null ? DateTime.parse(json['createdOn']) : null;
 
   /// Convert [LikedNews] object to the corresponding JSON map
   Map<String, dynamic> toJson() => {
-        "id": id,
+        "id": id.toString(),
         "news": news?.toJson(),
         "member": member?.toJson(),
         "createdOn": createdOn?.toIso8601String(),

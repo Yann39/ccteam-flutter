@@ -19,7 +19,6 @@
 
 import 'package:ccteam/models/member.dart';
 import 'package:ccteam/models/track.dart';
-import 'package:intl/intl.dart';
 
 /// Class representing a member track lap record
 class Record {
@@ -48,7 +47,7 @@ class Record {
   @override
   String toString() {
     return """{
-      id: ${this.id},
+      id: ${this.id.toString()},
       track: ${this.track.toString()},
       member: ${this.member.toString()},
       lapTime: ${this.lapTime},
@@ -66,15 +65,15 @@ class Record {
         track = json['track'] != null ? Track.fromJson(json['track']) : null,
         member = json['member'] != null ? Member.fromJson(json['member']) : null,
         lapTime = json['lapTime'] != null ? json['lapTime'] : null,
-        recordDate = json['recordDate'] != null ? DateFormat("yyyy-MM-dd HH:mm:ss").parseStrict(json['recordDate']) : null,
+        recordDate = json['recordDate'] != null ? DateTime.parse(json['recordDate']) : null,
         conditions = json['conditions'],
         comments = json['comments'],
-        createdOn = json['createdOn'] != null ? DateFormat("yyyy-MM-dd HH:mm:ss").parseStrict(json['createdOn']) : null,
-        modifiedOn = json['modifiedOn'] != null ? DateFormat("yyyy-MM-dd HH:mm:ss").parseStrict(json['modifiedOn']) : null;
+        createdOn = json['createdOn'] != null ? DateTime.parse(json['createdOn']) : null,
+        modifiedOn = json['modifiedOn'] != null ? DateTime.parse(json['modifiedOn']) : null;
 
   /// Convert [Record] object to the corresponding JSON map
   Map<String, dynamic> toJson() => {
-        "id": id,
+        "id": id.toString(),
         "track": track?.toJson(),
         "member": member?.toJson(),
         "lapTime": lapTime,

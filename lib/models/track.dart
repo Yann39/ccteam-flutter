@@ -40,7 +40,7 @@ class Track {
   @override
   String toString() {
     return """{
-      id: ${this.id},
+      id: ${this.id.toString()},
       name: ${this.name},
       distance: ${this.distance},
       lapRecord: ${this.lapRecord},
@@ -62,7 +62,7 @@ class Track {
 
   /// Convert [Record] object to the corresponding JSON map
   Map<String, dynamic> toJson() => {
-        "id": id,
+        "id": id.toString(),
         "name": name,
         "distance": distance,
         "lapRecord": lapRecord,

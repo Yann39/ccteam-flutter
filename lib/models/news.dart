@@ -19,7 +19,6 @@
 
 import 'package:ccteam/models/liked_news.dart';
 import 'package:ccteam/models/member.dart';
-import 'package:intl/intl.dart';
 
 /// Class representing a news
 class News {
@@ -62,7 +61,7 @@ class News {
   @override
   String toString() {
     return """{
-      id: ${this.id},
+      id: ${this.id.toString()},
       title: ${this.title},
       catchLine: ${this.catchLine},
       content: ${this.content},
@@ -81,16 +80,17 @@ class News {
         title = json['title'],
         catchLine = json['catchLine'],
         content = json['content'],
-        newsDate = json['newsDate'] != null ? DateFormat("yyyy-MM-dd HH:mm:ss").parseStrict(json['newsDate']) : null,
-        likedNews = json['likedNews'] != null ? (json['likedNews'] as List).map((i) => LikedNews.fromJson(i)).toList() : null,
-        createdOn = json['createdOn'] != null ? DateFormat("yyyy-MM-dd HH:mm:ss").parseStrict(json['createdOn']) : null,
+        newsDate = json['newsDate'] != null ? DateTime.parse(json['newsDate']) : null,
+        likedNews =
+            json['likedNews'] != null ? (json['likedNews'] as List).map((i) => LikedNews.fromJson(i)).toList() : null,
+        createdOn = json['createdOn'] != null ? DateTime.parse(json['createdOn']) : null,
         createdBy = json['createdBy'] != null ? Member.fromJson(json['createdBy']) : null,
-        modifiedOn = json['modifiedOn'] != null ? DateFormat("yyyy-MM-dd HH:mm:ss").parseStrict(json['modifiedOn']) : null,
+        modifiedOn = json['modifiedOn'] != null ? DateTime.parse(json['modifiedOn']) : null,
         modifiedBy = json['modifiedBy'] != null ? Member.fromJson(json['createdBy']) : null;
 
   /// Convert [News] object to the corresponding JSON map
   Map<String, dynamic> toJson() => {
-        "id": id,
+        "id": id.toString(),
         "title": title,
         "catchLine": catchLine,
         "content": content,

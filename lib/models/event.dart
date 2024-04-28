@@ -57,7 +57,7 @@ class Event {
   @override
   String toString() {
     return """{
-      id: ${this.id},
+      id: ${this.id.toString()},
       title: ${this.title},
       description: ${this.description},
       startDate: ${this.startDate?.toIso8601String()},
@@ -78,20 +78,22 @@ class Event {
       : id = json['id'] != null ? int.parse(json['id']) : null,
         title = json['title'],
         description = json['description'],
-        startDate = json['startDate'] != null ? DateFormat("yyyy-MM-dd HH:mm:ss").parseStrict(json['startDate']) : null,
-        endDate = json['endDate'] != null ? DateFormat("yyyy-MM-dd HH:mm:ss").parseStrict(json['endDate']) : null,
+        startDate = json['startDate'] != null ? DateTime.parse(json['startDate']) : null,
+        endDate = json['endDate'] != null ? DateTime.parse(json['endDate']) : null,
         track = json['track'] != null ? Track.fromJson(json['track']) : null,
         organizer = json['organizer'],
         price = json['price'],
-        participants = json['participants'] != null ? (json['participants'] as List).map((i) => EventMember.fromJson(i)).toList() : null,
-        createdOn = json['createdOn'] != null ? DateFormat("yyyy-MM-dd HH:mm:ss").parseStrict(json['createdOn']) : null,
+        participants = json['participants'] != null
+            ? (json['participants'] as List).map((i) => EventMember.fromJson(i)).toList()
+            : null,
+        createdOn = json['createdOn'] != null ? DateTime.parse(json['createdOn']) : null,
         createdBy = json['createdBy'] != null ? Member.fromJson(json['createdBy']) : null,
-        modifiedOn = json['modifiedOn'] != null ? DateFormat("yyyy-MM-dd HH:mm:ss").parseStrict(json['modifiedOn']) : null,
+        modifiedOn = json['modifiedOn'] != null ? DateTime.parse(json['modifiedOn']) : null,
         modifiedBy = json['modifiedBy'] != null ? Member.fromJson(json['modifiedBy']) : null;
 
   /// Convert [Event] object to the corresponding JSON map
   Map<String, dynamic> toJson() => {
-        "id": id,
+        "id": id.toString(),
         "title": title,
         "description": description,
         "startDate": startDate?.toIso8601String(),

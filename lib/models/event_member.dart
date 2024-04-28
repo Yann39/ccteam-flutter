@@ -19,7 +19,6 @@
 
 import 'package:ccteam/models/event.dart';
 import 'package:ccteam/models/member.dart';
-import 'package:intl/intl.dart';
 
 /// Class representing an event participant
 class EventMember {
@@ -38,7 +37,7 @@ class EventMember {
   @override
   String toString() {
     return """{
-      id: ${this.id},
+      id: ${this.id.toString()},
       members: ${this.member.toString()},
       members: ${this.event.toString()},
       createdOn: ${this.createdOn?.toIso8601String()},
@@ -50,11 +49,11 @@ class EventMember {
       : id = json['id'] != null ? int.parse(json['id']) : null,
         member = json['member'] != null ? Member.fromJson(json['member']) : null,
         event = json['event'] != null ? Event.fromJson(json['event']) : null,
-        createdOn = json['createdOn'] != null ? DateFormat("yyyy-MM-dd HH:mm:ss").parseStrict(json['createdOn']) : null;
+        createdOn = json['createdOn'] != null ? DateTime.parse(json['createdOn']) : null;
 
   /// Convert [EventMember] object to the corresponding JSON map
   Map<String, dynamic> toJson() => {
-        "id": id,
+        "id": id.toString(),
         "member": member?.toJson(),
         "event": event?.toJson(),
         "createdOn": createdOn?.toIso8601String(),

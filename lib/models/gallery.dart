@@ -18,7 +18,6 @@
  */
 
 import 'package:ccteam/models/photo.dart';
-import 'package:intl/intl.dart';
 
 /// Class representing a photo gallery
 class Gallery {
@@ -41,7 +40,7 @@ class Gallery {
   @override
   String toString() {
     return """{
-      id: ${this.id},
+      id: ${this.id.toString()},
       title: ${this.title},
       description: ${this.description},
       createdOn: ${this.createdOn?.toIso8601String()},
@@ -55,13 +54,13 @@ class Gallery {
       : id = json['id'] != null ? int.parse(json['id']) : null,
         title = json['title'],
         description = json['description'],
-        createdOn = json['createdOn'] != null ? DateFormat("yyyy-MM-dd HH:mm:ss").parseStrict(json['createdOn']) : null,
-        modifiedOn = json['modifiedOn'] != null ? DateFormat("yyyy-MM-dd HH:mm:ss").parseStrict(json['modifiedOn']) : null,
+        createdOn = json['createdOn'] != null ? DateTime.parse(json['createdOn']) : null,
+        modifiedOn = json['modifiedOn'] != null ? DateTime.parse(json['modifiedOn']) : null,
         photos = json['photos'] != null ? (json['photos'] as List).map((i) => Photo.fromJson(i)).toList() : null;
 
   /// Convert [Gallery] object to the corresponding JSON map
   Map<String, dynamic> toJson() => {
-        "id": id,
+        "id": id.toString(),
         "title": title,
         "description": description,
         "createdOn": createdOn?.toIso8601String(),

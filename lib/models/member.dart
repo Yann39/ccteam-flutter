@@ -64,7 +64,7 @@ class Member {
   @override
   String toString() {
     return """{
-      id: ${this.id},
+      id: ${this.id.toString()},
       firstName: ${this.firstName},
       lastName: ${this.lastName},
       email: ${this.email},
@@ -98,15 +98,17 @@ class Member {
         verified = json['verified'] != null && (json['verified'] == '1'),
         admin = json['admin'] != null && (json['admin'] == '1'),
         otp = json['otp'],
-        otpDate = json['otpDate'] != null ? DateFormat("yyyy-MM-dd HH:mm:ss", "fr").parseStrict(json['otpDate']) : null,
-        registrationDate = json['registrationDate'] != null ? DateFormat("yyyy-MM-dd HH:mm:ss", "fr").parseStrict(json['registrationDate']) : null,
-        eventMembers = json['eventMembers'] != null ? (json['eventMembers'] as List).map((i) => EventMember.fromJson(i)).toList() : null,
-        createdOn = json['createdOn'] != null ? DateFormat("yyyy-MM-dd HH:mm:ss", "fr").parseStrict(json['createdOn']) : null,
-        modifiedOn = json['modifiedOn'] != null ? DateFormat("yyyy-MM-dd HH:mm:ss", "fr").parseStrict(json['modifiedOn']) : null;
+        otpDate = json['otpDate'] != null ? DateTime.parse(json['otpDate']) : null,
+        registrationDate = json['registrationDate'] != null ? DateTime.parse(json['registrationDate']) : null,
+        eventMembers = json['eventMembers'] != null
+            ? (json['eventMembers'] as List).map((i) => EventMember.fromJson(i)).toList()
+            : null,
+        createdOn = json['createdOn'] != null ? DateTime.parse(json['createdOn']) : null,
+        modifiedOn = json['modifiedOn'] != null ? DateTime.parse(json['modifiedOn']) : null;
 
   /// Convert [Member] object to the corresponding JSON map
   Map<String, dynamic> toJson() => {
-        "id": id,
+        "id": id.toString(),
         "firstName": firstName,
         "lastName": lastName,
         "email": email,
