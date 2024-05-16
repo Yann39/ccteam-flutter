@@ -17,11 +17,11 @@
  * along with CCTeam. If not, see <http://www.gnu.org/licenses/>.
  */
 
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:ccteam/providers/avatar_provider.dart';
-import 'package:ccteam/providers/member_provider.dart';
-import 'package:ccteam/utils/constants.dart';
+import 'package:ccteam/providers/member_creation_provider.dart';
 import 'package:ccteam/utils/custom_decorations.dart';
 import 'package:ccteam/utils/custom_icons.dart';
 import 'package:ccteam/utils/enums.dart';
@@ -35,16 +35,24 @@ class EditAvatar extends StatelessWidget {
 
   /// Allow user to select an image from the gallery
   Future _selectImageFromGallery(BuildContext context, AvatarProvider avatarProvider) async {
-    final XFile? image = await ImagePicker().pickImage(source: ImageSource.gallery);
-    avatarProvider.loadImage(File(image!.path));
-    Navigator.of(context).pushNamed('/imageCrop');
+    final XFile? image =
+        await ImagePicker().pickImage(source: ImageSource.gallery, maxWidth: 512, maxHeight: 512, imageQuality: 50);
+    if (image != null) {
+      avatarProvider.setPickedImage(File(image.path));
+      avatarProvider.setPickedImageName(image.name);
+      Navigator.of(context).pushNamed('/imageCrop');
+    }
   }
 
   /// Allow user to select an image from the camera
   Future _selectImageFromCamera(BuildContext context, AvatarProvider avatarProvider) async {
-    final XFile? image = await ImagePicker().pickImage(source: ImageSource.camera);
-    avatarProvider.loadImage(File(image!.path));
-    Navigator.of(context).pushNamed('/imageCrop');
+    final XFile? image =
+        await ImagePicker().pickImage(source: ImageSource.camera, maxWidth: 512, maxHeight: 512, imageQuality: 50);
+    if (image != null) {
+      avatarProvider.setPickedImage(File(image.path));
+      avatarProvider.setPickedImageName(image.name);
+      Navigator.of(context).pushNamed('/imageCrop');
+    }
   }
 
   /// Display a confirmation popup when trying to reset an avatar
@@ -75,23 +83,19 @@ class EditAvatar extends StatelessWidget {
   /// Handle result of the avatar reset confirmation dialog
   void _dialogueResult(BuildContext context, AvatarProvider avatarProvider, ConfirmDialogAction value) {
     if (value == ConfirmDialogAction.yes) {
-      avatarProvider.deleteAvatar().then((value) {
-        avatarProvider.loadImage(null);
-        avatarProvider.currentMember.avatarUrl = null;
-        // remove avatar from the members list so that the avatar is up to date in the team page
-        Provider.of<MemberProvider>(context, listen: false).resetMemberAvatar(avatarProvider.currentMember);
-      }, onError: (error) {
-        ScaffoldMessenger.of(context)
-          ..removeCurrentSnackBar()
-          ..showSnackBar(SnackBar(backgroundColor: Colors.red, content: Text(AppString.avatarDeleteFailed)));
-      });
+      avatarProvider.setPickedImage(null);
+      avatarProvider.setPickedImageName(null);
+      avatarProvider.setCroppedImage(null);
+      Navigator.pop(context);
+    } else {
+      Navigator.pop(context);
     }
-    Navigator.pop(context);
   }
 
   @override
   Widget build(BuildContext context) {
     final _avatarProvider = Provider.of<AvatarProvider>(context, listen: true);
+    final _memberCreationProvider = Provider.of<MemberCreationProvider>(context, listen: false);
 
     return Scaffold(
       appBar: AppBar(
@@ -110,15 +114,17 @@ class EditAvatar extends StatelessWidget {
                       aspectRatio: 1,
                       child: Container(
                         margin: EdgeInsets.symmetric(vertical: 24.0, horizontal: 24.0),
-                        child: _avatarProvider.image != null
-                            ? Image.file(_avatarProvider.image!, alignment: Alignment.topCenter, fit: BoxFit.contain)
-                            : _avatarProvider.currentMember.avatarUrl != null &&
-                                    _avatarProvider.currentMember.avatarUrl!.length > 0
-                                ? Image(
+                        child: _avatarProvider.croppedImage != null
+                            ? Image.memory(
+                                _avatarProvider.croppedImage!,
+                                alignment: Alignment.topCenter,
+                                fit: BoxFit.contain,
+                              )
+                            : _avatarProvider.pickedImage != null
+                                ? Image.memory(
+                                    _avatarProvider.pickedImage!.readAsBytesSync(),
                                     alignment: Alignment.topCenter,
                                     fit: BoxFit.contain,
-                                    image:
-                                        NetworkImage("$SERVER_AVATAR_FOLDER${_avatarProvider.currentMember.avatarUrl}"),
                                   )
                                 : ShaderMask(
                                     blendMode: BlendMode.srcATop,
@@ -197,48 +203,40 @@ class EditAvatar extends StatelessWidget {
                     ),
                   ],
                 ),
-                if (_avatarProvider.currentMember.avatarUrl != null)
+                if (_avatarProvider.pickedImage != null)
                   TextButton(
                     child: Text(AppString.initProfilePhoto),
                     onPressed: () => _showConfirmation(context, _avatarProvider, AppString.avatarResetAreYouSure),
                   ),
-                if (_avatarProvider.image != null)
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: <Widget>[
-                      ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          backgroundColor: Colors.red[700],
-                          padding: EdgeInsets.fromLTRB(16.0, 12.0, 16.0, 12.0),
-                        ),
-                        onPressed: () {
-                          if (_avatarProvider.image != null) {
-                            _avatarProvider.uploadAvatar(_avatarProvider.image!).then((value) {
-                              // refresh member avatar in the members list so that the avatar is up to date in the team page
-                              Provider.of<MemberProvider>(context, listen: false)
-                                  .updateMemberAvatar(_avatarProvider.currentMember);
-                              Navigator.pop(context);
-                            }, onError: (error) {
-                              ScaffoldMessenger.of(context)
-                                ..removeCurrentSnackBar()
-                                ..showSnackBar(
-                                    SnackBar(backgroundColor: Colors.red, content: Text(AppString.avatarUploadFailed)));
-                            });
-                          }
-                        },
-                        child: Row(
-                          children: <Widget>[
-                            Icon(Icons.check, color: Colors.white, size: 15),
-                            SizedBox(width: 5),
-                            Text(AppString.confirmChange, style: TextStyle(color: Colors.white)),
-                          ],
-                        ),
+                SizedBox(height: 10),
+                FittedBox(
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
                       ),
-                    ],
+                      backgroundColor: Colors.green[700],
+                      padding: EdgeInsets.fromLTRB(16.0, 12.0, 16.0, 12.0),
+                    ),
+                    onPressed: () {
+                      if (_avatarProvider.croppedImage != null) {
+                        _memberCreationProvider.currentMember.avatar = base64Encode(_avatarProvider.croppedImage!);
+                        _memberCreationProvider.currentMember.avatarName = _avatarProvider.pickedImageName;
+                      } else {
+                        _memberCreationProvider.currentMember.avatar = null;
+                        _memberCreationProvider.currentMember.avatarName = null;
+                      }
+                      Navigator.pop(context);
+                    },
+                    child: Row(
+                      children: <Widget>[
+                        Icon(Icons.check, color: Colors.white, size: 15),
+                        SizedBox(width: 5),
+                        Text(AppString.confirmSelection, style: TextStyle(color: Colors.white)),
+                      ],
+                    ),
                   ),
+                ),
               ],
             ),
           ),
@@ -253,7 +251,7 @@ class HolePainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final paint = Paint();
     paint.color = Colors.black38;
-    paint.blendMode = BlendMode.colorBurn;
+    paint.blendMode = BlendMode.darken;
     canvas.drawPath(
       Path.combine(
         PathOperation.difference,

@@ -17,24 +17,23 @@
  * along with CCTeam. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
-import 'package:flutter/widgets.dart';
 import 'package:logging/logging.dart';
 
-import '../models/member.dart';
-import '../services/members_service.dart';
 import 'login_provider.dart';
 import 'message_provider.dart';
 
 class AvatarProvider extends ChangeNotifier {
   final Logger _log = new Logger('AvatarProvider');
-  final MembersService _membersService = new MembersService();
 
   // chosen image file representing the avatar
-  File? _image;
+  File? _pickedImage;
+  String? _pickedImageName;
+
+  // cropped image of the avatar
+  Uint8List? _croppedImage;
 
   // login provider that can be set from the proxy provider
   late LoginProvider _loginProvider;
@@ -42,22 +41,27 @@ class AvatarProvider extends ChangeNotifier {
   // message provider that can be set from the proxy provider
   late MessageProvider _messageProvider;
 
-  // current member
-  late Member _currentMember;
+  File? get pickedImage => _pickedImage;
 
-  Member get currentMember => _currentMember;
+  String? get pickedImageName => _pickedImageName;
 
-  File? get image => _image;
+  Uint8List? get croppedImage => _croppedImage;
 
-  /// Load the specified [imageFile] representing the avatar
-  void loadImage(File? imageFile) async {
-    _image = imageFile;
+  /// Set the specified [imageFile] representing the avatar
+  void setPickedImage(File? imageFile) async {
+    _pickedImage = imageFile;
     _notifyListeners();
   }
 
-  /// Set the [member] to be edited.
-  void setMemberToEdit(Member member) {
-    _currentMember = member;
+  /// Set the specified [imageFileName] representing the avatar image file name
+  void setPickedImageName(String? imageFileName) async {
+    _pickedImageName = imageFileName;
+    _notifyListeners();
+  }
+
+  /// Load the specified [croppedImage] representing the cropped image avatar
+  void setCroppedImage(Uint8List? croppedImage) async {
+    _croppedImage = croppedImage;
     _notifyListeners();
   }
 
@@ -77,80 +81,5 @@ class AvatarProvider extends ChangeNotifier {
   void _notifyListeners() {
     _log.info("Notifying listeners of MemberCreationProvider");
     notifyListeners();
-  }
-
-  /// Upload the specified [avatar] file for the specified [member].
-  /// If the specified [member] is different from the current logged user, it means we are uploading an avatar as admin for a member.
-  /// If the specified [member] is the same as the current logged user, it means the current logged user is uploading an avatar.
-  Future<void> uploadAvatar(File avatar) async {
-    if (_loginProvider.loggedMember!.id != _currentMember.id) {
-      _log.fine("Uploaded avatar as admin for user ${_currentMember.email}");
-    }
-
-    final Member tmpMember = _currentMember;
-
-    await _membersService.uploadAvatar(avatar, tmpMember.id!).then((value) async {
-      _log.fine("Avatar uploaded successfully");
-
-      dynamic responseJson = json.decode(value);
-      final String uploadedFileName = responseJson['file'];
-
-      _log.fine("Avatar uploaded file name is : $uploadedFileName");
-
-      tmpMember.avatarUrl = uploadedFileName;
-      tmpMember.modifiedOn = DateTime.now();
-
-      _log.info("Sending user with new avatar : ${tmpMember.toString()}");
-
-      await _membersService.updateMember(tmpMember).then((value) {
-        _log.fine("Avatar updated for member : ${tmpMember.email}");
-        // current logged user avatar changed, update it
-        if (_loginProvider.loggedMember!.id == _currentMember.id) {
-          _loginProvider.loggedMember!.avatarUrl = tmpMember.avatarUrl;
-          _loginProvider.loggedMember!.modifiedOn = tmpMember.modifiedOn;
-          _notifyListeners();
-        }
-      }, onError: (error) {
-        _log.severe("Failed to update avatar for member ${tmpMember.email} ($error)");
-        throw (error);
-      });
-    }, onError: (error) {
-      _log.severe("Failed to upload avatar ($error)");
-      throw (error);
-    });
-  }
-
-  /// Delete the avatar of the specified [member].
-  /// If the current member is different from the current logged user, it means we are deleting an avatar as admin for a member.
-  /// If the current member is the same as the current logged user, it means the current logged user is deleting its avatar.
-  Future<void> deleteAvatar() async {
-    if (_loginProvider.loggedMember!.id != _currentMember.id) {
-      _log.fine("Deleting avatar as admin for user ${_currentMember.email}");
-    }
-
-    final Member tmpMember = _currentMember;
-
-    await _membersService.deleteAvatar(_currentMember.id!).then((value) async {
-      _log.fine("Avatar file deleted successfully from server");
-
-      tmpMember.avatarUrl = null;
-      tmpMember.modifiedOn = DateTime.now();
-
-      await _membersService.updateMember(tmpMember).then((value) {
-        _log.fine("Avatar deleted for member : ${tmpMember.email}");
-        // current logged user avatar deleted, update it
-        if (_loginProvider.loggedMember!.id == _currentMember.id) {
-          _loginProvider.loggedMember!.avatarUrl = null;
-          _loginProvider.loggedMember!.modifiedOn = tmpMember.modifiedOn;
-        }
-        _notifyListeners();
-      }, onError: (error) {
-        _log.severe("Failed to delete avatar for member ${tmpMember.email} ($error)");
-        throw (error);
-      });
-    }, onError: (error) {
-      _log.severe("Failed to delete avatar ($error)");
-      throw (error);
-    });
   }
 }

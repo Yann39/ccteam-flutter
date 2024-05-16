@@ -17,10 +17,11 @@
  * along with CCTeam. If not, see <http://www.gnu.org/licenses/>.
  */
 
+import 'dart:convert';
+
 import 'package:ccteam/models/member.dart';
 import 'package:ccteam/providers/login_provider.dart';
 import 'package:ccteam/providers/record_list_provider.dart';
-import 'package:ccteam/utils/constants.dart';
 import 'package:ccteam/utils/custom_icons.dart';
 import 'package:ccteam/utils/strings.dart';
 import 'package:flutter/material.dart';
@@ -37,7 +38,8 @@ class MainDrawer extends StatelessWidget {
   /// Method that launches the Edit Member screen and awaits the result from Navigator.pop
   _navigateToEditMemberScreen(BuildContext context, Member member) async {
     // set the member to edit
-    Provider.of<MemberCreationProvider>(context, listen: false).setMemberToEdit(member);
+    final Member newMember = Member.fromJson(member.toJson());
+    Provider.of<MemberCreationProvider>(context, listen: false).setMemberToEdit(newMember);
 
     // navigate to the edit member screen
     Navigator.pushNamed(context, '/addEditMember');
@@ -83,26 +85,24 @@ class MainDrawer extends StatelessWidget {
                   currentAccountPicture: Container(
                     decoration: ShapeDecoration(shape: CircleBorder(), color: Colors.white),
                     padding: EdgeInsets.all(2.0),
-                    child: _loginProvider.loggedMember!.avatarUrl != null &&
-                        _loginProvider.loggedMember!.avatarUrl!.length > 0
+                    child: _loginProvider.loggedMember!.avatar != null
                         ? CircleAvatar(
-                      backgroundColor: Colors.blue[100],
-                      backgroundImage:
-                      NetworkImage("$SERVER_AVATAR_FOLDER${_loginProvider.loggedMember!.avatarUrl}"),
-                    )
+                            backgroundColor: Colors.blue[100],
+                            backgroundImage: MemoryImage(base64Decode(_loginProvider.loggedMember!.avatar!)),
+                          )
                         : CircleAvatar(
-                      backgroundColor: Colors.blue[100],
-                      child: ShaderMask(
-                        blendMode: BlendMode.srcATop,
-                        shaderCallback: (bounds) => LinearGradient(
-                          begin: const FractionalOffset(0.0, 0.0),
-                          end: const FractionalOffset(0.0, 1.0),
-                          stops: [0.0, 1.0],
-                          colors: [Colors.red[700]!, Colors.blue[700]!],
-                        ).createShader(bounds),
-                        child: Icon(CustomIcons.pilot, size: 50, color: Colors.white),
-                      ),
-                    ),
+                            backgroundColor: Colors.blue[100],
+                            child: ShaderMask(
+                              blendMode: BlendMode.srcATop,
+                              shaderCallback: (bounds) => LinearGradient(
+                                begin: const FractionalOffset(0.0, 0.0),
+                                end: const FractionalOffset(0.0, 1.0),
+                                stops: [0.0, 1.0],
+                                colors: [Colors.red[700]!, Colors.blue[700]!],
+                              ).createShader(bounds),
+                              child: Icon(CustomIcons.pilot, size: 50, color: Colors.white),
+                            ),
+                          ),
                   ),
                 ),
                 Container(
@@ -155,7 +155,8 @@ class MainDrawer extends StatelessWidget {
                     title: Text(AppString.myChronos, style: TextStyle(color: Colors.black)),
                     onTap: () {
                       // fetch member records
-                      Provider.of<RecordListProvider>(context, listen: false).fetchMemberRecords(_loginProvider.loggedMember!.id!);
+                      Provider.of<RecordListProvider>(context, listen: false)
+                          .fetchMemberRecords(_loginProvider.loggedMember!.id!);
                       Navigator.pushNamed(context, '/memberChronos');
                     },
                   ),
@@ -188,7 +189,10 @@ class MainDrawer extends StatelessWidget {
                       Icons.lock,
                       color: Colors.red[900],
                     ),
-                    trailing: Icon(Icons.arrow_right, color: Colors.black,),
+                    trailing: Icon(
+                      Icons.arrow_right,
+                      color: Colors.black,
+                    ),
                     title: Text(AppString.disconnect, style: TextStyle(color: Colors.black)),
                     onTap: () {
                       _logout(context);

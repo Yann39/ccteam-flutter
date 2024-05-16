@@ -26,6 +26,7 @@ import 'package:ccteam/utils/custom_decorations.dart';
 import 'package:ccteam/utils/custom_icons.dart';
 import 'package:ccteam/utils/date_utils.dart';
 import 'package:ccteam/utils/strings.dart';
+import 'package:ccteam/widgets/loading_content.dart';
 import 'package:ccteam/widgets/save_cancel_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -90,7 +91,8 @@ class _AddEditRecordState extends State<AddEditRecord> {
       // this invokes each onSaved event
       form.save();
 
-      Provider.of<RecordCreationProvider>(context, listen: false).record.member = Provider.of<LoginProvider>(context, listen: false).loggedMember;
+      Provider.of<RecordCreationProvider>(context, listen: false).record.member =
+          Provider.of<LoginProvider>(context, listen: false).loggedMember;
 
       // submit data to backend, if id is set this is an update, else a creation
       if (Provider.of<RecordCreationProvider>(context, listen: false).record.id != null) {
@@ -196,7 +198,6 @@ class _AddEditRecordState extends State<AddEditRecord> {
       children: <Widget>[
         Container(
           padding: const EdgeInsets.only(top: 0, left: 16.0, right: 16.0, bottom: 56.0),
-          decoration: CustomDecorations.mainContent,
           child: Form(
             autovalidateMode: AutovalidateMode.disabled,
             key: _formKey,
@@ -238,15 +239,22 @@ class _AddEditRecordState extends State<AddEditRecord> {
         actions: MediaQuery.of(context).orientation == Orientation.portrait ? null : actionMenu,
       ),
       body: MediaQuery.of(context).orientation == Orientation.portrait
-          ? Stack(
-              alignment: Alignment.topCenter,
-              children: <Widget>[
-                listView,
-                SaveCancelBar(
-                  saveFunction: () => submitForm(),
-                  cancelFunction: () => Navigator.pop(context),
+          ? Container(
+              decoration: CustomDecorations.mainContent,
+              child: LoadingContent(
+                loadingStatus: _recordCreationProvider.loadingStatus,
+                emptyText: AppString.contentNotLoaded,
+                child: Stack(
+                  alignment: Alignment.topCenter,
+                  children: <Widget>[
+                    listView,
+                    SaveCancelBar(
+                      saveFunction: () => submitForm(),
+                      cancelFunction: () => Navigator.pop(context),
+                    ),
+                  ],
                 ),
-              ],
+              ),
             )
           : listView,
     );

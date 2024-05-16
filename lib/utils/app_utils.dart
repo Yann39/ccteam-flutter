@@ -48,10 +48,10 @@ class AppUtils {
     launchUrl(uri);
   }
 
-  /// Return the message string from a given [Exception].
-  /// By default the [Exception]'s [toString] method appends "Exception: " string before the message,
+  /// Return the message string from a given exception.
+  /// By default [Exception]'s [toString] method appends "Exception: " string before the message,
   /// so simply remove it.
-  static String extractExceptionMessage(Exception exception) {
+  static String extractExceptionMessage(dynamic exception) {
     return exception.toString().substring(11);
   }
 

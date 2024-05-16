@@ -68,18 +68,6 @@ class MemberCreationProvider extends ChangeNotifier {
     _updateStatus(LoadingStatus.loaded);
   }
 
-  /// Update the avatar of the specified [member] in the current member list
-  void updateMemberAvatar(String avatarUrl) {
-    _currentMember.avatarUrl = avatarUrl;
-    _notifyListeners();
-  }
-
-  /// Remove the avatar of the specified [member] in the current member list
-  void resetMemberAvatar() {
-    _currentMember.avatarUrl = null;
-    _notifyListeners();
-  }
-
   /// Create the current member being edited.
   Future<void> createMember() async {
     _updateStatus(LoadingStatus.loading);

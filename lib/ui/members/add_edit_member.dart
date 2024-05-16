@@ -17,12 +17,13 @@
  * along with CCTeam. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import 'package:ccteam/models/member.dart';
+import 'dart:convert';
+import 'dart:io';
+
 import 'package:ccteam/providers/avatar_provider.dart';
 import 'package:ccteam/providers/member_creation_provider.dart';
 import 'package:ccteam/providers/member_detail_provider.dart';
 import 'package:ccteam/providers/member_list_provider.dart';
-import 'package:ccteam/utils/constants.dart';
 import 'package:ccteam/utils/custom_decorations.dart';
 import 'package:ccteam/utils/custom_icons.dart';
 import 'package:ccteam/utils/string_utils.dart';
@@ -76,7 +77,7 @@ class _AddEditMemberState extends State<AddEditMember> {
   }
 
   /// Validate the form then submit data to backend
-  void submitForm(Member member) {
+  void submitForm(MemberCreationProvider memberCreationProvider) {
     final FormState form = _formKey.currentState!;
 
     if (!form.validate()) {
@@ -86,20 +87,18 @@ class _AddEditMemberState extends State<AddEditMember> {
       // this invokes each onSaved event
       form.save();
 
-      final MemberCreationProvider _memberCreationProvider =
-          Provider.of<MemberCreationProvider>(context, listen: false);
       final MemberListProvider _memberListProvider = Provider.of<MemberListProvider>(context, listen: false);
       final MemberDetailProvider _memberDetailProvider = Provider.of<MemberDetailProvider>(context, listen: false);
 
       // submit data to backend, if id is set this is an update, else a creation
-      if (member.id != null) {
-        _memberCreationProvider.updateMember().then((value) {
-          _memberListProvider.updateMemberInList(_memberCreationProvider.currentMember);
-          _memberDetailProvider.setCurrentMember(_memberCreationProvider.currentMember);
+      if (memberCreationProvider.currentMember.id != null) {
+        memberCreationProvider.updateMember().then((value) {
+          _memberListProvider.updateMemberInList(memberCreationProvider.currentMember);
+          _memberDetailProvider.setCurrentMember(memberCreationProvider.currentMember);
         });
       } else {
-        _memberCreationProvider.createMember().then((value) {
-          _memberListProvider.addMemberInList(_memberCreationProvider.currentMember);
+        memberCreationProvider.createMember().then((value) {
+          _memberListProvider.addMemberInList(memberCreationProvider.currentMember);
         });
       }
       Navigator.pop(context);
@@ -107,8 +106,8 @@ class _AddEditMemberState extends State<AddEditMember> {
   }
 
   Widget build(BuildContext context) {
-    final _memberCreationProvider = Provider.of<MemberCreationProvider>(context, listen: true);
-    final AvatarProvider _drawerProvider = Provider.of<AvatarProvider>(context, listen: false);
+    final MemberCreationProvider _memberCreationProvider = Provider.of<MemberCreationProvider>(context, listen: true);
+    final AvatarProvider _avatarProvider = Provider.of<AvatarProvider>(context, listen: false);
 
     final firstNameField = TextFormField(
       decoration: const InputDecoration(
@@ -216,16 +215,18 @@ class _AddEditMemberState extends State<AddEditMember> {
       children: <Widget>[
         InkWell(
           onTap: () {
-            _drawerProvider.loadImage(null);
-            Provider.of<AvatarProvider>(context, listen: false).setMemberToEdit(_memberCreationProvider.currentMember);
+            // set default picked and cropped image to existing image
+            if (_memberCreationProvider.currentMember.avatar != null) {
+              _avatarProvider.setPickedImage(
+                  File.fromRawPath(base64Decode(_memberCreationProvider.currentMember.avatar!)));
+              _avatarProvider.setCroppedImage(base64Decode(_memberCreationProvider.currentMember.avatar!));
+            }
             Navigator.of(context).pushNamed('/editAvatar');
           },
-          child: _memberCreationProvider.currentMember.avatarUrl != null &&
-                  _memberCreationProvider.currentMember.avatarUrl!.length > 0
+          child: _memberCreationProvider.currentMember.avatar != null
               ? CircleAvatar(
                   radius: 60,
-                  backgroundImage:
-                      NetworkImage("$SERVER_AVATAR_FOLDER${_memberCreationProvider.currentMember.avatarUrl}"),
+                  backgroundImage: MemoryImage(base64Decode(_memberCreationProvider.currentMember.avatar!)),
                 )
               : CircleAvatar(
                   radius: 60,
@@ -251,10 +252,13 @@ class _AddEditMemberState extends State<AddEditMember> {
             backgroundColor: Colors.red[700],
             child: Icon(Icons.edit, size: 12, color: Colors.white),
             onPressed: () {
-              _drawerProvider.loadImage(null);
-              Provider.of<AvatarProvider>(context, listen: false)
-                  .setMemberToEdit(_memberCreationProvider.currentMember);
-              Navigator.of(context).pushNamed('/editAvatar');
+              // set default picked and cropped image to existing image
+              if (_memberCreationProvider.currentMember.avatar != null) {
+                _avatarProvider.setPickedImage(
+                    File.fromRawPath(base64Decode(_memberCreationProvider.currentMember.avatar!)));
+                _avatarProvider.setCroppedImage(base64Decode(_memberCreationProvider.currentMember.avatar!));
+                Navigator.of(context).pushNamed('/editAvatar');
+              }
             },
           ),
         ),
@@ -329,7 +333,7 @@ class _AddEditMemberState extends State<AddEditMember> {
           AppString.save.toUpperCase(),
           style: TextStyle(color: Colors.white),
         ),
-        onPressed: () => submitForm(_memberCreationProvider.currentMember),
+        onPressed: () => submitForm(_memberCreationProvider),
       ),
     ];
 
@@ -347,7 +351,7 @@ class _AddEditMemberState extends State<AddEditMember> {
                 children: <Widget>[
                   listView,
                   SaveCancelBar(
-                    saveFunction: () => submitForm(_memberCreationProvider.currentMember),
+                    saveFunction: () => submitForm(_memberCreationProvider),
                     cancelFunction: () => Navigator.pop(context),
                   ),
                 ],

@@ -105,7 +105,8 @@ class MembersService {
           id
           firstName
           lastName
-          avatarUrl
+          avatarFile
+          avatarFileName
           bike
           admin
         }
@@ -157,7 +158,8 @@ class MembersService {
           lastName
           email
           phone
-          avatarUrl
+          avatarFile
+          avatarFileName
           bike
           admin
           active
@@ -217,7 +219,8 @@ class MembersService {
           lastName
           email
           phone
-          avatarUrl
+          avatarFile
+          avatarFileName
           bike
           admin
           registrationDate
@@ -250,7 +253,6 @@ class MembersService {
           if (result.data!['getMemberByEmail'] == null) {
             throw CustomGraphQlException("member_not_found", "Member not found");
           }
-          print(result.data!['getMemberByEmail']);
           return Member.fromJson(result.data!['getMemberByEmail']);
         }
       },
@@ -266,13 +268,14 @@ class MembersService {
     _log.info("Creating member ${member.email} ...");
 
     final String query = """
-      mutation CreateMember(\$firstName: String!, \$lastName: String!, \$email: String!, \$phone: String, \$avatarUrl: String, \$bike: String, \$active: Boolean!, \$admin: Boolean!) {
+      mutation CreateMember(\$firstName: String!, \$lastName: String!, \$email: String!, \$phone: String, \$avatarFile: String, \$avatarFileName: String, \$bike: String, \$active: Boolean!, \$admin: Boolean!) {
         createMember(
           firstName: \$firstName
           lastName: \$lastName
           email: \$email
           phone: \$phone
-          avatarUrl: \$avatarUrl
+          avatarFile: \$avatarFile
+          avatarFileName: \$avatarFileName
           bike: \$bike
           active: \$active
           admin: \$admin
@@ -282,7 +285,8 @@ class MembersService {
           lastName
           email
           phone
-          avatarUrl
+          avatarFile
+          avatarFileName
           bike
           active
           admin
@@ -306,7 +310,8 @@ class MembersService {
         'lastName': member.lastName,
         'email': member.email,
         'phone': member.phone,
-        'avatarUrl': member.avatarUrl,
+        'avatarFile': member.avatar,
+        'avatarFileName': member.avatarName,
         'bike': member.bike,
         'active': member.active,
         'admin': member.admin
@@ -329,14 +334,15 @@ class MembersService {
     _log.info("Updating member ${member.email} ...");
 
     final String query = """
-      mutation UpdateMember(\$memberId: Long!, \$firstName: String!, \$lastName: String!, \$email: String!, \$phone: String, \$avatarUrl: String, \$bike: String, \$active: Boolean!, \$admin: Boolean!) {
+      mutation UpdateMember(\$memberId: Long!, \$firstName: String!, \$lastName: String!, \$email: String!, \$phone: String, \$avatarFile: String, \$avatarFileName: String, \$bike: String, \$active: Boolean!, \$admin: Boolean!) {
         updateMember(
           memberId: \$memberId
           firstName: \$firstName
           lastName: \$lastName
           email: \$email
           phone: \$phone
-          avatarUrl: \$avatarUrl
+          avatarFile: \$avatarFile
+          avatarFileName: \$avatarFileName
           bike: \$bike
           active: \$active
           admin: \$admin
@@ -346,7 +352,8 @@ class MembersService {
           lastName
           email
           phone
-          avatarUrl
+          avatarFile
+          avatarFileName
           bike
           active
           admin
@@ -371,7 +378,8 @@ class MembersService {
         'lastName': member.lastName,
         'email': member.email,
         'phone': member.phone,
-        'avatarUrl': member.avatarUrl,
+        'avatarFile': member.avatar,
+        'avatarFileName': member.avatarName,
         'bike': member.bike,
         'active': member.active,
         'admin': member.admin
@@ -404,7 +412,8 @@ class MembersService {
           lastName
           email
           phone
-          avatarUrl
+          avatarFile
+          avatarFileName
           bike
           active
           admin

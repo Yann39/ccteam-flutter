@@ -33,7 +33,6 @@ class GalleriesService {
     final response = await http.get(Uri.parse(API_BASE_URL + API_GET_ALL_GALLERIES_ENDPOINT));
 
     if (response.statusCode == 200) {
-      print(response.body);
       // if the call to the server was successful, parse the JSON and return content
       dynamic responseJson = json.decode(response.body);
       return (responseJson['records'] as List).map((p) => Gallery.fromJson(p)).toList();

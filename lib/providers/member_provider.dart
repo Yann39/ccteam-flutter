@@ -89,26 +89,6 @@ class MemberProvider extends ChangeNotifier {
     });
   }
 
-  /// Update the avatar of the specified [member] in the current member list
-  void updateMemberAvatar(Member member) {
-    // do the update only if member is in the current member list (list could has not been fetched yet or could be filtered)
-    if (_members.any((m) => m.id == member.id)) {
-      _members.singleWhere((m) => m.id == member.id).avatarUrl = member.avatarUrl;
-      _log.info("Notifying listeners of MemberProvider");
-      notifyListeners();
-    }
-  }
-
-  /// Remove the avatar of the specified [member] in the current member list
-  void resetMemberAvatar(Member member) {
-    // do the update only if member is in the current member list (list could has not been fetched yet or could be filtered)
-    if (_members.any((m) => m.id == member.id)) {
-      _members.singleWhere((m) => m.id == member.id).avatarUrl = null;
-      _log.info("Notifying listeners of MemberProvider");
-      notifyListeners();
-    }
-  }
-
   /// Create the specified [member]
   Future<void> createMember(Member member) async {
     await _membersService.createMember(member).then((value) {

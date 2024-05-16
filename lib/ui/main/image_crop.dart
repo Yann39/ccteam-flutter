@@ -17,8 +17,6 @@
  * along with CCTeam. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import 'dart:io';
-
 import 'package:ccteam/providers/avatar_provider.dart';
 import 'package:ccteam/utils/strings.dart';
 import 'package:crop_your_image/crop_your_image.dart';
@@ -30,7 +28,7 @@ class ImageCrop extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final _drawerProvider = Provider.of<AvatarProvider>(context, listen: false);
+    final _avatarProvider = Provider.of<AvatarProvider>(context, listen: true);
 
     return Scaffold(
       appBar: AppBar(
@@ -39,19 +37,22 @@ class ImageCrop extends StatelessWidget {
       ),
       body: Center(
         child: Crop(
-          image: _drawerProvider.image!.readAsBytesSync(),
+          image: _avatarProvider.pickedImage!.readAsBytesSync(),
           controller: _controller,
           progressIndicator: CircularProgressIndicator(),
           onCropped: (image) {
             // do something with cropped image data
-            _drawerProvider.loadImage(File.fromRawPath(image));
+            _avatarProvider.setCroppedImage(image);
             Navigator.pop(context);
           },
+          withCircleUi: true,
+          initialSize: 0.5,
+          baseColor: Colors.black54,
         ),
       ),
       floatingActionButton: FloatingActionButton(
         backgroundColor: Colors.red[700],
-        onPressed: () => _controller.crop(),
+        onPressed: () => _controller.cropCircle(),
         child: Icon(Icons.check),
       ),
     );

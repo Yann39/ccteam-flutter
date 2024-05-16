@@ -51,7 +51,8 @@ class EventsService {
               id
               firstName
               lastName
-              avatarUrl
+              avatarFile
+              avatarFileName
             }
           }
         }
@@ -237,7 +238,6 @@ class EventsService {
         ))
         .then(
       (result) {
-        print(result);
         final List<Event> events = [];
         if (result.hasException) {
           throw AppUtils.handleGraphQlException(result)!;

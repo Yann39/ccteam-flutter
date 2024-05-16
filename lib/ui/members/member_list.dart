@@ -17,6 +17,8 @@
  * along with CCTeam. If not, see <http://www.gnu.org/licenses/>.
  */
 
+import 'dart:convert';
+
 import 'package:ccteam/models/member.dart';
 import 'package:ccteam/providers/member_creation_provider.dart';
 import 'package:ccteam/providers/member_detail_provider.dart';
@@ -94,11 +96,10 @@ class MemberList extends StatelessWidget {
                           title: Text(
                               "${_memberListProvider.memberList[index].firstName} ${_memberListProvider.memberList[index].lastName}"),
                           subtitle: Text(_memberListProvider.memberList[index].bike ?? AppString.notDefined),
-                          leading: _memberListProvider.memberList[index].avatarUrl != null &&
-                                  _memberListProvider.memberList[index].avatarUrl!.length > 0
+                          leading: _memberListProvider.memberList[index].avatar != null
                               ? CircleAvatar(
-                                  backgroundImage: NetworkImage(
-                                      "$SERVER_AVATAR_FOLDER${_memberListProvider.memberList[index].avatarUrl}"))
+                                  backgroundImage:
+                                      MemoryImage(base64Decode(_memberListProvider.memberList[index].avatar!)))
                               : CircleAvatar(
                                   child: Text(
                                     _memberListProvider.memberList[index].firstName![0],

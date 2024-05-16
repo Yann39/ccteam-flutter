@@ -17,13 +17,14 @@
  * along with CCTeam. If not, see <http://www.gnu.org/licenses/>.
  */
 
+import 'dart:convert';
+
 import 'package:ccteam/models/event.dart';
 import 'package:ccteam/models/member.dart';
 import 'package:ccteam/providers/event_creation_provider.dart';
 import 'package:ccteam/providers/event_detail_provider.dart';
 import 'package:ccteam/providers/event_list_provider.dart';
 import 'package:ccteam/providers/member_detail_provider.dart';
-import 'package:ccteam/utils/constants.dart';
 import 'package:ccteam/utils/custom_decorations.dart';
 import 'package:ccteam/utils/custom_icons.dart';
 import 'package:ccteam/utils/string_utils.dart';
@@ -360,29 +361,26 @@ class EventDetail extends StatelessWidget {
                                             padding: EdgeInsets.all(2.0),
                                             margin: EdgeInsets.symmetric(horizontal: 12.0),
                                             decoration: ShapeDecoration(shape: CircleBorder(), color: Colors.white70),
-                                            child: _eventDetailProvider
-                                                            .currentEvent.participants![index].member!.avatarUrl !=
-                                                        null &&
-                                                    _eventDetailProvider
-                                                            .currentEvent.participants![index].member!.avatarUrl !=
+                                            child:
+                                                _eventDetailProvider.currentEvent.participants![index].member!.avatar !=
                                                         null
-                                                ? CircleAvatar(
-                                                    backgroundColor: Colors.blue[100],
-                                                    backgroundImage: NetworkImage(
-                                                        "$SERVER_AVATAR_FOLDER${_eventDetailProvider.currentEvent.participants![index].member!.avatarUrl}"),
-                                                  )
-                                                : CircleAvatar(
-                                                    backgroundColor: Colors.blue[100],
-                                                    child: ShaderMask(
-                                                      shaderCallback: (bounds) => LinearGradient(
-                                                        begin: const FractionalOffset(0.0, 0.0),
-                                                        end: const FractionalOffset(0.0, 1.0),
-                                                        stops: [0.0, 1.0],
-                                                        colors: [Colors.red[300]!, Colors.white],
-                                                      ).createShader(bounds),
-                                                      child: Icon(CustomIcons.pilot, size: 50),
-                                                    ),
-                                                  ),
+                                                    ? CircleAvatar(
+                                                        backgroundColor: Colors.blue[100],
+                                                        backgroundImage: MemoryImage(base64Decode(_eventDetailProvider
+                                                            .currentEvent.participants![index].member!.avatar!)),
+                                                      )
+                                                    : CircleAvatar(
+                                                        backgroundColor: Colors.blue[100],
+                                                        child: ShaderMask(
+                                                          shaderCallback: (bounds) => LinearGradient(
+                                                            begin: const FractionalOffset(0.0, 0.0),
+                                                            end: const FractionalOffset(0.0, 1.0),
+                                                            stops: [0.0, 1.0],
+                                                            colors: [Colors.red[300]!, Colors.white],
+                                                          ).createShader(bounds),
+                                                          child: Icon(CustomIcons.pilot, size: 50),
+                                                        ),
+                                                      ),
                                           ),
                                         ),
                                         SizedBox(height: 5.0),

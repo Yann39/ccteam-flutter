@@ -29,7 +29,8 @@ class Member {
   String? email;
   String? password;
   String? phone;
-  String? avatarUrl;
+  String? avatar;
+  String? avatarName;
   String? bike;
   bool? active;
   bool? verified;
@@ -48,7 +49,8 @@ class Member {
     this.email,
     this.password,
     this.phone,
-    this.avatarUrl,
+    this.avatar,
+    this.avatarName,
     this.bike,
     this.active = false,
     this.verified = false,
@@ -70,7 +72,8 @@ class Member {
       email: ${this.email},
       password: ${this.password},
       phone: ${this.phone},
-      avatarUrl: ${this.avatarUrl},
+      avatar: ${this.avatar},
+      avatarName: ${this.avatarName},
       bike: ${this.bike},
       active: ${this.active},
       verified: ${this.verified},
@@ -92,7 +95,8 @@ class Member {
         email = json['email'],
         password = json['password'],
         phone = json['phone'],
-        avatarUrl = json['avatarUrl'],
+        avatar = json['avatarFile'],
+        avatarName = json['avatarFileName'],
         bike = json['bike'],
         active = json['active'] != null && (json['active'] == '1'),
         verified = json['verified'] != null && (json['verified'] == '1'),
@@ -114,7 +118,8 @@ class Member {
         "email": email,
         "password": password,
         "phone": phone,
-        "avatarUrl": avatarUrl,
+        "avatarFile": avatar,
+        "avatarFileName": avatarName,
         "bike": bike,
         "active": active,
         "verified": verified,

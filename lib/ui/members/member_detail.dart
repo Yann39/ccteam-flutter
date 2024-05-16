@@ -17,6 +17,7 @@
  * along with CCTeam. If not, see <http://www.gnu.org/licenses/>.
  */
 
+import 'dart:convert';
 import 'dart:math';
 
 import 'package:cached_network_image/cached_network_image.dart';
@@ -28,7 +29,6 @@ import 'package:ccteam/providers/member_detail_provider.dart';
 import 'package:ccteam/providers/member_list_provider.dart';
 import 'package:ccteam/providers/record_list_provider.dart';
 import 'package:ccteam/utils/app_utils.dart';
-import 'package:ccteam/utils/constants.dart';
 import 'package:ccteam/utils/custom_decorations.dart';
 import 'package:ccteam/utils/custom_icons.dart';
 import 'package:ccteam/utils/date_utils.dart';
@@ -481,12 +481,11 @@ class MemberDetail extends StatelessWidget {
                               child: Container(
                                 decoration: ShapeDecoration(shape: CircleBorder(), color: Colors.white),
                                 padding: EdgeInsets.all(3.0),
-                                child: _memberDetailProvider.currentMember!.avatarUrl != null &&
-                                        _memberDetailProvider.currentMember!.avatarUrl!.length > 0
+                                child: _memberDetailProvider.currentMember!.avatar != null
                                     ? CircleAvatar(
                                         radius: 50,
-                                        backgroundImage: NetworkImage(
-                                            "$SERVER_AVATAR_FOLDER${_memberDetailProvider.currentMember!.avatarUrl}"),
+                                        backgroundImage:
+                                            MemoryImage(base64Decode(_memberDetailProvider.currentMember!.avatar!)),
                                       )
                                     : CircleAvatar(
                                         radius: 50,
