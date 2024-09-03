@@ -79,8 +79,8 @@ class _PasscodeWidgetState extends State<PasscodeWidget> {
               return;
             }
             // update the provider, so we can update the digits indicator
-            loginProvider.firstPassCode =
-                ((passcodeProvider.firstPassCode != null ? passcodeProvider.firstPassCode! : "") + "$digitId");
+            passcodeProvider.firstPassCode =
+                (passcodeProvider.firstPassCode != null ? passcodeProvider.firstPassCode! : "") + "$digitId";
           }
           // passcode creation 2nd step (confirmation)
           else if (loginProvider.loginStatus == LoginStatus.ConfirmPasscodeStep) {

@@ -46,10 +46,10 @@ class _OtpFormState extends State<OtpForm> {
   }
 
   // OTP digits
-  late String _otpDigit0;
-  late String _otpDigit1;
-  late String _otpDigit2;
-  late String _otpDigit3;
+  String? _otpDigit0;
+  String? _otpDigit1;
+  String? _otpDigit2;
+  String? _otpDigit3;
 
   // each OTP digit will be attributed a focus node so we can focus next field automatically when typing
   var _otpFocusNodes = List.generate(4, (index) => FocusNode());

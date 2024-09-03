@@ -329,9 +329,9 @@ class LoginProvider extends ChangeNotifier {
   }
 
   /// Complete user registration according to the specified member information.
-  Future<void> completeRegistration() async {
+  Future<void> completeRegistration(String passcode) async {
     _log.info("Completing registration of user $_email");
-    await _membersService.completeRegistration(_email!, _firstPassCode!).timeout(Duration(seconds: 5)).then(
+    await _membersService.completeRegistration(_email!, passcode).timeout(Duration(seconds: 5)).then(
         (response) async {
       // account has been created successfully
       if (response.statusCode == 200) {

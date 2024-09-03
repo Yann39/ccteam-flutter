@@ -24,6 +24,7 @@ import 'package:flutter/material.dart';
 import 'package:logging/logging.dart';
 import 'package:provider/provider.dart';
 
+import '../../providers/passcode_provider.dart';
 import '../../widgets/passcode.dart';
 
 class ConfirmPasscodeForm extends StatefulWidget {
@@ -38,15 +39,14 @@ class _ConfirmPasscodeFormState extends State<ConfirmPasscodeForm> {
   /// It updates the login step status according to the result.
   _doCompleteRegistration(BuildContext context) async {
     // check that the 2 passcodes match
-    if (Provider.of<LoginProvider>(context, listen: false).firstPassCode !=
-        Provider.of<LoginProvider>(context, listen: false).secondPassCode) {
+    if (Provider.of<PasscodeProvider>(context, listen: false).firstPassCode !=
+        Provider.of<PasscodeProvider>(context, listen: false).secondPassCode) {
       _log.severe("Passcodes do not match");
     } else {
       // set password
-      Provider.of<LoginProvider>(context, listen: false).loggedMember!.password =
-          Provider.of<LoginProvider>(context, listen: false).secondPassCode;
+      //Provider.of<LoginProvider>(context, listen: false).loggedMember!.password = Provider.of<PasscodeProvider>(context, listen: false).secondPassCode;
       // complete registration
-      Provider.of<LoginProvider>(context, listen: false).completeRegistration().then((value) {}, onError: (error) {
+      Provider.of<LoginProvider>(context, listen: false).completeRegistration(Provider.of<PasscodeProvider>(context, listen: false).secondPassCode!).then((value) {}, onError: (error) {
         _log.severe(error.toString());
       });
     }

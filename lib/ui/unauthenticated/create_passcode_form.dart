@@ -41,7 +41,6 @@ class _CreatePasscodeFormState extends State<CreatePasscodeForm> {
 
   /// Method that update the current login status to go to the confirm passcode step
   _goToConfirmPasscode() {
-    _log.info("passcode is ${Provider.of<LoginProvider>(context, listen: false).firstPassCode}");
     Provider.of<LoginProvider>(context, listen: false).goToConfirmPassword();
   }
 
