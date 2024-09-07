@@ -229,7 +229,7 @@ class LoginProvider extends ChangeNotifier {
       // member successfully created but the confirmation e-mail failed to be sent
       else if (response.statusCode == 207) {
         _setLoginStatus(LoginStatus.OtpStep);
-        _messageProvider.setMessage(AppString.preRegisterConfirmationEmailNotSent, MessageType.WARNING);
+        _messageProvider.setMessage(AppString.format(AppString.preRegisterConfirmationEmailNotSent, [_email!]), MessageType.WARNING);
       }
       // unexpected status code
       else {
