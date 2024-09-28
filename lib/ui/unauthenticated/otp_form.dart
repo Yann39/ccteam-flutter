@@ -84,9 +84,7 @@ class _OtpFormState extends State<OtpForm> {
       _log.info("OTP to be sent ${Provider.of<LoginProvider>(context, listen: false).otp}");
 
       // check OTP
-      Provider.of<LoginProvider>(context, listen: false).confirmEmail().then((value) {}, onError: (error) {
-        _log.severe(error.toString());
-      });
+      Provider.of<LoginProvider>(context, listen: false).confirmEmail();
     }
   }
 
@@ -276,8 +274,6 @@ class _OtpFormState extends State<OtpForm> {
                     _loginProvider.resendOtp().then((value) {
                       // OTP resent, restart countdown timer
                       _timerProvider.startNewCountDown(600);
-                    }, onError: (error) {
-                      _log.severe(error.toString());
                     });
                   },
                   child: _loginProvider.loginStatus == LoginStatus.Loading

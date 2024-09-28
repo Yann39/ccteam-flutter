@@ -49,6 +49,7 @@ class AppString {
   static const String finish = 'Terminer';
   static const String createAccount = 'Créer un compte';
   static const String enterPasscode = 'Saisissez votre passcode';
+  static const String createYourPasscode = 'Création de votre passcode';
   static const String useAnotherEmailAddress = 'Utiliser une autre adresse e-mail';
   static const String emailAddressVerification = 'Vérification de l\'adresse e-mail';
   static const String codeNotReceived = 'Code non reçu ?';
@@ -108,8 +109,38 @@ class AppString {
       "Le code de confirmation n'a pas pu être envoyé à l'adresse {0}. Veuillez vérifier que l'adresse e-mail est correcte puis renvoyez le code";
   static const String preRegisterUnexpectedResponse =
       "Une erreur inattendue est survenue lors de la création de votre compte. Si le problème persite, contactez un administrateur";
+  static const String preRegisterMissingData =
+      "Des données sont manquantes, vérifiez que vous avez bien rempli tous les champs obligatoires. Si le problème persite, contactez un administrateur";
   static const String preRegisterError =
       "Une erreur inattendue est survenue lors de la création de votre compte. Si le problème persite, contactez un administrateur";
+
+  static const String resendOtpMissingData =
+      "Des données sont manquantes, vérifiez que vous avez bien rempli tous les champs obligatoires. Si le problème persite, contactez un administrateur";
+  static const String resendOtpNoAccountFound = "Aucun compte trouvé avec l'adresse e-mail spécifiée";
+  static const String resendOtpEmailNotSent =
+      "Le code de confirmation n'a pas pu être envoyé à l'adresse {0}. Veuillez vérifier que l'adresse e-mail est correcte puis renvoyez le code";
+  static const String resendOtpUnexpectedResponse =
+      "Une erreur s'est produite lors de l'envoi de votre code, si le problème persite, contactez un administrateur";
+  static const String resendOtpError =
+      "Une erreur inattendue est survenue lors du renvoi du code. Si le problème persite, contactez un administrateur";
+
+  static const String confirmEmailMissingData =
+      "Des données sont manquantes, vérifiez que vous avez bien rempli tous les champs obligatoires. Si le problème persite, contactez un administrateur";
+  static const String confirmEmailNoAccountFound = "Aucun compte trouvé avec l'adresse e-mail spécifiée";
+  static const String confirmEmailOtpExpired = "Le code indiqué a expiré";
+  static const String confirmEmailWrongOtp = "Le code indiqué n'est pas valide";
+  static const String confirmEmailUnexpectedResponse =
+      "Une erreur inattendue est survenue lors de la confirmation de votre adresse e-mail. Si le problème persite, contactez un administrateur";
+  static const String confirmEmailError =
+      "Une erreur inattendue est survenue lors de la confirmation de votre adresse e-mail. Si le problème persite, contactez un administrateur";
+
+  static const String completeRegistrationMissingData =
+      "Des données sont manquantes, vérifiez que vous avez bien rempli tous les champs obligatoires. Si le problème persite, contactez un administrateur";
+  static const String completeRegistrationNoAccountFound = "Aucun compte trouvé avec l'adresse e-mail spécifiée";
+  static const String completeRegistrationUnexpectedResponse =
+      "Une erreur inattendue est survenue lors de la finalisation de votre inscription. Si le problème persite, contactez un administrateur";
+  static const String completeRegistrationError =
+      "Une erreur inattendue est survenue lors de la finalisation de votre inscription. Si le problème persite, contactez un administrateur";
 
   static const String codeHint = 'Code';
   static const String codeMandatory = 'Le code est obligatoire';

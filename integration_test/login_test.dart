@@ -1,6 +1,7 @@
 import 'package:ccteam/main.dart';
 import 'package:ccteam/providers/home_provider.dart';
 import 'package:ccteam/providers/login_provider.dart';
+import 'package:ccteam/providers/message_provider.dart';
 import 'package:ccteam/providers/news_list_provider.dart';
 import 'package:ccteam/providers/passcode_provider.dart';
 import 'package:ccteam/ui/main/home.dart';
@@ -23,7 +24,11 @@ void main() {
     await tester.pumpWidget(
       MultiProvider(
         providers: [
-          ChangeNotifierProvider(create: (_) => LoginProvider()),
+          ChangeNotifierProvider(create: (context) => MessageProvider()),
+          ChangeNotifierProxyProvider<MessageProvider, LoginProvider>(
+            create: (context) => LoginProvider(),
+            update: (context, messageProvider, loginProvider) => loginProvider!..updateMessageProvider(messageProvider),
+          ),
         ],
         child: CCTeamApp(),
       ),
@@ -47,7 +52,11 @@ void main() {
       await tester.pumpWidget(
         MultiProvider(
           providers: [
-            ChangeNotifierProvider(create: (_) => LoginProvider()),
+            ChangeNotifierProvider(create: (context) => MessageProvider()),
+            ChangeNotifierProxyProvider<MessageProvider, LoginProvider>(
+              create: (context) => LoginProvider(),
+              update: (context, messageProvider, loginProvider) => loginProvider!..updateMessageProvider(messageProvider),
+            ),
           ],
           child: CCTeamApp(),
         ),
@@ -74,7 +83,11 @@ void main() {
     await tester.pumpWidget(
       MultiProvider(
         providers: [
-          ChangeNotifierProvider(create: (_) => LoginProvider()),
+          ChangeNotifierProvider(create: (context) => MessageProvider()),
+          ChangeNotifierProxyProvider<MessageProvider, LoginProvider>(
+            create: (context) => LoginProvider(),
+            update: (context, messageProvider, loginProvider) => loginProvider!..updateMessageProvider(messageProvider),
+          ),
         ],
         child: CCTeamApp(),
       ),
@@ -111,10 +124,19 @@ void main() {
     await tester.pumpWidget(
       MultiProvider(
         providers: [
-          ChangeNotifierProvider(create: (_) => LoginProvider()),
+          ChangeNotifierProvider(create: (context) => MessageProvider()),
           ChangeNotifierProvider(create: (_) => PasscodeProvider()),
           ChangeNotifierProvider(create: (_) => HomeProvider()),
-          ChangeNotifierProvider(create: (_) => NewsListProvider()),
+          ChangeNotifierProxyProvider<MessageProvider, LoginProvider>(
+            create: (context) => LoginProvider(),
+            update: (context, messageProvider, loginProvider) => loginProvider!..updateMessageProvider(messageProvider),
+          ),
+          ChangeNotifierProxyProvider2<MessageProvider, LoginProvider, NewsListProvider>(
+            create: (context) => NewsListProvider(),
+            update: (context, messageProvider, loginProvider, newsListProvider) => newsListProvider!
+              ..updateMessageProvider(messageProvider)
+              ..updateLoginProvider(loginProvider),
+          ),
         ],
         child: CCTeamApp(),
       ),
@@ -142,10 +164,19 @@ void main() {
     await tester.pumpWidget(
       MultiProvider(
         providers: [
-          ChangeNotifierProvider(create: (_) => LoginProvider()),
+          ChangeNotifierProvider(create: (context) => MessageProvider()),
           ChangeNotifierProvider(create: (_) => PasscodeProvider()),
           ChangeNotifierProvider(create: (_) => HomeProvider()),
-          ChangeNotifierProvider(create: (_) => NewsListProvider()),
+          ChangeNotifierProxyProvider<MessageProvider, LoginProvider>(
+            create: (context) => LoginProvider(),
+            update: (context, messageProvider, loginProvider) => loginProvider!..updateMessageProvider(messageProvider),
+          ),
+          ChangeNotifierProxyProvider2<MessageProvider, LoginProvider, NewsListProvider>(
+            create: (context) => NewsListProvider(),
+            update: (context, messageProvider, loginProvider, newsListProvider) => newsListProvider!
+              ..updateMessageProvider(messageProvider)
+              ..updateLoginProvider(loginProvider),
+          ),
         ],
         child: CCTeamApp(),
       ),
@@ -174,8 +205,12 @@ void main() {
     await tester.pumpWidget(
       MultiProvider(
         providers: [
-          ChangeNotifierProvider(create: (_) => LoginProvider()),
+          ChangeNotifierProvider(create: (context) => MessageProvider()),
           ChangeNotifierProvider(create: (_) => PasscodeProvider()),
+          ChangeNotifierProxyProvider<MessageProvider, LoginProvider>(
+            create: (context) => LoginProvider(),
+            update: (context, messageProvider, loginProvider) => loginProvider!..updateMessageProvider(messageProvider),
+          ),
         ],
         child: CCTeamApp(),
       ),
@@ -280,7 +315,11 @@ void main() {
     await tester.pumpWidget(
       MultiProvider(
         providers: [
-          ChangeNotifierProvider(create: (_) => LoginProvider()),
+          ChangeNotifierProvider(create: (context) => MessageProvider()),
+          ChangeNotifierProxyProvider<MessageProvider, LoginProvider>(
+            create: (context) => LoginProvider(),
+            update: (context, messageProvider, loginProvider) => loginProvider!..updateMessageProvider(messageProvider),
+          ),
         ],
         child: CCTeamApp(),
       ),

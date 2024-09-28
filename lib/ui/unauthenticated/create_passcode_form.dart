@@ -24,6 +24,7 @@ import 'package:flutter/material.dart';
 import 'package:logging/logging.dart';
 import 'package:provider/provider.dart';
 
+import '../../widgets/ccteam_logo.dart';
 import '../../widgets/passcode.dart';
 
 class CreatePasscodeForm extends StatefulWidget {
@@ -43,14 +44,6 @@ class _CreatePasscodeFormState extends State<CreatePasscodeForm> {
   _goToConfirmPasscode() {
     Provider.of<LoginProvider>(context, listen: false).goToConfirmPassword();
   }
-
-  final _logo = Container(
-    padding: EdgeInsets.only(top: 36),
-    child: Image.asset(
-      'images/ccteam-banner.png',
-      fit: BoxFit.fitWidth,
-    ),
-  );
 
   Widget build(BuildContext context) {
     final LoginProvider _loginProvider = Provider.of<LoginProvider>(context, listen: false);
@@ -108,11 +101,11 @@ class _CreatePasscodeFormState extends State<CreatePasscodeForm> {
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: <Widget>[
-          _logo,
+          CCTeamLogo(),
           SizedBox(height: 36.0),
           Text(
-            "Création de votre passcode",
-            style: TextStyle(fontSize: 20.0, fontWeight: FontWeight.bold),
+            AppString.createYourPasscode,
+            style: TextStyle(fontSize: 20.0, fontWeight: FontWeight.bold, color: Colors.black87),
             textAlign: TextAlign.center,
           ),
           SizedBox(height: 16.0),

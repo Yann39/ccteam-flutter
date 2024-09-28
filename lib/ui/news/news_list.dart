@@ -81,9 +81,12 @@ class NewsList extends StatelessWidget {
                 pinned: false,
                 flexibleSpace: Container(
                   child: FlexibleSpaceBar(
-                    background: Image.asset(
-                      'images/ccteam-banner3.png',
-                      fit: BoxFit.fitWidth,
+                    background: Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Image.asset(
+                        'images/ccteam6.png',
+                        fit: BoxFit.contain,
+                      ),
                     ),
                   ),
                   decoration: BoxDecoration(

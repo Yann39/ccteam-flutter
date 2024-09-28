@@ -163,7 +163,7 @@ class LoginProvider extends ChangeNotifier {
     this._email = email;
 
     await _membersService.checkAccount(email).timeout(Duration(seconds: 5)).then((response) async {
-      // account has been found with password and is verified
+      // account has been found with existing password and is verified
       if (response.statusCode == 200) {
         _setLoginStatus(LoginStatus.PasscodeStep);
       }
@@ -185,7 +185,7 @@ class LoginProvider extends ChangeNotifier {
       else if (response.statusCode == 417) {
         _setLoginStatus(LoginStatus.OtpStep);
       }
-      // account exist, OTP has been verified, but password has not been created
+      // account exist, OTP has been verified, but password has not been created yet
       else if (response.statusCode == 403) {
         _setLoginStatus(LoginStatus.CreatePasscodeStep);
       }
@@ -215,16 +215,20 @@ class LoginProvider extends ChangeNotifier {
         (response) async {
       // member has been pre-registered successfully
       if (response.statusCode == 201) {
+        // store the OTP sent date in the shared preferences for timer
+        final SharedPreferences prefs = await SharedPreferences.getInstance();
+        prefs.setString('otpDate', DateTime.now().millisecondsSinceEpoch.toString());
         _setLoginStatus(LoginStatus.OtpStep);
       }
       // e-mail address, first name, or last name is missing from the request
       else if (response.statusCode == 400) {
         _setLoginStatus(LoginStatus.EmailAndInfoStep);
+        _messageProvider.setMessage(AppString.preRegisterMissingData, MessageType.ERROR);
       }
       // e-mail address already exists
       else if (response.statusCode == 409) {
-        _messageProvider.setMessage(AppString.loginAccountEmailAlreadyExist, MessageType.ERROR);
         _setLoginStatus(LoginStatus.EmailAndInfoStep);
+        _messageProvider.setMessage(AppString.loginAccountEmailAlreadyExist, MessageType.ERROR);
       }
       // member successfully created but the confirmation e-mail failed to be sent
       else if (response.statusCode == 207) {
@@ -264,27 +268,32 @@ class LoginProvider extends ChangeNotifier {
       // e-mail address is missing in the request
       else if (response.statusCode == 400) {
         _setLoginStatus(LoginStatus.OtpStep);
+        _messageProvider.setMessage(AppString.resendOtpMissingData, MessageType.ERROR);
       }
       // no account has been found for the specified e-mail address
       else if (response.statusCode == 404) {
         _setLoginStatus(LoginStatus.OtpStep);
+        _messageProvider.setMessage(AppString.resendOtpNoAccountFound, MessageType.ERROR);
       }
       // the OTP has been successfully updated but the mail failed to be sent
       else if (response.statusCode == 207) {
         _setLoginStatus(LoginStatus.OtpStep);
+        _messageProvider.setMessage(AppString.resendOtpEmailNotSent, MessageType.ERROR);
       }
       // unexpected status code
       else {
         _log.severe("Failed to resend OTP to user $_email : ${response.body}");
         _setLoginStatus(LoginStatus.OtpStep);
-        throw Exception(
-            "Une erreur s'est produite lors de l'envoi de votre code, si le problème persite, contactez un administrateur");
+        _messageProvider.setMessage(AppString.resendOtpUnexpectedResponse, MessageType.ERROR);
       }
     }, onError: (error) {
       _log.severe("Error while resending OTP to user $_email : $error");
       _setLoginStatus(LoginStatus.OtpStep);
-      throw Exception(
-          "Une erreur s'est produite lors de l'envoi de votre code, si le problème persite, contactez un administrateur");
+      if (error is TimeoutException) {
+        _messageProvider.setMessage(AppString.errorServerTimeOut, MessageType.ERROR);
+      } else {
+        _messageProvider.setMessage(AppString.resendOtpError, MessageType.ERROR);
+      }
     });
   }
 
@@ -300,31 +309,37 @@ class LoginProvider extends ChangeNotifier {
       // e-mail address or OTP is missing from the request
       else if (response.statusCode == 400) {
         _setLoginStatus(LoginStatus.OtpStep);
+        _messageProvider.setMessage(AppString.confirmEmailMissingData, MessageType.ERROR);
       }
       // e-mail address has not been found in the database
       else if (response.statusCode == 404) {
         _setLoginStatus(LoginStatus.OtpStep);
+        _messageProvider.setMessage(AppString.confirmEmailNoAccountFound, MessageType.ERROR);
       }
       // the specified OTP has expired
       else if (response.statusCode == 406) {
         _setLoginStatus(LoginStatus.OtpStep);
+        _messageProvider.setMessage(AppString.confirmEmailOtpExpired, MessageType.ERROR);
       }
       // the specified OTP does not match the one from the database
       else if (response.statusCode == 401) {
         _setLoginStatus(LoginStatus.OtpStep);
+        _messageProvider.setMessage(AppString.confirmEmailWrongOtp, MessageType.ERROR);
       }
       // unexpected status code
       else {
         _log.severe("Failed to confirm e-mail for user $_email : ${response.body}");
         _setLoginStatus(LoginStatus.OtpStep);
-        throw Exception(
-            "Une erreur s'est produite lors de la vérification de votre code, si le problème persite, contactez un administrateur");
+        _messageProvider.setMessage(AppString.confirmEmailUnexpectedResponse, MessageType.ERROR);
       }
     }, onError: (error) {
       _log.severe("Error while confirming e-mail for user $_email : $error");
       _setLoginStatus(LoginStatus.OtpStep);
-      throw Exception(
-          "Une erreur s'est produite lors de la vérification de votre code, si le problème persite, contactez un administrateur");
+      if (error is TimeoutException) {
+        _messageProvider.setMessage(AppString.errorServerTimeOut, MessageType.ERROR);
+      } else {
+        _messageProvider.setMessage(AppString.confirmEmailError, MessageType.ERROR);
+      }
     });
   }
 
@@ -340,23 +355,27 @@ class LoginProvider extends ChangeNotifier {
       // e-mail address or password is missing from the request
       else if (response.statusCode == 400) {
         _setLoginStatus(LoginStatus.ConfirmPasscodeStep);
+        _messageProvider.setMessage(AppString.completeRegistrationMissingData, MessageType.ERROR);
       }
       // member not found in the database
       else if (response.statusCode == 404) {
         _setLoginStatus(LoginStatus.ConfirmPasscodeStep);
+        _messageProvider.setMessage(AppString.completeRegistrationNoAccountFound, MessageType.ERROR);
       }
       // unexpected status code
       else {
         _log.severe("Failed to complete registration for user $_email : ${response.body}");
         _setLoginStatus(LoginStatus.CreatePasscodeStep);
-        throw Exception(
-            "Une erreur s'est produite lors de la création de votre compte, si le problème persite, contactez un administrateur");
+        _messageProvider.setMessage(AppString.completeRegistrationUnexpectedResponse, MessageType.ERROR);
       }
     }, onError: (error) {
       _log.severe("Error while completing registration for user $_email : $error");
       _setLoginStatus(LoginStatus.CreatePasscodeStep);
-      throw Exception(
-          "Une erreur s'est produite lors de la création de votre compte, si le problème persite, contactez un administrateur");
+      if (error is TimeoutException) {
+        _messageProvider.setMessage(AppString.errorServerTimeOut, MessageType.ERROR);
+      } else {
+        _messageProvider.setMessage(AppString.completeRegistrationError, MessageType.ERROR);
+      }
     });
   }
 
@@ -365,14 +384,14 @@ class LoginProvider extends ChangeNotifier {
     _setAuthStatus(AuthStatus.Authenticating);
     _setLoginStatus(LoginStatus.Loading);
 
-    // get email from user preferences
+    // get email from user preferences if present
     String? email;
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     if (prefs.containsKey('email')) {
       email = prefs.get('email') as String?;
     }
 
-    // no email found in shared preferences, get current email from enrollment
+    // no email found in shared preferences, get current email from enrollment process
     if (email == null) {
       _log.info("No email found in shared preferences");
       email = _email;
@@ -418,7 +437,7 @@ class LoginProvider extends ChangeNotifier {
         _log.info("Failed to authenticate member $email, wrong username or password");
         _setAuthStatus(AuthStatus.Unauthenticated);
         _setLoginStatus(LoginStatus.PasscodeStep);
-        throw Exception("Passcode incorrect");
+        _messageProvider.setMessage(AppString.errorBadCredentials, MessageType.ERROR);
       } else {
         _log.info("Failed to authenticate user $email : ${response.body}");
         _setAuthStatus(AuthStatus.Unauthenticated);
@@ -440,11 +459,11 @@ class LoginProvider extends ChangeNotifier {
   Future<void> logoutMember() async {
     _log.info("Logging out user ${_loggedMember?.email}");
     final SharedPreferences prefs = await SharedPreferences.getInstance();
-    //prefs.remove('email');
+    prefs.remove('email');
     _loggedMember = null;
     _jwtToken = null;
     prefs.remove('jwt');
-    _setLoginStatus(LoginStatus.PasscodeStep);
+    _setLoginStatus(LoginStatus.EmailStep);
     _setAuthStatus(AuthStatus.Unauthenticated);
   }
 

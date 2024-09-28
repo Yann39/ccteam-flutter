@@ -46,9 +46,7 @@ class _ConfirmPasscodeFormState extends State<ConfirmPasscodeForm> {
       // set password
       //Provider.of<LoginProvider>(context, listen: false).loggedMember!.password = Provider.of<PasscodeProvider>(context, listen: false).secondPassCode;
       // complete registration
-      Provider.of<LoginProvider>(context, listen: false).completeRegistration(Provider.of<PasscodeProvider>(context, listen: false).secondPassCode!).then((value) {}, onError: (error) {
-        _log.severe(error.toString());
-      });
+      Provider.of<LoginProvider>(context, listen: false).completeRegistration(Provider.of<PasscodeProvider>(context, listen: false).secondPassCode!);
     }
   }
 

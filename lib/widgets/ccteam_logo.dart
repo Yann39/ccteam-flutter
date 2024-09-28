@@ -24,10 +24,10 @@ class CCTeamLogo extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.only(top: 36),
+      padding: EdgeInsets.fromLTRB(48, 64, 48, 16),
       child: Image.asset(
-        'images/ccteam-banner4.png',
-        fit: BoxFit.fitWidth,
+        'images/ccteam8.png',
+        fit: BoxFit.fitHeight,
       ),
     );
   }

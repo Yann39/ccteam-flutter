@@ -26,7 +26,6 @@ import 'package:ccteam/providers/login_provider.dart';
 import 'package:ccteam/providers/member_creation_provider.dart';
 import 'package:ccteam/providers/member_detail_provider.dart';
 import 'package:ccteam/providers/member_list_provider.dart';
-import 'package:ccteam/providers/member_provider.dart';
 import 'package:ccteam/providers/message_provider.dart';
 import 'package:ccteam/providers/news_creation_provider.dart';
 import 'package:ccteam/providers/news_detail_provider.dart';
@@ -82,7 +81,6 @@ void main() {
       providers: [
         ChangeNotifierProvider(create: (context) => TimerProvider()),
         ChangeNotifierProvider(create: (context) => HomeProvider()),
-        ChangeNotifierProvider(create: (context) => MemberProvider()),
         ChangeNotifierProvider(create: (context) => PhotoProvider()),
         ChangeNotifierProvider(create: (context) => TrackListProvider()),
         ChangeNotifierProvider(create: (context) => RecordListProvider()),
@@ -237,6 +235,7 @@ class CCTeamApp extends StatelessWidget {
             if (messageProvider.message != null) {
               // to prevent calling setState() during build
               WidgetsBinding.instance.addPostFrameCallback((_) {
+                // global application success/warning/error snack bar messages
                 final Color notificationColor = messageProvider.messageType == MessageType.ERROR
                     ? Color(0xFFB43636)
                     : messageProvider.messageType == MessageType.WARNING

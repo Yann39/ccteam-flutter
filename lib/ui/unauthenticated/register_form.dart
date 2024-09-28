@@ -17,10 +17,7 @@
  * along with CCTeam. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import 'dart:async';
-
 import 'package:ccteam/providers/login_provider.dart';
-import 'package:ccteam/providers/message_provider.dart';
 import 'package:ccteam/utils/enums.dart';
 import 'package:ccteam/utils/string_utils.dart';
 import 'package:ccteam/utils/strings.dart';
@@ -50,21 +47,10 @@ class _RegisterFormState extends State<RegisterForm> {
     if (_form.validate()) {
       _form.save();
 
-      final MessageProvider _messageProvider = Provider.of<MessageProvider>(context, listen: false);
       final LoginProvider _loginProvider = Provider.of<LoginProvider>(context, listen: false);
 
       // pre-register user
-      _loginProvider.preRegisterMember().then((value) {}, onError: (error) {
-        if (error is TimeoutException) {
-          _messageProvider.setMessage(
-              "Impossible de contacter le serveur, vérifiez votre connection internet. Si le problème persite, contactez un administrateur",
-              MessageType.ERROR);
-        } else {
-          _messageProvider.setMessage(
-              "Une erreur inattendue est survenue lors de l'inscription, veuillez vérifier vos données puis essayer à nouveau. Si le problème persite, contactez un administrateur",
-              MessageType.ERROR);
-        }
-      });
+      _loginProvider.preRegisterMember();
     }
   }
 
@@ -214,7 +200,7 @@ class _RegisterFormState extends State<RegisterForm> {
               textAlign: TextAlign.center,
             ),
             SizedBox(height: 32.0),
-            Text(AppString.infoRegister, style: TextStyle( color: Colors.black87)),
+            Text(AppString.infoRegister, style: TextStyle(color: Colors.black87)),
             SizedBox(height: 32.0),
             _firstNameField,
             SizedBox(height: 8.0),
