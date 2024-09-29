@@ -154,6 +154,89 @@ class LoginProvider extends ChangeNotifier {
     _setLoginStatus(LoginStatus.EmailAndInfoStep);
   }
 
+  /// Check if the user needs to authenticate.
+  /// Used to be called on app start.
+  /// If email is found in shared preferences and exists in the database, user will be consider as logged in.
+  Future<void> _checkUser() async {
+    _log.info("Checking user...");
+    _setAuthStatus(AuthStatus.Initializing);
+
+    // read shared preference to get any e-mail and JWT
+    final SharedPreferences _prefs = await SharedPreferences.getInstance();
+    final String? _email = _prefs.getString('email');
+    final String? _jwt = _prefs.getString('jwt');
+
+    // no e-mail found in shared preferences, it means user has to identify
+    if (_email == null) {
+      _log.info("Email not found in shared preferences");
+      _setLoginStatus(LoginStatus.EmailStep);
+      _setAuthStatus(AuthStatus.Unauthenticated);
+      return;
+    }
+
+    // no JWT token found in shared preferences, it means user has to authenticate
+    if (_jwt == null) {
+      _log.info("JWT token not found in shared preferences");
+      _setLoginStatus(LoginStatus.PasscodeStep);
+      _setAuthStatus(AuthStatus.Unauthenticated);
+      return;
+    }
+
+    _log.fine("Email $_email and token $_jwt found in shared preferences, let's get member from database");
+
+    // set the JWT token to be used for all future GraphQL queries
+    GraphQLConnection().jwtToken = _jwt;
+
+    // retrieve full user from database, this will use and check the JWT token
+    await _membersService.getMemberByEmail(_email).timeout(Duration(seconds: 5)).then((value) {
+      _log.fine("User $_email found in database and JWT token verified, consider as logged in");
+      _loggedMember = value;
+      _setAuthStatus(AuthStatus.Authenticated);
+    }, onError: (error) {
+      _log.info("An error occurred while retrieving member from the database : $error");
+      if (error is CustomGraphQlException) {
+        _setLoginStatus(LoginStatus.PasscodeStep);
+        _setAuthStatus(AuthStatus.Unauthenticated);
+        // member not found
+        if (error.code == "member_not_found") {
+          _messageProvider.setMessage(
+              AppString.format(AppString.errorEmailNotFoundInDatabase, [_email]), MessageType.ERROR);
+        }
+        // JWT token has expired
+        else if (error.code == "token_expired") {
+          _prefs.remove('jwt');
+          _messageProvider.setMessage(AppString.errorTokenExpired, MessageType.INFO);
+        }
+        // JWT token has wrong format and cannot be decoded
+        else if (error.code == "wrong_token_format") {
+          _messageProvider.setMessage(AppString.errorTokenWrongFormat, MessageType.ERROR);
+        }
+        // JWT token has not been specified
+        else if (error.code == "no_token") {
+          _messageProvider.setMessage(AppString.errorTokenNotFound, MessageType.ERROR);
+        }
+        // wrong credentials
+        else if (error.code == "bad_credentials") {
+          _messageProvider.setMessage(AppString.errorBadCredentials, MessageType.ERROR);
+        }
+        // unknown error code (should never happen)
+        else {
+          _messageProvider.setMessage(AppString.format(AppString.errorUnknown, [error.code]), MessageType.ERROR);
+        }
+      } else if (error is TimeoutException) {
+        _setAuthStatus(AuthStatus.Unauthenticated);
+        _messageProvider.setMessage(AppString.errorServerTimeOut, MessageType.ERROR);
+      }
+      // other error
+      else {
+        _setLoginStatus(LoginStatus.EmailStep);
+        _setAuthStatus(AuthStatus.Unauthenticated);
+        _log.info("Error is ${error.toString()}");
+        _messageProvider.setMessage(AppString.format(AppString.errorUnknown, [error.toString()]), MessageType.ERROR);
+      }
+    });
+  }
+
   /// Check the specified member account from the given e-mail address.
   /// It checks the registration status to know if we need to register, identify or login the user.
   Future<void> checkAccountEmail(String email) async {
@@ -233,7 +316,8 @@ class LoginProvider extends ChangeNotifier {
       // member successfully created but the confirmation e-mail failed to be sent
       else if (response.statusCode == 207) {
         _setLoginStatus(LoginStatus.OtpStep);
-        _messageProvider.setMessage(AppString.format(AppString.preRegisterConfirmationEmailNotSent, [_email!]), MessageType.WARNING);
+        _messageProvider.setMessage(
+            AppString.format(AppString.preRegisterConfirmationEmailNotSent, [_email!]), MessageType.WARNING);
       }
       // unexpected status code
       else {
@@ -346,8 +430,7 @@ class LoginProvider extends ChangeNotifier {
   /// Complete user registration according to the specified member information.
   Future<void> completeRegistration(String passcode) async {
     _log.info("Completing registration of user $_email");
-    await _membersService.completeRegistration(_email!, passcode).timeout(Duration(seconds: 5)).then(
-        (response) async {
+    await _membersService.completeRegistration(_email!, passcode).timeout(Duration(seconds: 5)).then((response) async {
       // account has been created successfully
       if (response.statusCode == 200) {
         _setLoginStatus(LoginStatus.PasscodeStep);
@@ -384,7 +467,7 @@ class LoginProvider extends ChangeNotifier {
     _setAuthStatus(AuthStatus.Authenticating);
     _setLoginStatus(LoginStatus.Loading);
 
-    // get email from user preferences if present
+    // get email from shared preferences if present
     String? email;
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     if (prefs.containsKey('email')) {
@@ -400,7 +483,7 @@ class LoginProvider extends ChangeNotifier {
     _log.info("Logging in user $email");
 
     await _membersService.authenticate(email!, passcode).timeout(Duration(seconds: 5)).then((response) async {
-      // check response and get the JWT token
+      // status OK, check response and get the JWT token
       if (response.statusCode == 200) {
         _log.info("User $email successfully authenticated and got a JWT token");
 
@@ -431,27 +514,61 @@ class LoginProvider extends ChangeNotifier {
           GraphQLConnection().jwtToken = null;
           _setAuthStatus(AuthStatus.Unauthenticated);
           _setLoginStatus(LoginStatus.PasscodeStep);
-          throw (error);
+
+          // member not found
+          if (error.code == "member_not_found") {
+            _messageProvider.setMessage(
+                AppString.format(AppString.errorEmailNotFoundInDatabase, [email != null ? email : ""]), MessageType.ERROR);
+          }
+          // JWT token has expired
+          else if (error.code == "token_expired") {
+            prefs.remove('jwt');
+            _messageProvider.setMessage(AppString.errorTokenExpired, MessageType.INFO);
+          }
+          // JWT token has wrong format and cannot be decoded
+          else if (error.code == "wrong_token_format") {
+            _messageProvider.setMessage(AppString.errorTokenWrongFormat, MessageType.ERROR);
+          }
+          // JWT token has not been specified
+          else if (error.code == "no_token") {
+            _messageProvider.setMessage(AppString.errorTokenNotFound, MessageType.ERROR);
+          }
+          // wrong credentials
+          else if (error.code == "bad_credentials") {
+            _messageProvider.setMessage(AppString.errorBadCredentials, MessageType.ERROR);
+          }
+          // unknown error code (should never happen)
+          else {
+            _messageProvider.setMessage(AppString.format(AppString.errorUnknown, [error.code]), MessageType.ERROR);
+          }
         });
-      } else if (response.statusCode == 401) {
+      }
+      // wrong credentials
+      else if (response.statusCode == 401) {
         _log.info("Failed to authenticate member $email, wrong username or password");
         _setAuthStatus(AuthStatus.Unauthenticated);
         _setLoginStatus(LoginStatus.PasscodeStep);
         _messageProvider.setMessage(AppString.errorBadCredentials, MessageType.ERROR);
-      } else {
+      }
+      // unexpected status code
+      else {
         _log.info("Failed to authenticate user $email : ${response.body}");
         _setAuthStatus(AuthStatus.Unauthenticated);
         _setLoginStatus(LoginStatus.PasscodeStep);
-        throw Exception("Erreur serveur : ${response.statusCode}");
+        _messageProvider.setMessage(AppString.loginMemberUnexpectedResponse, MessageType.ERROR);
       }
     }, onError: (error) {
-      _log.info("Member with e-mail $email failed to authenticate ($error)");
+      _log.info("Error while authenticating user with e-mail $email ($error)");
       _loggedMember = null;
       _jwtToken = null;
       GraphQLConnection().jwtToken = null;
       _setAuthStatus(AuthStatus.Unauthenticated);
       _setLoginStatus(LoginStatus.PasscodeStep);
-      throw Exception("Erreur lors de l'authentification : $error");
+      if (error is TimeoutException) {
+        _messageProvider.setMessage(AppString.errorServerTimeOut, MessageType.ERROR);
+      } else {
+        _messageProvider.setMessage(AppString.loginMemberError, MessageType.ERROR);
+      }
     });
   }
 
@@ -497,84 +614,5 @@ class LoginProvider extends ChangeNotifier {
     }
     _loginStatus = status;
     _notifyListeners();
-  }
-
-  /// Check if the user needs to authenticate.
-  /// Used to be called on app start.
-  /// If email is found in shared preferences and exists in the database, user will be consider as logged in.
-  Future<void> _checkUser() async {
-    _log.info("Checking user...");
-    _setAuthStatus(AuthStatus.Initializing);
-
-    // read shared preference to get any e-mail and JWT
-    final SharedPreferences _prefs = await SharedPreferences.getInstance();
-    final String? _email = _prefs.getString('email');
-    final String? _jwt = _prefs.getString('jwt');
-
-    // no e-mail found in shared preferences, it means user have to identify
-    if (_email == null) {
-      _log.info("Email not found in shared preferences");
-      _setLoginStatus(LoginStatus.EmailStep);
-      _setAuthStatus(AuthStatus.Unauthenticated);
-      return;
-    }
-
-    // no JWT token found in shared preferences, it means user have to authenticate
-    if (_jwt == null) {
-      _log.info("JWT token not found in shared preferences");
-      _setLoginStatus(LoginStatus.PasscodeStep);
-      _setAuthStatus(AuthStatus.Unauthenticated);
-      return;
-    }
-
-    _log.fine("Email $_email and token $_jwt found in shared preferences, let's get member from database");
-
-    // set the JWT token to be used for all future GraphQL queries
-    GraphQLConnection().jwtToken = _jwt;
-
-    // retrieve full user from database, this will use and check the JWT token
-    await _membersService.getMemberByEmail(_email).timeout(Duration(seconds: 5)).then((value) {
-      _log.fine("User $_email found in database and JWT token verified, consider as logged in");
-      _loggedMember = value;
-      _setAuthStatus(AuthStatus.Authenticated);
-    }, onError: (error) {
-      _log.info("An error occurred while retrieving member from the database : $error");
-      if (error is CustomGraphQlException) {
-        _setLoginStatus(LoginStatus.PasscodeStep);
-        _setAuthStatus(AuthStatus.Unauthenticated);
-        // Member not found
-        if (error.code == "member_not_found") {
-          _messageProvider.setMessage(
-              AppString.format(AppString.errorEmailNotFoundInDatabase, [_email]), MessageType.ERROR);
-        }
-        // JWT token has expired
-        else if (error.code == "token_expired") {
-          _prefs.remove('jwt');
-          _messageProvider.setMessage(AppString.errorTokenExpired, MessageType.INFO);
-        }
-        // JWT token has wrong format and cannot be decoded
-        else if (error.code == "wrong_token_format") {
-          _messageProvider.setMessage(AppString.errorTokenWrongFormat, MessageType.ERROR);
-        }
-        // JWT token has not been specified
-        else if (error.code == "no_token") {
-          _messageProvider.setMessage(AppString.errorTokenNotFound, MessageType.ERROR);
-        }
-        // wrong credentials
-        else if (error.code == "bad_credentials") {
-          _messageProvider.setMessage(AppString.errorBadCredentials, MessageType.ERROR);
-        }
-      } else if (error is TimeoutException) {
-        _setAuthStatus(AuthStatus.Unauthenticated);
-        _messageProvider.setMessage(AppString.errorServerTimeOut, MessageType.ERROR);
-      }
-      // other error
-      else {
-        _setLoginStatus(LoginStatus.EmailStep);
-        _setAuthStatus(AuthStatus.Unauthenticated);
-        _log.info("Error is ${error.toString()}");
-        _messageProvider.setMessage(AppString.format(AppString.errorUnknown, [error.toString()]), MessageType.ERROR);
-      }
-    });
   }
 }

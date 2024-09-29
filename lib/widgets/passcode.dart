@@ -18,9 +18,7 @@
  */
 
 import 'package:ccteam/providers/login_provider.dart';
-import 'package:ccteam/providers/message_provider.dart';
 import 'package:ccteam/providers/passcode_provider.dart';
-import 'package:ccteam/utils/app_utils.dart';
 import 'package:ccteam/utils/enums.dart';
 import 'package:flutter/material.dart';
 import 'package:logging/logging.dart';
@@ -37,19 +35,11 @@ class _PasscodeWidgetState extends State<PasscodeWidget> {
   /// Log in the user according to the information specified in the related form.
   /// It updates the login step status and the authentication status according to the result.
   _doLogin(BuildContext context, PasscodeProvider passcodeProvider) async {
-    final MessageProvider _messageProvider = Provider.of<MessageProvider>(context, listen: false);
-    final LoginProvider _loginProvider = Provider.of<LoginProvider>(context, listen: false);
-
-    _loginProvider.loginMember(passcodeProvider.loginPassCode!).then((value) {
-      // clear passcode once logged
-      passcodeProvider.loginPassCode = null;
-    }, onError: (error) {
-      _log.severe(error.toString());
-      // display error message
-      _messageProvider.setMessage(AppUtils.extractExceptionMessage(error), MessageType.ERROR);
-      // clear passcode so user can try again with a new one
+    Provider.of<LoginProvider>(context, listen: false).loginMember(passcodeProvider.loginPassCode!).then((value) {
       passcodeProvider.loginPassCode = null;
     });
+    // clear passcode (either logged successfully or not)
+    passcodeProvider.loginPassCode = null;
   }
 
   /// A widget representing a digit of the passcode

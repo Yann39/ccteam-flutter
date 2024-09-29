@@ -142,6 +142,11 @@ class AppString {
   static const String completeRegistrationError =
       "Une erreur inattendue est survenue lors de la finalisation de votre inscription. Si le problème persite, contactez un administrateur";
 
+  static const String loginMemberUnexpectedResponse =
+      "Une erreur inattendue est survenue lors de la connexion à votre compte. Si le problème persite, contactez un administrateur";
+  static const String loginMemberError =
+      "Une erreur inattendue est survenue lors de la connexion à votre compte. Si le problème persite, contactez un administrateur";
+
   static const String codeHint = 'Code';
   static const String codeMandatory = 'Le code est obligatoire';
 
