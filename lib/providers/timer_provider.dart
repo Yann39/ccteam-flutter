@@ -28,60 +28,90 @@ class TimerProvider extends ChangeNotifier {
   Timer? _timer;
   final Logger _log = new Logger('TimerProvider');
 
-  // current timer value
+  // current timer value in seconds
   int _currentValue = 0;
 
   int get currentValue => _currentValue;
 
-  /// Start the countdown timer from the specified start value
-  void startNewCountDown(int startValue) async {
+  /// Start the countdown timer from the specified start value (in seconds)
+  void startNewCountDown(int nbSeconds) async {
+    // cancel any running timer
     if (_timer != null) {
       _timer!.cancel();
     }
-    _currentValue = startValue;
-    _log.info("Start with value $_currentValue");
+
+    // restart from the provided start value
+    _currentValue = nbSeconds;
     notifyListeners();
-    const oneSec = const Duration(seconds: 1);
 
     // store start time in the shared preferences
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     prefs.setInt('otp_timer', DateTime.now().millisecondsSinceEpoch);
 
+    // start the timer
     _timer = Timer.periodic(
-      oneSec,
-      (Timer timer) {
+      const Duration(seconds: 1),
+          (Timer timer) {
         if (_currentValue == 0) {
           timer.cancel();
-          prefs.remove('otp_timer');
         } else {
           _currentValue--;
-          _log.info("Decrease value $_currentValue");
           notifyListeners();
         }
       },
     );
   }
 
-  /// Resume any existing countdown timer, or start a new one from the specified start value
+  /// Resume the countdown timer according to specified remaining time (in seconds)
+  void resumeCountDown(int nbSeconds) async {
+    // cancel any running timer
+    if (_timer != null) {
+      _timer!.cancel();
+    }
+
+    // restart from the provided start value
+    _currentValue = nbSeconds;
+    notifyListeners();
+
+    // start the timer
+    _timer = Timer.periodic(
+      const Duration(seconds: 1),
+          (Timer timer) {
+        if (_currentValue == 0) {
+          timer.cancel();
+        } else {
+          _currentValue--;
+          notifyListeners();
+        }
+      },
+    );
+  }
+
+  /// Resume any existing countdown timer, or start a new one from the specified start value (in seconds)
   void resumeOrStartCountDown(int startValue) async {
-    // read value from user preferences
+    // to read any timer value from shared preferences
     final SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    // if a timer is stored, check if it has run out
     if (prefs.containsKey('otp_timer')) {
       final int elapsedTime = DateTime.now().millisecondsSinceEpoch - prefs.getInt('otp_timer')!;
-      _log.info("Got back timer value from preferences, remaining : $elapsedTime ms");
+      _log.info("Got back timer value from preferences, elapsed time : $elapsedTime ms");
+
       // if elapsed time is greater than start value, set it to zero
       if (elapsedTime > startValue * 1000) {
         _log.info("Last timer has run out, user has to resend a new code");
-        //todo display message to user
+        // todo display message to user
         _currentValue = 0;
         notifyListeners();
-        prefs.remove('otp_timer');
       }
       // else start the timer with the remaining time
       else {
-        prefs.remove('otp_timer');
-        startNewCountDown(elapsedTime ~/ 1000);
+        resumeCountDown(startValue - (elapsedTime ~/ 1000));
       }
+    }
+    // no timer stored, start a new one
+    else {
+      startNewCountDown(startValue);
     }
   }
 

@@ -19,6 +19,7 @@
 
 import 'package:ccteam/providers/login_provider.dart';
 import 'package:ccteam/providers/timer_provider.dart';
+import 'package:ccteam/utils/constants.dart';
 import 'package:ccteam/utils/enums.dart';
 import 'package:ccteam/utils/strings.dart';
 import 'package:ccteam/widgets/ccteam_logo.dart';
@@ -40,9 +41,7 @@ class _OtpFormState extends State<OtpForm> {
   @override
   void initState() {
     super.initState();
-
-    // OTP should have been sent when reaching this form, start or resume countdown timer
-    Provider.of<TimerProvider>(context, listen: false).resumeOrStartCountDown(600);
+    Provider.of<TimerProvider>(context, listen: false).resumeOrStartCountDown(OTP_VALIDITY);
   }
 
   // OTP digits
@@ -52,19 +51,7 @@ class _OtpFormState extends State<OtpForm> {
   String? _otpDigit3;
 
   // each OTP digit will be attributed a focus node so we can focus next field automatically when typing
-  var _otpFocusNodes = List.generate(4, (index) => FocusNode());
-
-  /// Method that resend the OTP to the user according to information specified in the related form.
-  /// The old OTP will be invalidated and the timer reset.
-  /*_doResendOtp(BuildContext context) async {
-    Provider.of<LoginProvider>(context, listen: false).resendOtp().then(
-        (value) {
-      // OTP resent, restart countdown timer
-      Provider.of<TimerProvider>(context, listen: false).startNewCountDown(600);
-    }, onError: (error) {
-      _log.severe(error.toString());
-    });
-  }*/
+  List<FocusNode> _otpFocusNodes = List.generate(4, (index) => FocusNode());
 
   /// Method that check the OTP specified in the related form.
   /// It updates the login step status according to the result.
@@ -189,25 +176,6 @@ class _OtpFormState extends State<OtpForm> {
       },
     );
 
-    /*final _resendOtpButton = TextButton(
-          onPressed: () {
-            _doResendOtp();
-          },
-          child: _loginProvider.loginStatus == LoginStatus.Loading
-              ? SizedBox(
-                  child: CircularProgressIndicator(
-                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                    strokeWidth: 2.0,
-                  ),
-                  height: 14.0,
-                  width: 14.0,
-                )
-              : Text(
-                  AppString.resendOtp.toUpperCase(),
-                  style: TextStyle(color: Colors.blue[900]),
-                ),
-    );*/
-
     final _backButton = Builder(
       builder: (BuildContext context) {
         return TextButton(
@@ -273,7 +241,7 @@ class _OtpFormState extends State<OtpForm> {
                   onPressed: () {
                     _loginProvider.resendOtp().then((value) {
                       // OTP resent, restart countdown timer
-                      _timerProvider.startNewCountDown(600);
+                      _timerProvider.startNewCountDown(OTP_VALIDITY);
                     });
                   },
                   child: _loginProvider.loginStatus == LoginStatus.Loading

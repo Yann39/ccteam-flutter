@@ -298,9 +298,6 @@ class LoginProvider extends ChangeNotifier {
         (response) async {
       // member has been pre-registered successfully
       if (response.statusCode == 201) {
-        // store the OTP sent date in the shared preferences for timer
-        final SharedPreferences prefs = await SharedPreferences.getInstance();
-        prefs.setString('otpDate', DateTime.now().millisecondsSinceEpoch.toString());
         _setLoginStatus(LoginStatus.OtpStep);
       }
       // e-mail address, first name, or last name is missing from the request
@@ -362,7 +359,7 @@ class LoginProvider extends ChangeNotifier {
       // the OTP has been successfully updated but the mail failed to be sent
       else if (response.statusCode == 207) {
         _setLoginStatus(LoginStatus.OtpStep);
-        _messageProvider.setMessage(AppString.resendOtpEmailNotSent, MessageType.ERROR);
+        _messageProvider.setMessage(AppString.format(AppString.resendOtpEmailNotSent, [_email!]), MessageType.WARNING);
       }
       // unexpected status code
       else {

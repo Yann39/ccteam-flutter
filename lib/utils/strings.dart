@@ -24,7 +24,7 @@ class AppString {
   /// Example : format('Hello {0}, your preferred color is {1}.', ['Bob', 'purple'])
   static format(String source, List<String> arguments) {
     int index = 0;
-    arguments.forEach((element) => source = source.replaceFirst("{$index++}", element));
+    arguments.forEach((element) => source = source.replaceFirst("{${index++}}", element));
     return source;
   }
 
@@ -32,6 +32,10 @@ class AppString {
 
   static const String formNotValid = 'Le formulaire n\'est pas valide. Corrigez les erreurs puis essayer à nouveau.';
 
+  static const String error = 'Erreur';
+  static const String warning = 'Attention';
+  static const String info = 'Information';
+  static const String success = 'Succès';
   static const String back = 'Retour';
   static const String cancel = 'Annuler';
   static const String save = 'Enregistrer';
@@ -106,7 +110,7 @@ class AppString {
       "Une erreur inattendue est survenue lors de la vérification de votre compte. Si le problème persite, contactez un administrateur";
 
   static const String preRegisterConfirmationEmailNotSent =
-      "Le code de confirmation n'a pas pu être envoyé à l'adresse {0}. Veuillez vérifier que l'adresse e-mail est correcte puis renvoyez le code";
+      "Le code de confirmation n\'a pas pu être envoyé à l'adresse {0}. Veuillez vérifier que l\'adresse e-mail est correcte puis renvoyez le code";
   static const String preRegisterUnexpectedResponse =
       "Une erreur inattendue est survenue lors de la création de votre compte. Si le problème persite, contactez un administrateur";
   static const String preRegisterMissingData =
@@ -118,7 +122,7 @@ class AppString {
       "Des données sont manquantes, vérifiez que vous avez bien rempli tous les champs obligatoires. Si le problème persite, contactez un administrateur";
   static const String resendOtpNoAccountFound = "Aucun compte trouvé avec l'adresse e-mail spécifiée";
   static const String resendOtpEmailNotSent =
-      "Le code de confirmation n'a pas pu être envoyé à l'adresse {0}. Veuillez vérifier que l'adresse e-mail est correcte puis renvoyez le code";
+      "Le code de confirmation n\'a pas pu être envoyé à l'adresse {0}. Veuillez vérifier que l\'adresse e-mail est correcte puis renvoyez le code";
   static const String resendOtpUnexpectedResponse =
       "Une erreur s'est produite lors de l'envoi de votre code, si le problème persite, contactez un administrateur";
   static const String resendOtpError =

@@ -62,3 +62,4 @@ const String API_DELETE_PHOTO_ENDPOINT = '/photos/delete.php';
 const String DATE_FORMAT = 'dd/MM/yyyy HH:mm';
 const String DATE_FORMAT_TXT = 'dd MMM yyyy HH:mm';
 const String PRICE_FORMAT = '####.##';
+const int OTP_VALIDITY = 600;

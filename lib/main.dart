@@ -42,12 +42,12 @@ import 'package:ccteam/providers/track_list_provider.dart';
 import 'package:ccteam/services/notifications_service.dart';
 import 'package:ccteam/ui/events/add_edit_event.dart';
 import 'package:ccteam/ui/events/event_detail.dart';
+import 'package:ccteam/ui/laprecord/add_edit_record.dart';
+import 'package:ccteam/ui/laprecord/member_chronos.dart';
 import 'package:ccteam/ui/main/edit_avatar.dart';
 import 'package:ccteam/ui/main/home.dart';
 import 'package:ccteam/ui/main/image_crop.dart';
 import 'package:ccteam/ui/members/add_edit_member.dart';
-import 'package:ccteam/ui/laprecord/add_edit_record.dart';
-import 'package:ccteam/ui/laprecord/member_chronos.dart';
 import 'package:ccteam/ui/members/member_detail.dart';
 import 'package:ccteam/ui/members/member_events.dart';
 import 'package:ccteam/ui/news/add_edit_news.dart';
@@ -244,12 +244,12 @@ class CCTeamApp extends StatelessWidget {
                             ? Color(0xFF42914A)
                             : Color(0xFF2368AF);
                 final String notificationTitle = messageProvider.messageType == MessageType.ERROR
-                    ? "Erreur"
+                    ? AppString.error
                     : messageProvider.messageType == MessageType.WARNING
-                        ? "Attention"
+                        ? AppString.warning
                         : messageProvider.messageType == MessageType.SUCCESS
-                            ? "Succès"
-                            : "Information";
+                    ? AppString.success
+                            : AppString.info;
                 final IconData notificationIcon = messageProvider.messageType == MessageType.ERROR
                     ? Icons.error_outline
                     : messageProvider.messageType == MessageType.WARNING

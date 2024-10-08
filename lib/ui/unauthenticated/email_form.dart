@@ -115,6 +115,17 @@ class _EmailFormState extends State<EmailForm> {
       ),
     );
 
+    final _createAccountButton = TextButton(
+      key: Key('createAccountButton'),
+      onPressed: () {
+        _loginProvider.goToRegister();
+      },
+      child: Text(
+        AppString.createAccount,
+        style: TextStyle(color: Colors.blue[900]),
+      ),
+    );
+
     return Form(
       autovalidateMode: AutovalidateMode.disabled,
       key: _emailFormKey,
@@ -140,16 +151,7 @@ class _EmailFormState extends State<EmailForm> {
             ),
             SizedBox(height: 32.0),
             _emailContinueButton,
-            TextButton(
-              key: Key('createAccountButton'),
-              onPressed: () {
-                _loginProvider.goToRegister();
-              },
-              child: Text(
-                AppString.createAccount,
-                style: TextStyle(color: Colors.blue[900]),
-              ),
-            ),
+            _createAccountButton,
           ],
         ),
       ),
