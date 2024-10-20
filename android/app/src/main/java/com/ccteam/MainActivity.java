@@ -1,4 +1,4 @@
-package com.ccteam;
+package net.ccteam;
 
 import io.flutter.embedding.android.FlutterActivity;
 

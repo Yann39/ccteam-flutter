@@ -40,7 +40,7 @@ dependencies:
   flutter_svg: ^2.0.10+1
 
   # cropping images
-  crop_your_image: ^1.0.2
+  crop_your_image: ^1.1.0
 
   # Markdown text interpreter
   flutter_markdown: ^0.6.22
