@@ -221,7 +221,7 @@ class LoginProvider extends ChangeNotifier {
         }
         // unknown error code (should never happen)
         else {
-          _messageProvider.setMessage(AppString.format(AppString.errorUnknown, [error.code]), MessageType.ERROR);
+          _messageProvider.setMessage(AppString.format(AppString.errorUnknown, [error.code!]), MessageType.ERROR);
         }
       } else if (error is TimeoutException) {
         _setAuthStatus(AuthStatus.Unauthenticated);

@@ -25,7 +25,6 @@ import 'package:ccteam/providers/member_detail_provider.dart';
 import 'package:ccteam/providers/member_list_provider.dart';
 import 'package:ccteam/ui/main/main_action_menu.dart';
 import 'package:ccteam/ui/main/main_drawer.dart';
-import 'package:ccteam/utils/constants.dart';
 import 'package:ccteam/utils/custom_decorations.dart';
 import 'package:ccteam/utils/strings.dart';
 import 'package:ccteam/widgets/loading_content.dart';

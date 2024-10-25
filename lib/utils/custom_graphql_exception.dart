@@ -18,8 +18,8 @@
  */
 
 class CustomGraphQlException implements Exception {
-  String code;
-  String message;
+  String? code;
+  String? message;
 
   CustomGraphQlException(this.code, this.message);
 

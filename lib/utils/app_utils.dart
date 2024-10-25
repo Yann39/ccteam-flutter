@@ -113,7 +113,7 @@ class AppUtils {
       } else if (error.code == "internal_error") {
         messageProvider.setMessage(AppString.errorServerInternal, MessageType.ERROR);
       } else {
-        messageProvider.setMessage(AppString.format(AppString.errorUnknown, [error.message]), MessageType.ERROR);
+        messageProvider.setMessage(AppString.format(AppString.errorUnknown, [error.message!]), MessageType.ERROR);
       }
     } else if (error is TimeoutException) {
       messageProvider.setMessage(AppString.errorServerTimeOut, MessageType.ERROR);

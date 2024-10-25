@@ -18,7 +18,6 @@
  */
 
 import 'package:ccteam/models/event_member.dart';
-import 'package:intl/intl.dart';
 
 /// Class representing a member
 /// todo add Role attribute ?
