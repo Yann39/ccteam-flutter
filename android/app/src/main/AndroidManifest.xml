@@ -14,6 +14,7 @@
          FlutterApplication and put your custom class here. -->
     <application
             android:label="CCTeam"
+            android:name="androidx.multidex.MultiDexApplication"
             android:icon="@mipmap/ic_launcher"
             android:roundIcon="@mipmap/ic_launcher_round">
         <activity
