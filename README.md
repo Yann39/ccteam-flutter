@@ -54,6 +54,112 @@ The application is available on the Play Store :
 
 # Usage
 
+## Upgrading Dart
+
+In Intellij, check the version and download new one if necessary, from the menu
+_Settings > Languages & Frameworks > Dart_.
+
+Updates the Dart plugin if necessary.
+
+Then modify the SDK version in the _pubspec.yaml_ file accordingly :
+
+```yaml
+environment:
+  sdk: ^3.7.2
+```
+
+To verify :
+
+```bash
+dart --version
+```
+
+> Dart SDK version: 3.7.2 (stable) (Tue Mar 11 04:27:50 2025 -0700) on "windows_x64"
+
+## Upgrading Flutter
+
+In Intellij, check the version from the menu _Settings > Languages & Frameworks > Flutter_.
+
+Updates the Flutter plugin if necessary.
+
+Then run `flutter upgrade` in the terminal to get the latest stable version of Flutter :
+
+```bash
+flutter channel stable
+flutter upgrade --force
+```
+
+To verify :
+
+```bash
+flutter --version
+```
+
+> Flutter 3.29.2 • channel stable • https://github.com/flutter/flutter.git<br>
+> Engine • revision 18b71d647a<br>
+> Tools • Dart 3.7.2 • DevTools 2.42.3
+
+## Upgrading Gradle
+
+> [!WARNING]
+> Please pay attention to version compatibility between Gradle and Android Gradle Plugin
+
+From the project's root directory :
+
+```bash
+cd android
+./gradlew wrapper --gradle-version=8.7
+```
+
+This will reload the file _gradle-wrapper.properties_ with the new version of Gradle, specially this line :
+
+```properties
+distributionUrl=https\://services.gradle.org/distributions/gradle-8.7-bin.zip
+```
+
+For AGP, modify the version in _android/build.gradle_ :
+
+```groovy
+dependencies {
+  classpath 'com.android.tools.build:gradle:8.6.0'
+}
+```
+
+Then also change the version in _android/settings.gradle_ :
+
+```groovy
+id "com.android.application" version '8.6.0' apply false
+```
+
+To verify :
+
+```bash
+./gradlew --version
+```
+
+> ------------------------------------------------------------<br>
+> Gradle 8.7<br>
+> ------------------------------------------------------------<br>
+> <br>
+> Build time:   2024-03-22 15:52:46 UTC<br>
+> Revision:     650af14d7653aa949fce5e886e685efc9cf97c10<br>
+> <br>
+> Kotlin:       1.9.22<br>
+> Groovy:       3.0.17<br>
+> Ant:          Apache Ant(TM) version 1.10.13 compiled on January 4 2023<br>
+> JVM:          17.0.2 (Oracle Corporation 17.0.2+8-86)<br>
+> OS:           Windows 11 10.0 amd64<br>
+
+## Upgrading dependencies
+
+To upgrade all project dependencies to their latest versions, run :
+
+```bash
+flutter pub upgrade --major-versions
+```
+
+## Playstore
+
 You must be an authorized member to use the application.
 
 You must set the `API_BASE_URL` variable when executing the application :

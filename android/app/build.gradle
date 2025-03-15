@@ -18,17 +18,27 @@ if (keystorePropertiesFile.exists()) {
 }
 
 android {
-    compileSdk 34
+    compileSdk 35
 
     defaultConfig {
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
         applicationId "net.ccteam"
-        minSdkVersion flutter.minSdkVersion
-        targetSdkVersion 34
+        minSdkVersion 21
+        targetSdkVersion 35
         multiDexEnabled true
         versionCode 2
         versionName "0.8.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        // Required when setting minSdkVersion to 20 or lower
+        multiDexEnabled true
+    }
+
+    compileOptions {
+        // Flag to enable support for the new language APIs
+        coreLibraryDesugaringEnabled true
+        // Sets Java compatibility to Java 8
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
     }
 
     signingConfigs {
@@ -39,6 +49,7 @@ android {
             storePassword keystoreProperties['storePassword']
         }
     }
+
     buildTypes {
         release {
             // TODO: Add your own signing config for the release build.
@@ -47,10 +58,14 @@ android {
             signingConfig signingConfigs.release
         }
     }
+
     namespace 'net.ccteam'
+
     lint {
         disable 'InvalidPackage'
     }
+
+    ndkVersion = "26.3.11579264" // required by integration_test plugin
 }
 
 flutter {
@@ -58,10 +73,11 @@ flutter {
 }
 
 dependencies {
+    // For AGP 7.4+
     testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'com.android.support.test:runner:1.0.2'
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
-    coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.0.2' // needed by flutter_local_notifications package
+    coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.0.3' // needed by flutter_local_notifications package
     implementation("com.google.android.material:material:1.12.0")
     implementation "androidx.multidex:multidex:2.0.1"
 }
