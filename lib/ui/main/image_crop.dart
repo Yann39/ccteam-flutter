@@ -41,12 +41,38 @@ class ImageCrop extends StatelessWidget {
           controller: _controller,
           progressIndicator: CircularProgressIndicator(),
           onCropped: (image) {
-            // do something with cropped image data
-            _avatarProvider.setCroppedImage(image);
-            Navigator.pop(context);
+            switch (image) {
+              case CropSuccess(:final croppedImage):
+                _avatarProvider.setCroppedImage(croppedImage);
+                Navigator.pop(context);
+                case CropFailure(:final cause):
+              showDialog(
+                context: context,
+                builder: (context) => AlertDialog(
+                  title: Text('Error'),
+                  content:
+                  Text('Failed to crop image: ${cause}'),
+                  actions: [
+                    TextButton(
+                        onPressed: () =>
+                            Navigator.pop(context),
+                        child: Text('OK')),
+                  ],
+                ),
+              );
+            }
           },
           withCircleUi: true,
-          initialSize: 0.5,
+          initialRectBuilder: InitialRectBuilder.withBuilder(
+                (viewportRect, imageRect) {
+              return Rect.fromLTRB(
+                viewportRect.left + 24,
+                viewportRect.top + 24,
+                viewportRect.right - 24,
+                viewportRect.bottom - 24,
+              );
+            },
+          ),
           baseColor: Colors.black54,
         ),
       ),

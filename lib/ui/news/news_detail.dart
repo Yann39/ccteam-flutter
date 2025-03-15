@@ -33,7 +33,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:logging/logging.dart';
 import 'package:provider/provider.dart';
-import 'package:share/share.dart';
+import 'package:share_plus/share_plus.dart';
 
 class NewsDetail extends StatelessWidget {
   final Logger _log = new Logger('NewsDetail');

@@ -20,7 +20,6 @@ if (keystorePropertiesFile.exists()) {
 android {
     compileSdk 34
 
-
     defaultConfig {
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
         applicationId "net.ccteam"

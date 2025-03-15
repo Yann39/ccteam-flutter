@@ -12,4 +12,4 @@ packages
 .php/api/config/database.php
 */key.properties
 *.iml
-./android/key.properties
+android/key.properties

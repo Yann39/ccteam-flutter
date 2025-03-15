@@ -14,13 +14,32 @@
 
 * [About](#about)
 * [Installation](#installation)
+* [Play Store](#play-store)
 * [Usage](#usage)
 * [License](#license)
 
 # About
 
-
 # CCTeam
+
+# Play Store
+
+In build.gradle, upgrade version code and name :
+
+```gradle
+versionCode 2
+versionName "0.8.0"
+```
+
+Build the application bundle :
+
+```bash
+flutter build appbundle
+```
+
+The **aab** file will be available in _\build\app\outputs\bundle\release\app-release.aab_ directory.
+
+The application is available on the Play Store :
 
 
 

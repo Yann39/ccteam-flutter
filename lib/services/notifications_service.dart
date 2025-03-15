@@ -34,7 +34,7 @@ class NotificationsService {
       AndroidInitializationSettings('@mipmap/ic_launcher');
 
   static final DarwinInitializationSettings initializationSettingsDarwin =
-      DarwinInitializationSettings(onDidReceiveLocalNotification: onDidReceiveLocalNotification);
+      DarwinInitializationSettings();
 
   static final LinuxInitializationSettings initializationSettingsLinux =
       LinuxInitializationSettings(defaultActionName: 'Open notification');
