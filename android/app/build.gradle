@@ -36,9 +36,9 @@ android {
     compileOptions {
         // Flag to enable support for the new language APIs
         coreLibraryDesugaringEnabled true
-        // Sets Java compatibility to Java 8
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
+        // Sets Java compatibility to Java 17
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
     }
 
     signingConfigs {
@@ -77,7 +77,7 @@ dependencies {
     testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'com.android.support.test:runner:1.0.2'
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
-    coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.0.3' // needed by flutter_local_notifications package
+    coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.1.5' // required by flutter_local_notifications package
     implementation("com.google.android.material:material:1.12.0")
     implementation "androidx.multidex:multidex:2.0.1"
 }
