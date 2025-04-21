@@ -18,153 +18,186 @@
  */
 
 import 'package:ccteam/models/event.dart';
-import 'package:ccteam/providers/event_list_provider.dart';
-import 'package:ccteam/utils/custom_decorations.dart';
 import 'package:ccteam/utils/string_utils.dart';
 import 'package:ccteam/utils/track_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:provider/provider.dart';
 
 class EventCard extends StatelessWidget {
-  final int index;
+  final Event event;
 
-  EventCard(this.index);
+  EventCard(this.event);
 
   @override
   Widget build(BuildContext context) {
-    final EventListProvider _eventListProvider = Provider.of<EventListProvider>(context, listen: true);
-
-    final Event event = _eventListProvider.allEvents[index];
-
-    return Container(
-      height: 90,
-      decoration: CustomDecorations.cardFull,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: <Widget>[
-          Expanded(
-            child: Padding(
-              child: Row(
-                children: <Widget>[
-                  Column(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: <Widget>[
+    return Card(
+      margin: EdgeInsets.symmetric(vertical: 4.0, horizontal: 8.0),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(10.0),
+      ),
+      elevation: 5,
+      child: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Colors.lightBlueAccent, Colors.blueAccent],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(10.0),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(12.0),
+          child: Row(
+            children: [
+              ClipRRect(
+                borderRadius: BorderRadius.circular(8.0),
+                child: Container(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(8.0),
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
                       ClipRRect(
-                        borderRadius: BorderRadius.all(Radius.circular(8.0)),
+                        borderRadius: BorderRadius.circular(8.0),
                         child: Image.asset(
-                          TrackUtils.trackCoverImageUrlFromName(event.track?.name),
-                          width: 50,
-                          //fit: BoxFit.fill,
+                          TrackUtils.trackCoverImageUrlFromName(
+                            event.track?.name,
+                          ),
+                          width: 80,
+                          height: 80,
+                          fit: BoxFit.cover,
                         ),
                       ),
                       Container(
+                        padding: EdgeInsets.symmetric(vertical: 4),
                         child: Row(
-                          children: <Widget>[
-                            RotatedBox(
-                              quarterTurns: -1,
-                              child: Text(
-                                "${DateFormat('EEEE', 'fr').format(event.startDate!).substring(0, 3)}",
-                                style: TextStyle(color: Colors.white, height: 1),
-                              ),
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              (event.participants != null &&
+                                      event.participants!.length > 1)
+                                  ? Icons.group
+                                  : Icons.person,
+                              color: Colors.white,
+                              size: 16,
                             ),
-                            Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              children: <Widget>[
-                                Text("${DateFormat('dd', 'fr').format(event.startDate!)}",
-                                    textScaler: TextScaler.linear(1.5),
-                                    style: TextStyle(color: Colors.white, height: 1)),
-                                Text("${DateFormat('MMM', 'fr').format(event.startDate!)}",
-                                    textScaler: TextScaler.linear(0.9),
-                                    style: TextStyle(color: Colors.white, height: 0.8)),
-                              ],
+                            SizedBox(width: 4),
+                            Text(
+                              "${event.participants != null ? event.participants!.length : 0}",
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 12,
+                              ),
                             ),
                           ],
                         ),
                       ),
                     ],
                   ),
-                  VerticalDivider(color: Colors.white),
-                  Expanded(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: <Widget>[
-                        Text(event.title!, textScaler: TextScaler.linear(1.2), style: TextStyle(color: Colors.white)),
-                        Divider(height: 12.0, color: Colors.white),
+                ),
+              ),
+              SizedBox(width: 16.0),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      event.title!,
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                        height: 1.2,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 1,
+                    ),
+                    SizedBox(height: 4.0),
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.calendar_month,
+                          size: 16,
+                          color: Colors.blue[700],
+                        ),
+                        SizedBox(width: 4.0),
                         Expanded(
-                          child: ListView(
-                            scrollDirection: Axis.horizontal,
-                            children: <Widget>[
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.start,
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                children: <Widget>[
-                                  Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: <Widget>[
-                                      Icon(Icons.location_on, size: 15, color: Colors.red[700]),
-                                      Text("${event.track!.name}",
-                                          textScaler: TextScaler.linear(0.9), style: TextStyle(color: Colors.white)),
-                                    ],
-                                  ),
-                                  VerticalDivider(color: Colors.white),
-                                  Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: <Widget>[
-                                      Icon(Icons.euro_symbol, size: 15, color: Colors.purple[700]),
-                                      Text("${StringUtils.formatPrice(event.price!)}€",
-                                          textScaler: TextScaler.linear(0.9), style: TextStyle(color: Colors.white)),
-                                    ],
-                                  ),
-                                  VerticalDivider(color: Colors.white),
-                                  Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: <Widget>[
-                                      Icon(Icons.perm_contact_calendar, size: 15, color: Colors.teal[700]),
-                                      Text(event.organizer!,
-                                          textScaler: TextScaler.linear(0.9), style: TextStyle(color: Colors.white)),
-                                    ],
-                                  ),
-                                ],
-                              ),
-                            ],
+                          child: Text(
+                            DateFormat(
+                              'dd MMM yyyy',
+                              'fr',
+                            ).format(event.startDate!),
+                            style: TextStyle(color: Colors.white),
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 1,
                           ),
                         ),
                       ],
                     ),
-                  ),
-                  Container(
-                    width: 26,
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: <Widget>[
+                    SizedBox(height: 4.0),
+                    Row(
+                      children: [
                         Icon(
-                            (event.participants != null && event.participants!.length > 1) ? Icons.group : Icons.person,
-                            color: Colors.white,
-                            size: 18),
-                        Text("${event.participants != null ? event.participants!.length : 0}",
-                            textScaler: TextScaler.linear(0.8), style: TextStyle(color: Colors.white)),
+                          Icons.location_on,
+                          size: 16,
+                          color: Colors.red[700],
+                        ),
+                        SizedBox(width: 4.0),
+                        Expanded(
+                          child: Text(
+                            event.track!.name!,
+                            style: TextStyle(color: Colors.white),
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 1,
+                          ),
+                        ),
                       ],
                     ),
-                  ),
-                ],
+                    SizedBox(height: 2.0),
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.euro_symbol,
+                          size: 16,
+                          color: Colors.purple[700],
+                        ),
+                        SizedBox(width: 4.0),
+                        Expanded(
+                          child: Text(
+                            "${StringUtils.formatPrice(event.price!)}€",
+                            style: TextStyle(color: Colors.white),
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 1,
+                          ),
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: 2.0),
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.perm_contact_calendar,
+                          size: 16,
+                          color: Colors.teal[700],
+                        ),
+                        SizedBox(width: 4.0),
+                        Expanded(
+                          child: Text(
+                            event.organizer!,
+                            style: TextStyle(color: Colors.white),
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 1,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
-              padding: EdgeInsets.all(8.0),
-            ),
+            ],
           ),
-          Container(
-            decoration: BoxDecoration(
-              shape: BoxShape.rectangle,
-              color: event.endDate!.isAfter(DateTime.now()) ? Colors.green[700] : Colors.grey[600],
-              borderRadius: BorderRadius.only(topRight: Radius.circular(4.0), bottomRight: Radius.circular(4.0)),
-            ),
-            width: 5,
-          ),
-        ],
+        ),
       ),
     );
   }

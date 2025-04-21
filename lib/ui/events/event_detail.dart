@@ -134,7 +134,7 @@ class EventDetail extends StatelessWidget {
                 children: <Widget>[
                   Container(
                     alignment: Alignment.center,
-                    height: 132,
+                    height: 100,
                     padding: EdgeInsets.all(16.0),
                     decoration: BoxDecoration(
                       boxShadow: [
@@ -144,11 +144,6 @@ class EventDetail extends StatelessWidget {
                           blurRadius: 2,
                         ),
                       ],
-                      image: DecorationImage(
-                        fit: BoxFit.fill,
-                        image: AssetImage("images/finish_flag.png"),
-                        colorFilter: ColorFilter.mode(Colors.black.withOpacity(0.05), BlendMode.dstATop),
-                      ),
                       gradient: LinearGradient(
                         colors: [Colors.blue[300]!, Colors.blue[500]!],
                         begin: Alignment.topCenter,

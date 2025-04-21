@@ -78,12 +78,15 @@ class EventList extends StatelessWidget {
       }
     }
 
-    // assign fetched events depending on display mode
-    final List<Event> _events = _eventListProvider.eventModeSelectorIndex == 0
+    // assign fetched events depending on display mode and sort them
+    List<Event> _events = List<Event>.from(_eventListProvider.eventModeSelectorIndex == 0
         ? _eventListProvider.allEvents
         : _eventListProvider.eventModeSelectorIndex == 1
             ? _eventListProvider.yearEvents
-            : _eventListProvider.dayEvents;
+            : _eventListProvider.dayEvents);
+    
+    // Sort events by date in descending order
+    _events.sort((a, b) => b.startDate!.compareTo(a.startDate!));
 
     return Scaffold(
       appBar: AppBar(
@@ -203,32 +206,40 @@ class EventList extends StatelessWidget {
                     separatorBuilder: (context, index) => SizedBox(height: 8.0),
                     itemCount: _events.length,
                     itemBuilder: (context, index) {
-                      if (index > 0 && _events[index].startDate!.year < _events[index - 1].startDate!.year) {
-                        return Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: <Widget>[
+                      // Show year header only if it's the first event or if the year is different from the previous event
+                      bool showYear = index == 0 || 
+                          _events[index].startDate!.year != _events[index - 1].startDate!.year;
+                      
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: <Widget>[
+                          if (showYear) ...[
                             Row(
                               children: <Widget>[
                                 Icon(
-                                  Icons.arrow_downward,
+                                  Icons.calendar_today,
                                   size: 16,
+                                  color: Colors.grey[600],
                                 ),
-                                Text("${_events[index].startDate!.year}"),
+                                SizedBox(width: 8),
+                                Text(
+                                  "${_events[index].startDate!.year}",
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.grey[600],
+                                  ),
+                                ),
                               ],
                             ),
-                            SizedBox(height: 4.0),
-                            InkWell(
-                              child: EventCard(index),
-                              onTap: () => _navigateToEventDetailScreen(context, _eventListProvider.allEvents[index]),
-                            ),
+                            SizedBox(height: 8.0),
                           ],
-                        );
-                      } else {
-                        return InkWell(
-                          child: EventCard(index),
-                          onTap: () => _navigateToEventDetailScreen(context, _eventListProvider.allEvents[index]),
-                        );
-                      }
+                          InkWell(
+                            child: EventCard(_events[index]),
+                            onTap: () => _navigateToEventDetailScreen(context, _events[index]),
+                          ),
+                        ],
+                      );
                     },
                   ),
                 ),
