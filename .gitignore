@@ -13,3 +13,4 @@ packages
 */key.properties
 *.iml
 android/key.properties
+**/.cxx
