@@ -122,8 +122,6 @@ class CalendarSelectorState extends State<CalendarSelector> with TickerProviderS
             style: TextStyle(color: Colors.black87),
           ),
         );
-      default:
-        return Text("Unsupported mode");
     }
   }
 
@@ -153,8 +151,6 @@ class CalendarSelectorState extends State<CalendarSelector> with TickerProviderS
             physics: NeverScrollableScrollPhysics(), child: getMonthWidgets(_centerDate!.year, _centerDate!.month));
       case CalendarMode.week:
         return getWeekWidgets(_centerDate!);
-      default:
-        return Text("Unsupported mode");
     }
   }
 
@@ -499,8 +495,6 @@ class CalendarSelectorState extends State<CalendarSelector> with TickerProviderS
       case CalendarMode.week:
         _centerDate = DateTime(_initDate!.year, _initDate!.month, _initDate!.day + pos * 7);
         break;
-      default:
-        break;
     }
   }
 
@@ -559,8 +553,6 @@ class CalendarSelectorState extends State<CalendarSelector> with TickerProviderS
         return widget.expandable ? 345 : 310;
       case CalendarMode.week:
         return widget.expandable ? 130 : 105;
-      default:
-        return 310;
     }
   }
 

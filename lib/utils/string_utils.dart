@@ -25,9 +25,7 @@ class StringUtils {
   /// Capitalize the given [text]
   static String? capitalize(String text) => (text.length > 1)
       ? text[0].toUpperCase() + text.substring(1)
-      : text != null
-          ? text.toUpperCase()
-          : null;
+      : text.toUpperCase();
 
   /// Check that the specified [input] string is a valid E.164 formatted phone number
   static bool isValidPhoneNumber(String input) => RegExp(r'^\+\d\d \d\d\d\d\d\d\d\d\d$').hasMatch(input);

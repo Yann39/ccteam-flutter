@@ -156,7 +156,7 @@ class PhotoCard extends StatelessWidget {
                 child: Container(
                   height: 20.0,
                   alignment: Alignment.center,
-                  decoration: BoxDecoration(shape: BoxShape.rectangle, color: Colors.black.withOpacity(0.5)),
+                  decoration: BoxDecoration(shape: BoxShape.rectangle, color: Colors.black.withAlpha(128)),
                   child: Text(
                     photo.title!,
                     softWrap: false,

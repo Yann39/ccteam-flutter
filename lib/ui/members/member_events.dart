@@ -53,7 +53,7 @@ class _MemberEventsState extends State<MemberEvents> {
   }
 
   Widget build(BuildContext context) {
-    final MemberDetailProvider _memberDetailProvider = Provider.of<MemberDetailProvider>(context, listen: true);
+    //final MemberDetailProvider _memberDetailProvider = Provider.of<MemberDetailProvider>(context, listen: true);
     //final EventProvider _eventProvider = Provider.of<EventProvider>(context, listen: true);
 
     /*final _search = SizedBox(

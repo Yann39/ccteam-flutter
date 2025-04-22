@@ -46,22 +46,16 @@ class _LoginState extends State<Login> {
       switch (Provider.of<LoginProvider>(context, listen: false).loginStatus) {
         case LoginStatus.EmailStep:
           return EmailForm();
-          break;
         case LoginStatus.EmailAndInfoStep:
           return RegisterForm();
-          break;
         case LoginStatus.OtpStep:
           return OtpForm();
-          break;
         case LoginStatus.CreatePasscodeStep:
           return CreatePasscodeForm();
-          break;
         case LoginStatus.ConfirmPasscodeStep:
           return ConfirmPasscodeForm();
-          break;
         case LoginStatus.PasscodeStep:
           return PasscodeForm();
-          break;
         default:
           return EmailForm();
       }

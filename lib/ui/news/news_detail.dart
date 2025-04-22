@@ -313,7 +313,7 @@ class HeaderPainter extends CustomPainter {
         begin: Alignment.topCenter,
         end: Alignment.bottomCenter,
         stops: [0, 1],
-        colors: [Colors.red[700]!.withOpacity(0.4), Colors.purple[700]!.withOpacity(0.7)],
+        colors: [Colors.red[700]!.withAlpha(102), Colors.purple[700]!.withAlpha(179)],
       ).createShader(Rect.fromLTRB(0, 0, size.width, size.height));
 
     canvas.drawPath(path, paint);

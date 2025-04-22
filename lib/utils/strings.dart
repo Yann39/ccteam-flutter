@@ -348,7 +348,7 @@ class AppString {
   static const String by = 'Par';
   static const String on = 'Le';
   static const String record = 'Record';
-  static const String lapRecord = 'Record du tour';
+  static const String lapRecord = 'Record';
   static const String length = 'Longueur';
   static const String trackEvents = 'Roulages';
 

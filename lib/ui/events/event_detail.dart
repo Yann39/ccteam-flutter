@@ -177,7 +177,7 @@ class EventDetail extends StatelessWidget {
                                   color: Colors.blue[100],
                                   boxShadow: [
                                     BoxShadow(
-                                        color: Colors.black.withOpacity(0.1),
+                                        color: Colors.black.withAlpha(25),
                                         spreadRadius: 0.5,
                                         blurRadius: 0.5,
                                         offset: Offset(2, 2)),
@@ -213,7 +213,7 @@ class EventDetail extends StatelessWidget {
                                   color: Colors.blue[100],
                                   boxShadow: [
                                     BoxShadow(
-                                        color: Colors.black.withOpacity(0.1),
+                                        color: Colors.black.withAlpha(25),
                                         spreadRadius: 0.5,
                                         blurRadius: 0.5,
                                         offset: Offset(2, 2)),
@@ -251,7 +251,7 @@ class EventDetail extends StatelessWidget {
                                   color: Colors.blue[100],
                                   boxShadow: [
                                     BoxShadow(
-                                        color: Colors.black.withOpacity(0.1),
+                                        color: Colors.black.withAlpha(25),
                                         spreadRadius: 0.5,
                                         blurRadius: 0.5,
                                         offset: Offset(2, 2)),
@@ -286,7 +286,7 @@ class EventDetail extends StatelessWidget {
                                   color: Colors.blue[100],
                                   boxShadow: [
                                     BoxShadow(
-                                        color: Colors.black.withOpacity(0.1),
+                                        color: Colors.black.withAlpha(25),
                                         spreadRadius: 0.5,
                                         blurRadius: 0.5,
                                         offset: Offset(2, 2)),
@@ -312,12 +312,12 @@ class EventDetail extends StatelessWidget {
                         SizedBox(height: 10),
                         Row(
                           children: <Widget>[
-                            Icon(Icons.description, size: 16, color: Colors.black.withOpacity(0.64)),
+                            Icon(Icons.description, size: 16, color: Colors.black.withAlpha(163)),
                             SizedBox(width: 5.0),
                             Text(
                               AppString.description,
                               textScaler: TextScaler.linear(1.2),
-                              style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black.withOpacity(0.64)),
+                              style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black.withAlpha(163)),
                             ),
                           ],
                         ),
@@ -328,12 +328,12 @@ class EventDetail extends StatelessWidget {
                         SizedBox(height: 10),
                         Row(
                           children: <Widget>[
-                            Icon(Icons.group, size: 18, color: Colors.black.withOpacity(0.64)),
+                            Icon(Icons.group, size: 18, color: Colors.black.withAlpha(163)),
                             SizedBox(width: 5.0),
                             Text(
                               AppString.participants,
                               textScaler: TextScaler.linear(1.2),
-                              style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black.withOpacity(0.64)),
+                              style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black.withAlpha(163)),
                             ),
                           ],
                         ),

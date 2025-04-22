@@ -61,8 +61,8 @@ class _TrackDetailState extends State<TrackDetail> {
           columnWidths: {0: FlexColumnWidth(3), 1: FlexColumnWidth(2), 2: FlexColumnWidth(2), 3: FlexColumnWidth(1)},
           defaultVerticalAlignment: TableCellVerticalAlignment.middle,
           border: TableBorder(
-              horizontalInside: BorderSide(color: Colors.black.withOpacity(0.3), width: 1),
-              verticalInside: BorderSide(color: Colors.black.withOpacity(0.3), width: 1)),
+              horizontalInside: BorderSide(color: Colors.black.withAlpha(76), width: 1),
+              verticalInside: BorderSide(color: Colors.black.withAlpha(76), width: 1)),
           children: [
             for (Record rec in recordListProvider.trackRecords)
               TableRow(children: [
@@ -70,26 +70,26 @@ class _TrackDetailState extends State<TrackDetail> {
                   padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 12.0),
                   child: Text(
                     "${rec.member!.firstName} ${rec.member!.lastName}",
-                    style: TextStyle(color: Colors.black.withOpacity(0.8)),
+                    style: TextStyle(color: Colors.black.withAlpha(192)),
                     overflow: TextOverflow.ellipsis,
                     textAlign: TextAlign.center,
                   ),
                 ),
                 Text(
                   AppDateUtils.toLapTimeString(rec.lapTime) ?? "",
-                  style: TextStyle(color: Colors.black.withOpacity(0.8)),
+                  style: TextStyle(color: Colors.black.withAlpha(192)),
                   textAlign: TextAlign.center,
                 ),
                 Text(
                   rec.recordDate != null ? (AppDateUtils.convertToString(rec.recordDate!, "dd/MM/yyyy") ?? "") : "",
-                  style: TextStyle(color: Colors.black.withOpacity(0.8)),
+                  style: TextStyle(color: Colors.black.withAlpha(192)),
                   textAlign: TextAlign.center,
                 ),
                 SizedBox(
                     width: 10,
                     child: rec.conditions == "dry"
-                        ? Icon(Icons.wb_sunny, color: Colors.black.withOpacity(0.6), size: 15)
-                        : Icon(CustomIcons.rain, color: Colors.black.withOpacity(0.6), size: 15))
+                        ? Icon(Icons.wb_sunny, color: Colors.black.withAlpha(128), size: 15)
+                        : Icon(CustomIcons.rain, color: Colors.black.withAlpha(128), size: 15))
               ])
           ],
         ),
@@ -190,27 +190,53 @@ class _TrackDetailState extends State<TrackDetail> {
               SliverAppBar(
                 pinned: true,
                 expandedHeight: 200,
-                flexibleSpace: FlexibleSpaceBar(
-                  title: Text(_trackDetailProvider.currentTrack!.name!),
-                  background: Stack(
-                    alignment: Alignment.bottomLeft,
-                    fit: StackFit.expand,
-                    children: <Widget>[
-                      Image.asset(
-                        TrackUtils.trackCoverImageUrlFromName(_trackDetailProvider.currentTrack!.name),
-                        fit: BoxFit.fitWidth,
-                      ),
-                      DecoratedBox(
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            begin: Alignment(0.0, 1.0),
-                            end: Alignment(0.0, -1.0),
-                            colors: <Color>[Colors.black.withOpacity(0.4), Colors.transparent],
-                          ),
+                flexibleSpace: LayoutBuilder(
+                  builder: (BuildContext context, BoxConstraints constraints) {
+                    final FlexibleSpaceBarSettings settings = context.dependOnInheritedWidgetOfExactType<FlexibleSpaceBarSettings>()!;
+                    final double deltaExtent = settings.maxExtent - settings.minExtent;
+                    final double t = (1.0 - (settings.currentExtent - settings.minExtent) / deltaExtent).clamp(0.0, 1.0);
+                    
+                    // t est 0.0 quand complètement déployé, 1.0 quand complètement replié
+                    return FlexibleSpaceBar(
+                      title: Text(
+                        _trackDetailProvider.currentTrack!.name!,
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          shadows: t < 0.5 ? [
+                            Shadow(
+                              offset: Offset(1.0, 1.0),
+                              blurRadius: 3.0,
+                              color: Colors.black,
+                            ),
+                          ] : null,
                         ),
                       ),
-                    ],
-                  ),
+                      background: Stack(
+                        alignment: Alignment.bottomLeft,
+                        fit: StackFit.expand,
+                        children: <Widget>[
+                          Image.asset(
+                            TrackUtils.trackCoverImageUrlFromName(_trackDetailProvider.currentTrack!.name),
+                            fit: BoxFit.fitWidth,
+                          ),
+                          DecoratedBox(
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                begin: Alignment(0.0, 0.5),
+                                end: Alignment(0.0, -0.5),
+                                colors: <Color>[
+                                  Colors.black.withAlpha(179),
+                                  Colors.black.withAlpha(76),
+                                  Colors.transparent,
+                                ],
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
                 ),
               ),
               SliverPadding(
@@ -324,12 +350,12 @@ class _TrackDetailState extends State<TrackDetail> {
                               SizedBox(height: 10),
                               Row(
                                 children: <Widget>[
-                                  Icon(Icons.description, size: 16, color: Colors.black.withOpacity(0.8)),
+                                  Icon(Icons.description, size: 16, color: Colors.black.withAlpha(204)),
                                   SizedBox(width: 5.0),
                                   Text(
                                     AppString.trackEvents,
                                     textScaler: TextScaler.linear(1.2),
-                                    style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black.withOpacity(0.8)),
+                                    style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black.withAlpha(204)),
                                   ),
                                 ],
                               ),
@@ -340,13 +366,13 @@ class _TrackDetailState extends State<TrackDetail> {
                               SizedBox(height: 10),
                               Row(
                                 children: <Widget>[
-                                  Icon(Icons.group, size: 18, color: Colors.black.withOpacity(0.64)),
+                                  Icon(Icons.group, size: 18, color: Colors.black.withAlpha(163)),
                                   SizedBox(width: 5.0),
                                   Text(
                                     AppString.chronos,
                                     textScaler: TextScaler.linear(1.2),
                                     style:
-                                        TextStyle(fontWeight: FontWeight.bold, color: Colors.black.withOpacity(0.64)),
+                                        TextStyle(fontWeight: FontWeight.bold, color: Colors.black.withAlpha(163)),
                                   ),
                                 ],
                               ),

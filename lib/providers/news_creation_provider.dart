@@ -87,22 +87,23 @@ class NewsCreationProvider extends ChangeNotifier {
 
   /// Update the current news being edited.
   Future<News?> updateNews() async {
-    _updateStatus(LoadingStatus.loading);
-    _news.modifiedBy = _loginProvider.loggedMember;
+    try {
+      _updateStatus(LoadingStatus.loading);
+      _news.modifiedBy = _loginProvider.loggedMember;
 
-    return await _newsService.updateNews(_news).then((value) {
+      final value = await _newsService.updateNews(_news);
       _log.fine("News successfully updated : ${_news.title}");
       _news = value;
       _updateStatus(LoadingStatus.loaded);
       _messageProvider.setMessage(AppString.newsUpdated, MessageType.SUCCESS);
       return value;
-    }).onError((error, stackTrace) {
+    } catch (error) {
       _log.severe("Error when updating news ($error)");
       _messageProvider.setMessage(AppString.newsUpdateFailed, MessageType.ERROR);
       AppUtils.handleServiceException(error, _messageProvider, _loginProvider);
       _updateStatus(LoadingStatus.notLoaded);
-      return Future.value(null);
-    });
+      return null;
+    }
   }
 
   /// Notify all the registered listeners of this provider.

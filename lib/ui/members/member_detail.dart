@@ -131,8 +131,8 @@ class MemberDetail extends StatelessWidget {
           columnWidths: {0: FlexColumnWidth(3), 1: FlexColumnWidth(2), 2: FlexColumnWidth(2), 3: FlexColumnWidth(1)},
           defaultVerticalAlignment: TableCellVerticalAlignment.middle,
           border: TableBorder(
-              horizontalInside: BorderSide(color: Colors.black.withOpacity(0.3), width: 1),
-              verticalInside: BorderSide(color: Colors.black.withOpacity(0.3), width: 1)),
+              horizontalInside: BorderSide(color: Colors.black.withAlpha(76), width: 1),
+              verticalInside: BorderSide(color: Colors.black.withAlpha(76), width: 1)),
           children: [
             for (Record rec in recordListProvider.memberRecords)
               TableRow(children: [
@@ -140,27 +140,27 @@ class MemberDetail extends StatelessWidget {
                   padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 12.0),
                   child: Text(
                     rec.track!.name ?? "",
-                    style: TextStyle(color: Colors.black.withOpacity(0.8)),
+                    style: TextStyle(color: Colors.black.withAlpha(204)),
                     overflow: TextOverflow.ellipsis,
                     textAlign: TextAlign.center,
                   ),
                 ),
                 Text(
                   rec.recordDate != null ? AppDateUtils.convertToString(rec.recordDate!, "dd/MM/yyyy")! : "",
-                  style: TextStyle(color: Colors.black.withOpacity(0.8)),
+                  style: TextStyle(color: Colors.black.withAlpha(204)),
                   textAlign: TextAlign.center,
                 ),
                 Text(
                   AppDateUtils.toLapTimeString(rec.lapTime) ?? "",
-                  style: TextStyle(color: Colors.black.withOpacity(1), fontFamily: "AlarmClock", letterSpacing: -1),
+                  style: TextStyle(color: Colors.black.withAlpha(255), fontFamily: "AlarmClock", letterSpacing: -1),
                   textScaler: TextScaler.linear(1),
                   textAlign: TextAlign.center,
                 ),
                 SizedBox(
                     width: 10,
                     child: rec.conditions == "dry"
-                        ? Icon(Icons.wb_sunny, color: Colors.black.withOpacity(0.6), size: 15)
-                        : Icon(CustomIcons.rain, color: Colors.black.withOpacity(0.6), size: 15))
+                        ? Icon(Icons.wb_sunny, color: Colors.black.withAlpha(153), size: 15)
+                        : Icon(CustomIcons.rain, color: Colors.black.withAlpha(153), size: 15))
               ])
           ],
         ),
@@ -221,7 +221,7 @@ class MemberDetail extends StatelessWidget {
                                 "${memberDetailProvider.currentMember!.eventMembers![index].event!.track!.name}",
                                 textAlign: TextAlign.center,
                                 overflow: TextOverflow.ellipsis,
-                                style: TextStyle(fontWeight: FontWeight.bold, height: 1),
+                                style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black.withAlpha(204), height: 1),
                                 maxLines: 2,
                               ),
                               Text(
@@ -331,7 +331,7 @@ class MemberDetail extends StatelessWidget {
                   Container(
                     child: Text(
                       "${_memberDetailProvider.currentMember?.bike}",
-                      style: TextStyle(color: Colors.black.withOpacity(0.8)),
+                      style: TextStyle(color: Colors.black.withAlpha(204)),
                       textScaler: TextScaler.linear(1.1),
                     ),
                   )
@@ -340,7 +340,7 @@ class MemberDetail extends StatelessWidget {
             ),
             SizedBox(
               width: 72.0,
-              child: Icon(CustomIcons.motorbike, color: Colors.red[700]!.withOpacity(0.8)),
+              child: Icon(CustomIcons.motorbike, color: Colors.red[700]!.withAlpha(204)),
             )
           ],
         ),
@@ -361,7 +361,7 @@ class MemberDetail extends StatelessWidget {
                   Container(
                     child: Text(
                       "${_memberDetailProvider.currentMember?.phone}",
-                      style: TextStyle(color: Colors.black.withOpacity(0.8)),
+                      style: TextStyle(color: Colors.black.withAlpha(204)),
                       textScaler: TextScaler.linear(1.1),
                     ),
                   )
@@ -403,7 +403,7 @@ class MemberDetail extends StatelessWidget {
                   Container(
                     child: Text(
                       "${_memberDetailProvider.currentMember?.email}",
-                      style: TextStyle(color: Colors.black.withOpacity(0.8)),
+                      style: TextStyle(color: Colors.black.withAlpha(204)),
                       textScaler: TextScaler.linear(1.1),
                     ),
                   )
@@ -414,7 +414,7 @@ class MemberDetail extends StatelessWidget {
                 width: 72.0,
                 child: IconButton(
                     icon: Icon(Icons.mail),
-                    color: Colors.purple.withOpacity(0.6),
+                    color: Colors.purple.withAlpha(153),
                     onPressed: () {
                       AppUtils.mailTo(_memberDetailProvider.currentMember!.email!);
                     }))
@@ -443,13 +443,27 @@ class MemberDetail extends StatelessWidget {
                         overflow: TextOverflow.ellipsis,
                       )
                     : null,
-                flexibleSpace: _showTitle
-                    ? null
-                    : FlexibleSpaceBar(
-                        title: FlexibleTitle(
-                          text:
-                              "${_memberDetailProvider.currentMember!.firstName} ${_memberDetailProvider.currentMember!.lastName}",
-                          padding: EdgeInsets.only(left: 84, bottom: 44),
+                flexibleSpace: LayoutBuilder(
+                  builder: (BuildContext context, BoxConstraints constraints) {
+                    final FlexibleSpaceBarSettings settings = context.dependOnInheritedWidgetOfExactType<FlexibleSpaceBarSettings>()!;
+                    final double deltaExtent = settings.maxExtent - settings.minExtent;
+                    final double t = (1.0 - (settings.currentExtent - settings.minExtent) / deltaExtent).clamp(0.0, 1.0);
+                    
+                    return FlexibleSpaceBar(
+                        titlePadding: EdgeInsets.only(left: 144.0 - t*88, bottom: 16.0),
+                        title: Text(
+                          "${_memberDetailProvider.currentMember!.firstName} ${_memberDetailProvider.currentMember!.lastName}",
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            shadows: t < 0.5 ? [
+                              Shadow(
+                                offset: Offset(1.0, 1.0),
+                                blurRadius: 3.0,
+                                color: Colors.black,
+                              ),
+                            ] : null,
+                          ),
                         ),
                         background: Stack(
                           alignment: Alignment.bottomLeft,
@@ -469,9 +483,9 @@ class MemberDetail extends StatelessWidget {
                             DecoratedBox(
                               decoration: BoxDecoration(
                                 gradient: LinearGradient(
-                                  begin: Alignment(0.0, 1.0),
-                                  end: Alignment(0.0, -1.0),
-                                  colors: <Color>[Colors.black.withOpacity(0.4), Colors.transparent],
+                                  begin: Alignment(0.0, 0.5),
+                                  end: Alignment(0.0, -0.5),
+                                  colors: <Color>[Colors.black.withAlpha(179), Colors.black.withAlpha(76), Colors.transparent],
                                 ),
                               ),
                             ),
@@ -505,7 +519,9 @@ class MemberDetail extends StatelessWidget {
                             ),
                           ],
                         ),
-                      ),
+                      );
+                  },
+                ),
                 actions: <Widget>[
                   IconButton(
                     icon: const Icon(Icons.edit),
@@ -534,12 +550,12 @@ class MemberDetail extends StatelessWidget {
                           children: <Widget>[
                             Row(
                               children: <Widget>[
-                                Icon(Icons.person, size: 16, color: Colors.black.withOpacity(0.8)),
+                                Icon(Icons.person, size: 16, color: Colors.black.withAlpha(204)),
                                 SizedBox(width: 5.0),
                                 Text(
                                   AppString.personalInformation,
                                   textScaler: TextScaler.linear(1.2),
-                                  style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black.withOpacity(0.8)),
+                                  style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black.withAlpha(204)),
                                 ),
                               ],
                             ),
@@ -550,9 +566,9 @@ class MemberDetail extends StatelessWidget {
                               child: Column(
                                 children: <Widget>[
                                   _motoInfo,
-                                  Divider(color: Colors.black.withOpacity(0.8), height: 5),
+                                  Divider(color: Colors.black.withAlpha(204), height: 5),
                                   _mobileInfo,
-                                  Divider(color: Colors.black.withOpacity(0.8), height: 5),
+                                  Divider(color: Colors.black.withAlpha(204), height: 5),
                                   _emailInfo,
                                 ],
                               ),
@@ -560,12 +576,12 @@ class MemberDetail extends StatelessWidget {
                             SizedBox(height: 15),
                             Row(
                               children: <Widget>[
-                                Icon(Icons.event, size: 16, color: Colors.black.withOpacity(0.8)),
+                                Icon(Icons.event, size: 16, color: Colors.black.withAlpha(204)),
                                 SizedBox(width: 5.0),
                                 Text(
                                   AppString.rides,
                                   textScaler: TextScaler.linear(1.2),
-                                  style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black.withOpacity(0.8)),
+                                  style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black.withAlpha(204)),
                                 ),
                               ],
                             ),
@@ -574,12 +590,12 @@ class MemberDetail extends StatelessWidget {
                             SizedBox(height: 10),
                             Row(
                               children: <Widget>[
-                                Icon(Icons.timer, size: 16, color: Colors.black.withOpacity(0.8)),
+                                Icon(Icons.timer, size: 16, color: Colors.black.withAlpha(204)),
                                 SizedBox(width: 5.0),
                                 Text(
                                   AppString.chronos,
                                   textScaler: TextScaler.linear(1.2),
-                                  style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black.withOpacity(0.8)),
+                                  style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black.withAlpha(204)),
                                 ),
                               ],
                             ),

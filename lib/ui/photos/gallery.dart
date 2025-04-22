@@ -90,7 +90,7 @@ class Gallery extends StatelessWidget {
                   Container(
                     height: 20.0,
                     alignment: Alignment.center,
-                    decoration: BoxDecoration(shape: BoxShape.rectangle, color: Colors.black.withOpacity(0.5)),
+                    decoration: BoxDecoration(shape: BoxShape.rectangle, color: Colors.black.withAlpha(128)),
                     child: Text(
                       _photoProvider.photos[index].title!,
                       softWrap: false,

@@ -171,7 +171,6 @@ class _PhotoDetailState extends State<PhotoDetail> with SingleTickerProviderStat
   }
 
   Widget build(BuildContext context) {
-    final PhotoDetailProvider _photoDetailProvider = Provider.of<PhotoDetailProvider>(context, listen: true);
     final _photoProvider = Provider.of<PhotoProvider>(context, listen: true);
 
     return Scaffold(

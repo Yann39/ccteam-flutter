@@ -58,7 +58,7 @@ class CustomDecorations {
   /// Decoration for light cards
   static BoxDecoration cardLight = BoxDecoration(
     gradient: LinearGradient(
-      colors: [Colors.blue[100]!.withOpacity(0.5), Colors.blue[100]!],
+      colors: [Colors.blue[100]!.withAlpha(128), Colors.blue[100]!],
       begin: Alignment.topLeft,
       end: Alignment.bottomRight,
       stops: [0.0, 1.0],
