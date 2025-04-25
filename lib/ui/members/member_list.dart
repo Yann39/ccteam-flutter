@@ -26,6 +26,7 @@ import 'package:ccteam/providers/member_list_provider.dart';
 import 'package:ccteam/ui/main/main_action_menu.dart';
 import 'package:ccteam/ui/main/main_drawer.dart';
 import 'package:ccteam/utils/custom_decorations.dart';
+import 'package:ccteam/utils/enums.dart';
 import 'package:ccteam/utils/strings.dart';
 import 'package:ccteam/widgets/loading_content.dart';
 import 'package:flutter/material.dart';
@@ -36,19 +37,29 @@ class MemberList extends StatelessWidget {
   /// Navigate to the member creation form screen to create a new member.
   _navigateToAddMemberScreen(BuildContext context) async {
     // set a new member to be created
-    Provider.of<MemberCreationProvider>(context, listen: false).setMemberToEdit(new Member());
+    Provider.of<MemberCreationProvider>(
+      context,
+      listen: false,
+    ).setMemberToEdit(new Member());
 
     // navigate to the member creation form screen
     Navigator.pushNamed(context, '/addEditMember');
   }
 
   /// Navigate to the detail screen of the specified [member].
-  void _navigateToMemberDetailScreen(BuildContext context, Member member) async {
+  void _navigateToMemberDetailScreen(
+    BuildContext context,
+    Member member,
+  ) async {
     // fetch the member to get complete data
-    Provider.of<MemberDetailProvider>(context, listen: false).fetchMember(member).then((value) => {
-          // navigate to member detail screen
-          Navigator.pushNamed(context, '/memberDetail')
-        });
+    Provider.of<MemberDetailProvider>(context, listen: false)
+        .fetchMember(member)
+        .then(
+          (value) => {
+            // navigate to member detail screen
+            Navigator.pushNamed(context, '/memberDetail'),
+          },
+        );
   }
 
   /// Build the search field
@@ -68,7 +79,8 @@ class MemberList extends StatelessWidget {
   }
 
   Widget build(BuildContext context) {
-    final MemberListProvider _memberListProvider = Provider.of<MemberListProvider>(context, listen: true);
+    final MemberListProvider _memberListProvider =
+        Provider.of<MemberListProvider>(context, listen: true);
 
     return Scaffold(
       appBar: AppBar(
@@ -81,33 +93,61 @@ class MemberList extends StatelessWidget {
           _buildSearchField(_memberListProvider),
           Expanded(
             child: Container(
+              width: MediaQuery.of(context).size.width,
+              alignment: Alignment.topCenter,
               decoration: CustomDecorations.mainContent,
               child: LoadingContent(
-                loadingStatus: _memberListProvider.loadingStatus,
+                loadingStatus:
+                    _memberListProvider.memberList.isEmpty
+                        ? LoadingStatus.empty
+                        : _memberListProvider.loadingStatus,
+                defaultText: AppString.membersNotFound,
                 emptyText: AppString.membersNotFound,
                 child: ListView.separated(
-                  separatorBuilder: (context, index) => Divider(color: Colors.black, height: 4),
+                  separatorBuilder:
+                      (context, index) =>
+                          Divider(color: Colors.black, height: 4),
                   itemCount: _memberListProvider.memberList.length,
                   itemBuilder: (context, index) {
                     return Material(
                       child: InkWell(
                         child: ListTile(
                           title: Text(
-                              "${_memberListProvider.memberList[index].firstName} ${_memberListProvider.memberList[index].lastName}"),
-                          subtitle: Text(_memberListProvider.memberList[index].bike ?? AppString.notDefined),
-                          leading: _memberListProvider.memberList[index].avatar != null
-                              ? CircleAvatar(
-                                  backgroundImage:
-                                      MemoryImage(base64Decode(_memberListProvider.memberList[index].avatar!)))
-                              : CircleAvatar(
-                                  child: Text(
-                                    _memberListProvider.memberList[index].firstName![0],
-                                    style: TextStyle(color: Colors.white),
+                            "${_memberListProvider.memberList[index].firstName} ${_memberListProvider.memberList[index].lastName}",
+                          ),
+                          subtitle: Text(
+                            _memberListProvider.memberList[index].bike ??
+                                AppString.notDefined,
+                          ),
+                          leading:
+                              _memberListProvider.memberList[index].avatar !=
+                                      null
+                                  ? CircleAvatar(
+                                    radius: 25,
+                                    backgroundImage: MemoryImage(
+                                      base64Decode(
+                                        _memberListProvider
+                                            .memberList[index]
+                                            .avatar!,
+                                      ),
+                                    ),
+                                  )
+                                  : CircleAvatar(
+                                    radius: 25,
+                                    child: Text(
+                                      _memberListProvider
+                                          .memberList[index]
+                                          .firstName![0],
+                                      style: TextStyle(color: Colors.white),
+                                    ),
+                                    backgroundColor: Colors.red[700],
                                   ),
-                                  backgroundColor: Colors.red[700],
-                                ),
                         ),
-                        onTap: () => _navigateToMemberDetailScreen(context, _memberListProvider.memberList[index]),
+                        onTap:
+                            () => _navigateToMemberDetailScreen(
+                              context,
+                              _memberListProvider.memberList[index],
+                            ),
                       ),
                       color: Colors.transparent,
                     );
@@ -115,7 +155,7 @@ class MemberList extends StatelessWidget {
                 ),
               ),
             ),
-          )
+          ),
         ],
       ),
       floatingActionButton: FloatingActionButton(

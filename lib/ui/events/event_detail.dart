@@ -44,77 +44,103 @@ class EventDetail extends StatelessWidget {
   _navigateToEditEventScreen(BuildContext context, Event event) async {
     // set the event to be edited
     // todo : need deep copy here else the reference will be updated even on error ?
-    Provider.of<EventCreationProvider>(context, listen: false).setEventToEdit(event);
+    Provider.of<EventCreationProvider>(
+      context,
+      listen: false,
+    ).setEventToEdit(event);
 
     // navigate to the event creation form screen
     Navigator.pushNamed(context, '/addEditEvent');
   }
 
   /// Navigate to the detail screen of the specified [member].
-  void _navigateToMemberDetailScreen(BuildContext context, Member member) async {
+  void _navigateToMemberDetailScreen(
+    BuildContext context,
+    Member member,
+  ) async {
     // fetch member records
-    Provider.of<RecordListProvider>(context, listen: false).fetchMemberRecords(member.id!);
+    Provider.of<RecordListProvider>(
+      context,
+      listen: false,
+    ).fetchMemberRecords(member.id!);
     // fetch the member to get complete data
-    Provider.of<MemberDetailProvider>(context, listen: false).fetchMember(member).then((value) => {
-          // navigate to member detail screen
-          Navigator.pushNamed(context, '/memberDetail')
-        });
+    Provider.of<MemberDetailProvider>(context, listen: false)
+        .fetchMember(member)
+        .then(
+          (value) => {
+            // navigate to member detail screen
+            Navigator.pushNamed(context, '/memberDetail'),
+          },
+        );
   }
 
   /// Display a confirmation popup when trying to delete an event.
   void _showDeleteEventConfirmation(BuildContext context, String value) {
     showDialog(
       context: context,
-      builder: (_) => AlertDialog(
-        title: Text(AppString.confirmation),
-        content: Text(value),
-        actions: <Widget>[
-          TextButton(
-            onPressed: () {
-              final EventDetailProvider eventDetailProvider = Provider.of<EventDetailProvider>(context, listen: false);
-              final EventListProvider eventListProvider = Provider.of<EventListProvider>(context, listen: false);
-              // delete event
-              final Event eventToDelete = eventDetailProvider.currentEvent;
-              eventDetailProvider.deleteEvent(eventToDelete).then((value) {
-                // remove event from the event list
-                eventListProvider.removeEventFromList(eventToDelete);
-                // back to event list (need to pop 2 times)
-                Navigator.pop(context);
-                Navigator.pop(context);
-              });
-            },
-            child: Text(AppString.confirm),
+      builder:
+          (_) => AlertDialog(
+            title: Text(AppString.confirmation),
+            content: Text(value),
+            actions: <Widget>[
+              TextButton(
+                onPressed: () {
+                  final EventDetailProvider eventDetailProvider =
+                      Provider.of<EventDetailProvider>(context, listen: false);
+                  final EventListProvider eventListProvider =
+                      Provider.of<EventListProvider>(context, listen: false);
+                  // delete event
+                  final Event eventToDelete = eventDetailProvider.currentEvent;
+                  eventDetailProvider.deleteEvent(eventToDelete).then((value) {
+                    // remove event from the event list
+                    eventListProvider.removeEventFromList(eventToDelete);
+                    // back to event list (need to pop 2 times)
+                    Navigator.pop(context);
+                    Navigator.pop(context);
+                  });
+                },
+                child: Text(AppString.confirm),
+              ),
+              TextButton(
+                onPressed: () {
+                  // close this dialog
+                  Navigator.pop(context);
+                },
+                child: Text(AppString.cancel),
+              ),
+            ],
           ),
-          TextButton(
-            onPressed: () {
-              // close this dialog
-              Navigator.pop(context);
-            },
-            child: Text(AppString.cancel),
-          ),
-        ],
-      ),
     );
   }
 
   Widget build(BuildContext context) {
     _log.info("Building Event detail...");
 
-    final EventDetailProvider _eventDetailProvider = Provider.of<EventDetailProvider>(context, listen: true);
+    final EventDetailProvider _eventDetailProvider =
+        Provider.of<EventDetailProvider>(context, listen: true);
 
     return Scaffold(
       appBar: AppBar(
         actions: <Widget>[
           Builder(
-            builder: (context) => IconButton(
-              icon: Icon(Icons.edit),
-              onPressed: () => _navigateToEditEventScreen(context, _eventDetailProvider.currentEvent),
-            ),
+            builder:
+                (context) => IconButton(
+                  icon: Icon(Icons.edit),
+                  onPressed:
+                      () => _navigateToEditEventScreen(
+                        context,
+                        _eventDetailProvider.currentEvent,
+                      ),
+                ),
           ),
           IconButton(
             icon: Icon(Icons.delete_forever),
-            onPressed: () => _showDeleteEventConfirmation(context, AppString.eventDeletionAreYouSure),
-          )
+            onPressed:
+                () => _showDeleteEventConfirmation(
+                  context,
+                  AppString.eventDeletionAreYouSure,
+                ),
+          ),
         ],
         title: Text(AppString.eventDetailScreenTitle),
         leading: IconButton(
@@ -126,6 +152,7 @@ class EventDetail extends StatelessWidget {
         decoration: CustomDecorations.mainContent,
         child: LoadingContent(
           loadingStatus: _eventDetailProvider.loadingStatus,
+          defaultText: AppString.contentNotLoaded,
           emptyText: AppString.contentNotLoaded,
           child: ListView(
             children: <Widget>[
@@ -172,19 +199,26 @@ class EventDetail extends StatelessWidget {
                                 margin: EdgeInsets.all(4.0),
                                 padding: EdgeInsets.all(8.0),
                                 decoration: BoxDecoration(
-                                  border: Border.all(color: Colors.white, width: 1.0),
-                                  borderRadius: BorderRadius.all(Radius.circular(4.0)),
+                                  border: Border.all(
+                                    color: Colors.white,
+                                    width: 1.0,
+                                  ),
+                                  borderRadius: BorderRadius.all(
+                                    Radius.circular(4.0),
+                                  ),
                                   color: Colors.blue[100],
                                   boxShadow: [
                                     BoxShadow(
-                                        color: Colors.black.withAlpha(25),
-                                        spreadRadius: 0.5,
-                                        blurRadius: 0.5,
-                                        offset: Offset(2, 2)),
+                                      color: Colors.black.withAlpha(25),
+                                      spreadRadius: 0.5,
+                                      blurRadius: 0.5,
+                                      offset: Offset(2, 2),
+                                    ),
                                   ],
                                 ),
                                 child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
                                   children: <Widget>[
                                     Icon(
                                       Icons.event,
@@ -192,7 +226,9 @@ class EventDetail extends StatelessWidget {
                                       color: Colors.blue[700],
                                     ),
                                     Text(
-                                      _eventDetailProvider.currentEvent.fullDate,
+                                      _eventDetailProvider
+                                          .currentEvent
+                                          .fullDate,
                                       textAlign: TextAlign.center,
                                       maxLines: 2,
                                       overflow: TextOverflow.ellipsis,
@@ -208,19 +244,26 @@ class EventDetail extends StatelessWidget {
                                 margin: EdgeInsets.all(4.0),
                                 padding: EdgeInsets.all(8.0),
                                 decoration: BoxDecoration(
-                                  border: Border.all(color: Colors.white, width: 1.0),
-                                  borderRadius: BorderRadius.all(Radius.circular(4.0)),
+                                  border: Border.all(
+                                    color: Colors.white,
+                                    width: 1.0,
+                                  ),
+                                  borderRadius: BorderRadius.all(
+                                    Radius.circular(4.0),
+                                  ),
                                   color: Colors.blue[100],
                                   boxShadow: [
                                     BoxShadow(
-                                        color: Colors.black.withAlpha(25),
-                                        spreadRadius: 0.5,
-                                        blurRadius: 0.5,
-                                        offset: Offset(2, 2)),
+                                      color: Colors.black.withAlpha(25),
+                                      spreadRadius: 0.5,
+                                      blurRadius: 0.5,
+                                      offset: Offset(2, 2),
+                                    ),
                                   ],
                                 ),
                                 child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
                                   children: <Widget>[
                                     Icon(
                                       Icons.euro_symbol,
@@ -228,8 +271,13 @@ class EventDetail extends StatelessWidget {
                                       color: Colors.purple[700],
                                     ),
                                     Text(
-                                      _eventDetailProvider.currentEvent.price != null
-                                          ? StringUtils.formatPrice(_eventDetailProvider.currentEvent.price!)
+                                      _eventDetailProvider.currentEvent.price !=
+                                              null
+                                          ? StringUtils.formatPrice(
+                                            _eventDetailProvider
+                                                .currentEvent
+                                                .price!,
+                                          )
                                           : "",
                                       textAlign: TextAlign.center,
                                       maxLines: 2,
@@ -246,25 +294,45 @@ class EventDetail extends StatelessWidget {
                                 margin: EdgeInsets.all(4.0),
                                 padding: EdgeInsets.all(8.0),
                                 decoration: BoxDecoration(
-                                  border: Border.all(color: Colors.white, width: 1.0),
-                                  borderRadius: BorderRadius.all(Radius.circular(4.0)),
+                                  border: Border.all(
+                                    color: Colors.white,
+                                    width: 1.0,
+                                  ),
+                                  borderRadius: BorderRadius.all(
+                                    Radius.circular(4.0),
+                                  ),
                                   color: Colors.blue[100],
                                   boxShadow: [
                                     BoxShadow(
-                                        color: Colors.black.withAlpha(25),
-                                        spreadRadius: 0.5,
-                                        blurRadius: 0.5,
-                                        offset: Offset(2, 2)),
+                                      color: Colors.black.withAlpha(25),
+                                      spreadRadius: 0.5,
+                                      blurRadius: 0.5,
+                                      offset: Offset(2, 2),
+                                    ),
                                   ],
                                 ),
                                 child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
                                   children: <Widget>[
-                                    Icon(TrackUtils.trackIconFromName(_eventDetailProvider.currentEvent.track?.name),
-                                        size: 38, color: Colors.red[700]),
+                                    Icon(
+                                      TrackUtils.trackIconFromName(
+                                        _eventDetailProvider
+                                            .currentEvent
+                                            .track
+                                            ?.name,
+                                      ),
+                                      size: 38,
+                                      color: Colors.red[700],
+                                    ),
                                     Text(
-                                      _eventDetailProvider.currentEvent.track != null
-                                          ? _eventDetailProvider.currentEvent.track!.name ?? ""
+                                      _eventDetailProvider.currentEvent.track !=
+                                              null
+                                          ? _eventDetailProvider
+                                                  .currentEvent
+                                                  .track!
+                                                  .name ??
+                                              ""
                                           : "",
                                       textAlign: TextAlign.center,
                                       maxLines: 2,
@@ -281,23 +349,37 @@ class EventDetail extends StatelessWidget {
                                 margin: EdgeInsets.all(4.0),
                                 padding: EdgeInsets.all(8.0),
                                 decoration: BoxDecoration(
-                                  border: Border.all(color: Colors.white, width: 1.0),
-                                  borderRadius: BorderRadius.all(Radius.circular(4.0)),
+                                  border: Border.all(
+                                    color: Colors.white,
+                                    width: 1.0,
+                                  ),
+                                  borderRadius: BorderRadius.all(
+                                    Radius.circular(4.0),
+                                  ),
                                   color: Colors.blue[100],
                                   boxShadow: [
                                     BoxShadow(
-                                        color: Colors.black.withAlpha(25),
-                                        spreadRadius: 0.5,
-                                        blurRadius: 0.5,
-                                        offset: Offset(2, 2)),
+                                      color: Colors.black.withAlpha(25),
+                                      spreadRadius: 0.5,
+                                      blurRadius: 0.5,
+                                      offset: Offset(2, 2),
+                                    ),
                                   ],
                                 ),
                                 child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
                                   children: <Widget>[
-                                    Icon(Icons.perm_contact_calendar, size: 38, color: Colors.teal[700]),
+                                    Icon(
+                                      Icons.perm_contact_calendar,
+                                      size: 38,
+                                      color: Colors.teal[700],
+                                    ),
                                     Text(
-                                      _eventDetailProvider.currentEvent.organizer ?? "",
+                                      _eventDetailProvider
+                                              .currentEvent
+                                              .organizer ??
+                                          "",
                                       textAlign: TextAlign.center,
                                       maxLines: 2,
                                       overflow: TextOverflow.ellipsis,
@@ -312,87 +394,155 @@ class EventDetail extends StatelessWidget {
                         SizedBox(height: 10),
                         Row(
                           children: <Widget>[
-                            Icon(Icons.description, size: 16, color: Colors.black.withAlpha(163)),
+                            Icon(
+                              Icons.description,
+                              size: 16,
+                              color: Colors.black.withAlpha(163),
+                            ),
                             SizedBox(width: 5.0),
                             Text(
                               AppString.description,
                               textScaler: TextScaler.linear(1.2),
-                              style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black.withAlpha(163)),
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: Colors.black.withAlpha(163),
+                              ),
                             ),
                           ],
                         ),
                         SizedBox(height: 10),
-                        Text(_eventDetailProvider.currentEvent.description ?? ""),
+                        Text(
+                          _eventDetailProvider.currentEvent.description ?? "",
+                        ),
                         SizedBox(height: 10),
                         Divider(color: Colors.white),
                         SizedBox(height: 10),
                         Row(
                           children: <Widget>[
-                            Icon(Icons.group, size: 18, color: Colors.black.withAlpha(163)),
+                            Icon(
+                              Icons.group,
+                              size: 18,
+                              color: Colors.black.withAlpha(163),
+                            ),
                             SizedBox(width: 5.0),
                             Text(
                               AppString.participants,
                               textScaler: TextScaler.linear(1.2),
-                              style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black.withAlpha(163)),
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: Colors.black.withAlpha(163),
+                              ),
                             ),
                           ],
                         ),
                         SizedBox(height: 10),
-                        (_eventDetailProvider.currentEvent.participants?.length ?? 0) > 0
+                        (_eventDetailProvider
+                                        .currentEvent
+                                        .participants
+                                        ?.length ??
+                                    0) >
+                                0
                             ? SizedBox(
-                                height: 140,
-                                child: ListView.builder(
-                                  scrollDirection: Axis.horizontal,
-                                  itemCount: _eventDetailProvider.currentEvent.participants!.length,
-                                  itemBuilder: (BuildContext context, int index) {
-                                    return Column(
-                                      children: <Widget>[
-                                        InkWell(
-                                          onTap: () => _navigateToMemberDetailScreen(
-                                              context, _eventDetailProvider.currentEvent.participants![index].member!),
-                                          child: Container(
-                                            width: 80,
-                                            height: 80,
-                                            padding: EdgeInsets.all(2.0),
-                                            margin: EdgeInsets.symmetric(horizontal: 12.0),
-                                            decoration: ShapeDecoration(shape: CircleBorder(), color: Colors.white70),
-                                            child:
-                                                _eventDetailProvider.currentEvent.participants![index].member!.avatar !=
-                                                        null
-                                                    ? CircleAvatar(
-                                                        backgroundColor: Colors.blue[100],
-                                                        backgroundImage: MemoryImage(base64Decode(_eventDetailProvider
-                                                            .currentEvent.participants![index].member!.avatar!)),
-                                                      )
-                                                    : CircleAvatar(
-                                                        backgroundColor: Colors.blue[100],
-                                                        child: ShaderMask(
-                                                          shaderCallback: (bounds) => LinearGradient(
-                                                            begin: const FractionalOffset(0.0, 0.0),
-                                                            end: const FractionalOffset(0.0, 1.0),
-                                                            stops: [0.0, 1.0],
-                                                            colors: [Colors.red[300]!, Colors.white],
-                                                          ).createShader(bounds),
-                                                          child: Icon(CustomIcons.pilot, size: 50),
-                                                        ),
-                                                      ),
-                                          ),
-                                        ),
-                                        SizedBox(height: 5.0),
-                                        Container(
+                              height: 140,
+                              child: ListView.builder(
+                                scrollDirection: Axis.horizontal,
+                                itemCount:
+                                    _eventDetailProvider
+                                        .currentEvent
+                                        .participants!
+                                        .length,
+                                itemBuilder: (BuildContext context, int index) {
+                                  return Column(
+                                    children: <Widget>[
+                                      InkWell(
+                                        onTap:
+                                            () => _navigateToMemberDetailScreen(
+                                              context,
+                                              _eventDetailProvider
+                                                  .currentEvent
+                                                  .participants![index]
+                                                  .member!,
+                                            ),
+                                        child: Container(
                                           width: 80,
-                                          child: Text(
-                                            "${_eventDetailProvider.currentEvent.participants![index].member!.firstName} ${_eventDetailProvider.currentEvent.participants![index].member!.lastName}",
-                                            overflow: TextOverflow.ellipsis,
-                                            maxLines: 2,
-                                            textAlign: TextAlign.center,
+                                          height: 80,
+                                          padding: EdgeInsets.all(2.0),
+                                          margin: EdgeInsets.symmetric(
+                                            horizontal: 12.0,
                                           ),
+                                          decoration: ShapeDecoration(
+                                            shape: CircleBorder(),
+                                            color: Colors.white70,
+                                          ),
+                                          child:
+                                              _eventDetailProvider
+                                                          .currentEvent
+                                                          .participants![index]
+                                                          .member!
+                                                          .avatar !=
+                                                      null
+                                                  ? CircleAvatar(
+                                                    backgroundColor:
+                                                        Colors.blue[100],
+                                                    backgroundImage: MemoryImage(
+                                                      base64Decode(
+                                                        _eventDetailProvider
+                                                            .currentEvent
+                                                            .participants![index]
+                                                            .member!
+                                                            .avatar!,
+                                                      ),
+                                                    ),
+                                                  )
+                                                  : CircleAvatar(
+                                                    backgroundColor:
+                                                        Colors.blue[100],
+                                                    child: ShaderMask(
+                                                      shaderCallback:
+                                                          (
+                                                            bounds,
+                                                          ) => LinearGradient(
+                                                            begin:
+                                                                const FractionalOffset(
+                                                                  0.0,
+                                                                  0.0,
+                                                                ),
+                                                            end:
+                                                                const FractionalOffset(
+                                                                  0.0,
+                                                                  1.0,
+                                                                ),
+                                                            stops: [0.0, 1.0],
+                                                            colors: [
+                                                              Colors.red[300]!,
+                                                              Colors.white,
+                                                            ],
+                                                          ).createShader(
+                                                            bounds,
+                                                          ),
+                                                      child: Icon(
+                                                        CustomIcons.pilot,
+                                                        size: 50,
+                                                      ),
+                                                    ),
+                                                  ),
                                         ),
-                                      ],
-                                    );
-                                  },
-                                ),
-                              )
+                                      ),
+                                      SizedBox(height: 5.0),
+                                      Container(
+                                        width: 80,
+                                        child: Text(
+                                          "${_eventDetailProvider.currentEvent.participants![index].member!.firstName} ${_eventDetailProvider.currentEvent.participants![index].member!.lastName}",
+                                          overflow: TextOverflow.ellipsis,
+                                          maxLines: 2,
+                                          textAlign: TextAlign.center,
+                                        ),
+                                      ),
+                                    ],
+                                  );
+                                },
+                              ),
+                            )
                             : Text(AppString.noParticipant),
                         SizedBox(height: 10),
                         Divider(color: Colors.white),

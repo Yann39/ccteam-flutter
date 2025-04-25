@@ -20,9 +20,6 @@
 import 'package:ccteam/utils/custom_decorations.dart';
 import 'package:ccteam/utils/strings.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-
-import '../../providers/member_detail_provider.dart';
 
 class MemberEvents extends StatefulWidget {
   const MemberEvents({Key? key}) : super(key: key);

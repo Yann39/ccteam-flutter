@@ -26,12 +26,12 @@ enum LoginStatus {
   OtpStep,
   CreatePasscodeStep,
   ConfirmPasscodeStep,
-  PasscodeStep
+  PasscodeStep,
 }
 
 enum OtpStatus { NotSent, Sent, Verified }
 
-enum LoadingStatus { notLoaded, loading, loaded }
+enum LoadingStatus { notLoaded, loading, loaded, empty }
 
 enum ConfirmDialogAction { yes, no }
 
@@ -41,4 +41,4 @@ enum DialogType { info, success, warning, error }
 
 enum MessageType { INFO, SUCCESS, WARNING, ERROR }
 
-enum TrackCondition { dry, drying, wet}
+enum TrackCondition { dry, drying, wet }

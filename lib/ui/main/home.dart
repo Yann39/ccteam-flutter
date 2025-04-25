@@ -22,7 +22,7 @@ import 'package:ccteam/ui/events/event_list.dart';
 import 'package:ccteam/ui/members/member_list.dart';
 import 'package:ccteam/ui/news/news_list.dart';
 import 'package:ccteam/ui/photos/galleries.dart';
-import 'package:ccteam/ui/tracks/tracks.dart';
+import 'package:ccteam/ui/tracks/track_list.dart';
 import 'package:ccteam/utils/custom_icons.dart';
 import 'package:ccteam/utils/strings.dart';
 import 'package:flutter/material.dart';
@@ -33,7 +33,13 @@ class Home extends StatelessWidget {
   final Logger _log = new Logger('Home');
 
   // list of pages of the bottom navigation bar
-  final List<Widget> _children = [NewsList(), EventList(), MemberList(), Tracks(), Galleries()];
+  final List<Widget> _children = [
+    NewsList(),
+    EventList(),
+    MemberList(),
+    Tracks(),
+    Galleries(),
+  ];
 
   /// handle tab click
   void onTabTapped(int index, BuildContext context) {
@@ -42,7 +48,10 @@ class Home extends StatelessWidget {
 
   Widget build(BuildContext context) {
     _log.info("Building home page...");
-    final HomeProvider _homeProvider = Provider.of<HomeProvider>(context, listen: true);
+    final HomeProvider _homeProvider = Provider.of<HomeProvider>(
+      context,
+      listen: true,
+    );
 
     return Scaffold(
       backgroundColor: Colors.transparent,
@@ -79,7 +88,7 @@ class Home extends StatelessWidget {
             icon: Icon(Icons.photo_album, color: Colors.white),
             label: AppString.tabGallery,
             backgroundColor: Colors.red[700],
-          )
+          ),
         ],
       ),
     );

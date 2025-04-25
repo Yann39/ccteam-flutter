@@ -49,53 +49,78 @@ class AddEditEvent extends StatefulWidget {
 class _AddEditEventState extends State<AddEditEvent> {
   final GlobalKey<FormState> _formKey = new GlobalKey<FormState>();
   final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
-  final TextEditingController _startDatePickerController = new TextEditingController();
-  final TextEditingController _endDatePickerController = new TextEditingController();
+  final TextEditingController _startDatePickerController =
+      new TextEditingController();
+  final TextEditingController _endDatePickerController =
+      new TextEditingController();
   final TracksService _tracksService = new TracksService();
 
   Future<List<Track>>? _futureTracks;
   Track? _selectedTrack;
 
   initState() {
-    final EventCreationProvider _eventCreationProvider = Provider.of<EventCreationProvider>(context, listen: false);
+    final EventCreationProvider _eventCreationProvider =
+        Provider.of<EventCreationProvider>(context, listen: false);
     // fetch the tracks in initState so it is not fetch each time the state change
     _futureTracks = _tracksService.fetchTracks();
     // set date picker text
-    _startDatePickerController.text = AppDateUtils.convertToString(
-        _eventCreationProvider.event.startDate != null ? _eventCreationProvider.event.startDate! : DateTime.now(),
-        DATE_FORMAT)!;
-    _endDatePickerController.text = AppDateUtils.convertToString(
-        _eventCreationProvider.event.startDate != null
-            ? _eventCreationProvider.event.endDate!
-            : DateTime.now().add(Duration(days: 1)),
-        DATE_FORMAT)!;
+    _startDatePickerController.text =
+        AppDateUtils.convertToString(
+          _eventCreationProvider.event.startDate != null
+              ? _eventCreationProvider.event.startDate!
+              : DateTime.now(),
+          DATE_FORMAT,
+        )!;
+    _endDatePickerController.text =
+        AppDateUtils.convertToString(
+          _eventCreationProvider.event.startDate != null
+              ? _eventCreationProvider.event.endDate!
+              : DateTime.now().add(Duration(days: 1)),
+          DATE_FORMAT,
+        )!;
     return super.initState();
   }
 
   /// Initialize and display a Date picker related to the specified [controller] in the specified [context]
-  Future _chooseDate(BuildContext context, TextEditingController controller, DateTime? defaultValue) async {
+  Future _chooseDate(
+    BuildContext context,
+    TextEditingController controller,
+    DateTime? defaultValue,
+  ) async {
     final DateTime currentDate = DateTime.now();
     final TimeOfDay currentTime = TimeOfDay.now();
 
     // define initial date and time from the specified default DateTime value if set
     final DateTime initialDate = defaultValue ?? currentDate;
-    final TimeOfDay initialTime = defaultValue != null ? TimeOfDay.fromDateTime(defaultValue) : currentTime;
+    final TimeOfDay initialTime =
+        defaultValue != null
+            ? TimeOfDay.fromDateTime(defaultValue)
+            : currentTime;
 
     // show the date picker and await for the chosen date
     final DateTime? dateResult = await showDatePicker(
-        context: context,
-        initialDate: initialDate,
-        firstDate: DateTime(currentDate.year - 5),
-        lastDate: DateTime(currentDate.year + 5));
+      context: context,
+      initialDate: initialDate,
+      firstDate: DateTime(currentDate.year - 5),
+      lastDate: DateTime(currentDate.year + 5),
+    );
     if (dateResult == null) return;
 
     // show the time picker and await for the chosen time
-    final TimeOfDay? timeResult = await showTimePicker(context: context, initialTime: initialTime);
+    final TimeOfDay? timeResult = await showTimePicker(
+      context: context,
+      initialTime: initialTime,
+    );
     if (timeResult == null) return;
 
     // build final date with time
-    final DateTime finalDateTime =
-        DateTime(dateResult.year, dateResult.month, dateResult.day, timeResult.hour, timeResult.minute);
+    final DateTime finalDateTime = DateTime(
+      dateResult.year,
+      dateResult.month,
+      dateResult.day,
+      timeResult.hour,
+      timeResult.minute,
+    );
 
     // notify the framework that the internal state of this object has changed
     setState(() {
@@ -108,16 +133,26 @@ class _AddEditEventState extends State<AddEditEvent> {
     final FormState _form = _formKey.currentState!;
 
     if (!_form.validate()) {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(backgroundColor: Colors.red, content: Text(AppString.formNotValid)));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          backgroundColor: Colors.red,
+          content: Text(AppString.formNotValid),
+        ),
+      );
     } else {
       // this invokes each onSaved event
       _form.save();
 
-      final EventCreationProvider _eventCreationProvider = Provider.of<EventCreationProvider>(context, listen: false);
-      final EventListProvider _eventListProvider = Provider.of<EventListProvider>(context, listen: false);
-      final EventDetailProvider _eventDetailProvider = Provider.of<EventDetailProvider>(context, listen: false);
-      final LoginProvider _loginProvider = Provider.of<LoginProvider>(context, listen: false);
+      final EventCreationProvider _eventCreationProvider =
+          Provider.of<EventCreationProvider>(context, listen: false);
+      final EventListProvider _eventListProvider =
+          Provider.of<EventListProvider>(context, listen: false);
+      final EventDetailProvider _eventDetailProvider =
+          Provider.of<EventDetailProvider>(context, listen: false);
+      final LoginProvider _loginProvider = Provider.of<LoginProvider>(
+        context,
+        listen: false,
+      );
 
       // submit data to backend, if id is set this is an update, else a creation
       if (event.id != null) {
@@ -138,158 +173,245 @@ class _AddEditEventState extends State<AddEditEvent> {
   }
 
   Widget build(BuildContext context) {
-    final _eventCreationProvider = Provider.of<EventCreationProvider>(context, listen: true);
+    final _eventCreationProvider = Provider.of<EventCreationProvider>(
+      context,
+      listen: true,
+    );
 
     return Scaffold(
       key: _scaffoldKey,
-      appBar: AppBar(
-        title: Text(AppString.eventCreate),
-      ),
+      appBar: AppBar(title: Text(AppString.eventCreate)),
       body: Container(
         decoration: CustomDecorations.mainContent,
         child: LoadingContent(
           loadingStatus: _eventCreationProvider.loadingStatus,
+          defaultText: AppString.contentNotLoaded,
           emptyText: AppString.contentNotLoaded,
-          child: Stack(
+          child: Column(
             children: <Widget>[
-              Form(
-                autovalidateMode: AutovalidateMode.disabled,
-                key: _formKey,
-                child: ListView(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                  children: <Widget>[
-                    TextFormField(
-                      decoration: const InputDecoration(
-                        icon: const Icon(Icons.title),
-                        hintText: AppString.eventTitleHint,
-                        labelText: AppString.eventTitle,
+              Expanded(
+                child: Form(
+                  autovalidateMode: AutovalidateMode.disabled,
+                  key: _formKey,
+                  child: ListView(
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                    children: <Widget>[
+                      TextFormField(
+                        decoration: const InputDecoration(
+                          icon: const Icon(Icons.title),
+                          hintText: AppString.eventTitleHint,
+                          labelText: AppString.eventTitle,
+                        ),
+                        maxLines: 1,
+                        inputFormatters: [
+                          LengthLimitingTextInputFormatter(128),
+                        ],
+                        validator:
+                            (val) =>
+                                (val == null || val.isEmpty)
+                                    ? AppString.eventTitleMandatory
+                                    : null,
+                        onSaved:
+                            (val) => _eventCreationProvider.event.title = val!,
+                        initialValue: _eventCreationProvider.event.title,
                       ),
-                      maxLines: 1,
-                      inputFormatters: [LengthLimitingTextInputFormatter(128)],
-                      validator: (val) => (val == null || val.isEmpty) ? AppString.eventTitleMandatory : null,
-                      onSaved: (val) => _eventCreationProvider.event.title = val!,
-                      initialValue: _eventCreationProvider.event.title,
-                    ),
-                    TextFormField(
-                      decoration: const InputDecoration(
-                        icon: const Icon(Icons.description),
-                        hintText: AppString.eventDescriptionHint,
-                        labelText: AppString.eventDescription,
+                      TextFormField(
+                        decoration: const InputDecoration(
+                          icon: const Icon(Icons.description),
+                          hintText: AppString.eventDescriptionHint,
+                          labelText: AppString.eventDescription,
+                        ),
+                        maxLines: 2,
+                        inputFormatters: [
+                          LengthLimitingTextInputFormatter(2048),
+                        ],
+                        validator:
+                            (val) =>
+                                (val == null || val.isEmpty)
+                                    ? AppString.eventDescriptionMandatory
+                                    : null,
+                        onSaved:
+                            (val) =>
+                                _eventCreationProvider.event.description = val,
+                        initialValue: _eventCreationProvider.event.description,
                       ),
-                      maxLines: 2,
-                      inputFormatters: [LengthLimitingTextInputFormatter(2048)],
-                      validator: (val) => (val == null || val.isEmpty) ? AppString.eventDescriptionMandatory : null,
-                      onSaved: (val) => _eventCreationProvider.event.description = val,
-                      initialValue: _eventCreationProvider.event.description,
-                    ),
-                    TextFormField(
-                      decoration: const InputDecoration(
-                        icon: const Icon(Icons.attach_money),
-                        hintText: AppString.eventPriceHint,
-                        labelText: AppString.eventPrice,
+                      TextFormField(
+                        decoration: const InputDecoration(
+                          icon: const Icon(Icons.attach_money),
+                          hintText: AppString.eventPriceHint,
+                          labelText: AppString.eventPrice,
+                        ),
+                        maxLines: 1,
+                        keyboardType: TextInputType.numberWithOptions(
+                          decimal: true,
+                          signed: false,
+                        ),
+                        inputFormatters: [LengthLimitingTextInputFormatter(7)],
+                        validator:
+                            (val) =>
+                                (val == null || val.isEmpty)
+                                    ? AppString.eventPriceMandatory
+                                    : (StringUtils.isValidPrice(val)
+                                        ? null
+                                        : AppString.eventPriceNotValid),
+                        onSaved:
+                            (val) =>
+                                _eventCreationProvider
+                                    .event
+                                    .price = double.parse(val!),
+                        initialValue:
+                            _eventCreationProvider.event.price != null
+                                ? StringUtils.formatPrice(
+                                  _eventCreationProvider.event.price!,
+                                )
+                                : "",
                       ),
-                      maxLines: 1,
-                      keyboardType: TextInputType.numberWithOptions(decimal: true, signed: false),
-                      inputFormatters: [LengthLimitingTextInputFormatter(7)],
-                      validator: (val) => (val == null || val.isEmpty)
-                          ? AppString.eventPriceMandatory
-                          : (StringUtils.isValidPrice(val) ? null : AppString.eventPriceNotValid),
-                      onSaved: (val) => _eventCreationProvider.event.price = double.parse(val!),
-                      initialValue: _eventCreationProvider.event.price != null
-                          ? StringUtils.formatPrice(_eventCreationProvider.event.price!)
-                          : "",
-                    ),
-                    FutureBuilder<List<Track>>(
-                      future: _futureTracks,
-                      builder: (context, snapshot) {
-                        if (snapshot.hasData) {
-                          return Column(
-                            children: <Widget>[
-                              DropdownButtonFormField<Track>(
-                                value: _selectedTrack != null
-                                    ? _selectedTrack
-                                    : _eventCreationProvider.event.id != null
-                                        ? snapshot.data!
-                                            .firstWhere((Track t) => t.id == _eventCreationProvider.event.track!.id)
-                                        : snapshot.data!.first,
-                                decoration: const InputDecoration(
-                                  icon: const Icon(CustomIcons.track_sample),
-                                  hintText: AppString.eventTrackIdHint,
-                                  labelText: AppString.eventTrackId,
+                      FutureBuilder<List<Track>>(
+                        future: _futureTracks,
+                        builder: (context, snapshot) {
+                          if (snapshot.hasData) {
+                            return Column(
+                              children: <Widget>[
+                                DropdownButtonFormField<Track>(
+                                  value:
+                                      _selectedTrack != null
+                                          ? _selectedTrack
+                                          : _eventCreationProvider.event.id !=
+                                              null
+                                          ? snapshot.data!.firstWhere(
+                                            (Track t) =>
+                                                t.id ==
+                                                _eventCreationProvider
+                                                    .event
+                                                    .track!
+                                                    .id,
+                                          )
+                                          : snapshot.data!.first,
+                                  decoration: const InputDecoration(
+                                    icon: const Icon(CustomIcons.track_sample),
+                                    hintText: AppString.eventTrackIdHint,
+                                    labelText: AppString.eventTrackId,
+                                  ),
+                                  items:
+                                      snapshot.data!.map((Track val) {
+                                        return DropdownMenuItem<Track>(
+                                          value: val,
+                                          child: Text(val.name!),
+                                        );
+                                      }).toList(),
+                                  onChanged: (Track? val) {
+                                    setState(() {
+                                      _selectedTrack = val;
+                                    });
+                                  },
+                                  onSaved:
+                                      (val) =>
+                                          _eventCreationProvider.event.track =
+                                              val,
+                                  validator:
+                                      (val) =>
+                                          val == null
+                                              ? AppString.eventTrackIdMandatory
+                                              : null,
                                 ),
-                                items: snapshot.data!.map((Track val) {
-                                  return DropdownMenuItem<Track>(value: val, child: Text(val.name!));
-                                }).toList(),
-                                onChanged: (Track? val) {
-                                  setState(() {
-                                    _selectedTrack = val;
-                                  });
-                                },
-                                onSaved: (val) => _eventCreationProvider.event.track = val,
-                                validator: (val) => val == null ? AppString.eventTrackIdMandatory : null,
-                              )
-                            ],
-                          );
-                        } else if (snapshot.hasError) {
-                          return Text("${snapshot.error}");
-                        }
-                        // By default, show a loading spinner
-                        return CircularProgressIndicator();
-                      },
-                    ),
-                    TextFormField(
-                      decoration: const InputDecoration(
-                        icon: const Icon(Icons.perm_contact_calendar),
-                        hintText: AppString.eventOrganizerHint,
-                        labelText: AppString.eventOrganizer,
+                              ],
+                            );
+                          } else if (snapshot.hasError) {
+                            return Text("${snapshot.error}");
+                          }
+                          // By default, show a loading spinner
+                          return CircularProgressIndicator();
+                        },
                       ),
-                      maxLines: 1,
-                      inputFormatters: [LengthLimitingTextInputFormatter(64)],
-                      validator: (val) => (val == null || val.isEmpty) ? AppString.eventOrganizerMandatory : null,
-                      onSaved: (val) => _eventCreationProvider.event.organizer = val,
-                      initialValue: _eventCreationProvider.event.organizer,
-                    ),
-                    GestureDetector(
-                      onTap: () =>
-                          _chooseDate(context, _startDatePickerController, _eventCreationProvider.event.startDate),
-                      child: AbsorbPointer(
-                        child: TextFormField(
-                          decoration: InputDecoration(
-                            icon: const Icon(Icons.event),
-                            hintText: AppString.eventStartDateHint,
-                            labelText: AppString.eventStartDate,
+                      TextFormField(
+                        decoration: const InputDecoration(
+                          icon: const Icon(Icons.perm_contact_calendar),
+                          hintText: AppString.eventOrganizerHint,
+                          labelText: AppString.eventOrganizer,
+                        ),
+                        maxLines: 1,
+                        inputFormatters: [LengthLimitingTextInputFormatter(64)],
+                        validator:
+                            (val) =>
+                                (val == null || val.isEmpty)
+                                    ? AppString.eventOrganizerMandatory
+                                    : null,
+                        onSaved:
+                            (val) =>
+                                _eventCreationProvider.event.organizer = val,
+                        initialValue: _eventCreationProvider.event.organizer,
+                      ),
+                      GestureDetector(
+                        onTap:
+                            () => _chooseDate(
+                              context,
+                              _startDatePickerController,
+                              _eventCreationProvider.event.startDate,
+                            ),
+                        child: AbsorbPointer(
+                          child: TextFormField(
+                            decoration: InputDecoration(
+                              icon: const Icon(Icons.event),
+                              hintText: AppString.eventStartDateHint,
+                              labelText: AppString.eventStartDate,
+                            ),
+                            controller: _startDatePickerController,
+                            keyboardType: TextInputType.datetime,
+                            validator:
+                                (val) =>
+                                    (val == null || val.isEmpty)
+                                        ? AppString.eventStartDateMandatory
+                                        : null,
+                            onSaved:
+                                (val) =>
+                                    _eventCreationProvider
+                                        .event
+                                        .startDate = DateFormat(
+                                      DATE_FORMAT,
+                                    ).parseStrict(val!),
                           ),
-                          controller: _startDatePickerController,
-                          keyboardType: TextInputType.datetime,
-                          validator: (val) => (val == null || val.isEmpty) ? AppString.eventStartDateMandatory : null,
-                          onSaved: (val) =>
-                              _eventCreationProvider.event.startDate = DateFormat(DATE_FORMAT).parseStrict(val!),
                         ),
                       ),
-                    ),
-                    GestureDetector(
-                      onTap: () => _chooseDate(context, _endDatePickerController, _eventCreationProvider.event.endDate),
-                      child: AbsorbPointer(
-                        child: TextFormField(
-                          decoration: InputDecoration(
-                            icon: const Icon(Icons.event),
-                            hintText: AppString.eventEndDateHint,
-                            labelText: AppString.eventEndDate,
+                      GestureDetector(
+                        onTap:
+                            () => _chooseDate(
+                              context,
+                              _endDatePickerController,
+                              _eventCreationProvider.event.endDate,
+                            ),
+                        child: AbsorbPointer(
+                          child: TextFormField(
+                            decoration: InputDecoration(
+                              icon: const Icon(Icons.event),
+                              hintText: AppString.eventEndDateHint,
+                              labelText: AppString.eventEndDate,
+                            ),
+                            controller: _endDatePickerController,
+                            keyboardType: TextInputType.datetime,
+                            validator:
+                                (val) =>
+                                    (val == null || val.isEmpty)
+                                        ? AppString.eventEndDateMandatory
+                                        : null,
+                            onSaved:
+                                (val) =>
+                                    _eventCreationProvider
+                                        .event
+                                        .endDate = DateFormat(
+                                      DATE_FORMAT,
+                                    ).parseStrict(val!),
                           ),
-                          controller: _endDatePickerController,
-                          keyboardType: TextInputType.datetime,
-                          validator: (val) => (val == null || val.isEmpty) ? AppString.eventEndDateMandatory : null,
-                          onSaved: (val) =>
-                              _eventCreationProvider.event.endDate = DateFormat(DATE_FORMAT).parseStrict(val!),
                         ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
-              SaveCancelBar(
-                saveFunction: () => submitForm(_eventCreationProvider.event),
-                cancelFunction: () => Navigator.pop(context),
+              SafeArea(
+                child: SaveCancelBar(
+                  saveFunction: () => submitForm(_eventCreationProvider.event),
+                  cancelFunction: () => Navigator.pop(context),
+                ),
               ),
             ],
           ),

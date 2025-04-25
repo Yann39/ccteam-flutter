@@ -276,6 +276,8 @@ class AppString {
   static const String eventDisplay6ItemsTooltip = 'Afficher 6 événements par ligne';
   static const String eventDetailScreenTitle = 'Roulage';
   static const String eventsNotFound = 'Aucun événement trouvé';
+  static const String eventsNotFoundForYear = 'Aucun événement trouvé pour cette année';
+  static const String eventsNotFoundForDate = 'Aucun événement trouvé pour cette date';
 
   static const String recordCreate = 'Ajouter un chrono';
   static const String recordEdit = 'Modifier un chrono';

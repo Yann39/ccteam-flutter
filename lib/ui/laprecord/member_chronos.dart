@@ -48,25 +48,29 @@ class _MemberChronosState extends State<MemberChronos> {
   /// Method that launches the Add Record screen and awaits the result from Navigator.pop
   _navigateToAddRecordScreen(BuildContext context) async {
     // set a new record to be created
-    Provider.of<RecordCreationProvider>(context, listen: false).setRecordToEdit(new Record());
+    Provider.of<RecordCreationProvider>(
+      context,
+      listen: false,
+    ).setRecordToEdit(new Record());
     // Navigator.push returns a Future that will complete after we call Navigator.pop on the target screen
     await Navigator.pushNamed(context, '/addEditRecord');
-
   }
 
-  List<DropdownMenuItem<String>> get dropdownItems{
+  List<DropdownMenuItem<String>> get dropdownItems {
     List<DropdownMenuItem<String>> menuItems = [
-      DropdownMenuItem(child: Text("USA"),value: "USA"),
-      DropdownMenuItem(child: Text("Canada"),value: "Canada"),
-      DropdownMenuItem(child: Text("Brazil"),value: "Brazil"),
-      DropdownMenuItem(child: Text("England"),value: "England"),
+      DropdownMenuItem(child: Text("USA"), value: "USA"),
+      DropdownMenuItem(child: Text("Canada"), value: "Canada"),
+      DropdownMenuItem(child: Text("Brazil"), value: "Brazil"),
+      DropdownMenuItem(child: Text("England"), value: "England"),
     ];
     return menuItems;
   }
 
   Widget build(BuildContext context) {
-    final RecordListProvider _recordListProvider = Provider.of<RecordListProvider>(context, listen: true);
-    final MemberDetailProvider _memberDetailProvider = Provider.of<MemberDetailProvider>(context, listen: true);
+    final RecordListProvider _recordListProvider =
+        Provider.of<RecordListProvider>(context, listen: true);
+    final MemberDetailProvider _memberDetailProvider =
+        Provider.of<MemberDetailProvider>(context, listen: true);
 
     return Scaffold(
       appBar: AppBar(
@@ -81,8 +85,12 @@ class _MemberChronosState extends State<MemberChronos> {
         decoration: CustomDecorations.mainContent,
         child: Expanded(
           child: RefreshIndicator(
-            onRefresh: () => _recordListProvider.fetchMemberRecords(_memberDetailProvider.currentMember!.id!),
+            onRefresh:
+                () => _recordListProvider.fetchMemberRecords(
+                  _memberDetailProvider.currentMember!.id!,
+                ),
             child: LoadingContent(
+              defaultText: AppString.eventsNotFound,
               emptyText: AppString.eventsNotFound,
               loadingStatus: _recordListProvider.loadingStatus,
               child: ListView.separated(
@@ -106,22 +114,31 @@ class _MemberChronosState extends State<MemberChronos> {
                                 //Icon(Icons.location_on, size: 16, color: Colors.deepPurple),
                                 //SizedBox(width: 5.0),
                                 Text(
-                                  _recordListProvider.memberRecords[index].track!.name!,
+                                  _recordListProvider
+                                      .memberRecords[index]
+                                      .track!
+                                      .name!,
                                   textScaler: TextScaler.linear(1.3),
                                   style: TextStyle(color: Colors.white),
                                 ),
                               ],
                             ),
-                            SizedBox(
-                              height: 8.0,
-                            ),
+                            SizedBox(height: 8.0),
                             Row(
                               children: <Widget>[
-                                Icon(Icons.event, size: 16, color: Colors.teal[700]),
+                                Icon(
+                                  Icons.event,
+                                  size: 16,
+                                  color: Colors.teal[700],
+                                ),
                                 SizedBox(width: 5.0),
                                 Text(
                                   AppDateUtils.convertToString(
-                                          _recordListProvider.memberRecords[index].recordDate!, 'dd MMM yyyy') ??
+                                        _recordListProvider
+                                            .memberRecords[index]
+                                            .recordDate!,
+                                        'dd MMM yyyy',
+                                      ) ??
                                       "",
                                   style: TextStyle(color: Colors.white),
                                 ),
@@ -129,10 +146,18 @@ class _MemberChronosState extends State<MemberChronos> {
                             ),
                             Row(
                               children: <Widget>[
-                                Icon(CustomIcons.motorbike, size: 16, color: Colors.deepPurple),
+                                Icon(
+                                  CustomIcons.motorbike,
+                                  size: 16,
+                                  color: Colors.deepPurple,
+                                ),
                                 SizedBox(width: 5.0),
                                 Text(
-                                  _recordListProvider.memberRecords[index].member!.bike ?? "",
+                                  _recordListProvider
+                                          .memberRecords[index]
+                                          .member!
+                                          .bike ??
+                                      "",
                                   style: TextStyle(color: Colors.white),
                                 ),
                               ],
@@ -140,15 +165,26 @@ class _MemberChronosState extends State<MemberChronos> {
                           ],
                         ),
                         Container(
-                          padding: EdgeInsets.symmetric(horizontal: 4.0, vertical: 0.0),
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 4.0,
+                            vertical: 0.0,
+                          ),
                           decoration: BoxDecoration(
                             shape: BoxShape.rectangle,
                             borderRadius: BorderRadius.circular(4.0),
                             border: Border.all(color: Colors.white),
                           ),
                           child: Text(
-                            AppDateUtils.toLapTimeString(_recordListProvider.memberRecords[index].lapTime) ?? "",
-                            style: TextStyle(fontFamily: "AlarmClock", color: Colors.white),
+                            AppDateUtils.toLapTimeString(
+                                  _recordListProvider
+                                      .memberRecords[index]
+                                      .lapTime,
+                                ) ??
+                                "",
+                            style: TextStyle(
+                              fontFamily: "AlarmClock",
+                              color: Colors.white,
+                            ),
                             textScaler: TextScaler.linear(1.6),
                           ),
                         ),

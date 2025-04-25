@@ -41,7 +41,10 @@ class NewsDetail extends StatelessWidget {
   /// Navigate to the news creation form screen to edit the specified [news].
   _navigateToEditNewsScreen(BuildContext context, News news) async {
     // need deep copy here else the reference will be updated even on error
-    Provider.of<NewsCreationProvider>(context, listen: false).setNewsToEdit(News.clone(news));
+    Provider.of<NewsCreationProvider>(
+      context,
+      listen: false,
+    ).setNewsToEdit(News.clone(news));
 
     // navigate to the news creation form screen
     Navigator.pushNamed(context, '/addEditNews');
@@ -49,93 +52,140 @@ class NewsDetail extends StatelessWidget {
 
   /// Set the specified [news] as liked by the current logged member.
   _likeNews(BuildContext context, News news) async {
-    final Member member = Provider.of<LoginProvider>(context, listen: false).loggedMember!;
-    Provider.of<NewsDetailProvider>(context, listen: false).likeNews(news, member).then((value) => {
-          // update the news in the news list
-          Provider.of<NewsListProvider>(context, listen: false)
-              .updateNewsInList(Provider.of<NewsDetailProvider>(context, listen: false).currentNews!)
-        });
+    final Member member =
+        Provider.of<LoginProvider>(context, listen: false).loggedMember!;
+    Provider.of<NewsDetailProvider>(context, listen: false)
+        .likeNews(news, member)
+        .then(
+          (value) => {
+            // update the news in the news list
+            Provider.of<NewsListProvider>(
+              context,
+              listen: false,
+            ).updateNewsInList(
+              Provider.of<NewsDetailProvider>(
+                context,
+                listen: false,
+              ).currentNews!,
+            ),
+          },
+        );
   }
 
   /// Set the specified [news] as not liked by the current logged member.
   _unlikeNews(BuildContext context, News news) async {
-    final Member member = Provider.of<LoginProvider>(context, listen: false).loggedMember!;
-    Provider.of<NewsDetailProvider>(context, listen: false).unlikeNews(news, member).then((value) => {
-          // update the news in the news list
-          Provider.of<NewsListProvider>(context, listen: false)
-              .updateNewsInList(Provider.of<NewsDetailProvider>(context, listen: false).currentNews!)
-        });
+    final Member member =
+        Provider.of<LoginProvider>(context, listen: false).loggedMember!;
+    Provider.of<NewsDetailProvider>(context, listen: false)
+        .unlikeNews(news, member)
+        .then(
+          (value) => {
+            // update the news in the news list
+            Provider.of<NewsListProvider>(
+              context,
+              listen: false,
+            ).updateNewsInList(
+              Provider.of<NewsDetailProvider>(
+                context,
+                listen: false,
+              ).currentNews!,
+            ),
+          },
+        );
   }
 
   /// Display a confirmation popup when trying to delete a news.
   _showDeleteNewsConfirmation(BuildContext context, String value) {
     showDialog(
       context: context,
-      builder: (_) => AlertDialog(
-        title: Text(AppString.confirmation),
-        content: Text(value),
-        actions: <Widget>[
-          TextButton(
-            onPressed: () {
-              final NewsDetailProvider newsDetailProvider = Provider.of<NewsDetailProvider>(context, listen: false);
-              final NewsListProvider newsListProvider = Provider.of<NewsListProvider>(context, listen: false);
-              final News newsToDelete = newsDetailProvider.currentNews!;
-              // delete news
-              newsDetailProvider.deleteNews(newsToDelete).then((value) {
-                // remove news from the news list
-                newsListProvider.removeNewsFromList(newsToDelete);
-                // back to news list (need to pop 2 times)
-                Navigator.pop(context);
-                Navigator.pop(context);
-              });
-            },
-            child: Text(AppString.confirm),
+      builder:
+          (_) => AlertDialog(
+            title: Text(AppString.confirmation),
+            content: Text(value),
+            actions: <Widget>[
+              TextButton(
+                onPressed: () {
+                  final NewsDetailProvider newsDetailProvider =
+                      Provider.of<NewsDetailProvider>(context, listen: false);
+                  final NewsListProvider newsListProvider =
+                      Provider.of<NewsListProvider>(context, listen: false);
+                  final News newsToDelete = newsDetailProvider.currentNews!;
+                  // delete news
+                  newsDetailProvider.deleteNews(newsToDelete).then((value) {
+                    // remove news from the news list
+                    newsListProvider.removeNewsFromList(newsToDelete);
+                    // back to news list (need to pop 2 times)
+                    Navigator.pop(context);
+                    Navigator.pop(context);
+                  });
+                },
+                child: Text(AppString.confirm),
+              ),
+              TextButton(
+                onPressed: () {
+                  // close this dialog
+                  Navigator.pop(context);
+                },
+                child: Text(AppString.cancel),
+              ),
+            ],
           ),
-          TextButton(
-            onPressed: () {
-              // close this dialog
-              Navigator.pop(context);
-            },
-            child: Text(AppString.cancel),
-          ),
-        ],
-      ),
     );
   }
 
   Widget build(BuildContext context) {
     _log.info("Building News detail...");
 
-    final NewsDetailProvider _newsDetailProvider = Provider.of<NewsDetailProvider>(context, listen: true);
-    final LoginProvider _loginProvider = Provider.of<LoginProvider>(context, listen: false);
+    final NewsDetailProvider _newsDetailProvider =
+        Provider.of<NewsDetailProvider>(context, listen: true);
+    final LoginProvider _loginProvider = Provider.of<LoginProvider>(
+      context,
+      listen: false,
+    );
 
     // get if that news is liked for current logged member
-    final bool isLiked = _newsDetailProvider.currentNews!.likedNews
-            ?.any((element) => element.member!.id == _loginProvider.loggedMember!.id) ??
+    final bool isLiked =
+        _newsDetailProvider.currentNews!.likedNews?.any(
+          (element) => element.member!.id == _loginProvider.loggedMember!.id,
+        ) ??
         false;
 
     return Scaffold(
       appBar: AppBar(
         actions: <Widget>[
           Builder(
-            builder: (context) => IconButton(
-              icon: Icon(Icons.notifications_active),
-              onPressed: () =>
-                  // send a push notification
-                  NotificationsService.pushInstantNewsNotification(_newsDetailProvider.currentNews!),
-            ),
+            builder:
+                (context) => IconButton(
+                  icon: Icon(Icons.notifications_active),
+                  onPressed:
+                      () =>
+                      // send a push notification
+                      NotificationsService.pushInstantNewsNotification(
+                        _newsDetailProvider.currentNews!,
+                      ),
+                ),
           ),
           Builder(
-            builder: (context) => IconButton(
-              icon: Icon(Icons.edit),
-              onPressed: () => _navigateToEditNewsScreen(context, _newsDetailProvider.currentNews!),
-            ),
+            builder:
+                (context) => IconButton(
+                  icon: Icon(Icons.edit),
+                  onPressed:
+                      () => _navigateToEditNewsScreen(
+                        context,
+                        _newsDetailProvider.currentNews!,
+                      ),
+                ),
           ),
           Builder(
-            builder: (context) => IconButton(
-              icon: Icon(Icons.delete_forever),
-              onPressed: () => _showDeleteNewsConfirmation(context, AppString.newsDeletionAreYouSure),
-            ),
+            builder:
+                (context) => IconButton(
+                  icon: Icon(Icons.delete_forever),
+                  onPressed:
+                      () => _showDeleteNewsConfirmation(
+                        context,
+                        AppString.newsDeletionAreYouSure,
+                      ),
+                ),
           ),
         ],
         title: Text(AppString.detail),
@@ -148,6 +198,7 @@ class NewsDetail extends StatelessWidget {
         decoration: CustomDecorations.mainContent,
         child: LoadingContent(
           loadingStatus: _newsDetailProvider.loadingStatus,
+          defaultText: AppString.contentNotLoaded,
           emptyText: AppString.contentNotLoaded,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -157,7 +208,10 @@ class NewsDetail extends StatelessWidget {
                 child: Container(
                   color: Colors.transparent,
                   height: 132,
-                  padding: EdgeInsets.symmetric(vertical: 32.0, horizontal: 8.0),
+                  padding: EdgeInsets.symmetric(
+                    vertical: 32.0,
+                    horizontal: 8.0,
+                  ),
                   width: double.infinity,
                 ),
                 painter: HeaderPainter(),
@@ -172,7 +226,11 @@ class NewsDetail extends StatelessWidget {
                         mainAxisAlignment: MainAxisAlignment.end,
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: <Widget>[
-                          Icon(Icons.person, color: Colors.purple[700], size: 13.0),
+                          Icon(
+                            Icons.person,
+                            color: Colors.purple[700],
+                            size: 13.0,
+                          ),
                           SizedBox(width: 2.0),
                           Text(
                             "${AppString.by} ${_newsDetailProvider.currentNews!.createdBy!.firstName} ${_newsDetailProvider.currentNews!.createdBy!.lastName}",
@@ -185,7 +243,11 @@ class NewsDetail extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.end,
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: <Widget>[
-                        Icon(Icons.access_time, color: Colors.red[700], size: 13.0),
+                        Icon(
+                          Icons.access_time,
+                          color: Colors.red[700],
+                          size: 13.0,
+                        ),
                         SizedBox(width: 2.0),
                         Text(
                           "${AppString.on} ${AppDateUtils.convertToString(_newsDetailProvider.currentNews!.newsDate!, DATE_FORMAT_TXT)}",
@@ -197,11 +259,7 @@ class NewsDetail extends StatelessWidget {
                   ],
                 ),
               ),
-              Divider(
-                height: 8,
-                color: Colors.purple,
-                thickness: 2.0,
-              ),
+              Divider(height: 8, color: Colors.purple, thickness: 2.0),
               Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: Text(
@@ -224,10 +282,13 @@ class NewsDetail extends StatelessWidget {
                           padding: EdgeInsets.symmetric(horizontal: 6.0),
                           backgroundColor: Colors.blue[700],
                         ),
-                        onPressed: () => {
-                          Share.share(_newsDetailProvider.currentNews!.catchLine!,
-                              subject: _newsDetailProvider.currentNews!.title)
-                        },
+                        onPressed:
+                            () => {
+                              Share.share(
+                                _newsDetailProvider.currentNews!.catchLine!,
+                                subject: _newsDetailProvider.currentNews!.title,
+                              ),
+                            },
                         child: Row(
                           children: <Widget>[
                             Icon(Icons.share, color: Colors.white, size: 13),
@@ -251,13 +312,24 @@ class NewsDetail extends StatelessWidget {
                           padding: EdgeInsets.symmetric(horizontal: 6.0),
                           backgroundColor: Colors.blue[700],
                         ),
-                        onPressed: () => isLiked
-                            ? _unlikeNews(context, _newsDetailProvider.currentNews!)
-                            : _likeNews(context, _newsDetailProvider.currentNews!),
+                        onPressed:
+                            () =>
+                                isLiked
+                                    ? _unlikeNews(
+                                      context,
+                                      _newsDetailProvider.currentNews!,
+                                    )
+                                    : _likeNews(
+                                      context,
+                                      _newsDetailProvider.currentNews!,
+                                    ),
                         child: Row(
                           children: <Widget>[
-                            Icon(isLiked ? Icons.favorite : Icons.favorite_border,
-                                color: isLiked ? Colors.pink : Colors.white, size: 13),
+                            Icon(
+                              isLiked ? Icons.favorite : Icons.favorite_border,
+                              color: isLiked ? Colors.pink : Colors.white,
+                              size: 13,
+                            ),
                             SizedBox(width: 5),
                             Text(
                               isLiked ? AppString.unlike : AppString.like,
@@ -277,7 +349,10 @@ class NewsDetail extends StatelessWidget {
                   styleSheet: MarkdownStyleSheet.fromTheme(
                     ThemeData(
                       textTheme: TextTheme(
-                        bodyMedium: TextStyle(fontSize: 14.0, color: Colors.black87),
+                        bodyMedium: TextStyle(
+                          fontSize: 14.0,
+                          color: Colors.black87,
+                        ),
                       ),
                     ),
                   ),
@@ -298,56 +373,63 @@ class HeaderPainter extends CustomPainter {
     Paint paint = Paint();
     paint.blendMode = BlendMode.srcATop;
 
-    Path path = Path()
-      ..lineTo(0, size.height)
-      ..lineTo(size.width * 0.30, size.height * 0.25)
-      ..lineTo(size.width * 0.55, size.height * 0.55)
-      ..lineTo(size.width * 0.62, size.height * 0.30)
-      ..lineTo(size.width * 0.80, size.height * 0.88)
-      ..lineTo(size.width, size.height * 0.37)
-      ..lineTo(size.width, 0)
-      ..close();
+    Path path =
+        Path()
+          ..lineTo(0, size.height)
+          ..lineTo(size.width * 0.30, size.height * 0.25)
+          ..lineTo(size.width * 0.55, size.height * 0.55)
+          ..lineTo(size.width * 0.62, size.height * 0.30)
+          ..lineTo(size.width * 0.80, size.height * 0.88)
+          ..lineTo(size.width, size.height * 0.37)
+          ..lineTo(size.width, 0)
+          ..close();
 
     paint
       ..shader = LinearGradient(
         begin: Alignment.topCenter,
         end: Alignment.bottomCenter,
         stops: [0, 1],
-        colors: [Colors.red[700]!.withAlpha(102), Colors.purple[700]!.withAlpha(179)],
+        colors: [
+          Colors.red[700]!.withAlpha(102),
+          Colors.purple[700]!.withAlpha(179),
+        ],
       ).createShader(Rect.fromLTRB(0, 0, size.width, size.height));
 
     canvas.drawPath(path, paint);
 
-    path = Path()
-      ..lineTo(size.width * 0.02, 0)
-      ..lineTo(size.width * 0.35, size.height * 0.95)
-      ..lineTo(size.width * 0.45, size.height * 0.50)
-      ..lineTo(size.width * 0.58, size.height * 0.78)
-      ..lineTo(size.width * 0.80, size.height * 0.30)
-      ..lineTo(size.width, size.height * 0.65)
-      ..lineTo(size.width, 0)
-      ..close();
+    path =
+        Path()
+          ..lineTo(size.width * 0.02, 0)
+          ..lineTo(size.width * 0.35, size.height * 0.95)
+          ..lineTo(size.width * 0.45, size.height * 0.50)
+          ..lineTo(size.width * 0.58, size.height * 0.78)
+          ..lineTo(size.width * 0.80, size.height * 0.30)
+          ..lineTo(size.width, size.height * 0.65)
+          ..lineTo(size.width, 0)
+          ..close();
 
     canvas.drawPath(path, paint);
 
-    path = Path()
-      ..lineTo(0, size.height * 0.35)
-      ..lineTo(size.width * 0.20, size.height * 0.75)
-      ..lineTo(size.width * 0.58, size.height * 0.15)
-      ..lineTo(size.width * 0.70, size.height * 0.35)
-      ..lineTo(size.width * 0.90, 0)
-      ..lineTo(size.width, size.height * 0.10)
-      ..lineTo(size.width, 0)
-      ..close();
+    path =
+        Path()
+          ..lineTo(0, size.height * 0.35)
+          ..lineTo(size.width * 0.20, size.height * 0.75)
+          ..lineTo(size.width * 0.58, size.height * 0.15)
+          ..lineTo(size.width * 0.70, size.height * 0.35)
+          ..lineTo(size.width * 0.90, 0)
+          ..lineTo(size.width, size.height * 0.10)
+          ..lineTo(size.width, 0)
+          ..close();
 
     canvas.drawPath(path, paint);
 
-    path = Path()
-      ..lineTo(size.width * 0.25, 0)
-      ..lineTo(size.width * 0.40, size.height * 0.20)
-      ..lineTo(size.width * 0.50, 0)
-      ..lineTo(size.width, 0)
-      ..close();
+    path =
+        Path()
+          ..lineTo(size.width * 0.25, 0)
+          ..lineTo(size.width * 0.40, size.height * 0.20)
+          ..lineTo(size.width * 0.50, 0)
+          ..lineTo(size.width, 0)
+          ..close();
 
     canvas.drawPath(path, paint);
   }

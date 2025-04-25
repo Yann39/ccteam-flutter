@@ -36,7 +36,10 @@ import 'package:provider/provider.dart';
 /// Input formatter class for E.164 phone number
 class NumberTextInputFormatter extends TextInputFormatter {
   @override
-  TextEditingValue formatEditUpdate(TextEditingValue oldValue, TextEditingValue newValue) {
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
     final int _newTextLength = newValue.text.length;
     int _selectionIndex = newValue.selection.end;
     int _usedSubstringIndex = 0;
@@ -52,7 +55,8 @@ class NumberTextInputFormatter extends TextInputFormatter {
       if (newValue.selection.end >= 2) _selectionIndex += 1;
     }
     // then write following characters
-    if (_newTextLength >= _usedSubstringIndex) _newText.write(newValue.text.substring(_usedSubstringIndex));
+    if (_newTextLength >= _usedSubstringIndex)
+      _newText.write(newValue.text.substring(_usedSubstringIndex));
     return TextEditingValue(
       text: _newText.toString(),
       selection: TextSelection.collapsed(offset: _selectionIndex),
@@ -81,24 +85,36 @@ class _AddEditMemberState extends State<AddEditMember> {
     final FormState form = _formKey.currentState!;
 
     if (!form.validate()) {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(backgroundColor: Colors.red, content: Text(AppString.formNotValid)));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          backgroundColor: Colors.red,
+          content: Text(AppString.formNotValid),
+        ),
+      );
     } else {
       // this invokes each onSaved event
       form.save();
 
-      final MemberListProvider _memberListProvider = Provider.of<MemberListProvider>(context, listen: false);
-      final MemberDetailProvider _memberDetailProvider = Provider.of<MemberDetailProvider>(context, listen: false);
+      final MemberListProvider _memberListProvider =
+          Provider.of<MemberListProvider>(context, listen: false);
+      final MemberDetailProvider _memberDetailProvider =
+          Provider.of<MemberDetailProvider>(context, listen: false);
 
       // submit data to backend, if id is set this is an update, else a creation
       if (memberCreationProvider.currentMember.id != null) {
         memberCreationProvider.updateMember().then((value) {
-          _memberListProvider.updateMemberInList(memberCreationProvider.currentMember);
-          _memberDetailProvider.setCurrentMember(memberCreationProvider.currentMember);
+          _memberListProvider.updateMemberInList(
+            memberCreationProvider.currentMember,
+          );
+          _memberDetailProvider.setCurrentMember(
+            memberCreationProvider.currentMember,
+          );
         });
       } else {
         memberCreationProvider.createMember().then((value) {
-          _memberListProvider.addMemberInList(memberCreationProvider.currentMember);
+          _memberListProvider.addMemberInList(
+            memberCreationProvider.currentMember,
+          );
         });
       }
       Navigator.pop(context);
@@ -106,8 +122,12 @@ class _AddEditMemberState extends State<AddEditMember> {
   }
 
   Widget build(BuildContext context) {
-    final MemberCreationProvider _memberCreationProvider = Provider.of<MemberCreationProvider>(context, listen: true);
-    final AvatarProvider _avatarProvider = Provider.of<AvatarProvider>(context, listen: false);
+    final MemberCreationProvider _memberCreationProvider =
+        Provider.of<MemberCreationProvider>(context, listen: true);
+    final AvatarProvider _avatarProvider = Provider.of<AvatarProvider>(
+      context,
+      listen: false,
+    );
 
     final firstNameField = TextFormField(
       decoration: const InputDecoration(
@@ -117,7 +137,11 @@ class _AddEditMemberState extends State<AddEditMember> {
       ),
       maxLines: 1,
       inputFormatters: [LengthLimitingTextInputFormatter(64)],
-      validator: (val) => (val == null || val.isEmpty) ? AppString.memberFirstNameMandatory : null,
+      validator:
+          (val) =>
+              (val == null || val.isEmpty)
+                  ? AppString.memberFirstNameMandatory
+                  : null,
       onSaved: (val) => _memberCreationProvider.currentMember.firstName = val,
       initialValue: _memberCreationProvider.currentMember.firstName,
     );
@@ -130,7 +154,11 @@ class _AddEditMemberState extends State<AddEditMember> {
       ),
       maxLines: 1,
       inputFormatters: [LengthLimitingTextInputFormatter(64)],
-      validator: (val) => (val == null || val.isEmpty) ? AppString.memberLastNameMandatory : null,
+      validator:
+          (val) =>
+              (val == null || val.isEmpty)
+                  ? AppString.memberLastNameMandatory
+                  : null,
       onSaved: (val) => _memberCreationProvider.currentMember.lastName = val,
       initialValue: _memberCreationProvider.currentMember.lastName,
     );
@@ -144,9 +172,13 @@ class _AddEditMemberState extends State<AddEditMember> {
       keyboardType: TextInputType.emailAddress,
       maxLines: 1,
       inputFormatters: [LengthLimitingTextInputFormatter(128)],
-      validator: (val) => (val == null || val.isEmpty)
-          ? AppString.memberEmailMandatory
-          : (StringUtils.isValidEmail(val) ? null : AppString.memberEmailNotValid),
+      validator:
+          (val) =>
+              (val == null || val.isEmpty)
+                  ? AppString.memberEmailMandatory
+                  : (StringUtils.isValidEmail(val)
+                      ? null
+                      : AppString.memberEmailNotValid),
       onSaved: (val) => _memberCreationProvider.currentMember.email = val,
       initialValue: _memberCreationProvider.currentMember.email,
     );
@@ -162,11 +194,15 @@ class _AddEditMemberState extends State<AddEditMember> {
       inputFormatters: <TextInputFormatter>[
         LengthLimitingTextInputFormatter(13),
         FilteringTextInputFormatter.digitsOnly,
-        NumberTextInputFormatter()
+        NumberTextInputFormatter(),
       ],
-      validator: (val) => (val == null || val.isEmpty)
-          ? AppString.memberPhoneMandatory
-          : (StringUtils.isValidPhoneNumber(val) ? null : AppString.memberPhoneNotValid),
+      validator:
+          (val) =>
+              (val == null || val.isEmpty)
+                  ? AppString.memberPhoneMandatory
+                  : (StringUtils.isValidPhoneNumber(val)
+                      ? null
+                      : AppString.memberPhoneNotValid),
       onSaved: (val) => _memberCreationProvider.currentMember.phone = val,
       initialValue: _memberCreationProvider.currentMember.phone,
     );
@@ -179,9 +215,10 @@ class _AddEditMemberState extends State<AddEditMember> {
         Switch(
           activeColor: Colors.green[700],
           value: _memberCreationProvider.currentMember.active!,
-          onChanged: (val) => setState(() {
-            _memberCreationProvider.currentMember.active = val;
-          }),
+          onChanged:
+              (val) => setState(() {
+                _memberCreationProvider.currentMember.active = val;
+              }),
         ),
       ],
     );
@@ -194,19 +231,27 @@ class _AddEditMemberState extends State<AddEditMember> {
         Switch(
           activeColor: Colors.green[700],
           value: _memberCreationProvider.currentMember.admin!,
-          onChanged: (val) => setState(() {
-            _memberCreationProvider.currentMember.admin = val;
-          }),
+          onChanged:
+              (val) => setState(() {
+                _memberCreationProvider.currentMember.admin = val;
+              }),
         ),
       ],
     );
 
     final bikeField = TextFormField(
       decoration: const InputDecoration(
-          icon: const Icon(CustomIcons.motorbike), hintText: AppString.memberBikeHint, labelText: AppString.memberBike),
+        icon: const Icon(CustomIcons.motorbike),
+        hintText: AppString.memberBikeHint,
+        labelText: AppString.memberBike,
+      ),
       maxLines: 1,
       inputFormatters: [LengthLimitingTextInputFormatter(64)],
-      validator: (val) => (val == null || val.isEmpty) ? AppString.memberBikeMandatory : null,
+      validator:
+          (val) =>
+              (val == null || val.isEmpty)
+                  ? AppString.memberBikeMandatory
+                  : null,
       onSaved: (val) => _memberCreationProvider.currentMember.bike = val,
       initialValue: _memberCreationProvider.currentMember.bike,
     );
@@ -218,30 +263,45 @@ class _AddEditMemberState extends State<AddEditMember> {
             // set default picked and cropped image to existing image
             if (_memberCreationProvider.currentMember.avatar != null) {
               _avatarProvider.setPickedImage(
-                  File.fromRawPath(base64Decode(_memberCreationProvider.currentMember.avatar!)));
-              _avatarProvider.setCroppedImage(base64Decode(_memberCreationProvider.currentMember.avatar!));
+                File.fromRawPath(
+                  base64Decode(_memberCreationProvider.currentMember.avatar!),
+                ),
+              );
+              _avatarProvider.setCroppedImage(
+                base64Decode(_memberCreationProvider.currentMember.avatar!),
+              );
             }
             Navigator.of(context).pushNamed('/editAvatar');
           },
-          child: _memberCreationProvider.currentMember.avatar != null
-              ? CircleAvatar(
-                  radius: 60,
-                  backgroundImage: MemoryImage(base64Decode(_memberCreationProvider.currentMember.avatar!)),
-                )
-              : CircleAvatar(
-                  radius: 60,
-                  backgroundColor: Colors.blue[200],
-                  child: ShaderMask(
-                    blendMode: BlendMode.srcATop,
-                    shaderCallback: (bounds) => LinearGradient(
-                      begin: const FractionalOffset(0.0, 0.0),
-                      end: const FractionalOffset(0.0, 1.0),
-                      stops: [0.0, 1.0],
-                      colors: [Colors.red[700]!, Colors.blue[700]!],
-                    ).createShader(bounds),
-                    child: Icon(CustomIcons.pilot, size: 75, color: Colors.white),
+          child:
+              _memberCreationProvider.currentMember.avatar != null
+                  ? CircleAvatar(
+                    radius: 60,
+                    backgroundImage: MemoryImage(
+                      base64Decode(
+                        _memberCreationProvider.currentMember.avatar!,
+                      ),
+                    ),
+                  )
+                  : CircleAvatar(
+                    radius: 60,
+                    backgroundColor: Colors.blue[200],
+                    child: ShaderMask(
+                      blendMode: BlendMode.srcATop,
+                      shaderCallback:
+                          (bounds) => LinearGradient(
+                            begin: const FractionalOffset(0.0, 0.0),
+                            end: const FractionalOffset(0.0, 1.0),
+                            stops: [0.0, 1.0],
+                            colors: [Colors.red[700]!, Colors.blue[700]!],
+                          ).createShader(bounds),
+                      child: Icon(
+                        CustomIcons.pilot,
+                        size: 75,
+                        color: Colors.white,
+                      ),
+                    ),
                   ),
-                ),
         ),
         Positioned(
           height: 30,
@@ -255,8 +315,13 @@ class _AddEditMemberState extends State<AddEditMember> {
               // set default picked and cropped image to existing image
               if (_memberCreationProvider.currentMember.avatar != null) {
                 _avatarProvider.setPickedImage(
-                    File.fromRawPath(base64Decode(_memberCreationProvider.currentMember.avatar!)));
-                _avatarProvider.setCroppedImage(base64Decode(_memberCreationProvider.currentMember.avatar!));
+                  File.fromRawPath(
+                    base64Decode(_memberCreationProvider.currentMember.avatar!),
+                  ),
+                );
+                _avatarProvider.setCroppedImage(
+                  base64Decode(_memberCreationProvider.currentMember.avatar!),
+                );
                 Navigator.of(context).pushNamed('/editAvatar');
               }
             },
@@ -274,24 +339,27 @@ class _AddEditMemberState extends State<AddEditMember> {
               children: <Widget>[
                 Container(
                   height: 60,
-                  decoration: BoxDecoration(color: Colors.red[700], boxShadow: [
-                    BoxShadow(
-                      color: Colors.black26,
-                      spreadRadius: 0.5,
-                      blurRadius: 2,
-                    )
-                  ]),
+                  decoration: BoxDecoration(
+                    color: Colors.red[700],
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black26,
+                        spreadRadius: 0.5,
+                        blurRadius: 2,
+                      ),
+                    ],
+                  ),
                 ),
-                Container(
-                  height: 60,
-                  color: Colors.transparent,
-                ),
+                Container(height: 60, color: Colors.transparent),
               ],
             ),
             Container(
               height: 120,
               width: 120,
-              decoration: ShapeDecoration(shape: CircleBorder(), color: Colors.blue[100]),
+              decoration: ShapeDecoration(
+                shape: CircleBorder(),
+                color: Colors.blue[100],
+              ),
               child: Padding(
                 padding: const EdgeInsets.all(6.0),
                 child: editableAvatar,
@@ -300,7 +368,12 @@ class _AddEditMemberState extends State<AddEditMember> {
           ],
         ),
         Container(
-          padding: const EdgeInsets.only(top: 0, left: 16.0, right: 16.0, bottom: 56.0),
+          padding: const EdgeInsets.only(
+            top: 0,
+            left: 16.0,
+            right: 16.0,
+            bottom: 56.0,
+          ),
           child: Form(
             autovalidateMode: AutovalidateMode.disabled,
             key: _formKey,
@@ -341,22 +414,27 @@ class _AddEditMemberState extends State<AddEditMember> {
       appBar: AppBar(
         elevation: 0.0,
         title: Text(AppString.profileEdit),
-        actions: MediaQuery.of(context).orientation == Orientation.portrait ? null : actionMenu,
+        actions:
+            MediaQuery.of(context).orientation == Orientation.portrait
+                ? null
+                : actionMenu,
       ),
       body: Container(
         decoration: CustomDecorations.mainContent,
-        child: MediaQuery.of(context).orientation == Orientation.portrait
-            ? Stack(
-                alignment: Alignment.topCenter,
-                children: <Widget>[
-                  listView,
-                  SaveCancelBar(
-                    saveFunction: () => submitForm(_memberCreationProvider),
-                    cancelFunction: () => Navigator.pop(context),
-                  ),
-                ],
-              )
-            : listView,
+        child:
+            MediaQuery.of(context).orientation == Orientation.portrait
+                ? Column(
+                  children: <Widget>[
+                    Expanded(child: listView),
+                    SafeArea(
+                      child: SaveCancelBar(
+                        saveFunction: () => submitForm(_memberCreationProvider),
+                        cancelFunction: () => Navigator.pop(context),
+                      ),
+                    ),
+                  ],
+                )
+                : listView,
       ),
     );
   }

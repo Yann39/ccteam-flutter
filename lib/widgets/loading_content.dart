@@ -22,9 +22,15 @@ import 'package:flutter/material.dart';
 
 /// Loading indicator widget
 class LoadingContent extends StatelessWidget {
-  const LoadingContent({Key? key, required this.emptyText, required this.child, required this.loadingStatus})
-      : super(key: key);
+  const LoadingContent({
+    Key? key,
+    required this.defaultText,
+    required this.emptyText,
+    required this.child,
+    required this.loadingStatus,
+  }) : super(key: key);
 
+  final String defaultText;
   final String emptyText;
   final Widget child;
   final LoadingStatus loadingStatus;
@@ -39,10 +45,14 @@ class LoadingContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return loadingStatus == LoadingStatus.notLoaded
-        ? Text(emptyText)
-        : loadingStatus == LoadingStatus.loading
-            ? _loader
-            : child;
+    if (loadingStatus == LoadingStatus.notLoaded) {
+      return Text(defaultText);
+    } else if (loadingStatus == LoadingStatus.loading) {
+      return _loader;
+    } else if (loadingStatus == LoadingStatus.empty) {
+      return Text(emptyText);
+    } else {
+      return child;
+    }
   }
 }

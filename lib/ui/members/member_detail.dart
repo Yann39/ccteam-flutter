@@ -55,13 +55,17 @@ class MemberDetail extends StatelessWidget {
 
   /// Display or hide the Sliver app bar title depending on the scroll offset
   bool get _showTitle {
-    return _scrollController.hasClients && _scrollController.offset > _expandedHeight - kToolbarHeight;
+    return _scrollController.hasClients &&
+        _scrollController.offset > _expandedHeight - kToolbarHeight;
   }
 
   /// Navigate to the news creation form screen to edit the specified [member].
   void _navigateToEditMemberScreen(BuildContext context, Member member) async {
     // set the member to be edited
-    Provider.of<MemberCreationProvider>(context, listen: false).setMemberToEdit(member);
+    Provider.of<MemberCreationProvider>(
+      context,
+      listen: false,
+    ).setMemberToEdit(member);
 
     // navigate to the member creation form screen
     Navigator.pushNamed(context, '/addEditMember');
@@ -70,11 +74,17 @@ class MemberDetail extends StatelessWidget {
   /// Navigate to the specified [track] detail screen.
   void _navigateToTrackDetailScreen(BuildContext context, Track track) async {
     // todo Maybe better to do it in detail screen init method instead of each time here ?
-    Provider.of<RecordListProvider>(context, listen: false).fetchTrackRecords(track.id!);
+    Provider.of<RecordListProvider>(
+      context,
+      listen: false,
+    ).fetchTrackRecords(track.id!);
     /*Provider.of<EventProvider>(context, listen: false)
         .fetchTrackEvents(track.id);*/
 
-    Provider.of<TrackDetailProvider>(context, listen: false).setCurrentTrack(track);
+    Provider.of<TrackDetailProvider>(
+      context,
+      listen: false,
+    ).setCurrentTrack(track);
 
     // Navigator.push returns a Future that will complete after we call Navigator.pop on the target screen
     final _result = await Navigator.pushNamed(context, '/trackDetail');
@@ -91,35 +101,40 @@ class MemberDetail extends StatelessWidget {
   _showDeleteMemberConfirmation(BuildContext context, String value) {
     showDialog(
       context: context,
-      builder: (_) => AlertDialog(
-        title: Text(AppString.confirmation),
-        content: Text(value),
-        actions: <Widget>[
-          TextButton(
-            onPressed: () {
-              final MemberDetailProvider memberDetailProvider =
-                  Provider.of<MemberDetailProvider>(context, listen: false);
-              final MemberListProvider memberListProvider = Provider.of<MemberListProvider>(context, listen: false);
-              final Member memberToDelete = memberDetailProvider.currentMember!;
-              // delete member
-              memberDetailProvider.deleteMember(memberToDelete).then((value) {
-                // remove member from the members list
-                memberListProvider.removeMemberFromList(memberToDelete);
-                // close this dialog
-                Navigator.pop(context);
-              });
-            },
-            child: Text(AppString.confirm),
+      builder:
+          (_) => AlertDialog(
+            title: Text(AppString.confirmation),
+            content: Text(value),
+            actions: <Widget>[
+              TextButton(
+                onPressed: () {
+                  final MemberDetailProvider memberDetailProvider =
+                      Provider.of<MemberDetailProvider>(context, listen: false);
+                  final MemberListProvider memberListProvider =
+                      Provider.of<MemberListProvider>(context, listen: false);
+                  final Member memberToDelete =
+                      memberDetailProvider.currentMember!;
+                  // delete member
+                  memberDetailProvider.deleteMember(memberToDelete).then((
+                    value,
+                  ) {
+                    // remove member from the members list
+                    memberListProvider.removeMemberFromList(memberToDelete);
+                    // close this dialog
+                    Navigator.pop(context);
+                  });
+                },
+                child: Text(AppString.confirm),
+              ),
+              TextButton(
+                onPressed: () {
+                  // close this dialog
+                  Navigator.pop(context);
+                },
+                child: Text(AppString.cancel),
+              ),
+            ],
           ),
-          TextButton(
-            onPressed: () {
-              // close this dialog
-              Navigator.pop(context);
-            },
-            child: Text(AppString.cancel),
-          ),
-        ],
-      ),
     );
   }
 
@@ -128,40 +143,76 @@ class MemberDetail extends StatelessWidget {
       return Container(
         decoration: CustomDecorations.cardLight,
         child: Table(
-          columnWidths: {0: FlexColumnWidth(3), 1: FlexColumnWidth(2), 2: FlexColumnWidth(2), 3: FlexColumnWidth(1)},
+          columnWidths: {
+            0: FlexColumnWidth(3),
+            1: FlexColumnWidth(2),
+            2: FlexColumnWidth(2),
+            3: FlexColumnWidth(1),
+          },
           defaultVerticalAlignment: TableCellVerticalAlignment.middle,
           border: TableBorder(
-              horizontalInside: BorderSide(color: Colors.black.withAlpha(76), width: 1),
-              verticalInside: BorderSide(color: Colors.black.withAlpha(76), width: 1)),
+            horizontalInside: BorderSide(
+              color: Colors.black.withAlpha(76),
+              width: 1,
+            ),
+            verticalInside: BorderSide(
+              color: Colors.black.withAlpha(76),
+              width: 1,
+            ),
+          ),
           children: [
             for (Record rec in recordListProvider.memberRecords)
-              TableRow(children: [
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 12.0),
-                  child: Text(
-                    rec.track!.name ?? "",
+              TableRow(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8.0,
+                      vertical: 12.0,
+                    ),
+                    child: Text(
+                      rec.track!.name ?? "",
+                      style: TextStyle(color: Colors.black.withAlpha(204)),
+                      overflow: TextOverflow.ellipsis,
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                  Text(
+                    rec.recordDate != null
+                        ? AppDateUtils.convertToString(
+                          rec.recordDate!,
+                          "dd/MM/yyyy",
+                        )!
+                        : "",
                     style: TextStyle(color: Colors.black.withAlpha(204)),
-                    overflow: TextOverflow.ellipsis,
                     textAlign: TextAlign.center,
                   ),
-                ),
-                Text(
-                  rec.recordDate != null ? AppDateUtils.convertToString(rec.recordDate!, "dd/MM/yyyy")! : "",
-                  style: TextStyle(color: Colors.black.withAlpha(204)),
-                  textAlign: TextAlign.center,
-                ),
-                Text(
-                  AppDateUtils.toLapTimeString(rec.lapTime) ?? "",
-                  style: TextStyle(color: Colors.black.withAlpha(255), fontFamily: "AlarmClock", letterSpacing: -1),
-                  textScaler: TextScaler.linear(1),
-                  textAlign: TextAlign.center,
-                ),
-                SizedBox(
+                  Text(
+                    AppDateUtils.toLapTimeString(rec.lapTime) ?? "",
+                    style: TextStyle(
+                      color: Colors.black.withAlpha(255),
+                      fontFamily: "AlarmClock",
+                      letterSpacing: -1,
+                    ),
+                    textScaler: TextScaler.linear(1),
+                    textAlign: TextAlign.center,
+                  ),
+                  SizedBox(
                     width: 10,
-                    child: rec.conditions == "dry"
-                        ? Icon(Icons.wb_sunny, color: Colors.black.withAlpha(153), size: 15)
-                        : Icon(CustomIcons.rain, color: Colors.black.withAlpha(153), size: 15))
-              ])
+                    child:
+                        rec.conditions == "dry"
+                            ? Icon(
+                              Icons.wb_sunny,
+                              color: Colors.black.withAlpha(153),
+                              size: 15,
+                            )
+                            : Icon(
+                              CustomIcons.rain,
+                              color: Colors.black.withAlpha(153),
+                              size: 15,
+                            ),
+                  ),
+                ],
+              ),
           ],
         ),
       );
@@ -184,13 +235,24 @@ class MemberDetail extends StatelessWidget {
           itemCount: memberDetailProvider.currentMember!.eventMembers!.length,
           itemBuilder: (BuildContext context, int index) {
             // if list view is not large enough, add padding so it fills the whole screen width
-            final double pad = index >= memberDetailProvider.currentMember!.eventMembers!.length - 1
-                ? max(
-                    MediaQuery.of(context).size.width -
-                        ((_eventCardSize + 16) * memberDetailProvider.currentMember!.eventMembers!.length) -
-                        16,
-                    0)
-                : 0.0;
+            final double pad =
+                index >=
+                        memberDetailProvider
+                                .currentMember!
+                                .eventMembers!
+                                .length -
+                            1
+                    ? max(
+                      MediaQuery.of(context).size.width -
+                          ((_eventCardSize + 16) *
+                              memberDetailProvider
+                                  .currentMember!
+                                  .eventMembers!
+                                  .length) -
+                          16,
+                      0,
+                    )
+                    : 0.0;
             return Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
@@ -200,8 +262,15 @@ class MemberDetail extends StatelessWidget {
                       padding: EdgeInsets.only(top: 36.0),
                       margin: EdgeInsets.only(right: pad),
                       child: InkWell(
-                        onTap: () => _navigateToTrackDetailScreen(
-                            context, memberDetailProvider.currentMember!.eventMembers![index].event!.track!),
+                        onTap:
+                            () => _navigateToTrackDetailScreen(
+                              context,
+                              memberDetailProvider
+                                  .currentMember!
+                                  .eventMembers![index]
+                                  .event!
+                                  .track!,
+                            ),
                         child: Container(
                           decoration: CustomDecorations.cardLight,
                           width: _eventCardSize,
@@ -213,7 +282,13 @@ class MemberDetail extends StatelessWidget {
                             children: <Widget>[
                               Icon(
                                 TrackUtils.trackIconFromName(
-                                    memberDetailProvider.currentMember!.eventMembers![index].event!.track!.name),
+                                  memberDetailProvider
+                                      .currentMember!
+                                      .eventMembers![index]
+                                      .event!
+                                      .track!
+                                      .name,
+                                ),
                                 size: 30,
                                 color: Colors.red[700],
                               ),
@@ -221,7 +296,11 @@ class MemberDetail extends StatelessWidget {
                                 "${memberDetailProvider.currentMember!.eventMembers![index].event!.track!.name}",
                                 textAlign: TextAlign.center,
                                 overflow: TextOverflow.ellipsis,
-                                style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black.withAlpha(204), height: 1),
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.black.withAlpha(204),
+                                  height: 1,
+                                ),
                                 maxLines: 2,
                               ),
                               Text(
@@ -240,20 +319,23 @@ class MemberDetail extends StatelessWidget {
                       top: 17.0,
                       left: 0.0,
                       right: 0.0,
-                      child: Container(
-                        height: 2,
-                        color: Colors.red[700],
-                      ),
+                      child: Container(height: 2, color: Colors.red[700]),
                     ),
-                    if (memberDetailProvider.currentMember!.eventMembers!.length > 1 &&
-                        index != memberDetailProvider.currentMember!.eventMembers!.length - 1)
+                    if (memberDetailProvider
+                                .currentMember!
+                                .eventMembers!
+                                .length >
+                            1 &&
+                        index !=
+                            memberDetailProvider
+                                    .currentMember!
+                                    .eventMembers!
+                                    .length -
+                                1)
                       Positioned(
                         top: 6.0,
                         left: _eventCardSize,
-                        child: Icon(
-                          Icons.arrow_left,
-                          color: Colors.red[700],
-                        ),
+                        child: Icon(Icons.arrow_left, color: Colors.red[700]),
                       ),
                     Positioned(
                       top: 0.0,
@@ -270,8 +352,10 @@ class MemberDetail extends StatelessWidget {
                                 decoration: BoxDecoration(
                                   color: Colors.red[700],
                                   shape: BoxShape.rectangle,
-                                  borderRadius:
-                                      BorderRadius.only(topLeft: Radius.circular(6.0), topRight: Radius.circular(6.0)),
+                                  borderRadius: BorderRadius.only(
+                                    topLeft: Radius.circular(6.0),
+                                    topRight: Radius.circular(6.0),
+                                  ),
                                 ),
                                 child: Center(
                                   child: Text(
@@ -314,8 +398,10 @@ class MemberDetail extends StatelessWidget {
   }
 
   Widget build(BuildContext context) {
-    final MemberDetailProvider _memberDetailProvider = Provider.of<MemberDetailProvider>(context, listen: true);
-    final RecordListProvider _recordListProvider = Provider.of<RecordListProvider>(context, listen: true);
+    final MemberDetailProvider _memberDetailProvider =
+        Provider.of<MemberDetailProvider>(context, listen: true);
+    final RecordListProvider _recordListProvider =
+        Provider.of<RecordListProvider>(context, listen: true);
 
     final _motoInfo = MergeSemantics(
       child: Padding(
@@ -327,21 +413,27 @@ class MemberDetail extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
-                  Text(AppString.moto, style: TextStyle(color: Colors.red[700])),
+                  Text(
+                    AppString.moto,
+                    style: TextStyle(color: Colors.red[700]),
+                  ),
                   Container(
                     child: Text(
                       "${_memberDetailProvider.currentMember?.bike}",
                       style: TextStyle(color: Colors.black.withAlpha(204)),
                       textScaler: TextScaler.linear(1.1),
                     ),
-                  )
+                  ),
                 ],
               ),
             ),
             SizedBox(
               width: 72.0,
-              child: Icon(CustomIcons.motorbike, color: Colors.red[700]!.withAlpha(204)),
-            )
+              child: Icon(
+                CustomIcons.motorbike,
+                color: Colors.red[700]!.withAlpha(204),
+              ),
+            ),
           ],
         ),
       ),
@@ -357,33 +449,44 @@ class MemberDetail extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
-                  Text(AppString.mobile, style: TextStyle(color: Colors.red[700])),
+                  Text(
+                    AppString.mobile,
+                    style: TextStyle(color: Colors.red[700]),
+                  ),
                   Container(
                     child: Text(
                       "${_memberDetailProvider.currentMember?.phone}",
                       style: TextStyle(color: Colors.black.withAlpha(204)),
                       textScaler: TextScaler.linear(1.1),
                     ),
-                  )
+                  ),
                 ],
               ),
             ),
             SizedBox(
-                width: 72.0,
-                child: IconButton(
-                    icon: Icon(Icons.phone),
-                    color: Colors.green,
-                    onPressed: () {
-                      AppUtils.launchURL("tel:${_memberDetailProvider.currentMember?.phone}");
-                    })),
+              width: 72.0,
+              child: IconButton(
+                icon: Icon(Icons.phone),
+                color: Colors.green,
+                onPressed: () {
+                  AppUtils.launchURL(
+                    "tel:${_memberDetailProvider.currentMember?.phone}",
+                  );
+                },
+              ),
+            ),
             SizedBox(
-                width: 72.0,
-                child: IconButton(
-                    icon: Icon(Icons.sms),
-                    color: Colors.blue,
-                    onPressed: () {
-                      AppUtils.launchURL("sms:${_memberDetailProvider.currentMember?.phone}");
-                    }))
+              width: 72.0,
+              child: IconButton(
+                icon: Icon(Icons.sms),
+                color: Colors.blue,
+                onPressed: () {
+                  AppUtils.launchURL(
+                    "sms:${_memberDetailProvider.currentMember?.phone}",
+                  );
+                },
+              ),
+            ),
           ],
         ),
       ),
@@ -399,25 +502,30 @@ class MemberDetail extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
-                  Text(AppString.email, style: TextStyle(color: Colors.red[700])),
+                  Text(
+                    AppString.email,
+                    style: TextStyle(color: Colors.red[700]),
+                  ),
                   Container(
                     child: Text(
                       "${_memberDetailProvider.currentMember?.email}",
                       style: TextStyle(color: Colors.black.withAlpha(204)),
                       textScaler: TextScaler.linear(1.1),
                     ),
-                  )
+                  ),
                 ],
               ),
             ),
             SizedBox(
-                width: 72.0,
-                child: IconButton(
-                    icon: Icon(Icons.mail),
-                    color: Colors.purple.withAlpha(153),
-                    onPressed: () {
-                      AppUtils.mailTo(_memberDetailProvider.currentMember!.email!);
-                    }))
+              width: 72.0,
+              child: IconButton(
+                icon: Icon(Icons.mail),
+                color: Colors.purple.withAlpha(153),
+                onPressed: () {
+                  AppUtils.mailTo(_memberDetailProvider.currentMember!.email!);
+                },
+              ),
+            ),
           ],
         ),
       ),
@@ -428,6 +536,7 @@ class MemberDetail extends StatelessWidget {
         decoration: CustomDecorations.mainContent,
         child: LoadingContent(
           loadingStatus: _memberDetailProvider.loadingStatus,
+          defaultText: AppString.contentNotLoaded,
           emptyText: AppString.contentNotLoaded,
           child: CustomScrollView(
             controller: _scrollController,
@@ -435,177 +544,256 @@ class MemberDetail extends StatelessWidget {
               SliverAppBar(
                 pinned: true,
                 expandedHeight: _expandedHeight,
-                title: _showTitle
-                    ? Text(
-                        _memberDetailProvider.currentMember!.firstName! +
-                            ' ' +
-                            _memberDetailProvider.currentMember!.lastName!,
-                        overflow: TextOverflow.ellipsis,
-                      )
-                    : null,
+                title:
+                    _showTitle
+                        ? Text(
+                          _memberDetailProvider.currentMember!.firstName! +
+                              ' ' +
+                              _memberDetailProvider.currentMember!.lastName!,
+                          overflow: TextOverflow.ellipsis,
+                        )
+                        : null,
                 flexibleSpace: LayoutBuilder(
                   builder: (BuildContext context, BoxConstraints constraints) {
-                    final FlexibleSpaceBarSettings settings = context.dependOnInheritedWidgetOfExactType<FlexibleSpaceBarSettings>()!;
-                    final double deltaExtent = settings.maxExtent - settings.minExtent;
-                    final double t = (1.0 - (settings.currentExtent - settings.minExtent) / deltaExtent).clamp(0.0, 1.0);
-                    
+                    final FlexibleSpaceBarSettings settings =
+                        context
+                            .dependOnInheritedWidgetOfExactType<
+                              FlexibleSpaceBarSettings
+                            >()!;
+                    final double deltaExtent =
+                        settings.maxExtent - settings.minExtent;
+                    final double t = (1.0 -
+                            (settings.currentExtent - settings.minExtent) /
+                                deltaExtent)
+                        .clamp(0.0, 1.0);
+
                     return FlexibleSpaceBar(
-                        titlePadding: EdgeInsets.only(left: 144.0 - t*88, bottom: 16.0),
-                        title: Text(
-                          "${_memberDetailProvider.currentMember!.firstName} ${_memberDetailProvider.currentMember!.lastName}",
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                            shadows: t < 0.5 ? [
-                              Shadow(
-                                offset: Offset(1.0, 1.0),
-                                blurRadius: 3.0,
-                                color: Colors.black,
-                              ),
-                            ] : null,
-                          ),
+                      titlePadding: EdgeInsets.only(
+                        left: 144.0 - t * 88,
+                        bottom: 16.0,
+                      ),
+                      title: Text(
+                        "${_memberDetailProvider.currentMember!.firstName} ${_memberDetailProvider.currentMember!.lastName}",
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          shadows:
+                              t < 0.5
+                                  ? [
+                                    Shadow(
+                                      offset: Offset(1.0, 1.0),
+                                      blurRadius: 3.0,
+                                      color: Colors.black,
+                                    ),
+                                  ]
+                                  : null,
                         ),
-                        background: Stack(
-                          alignment: Alignment.bottomLeft,
-                          fit: StackFit.expand,
-                          children: <Widget>[
-                            CachedNetworkImage(
-                              placeholder: (context, url) => Center(
-                                child: SizedBox(
-                                  child: CircularProgressIndicator(),
-                                  height: 20.0,
-                                  width: 20.0,
+                      ),
+                      background: Stack(
+                        alignment: Alignment.bottomLeft,
+                        fit: StackFit.expand,
+                        children: <Widget>[
+                          CachedNetworkImage(
+                            placeholder:
+                                (context, url) => Center(
+                                  child: SizedBox(
+                                    child: CircularProgressIndicator(),
+                                    height: 20.0,
+                                    width: 20.0,
+                                  ),
                                 ),
+                            imageUrl:
+                                'https://images.freeimages.com/images/small-previews/e71/frog-1371919.jpg',
+                            fit: BoxFit.fitWidth,
+                          ),
+                          DecoratedBox(
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                begin: Alignment(0.0, 0.5),
+                                end: Alignment(0.0, -0.5),
+                                colors: <Color>[
+                                  Colors.black.withAlpha(179),
+                                  Colors.black.withAlpha(76),
+                                  Colors.transparent,
+                                ],
                               ),
-                              imageUrl: 'https://images.freeimages.com/images/small-previews/e71/frog-1371919.jpg',
-                              fit: BoxFit.fitWidth,
                             ),
-                            DecoratedBox(
-                              decoration: BoxDecoration(
-                                gradient: LinearGradient(
-                                  begin: Alignment(0.0, 0.5),
-                                  end: Alignment(0.0, -0.5),
-                                  colors: <Color>[Colors.black.withAlpha(179), Colors.black.withAlpha(76), Colors.transparent],
-                                ),
+                          ),
+                          Positioned(
+                            bottom: 15,
+                            left: 15,
+                            child: Container(
+                              decoration: ShapeDecoration(
+                                shape: CircleBorder(),
+                                color: Colors.white,
                               ),
-                            ),
-                            Positioned(
-                              bottom: 15,
-                              left: 15,
-                              child: Container(
-                                decoration: ShapeDecoration(shape: CircleBorder(), color: Colors.white),
-                                padding: EdgeInsets.all(3.0),
-                                child: _memberDetailProvider.currentMember!.avatar != null
-                                    ? CircleAvatar(
+                              padding: EdgeInsets.all(3.0),
+                              child:
+                                  _memberDetailProvider.currentMember!.avatar !=
+                                          null
+                                      ? CircleAvatar(
                                         radius: 50,
-                                        backgroundImage:
-                                            MemoryImage(base64Decode(_memberDetailProvider.currentMember!.avatar!)),
+                                        backgroundImage: MemoryImage(
+                                          base64Decode(
+                                            _memberDetailProvider
+                                                .currentMember!
+                                                .avatar!,
+                                          ),
+                                        ),
                                       )
-                                    : CircleAvatar(
+                                      : CircleAvatar(
                                         radius: 50,
                                         backgroundColor: Colors.blue[100],
                                         child: ShaderMask(
                                           blendMode: BlendMode.srcATop,
-                                          shaderCallback: (bounds) => LinearGradient(
-                                            begin: const FractionalOffset(0.0, 0.0),
-                                            end: const FractionalOffset(0.0, 1.0),
-                                            stops: [0.0, 1.0],
-                                            colors: [Colors.red[700]!, Colors.blue[700]!],
-                                          ).createShader(bounds),
-                                          child: Icon(CustomIcons.pilot, size: 75),
+                                          shaderCallback:
+                                              (bounds) => LinearGradient(
+                                                begin: const FractionalOffset(
+                                                  0.0,
+                                                  0.0,
+                                                ),
+                                                end: const FractionalOffset(
+                                                  0.0,
+                                                  1.0,
+                                                ),
+                                                stops: [0.0, 1.0],
+                                                colors: [
+                                                  Colors.red[700]!,
+                                                  Colors.blue[700]!,
+                                                ],
+                                              ).createShader(bounds),
+                                          child: Icon(
+                                            CustomIcons.pilot,
+                                            size: 75,
+                                          ),
                                         ),
                                       ),
-                              ),
                             ),
-                          ],
-                        ),
-                      );
+                          ),
+                        ],
+                      ),
+                    );
                   },
                 ),
                 actions: <Widget>[
                   IconButton(
                     icon: const Icon(Icons.edit),
-                    onPressed: () => _navigateToEditMemberScreen(context, _memberDetailProvider.currentMember!),
+                    onPressed:
+                        () => _navigateToEditMemberScreen(
+                          context,
+                          _memberDetailProvider.currentMember!,
+                        ),
                   ),
                   IconButton(
                     icon: const Icon(Icons.delete_forever),
-                    onPressed: () => _showDeleteMemberConfirmation(context, AppString.memberDeletionAreYouSure),
-                  )
+                    onPressed:
+                        () => _showDeleteMemberConfirmation(
+                          context,
+                          AppString.memberDeletionAreYouSure,
+                        ),
+                  ),
                 ],
               ),
               SliverPadding(
                 padding: EdgeInsets.all(8.0),
                 sliver: SliverList(
-                  delegate: SliverChildListDelegate(
-                    <Widget>[
-                      ConstrainedBox(
-                        // set minimum height : screen height - app bar height - status bar height - padding
-                        constraints: BoxConstraints(
-                            minHeight: MediaQuery.of(context).size.height -
-                                kToolbarHeight -
-                                MediaQuery.of(context).padding.top -
-                                16),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: <Widget>[
-                            Row(
-                              children: <Widget>[
-                                Icon(Icons.person, size: 16, color: Colors.black.withAlpha(204)),
-                                SizedBox(width: 5.0),
-                                Text(
-                                  AppString.personalInformation,
-                                  textScaler: TextScaler.linear(1.2),
-                                  style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black.withAlpha(204)),
-                                ),
-                              ],
-                            ),
-                            SizedBox(height: 10),
-                            Container(
-                              padding: EdgeInsets.all(8.0),
-                              decoration: CustomDecorations.cardLight,
-                              child: Column(
-                                children: <Widget>[
-                                  _motoInfo,
-                                  Divider(color: Colors.black.withAlpha(204), height: 5),
-                                  _mobileInfo,
-                                  Divider(color: Colors.black.withAlpha(204), height: 5),
-                                  _emailInfo,
-                                ],
-                              ),
-                            ),
-                            SizedBox(height: 15),
-                            Row(
-                              children: <Widget>[
-                                Icon(Icons.event, size: 16, color: Colors.black.withAlpha(204)),
-                                SizedBox(width: 5.0),
-                                Text(
-                                  AppString.rides,
-                                  textScaler: TextScaler.linear(1.2),
-                                  style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black.withAlpha(204)),
-                                ),
-                              ],
-                            ),
-                            SizedBox(height: 10),
-                            _eventsTimeline(_memberDetailProvider),
-                            SizedBox(height: 10),
-                            Row(
-                              children: <Widget>[
-                                Icon(Icons.timer, size: 16, color: Colors.black.withAlpha(204)),
-                                SizedBox(width: 5.0),
-                                Text(
-                                  AppString.chronos,
-                                  textScaler: TextScaler.linear(1.2),
-                                  style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black.withAlpha(204)),
-                                ),
-                              ],
-                            ),
-                            SizedBox(height: 10),
-                            _recordsTable(_recordListProvider),
-                          ],
-                        ),
+                  delegate: SliverChildListDelegate(<Widget>[
+                    ConstrainedBox(
+                      // set minimum height : screen height - app bar height - status bar height - padding
+                      constraints: BoxConstraints(
+                        minHeight:
+                            MediaQuery.of(context).size.height -
+                            kToolbarHeight -
+                            MediaQuery.of(context).padding.top -
+                            16,
                       ),
-                    ],
-                  ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: <Widget>[
+                          Row(
+                            children: <Widget>[
+                              Icon(
+                                Icons.person,
+                                size: 16,
+                                color: Colors.black.withAlpha(204),
+                              ),
+                              SizedBox(width: 5.0),
+                              Text(
+                                AppString.personalInformation,
+                                textScaler: TextScaler.linear(1.2),
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.black.withAlpha(204),
+                                ),
+                              ),
+                            ],
+                          ),
+                          SizedBox(height: 10),
+                          Container(
+                            padding: EdgeInsets.all(8.0),
+                            decoration: CustomDecorations.cardLight,
+                            child: Column(
+                              children: <Widget>[
+                                _motoInfo,
+                                Divider(
+                                  color: Colors.black.withAlpha(204),
+                                  height: 5,
+                                ),
+                                _mobileInfo,
+                                Divider(
+                                  color: Colors.black.withAlpha(204),
+                                  height: 5,
+                                ),
+                                _emailInfo,
+                              ],
+                            ),
+                          ),
+                          SizedBox(height: 15),
+                          Row(
+                            children: <Widget>[
+                              Icon(
+                                Icons.event,
+                                size: 16,
+                                color: Colors.black.withAlpha(204),
+                              ),
+                              SizedBox(width: 5.0),
+                              Text(
+                                AppString.rides,
+                                textScaler: TextScaler.linear(1.2),
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.black.withAlpha(204),
+                                ),
+                              ),
+                            ],
+                          ),
+                          SizedBox(height: 10),
+                          _eventsTimeline(_memberDetailProvider),
+                          SizedBox(height: 10),
+                          Row(
+                            children: <Widget>[
+                              Icon(
+                                Icons.timer,
+                                size: 16,
+                                color: Colors.black.withAlpha(204),
+                              ),
+                              SizedBox(width: 5.0),
+                              Text(
+                                AppString.chronos,
+                                textScaler: TextScaler.linear(1.2),
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.black.withAlpha(204),
+                                ),
+                              ),
+                            ],
+                          ),
+                          SizedBox(height: 10),
+                          _recordsTable(_recordListProvider),
+                        ],
+                      ),
+                    ),
+                  ]),
                 ),
               ),
             ],

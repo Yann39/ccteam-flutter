@@ -37,7 +37,10 @@ class NewsList extends StatelessWidget {
   /// Navigate to the news creation form screen to create a new news.
   _navigateToAddNewsScreen(BuildContext context) async {
     // set a new news to be created
-    Provider.of<NewsCreationProvider>(context, listen: false).setNewsToEdit(new News());
+    Provider.of<NewsCreationProvider>(
+      context,
+      listen: false,
+    ).setNewsToEdit(new News());
 
     // navigate to the news creation form screen
     Navigator.pushNamed(context, '/addEditNews');
@@ -46,15 +49,22 @@ class NewsList extends StatelessWidget {
   /// Navigate to the detail screen of the specified [news].
   _navigateToNewsDetailScreen(BuildContext context, News news) async {
     // fetch the news from the database to get complete data
-    Provider.of<NewsDetailProvider>(context, listen: false).fetchNews(news).then((value) => {
-          // once fetched, navigate to the news detail screen
-          Navigator.pushNamed(context, '/newsDetail')
-        });
+    Provider.of<NewsDetailProvider>(context, listen: false)
+        .fetchNews(news)
+        .then(
+          (value) => {
+            // once fetched, navigate to the news detail screen
+            Navigator.pushNamed(context, '/newsDetail'),
+          },
+        );
   }
 
   Widget build(BuildContext context) {
     _log.info("Building News list...");
-    final NewsListProvider _newsListProvider = Provider.of<NewsListProvider>(context, listen: true);
+    final NewsListProvider _newsListProvider = Provider.of<NewsListProvider>(
+      context,
+      listen: true,
+    );
 
     return Scaffold(
       appBar: AppBar(
@@ -122,13 +132,18 @@ class NewsList extends StatelessWidget {
                     onRefresh: () => _newsListProvider.fetchNewsList(),
                     child: LoadingContent(
                       loadingStatus: _newsListProvider.loadingStatus,
+                      defaultText: AppString.newsEmpty,
                       emptyText: AppString.newsEmpty,
                       child: ListView.builder(
                         itemCount: _newsListProvider.newsList.length,
                         itemBuilder: (context, index) {
                           return InkWell(
                             child: NewsCard(index),
-                            onTap: () => _navigateToNewsDetailScreen(context, _newsListProvider.newsList[index]),
+                            onTap:
+                                () => _navigateToNewsDetailScreen(
+                                  context,
+                                  _newsListProvider.newsList[index],
+                                ),
                           );
                         },
                       ),
