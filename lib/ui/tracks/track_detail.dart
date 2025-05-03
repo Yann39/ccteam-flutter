@@ -58,39 +58,72 @@ class _TrackDetailState extends State<TrackDetail> {
       return Container(
         decoration: CustomDecorations.cardLight,
         child: Table(
-          columnWidths: {0: FlexColumnWidth(3), 1: FlexColumnWidth(2), 2: FlexColumnWidth(2), 3: FlexColumnWidth(1)},
+          columnWidths: {
+            0: FlexColumnWidth(3),
+            1: FlexColumnWidth(2),
+            2: FlexColumnWidth(2),
+            3: FlexColumnWidth(1),
+          },
           defaultVerticalAlignment: TableCellVerticalAlignment.middle,
           border: TableBorder(
-              horizontalInside: BorderSide(color: Colors.black.withAlpha(76), width: 1),
-              verticalInside: BorderSide(color: Colors.black.withAlpha(76), width: 1)),
+            horizontalInside: BorderSide(
+              color: Colors.black.withAlpha(76),
+              width: 1,
+            ),
+            verticalInside: BorderSide(
+              color: Colors.black.withAlpha(76),
+              width: 1,
+            ),
+          ),
           children: [
             for (Record rec in recordListProvider.trackRecords)
-              TableRow(children: [
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 12.0),
-                  child: Text(
-                    "${rec.member!.firstName} ${rec.member!.lastName}",
+              TableRow(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8.0,
+                      vertical: 12.0,
+                    ),
+                    child: Text(
+                      "${rec.member!.firstName} ${rec.member!.lastName}",
+                      style: TextStyle(color: Colors.black.withAlpha(192)),
+                      overflow: TextOverflow.ellipsis,
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                  Text(
+                    AppDateUtils.toLapTimeString(rec.lapTime) ?? "",
                     style: TextStyle(color: Colors.black.withAlpha(192)),
-                    overflow: TextOverflow.ellipsis,
                     textAlign: TextAlign.center,
                   ),
-                ),
-                Text(
-                  AppDateUtils.toLapTimeString(rec.lapTime) ?? "",
-                  style: TextStyle(color: Colors.black.withAlpha(192)),
-                  textAlign: TextAlign.center,
-                ),
-                Text(
-                  rec.recordDate != null ? (AppDateUtils.convertToString(rec.recordDate!, "dd/MM/yyyy") ?? "") : "",
-                  style: TextStyle(color: Colors.black.withAlpha(192)),
-                  textAlign: TextAlign.center,
-                ),
-                SizedBox(
+                  Text(
+                    rec.recordDate != null
+                        ? (AppDateUtils.convertToString(
+                              rec.recordDate!,
+                              "dd/MM/yyyy",
+                            ) ??
+                            "")
+                        : "",
+                    style: TextStyle(color: Colors.black.withAlpha(192)),
+                    textAlign: TextAlign.center,
+                  ),
+                  SizedBox(
                     width: 10,
-                    child: rec.conditions == "dry"
-                        ? Icon(Icons.wb_sunny, color: Colors.black.withAlpha(128), size: 15)
-                        : Icon(CustomIcons.rain, color: Colors.black.withAlpha(128), size: 15))
-              ])
+                    child:
+                        rec.conditions == "dry"
+                            ? Icon(
+                              Icons.wb_sunny,
+                              color: Colors.black.withAlpha(128),
+                              size: 15,
+                            )
+                            : Icon(
+                              CustomIcons.rain,
+                              color: Colors.black.withAlpha(128),
+                              size: 15,
+                            ),
+                  ),
+                ],
+              ),
           ],
         ),
       );
@@ -163,8 +196,10 @@ class _TrackDetailState extends State<TrackDetail> {
   }*/
 
   Widget build(BuildContext context) {
-    final RecordListProvider _recordListProvider = Provider.of<RecordListProvider>(context, listen: true);
-    final TrackDetailProvider _trackDetailProvider = Provider.of<TrackDetailProvider>(context, listen: true);
+    final RecordListProvider _recordListProvider =
+        Provider.of<RecordListProvider>(context, listen: true);
+    final TrackDetailProvider _trackDetailProvider =
+        Provider.of<TrackDetailProvider>(context, listen: true);
     //final EventProvider _eventProvider = Provider.of<EventProvider>(context, listen: true);
 
     return Scaffold(
@@ -184,213 +219,247 @@ class _TrackDetailState extends State<TrackDetail> {
         ),
       ),*/
       body: Container(
-          decoration: CustomDecorations.mainContent,
-          child: CustomScrollView(
-            slivers: <Widget>[
-              SliverAppBar(
-                pinned: true,
-                expandedHeight: 200,
-                flexibleSpace: LayoutBuilder(
-                  builder: (BuildContext context, BoxConstraints constraints) {
-                    final FlexibleSpaceBarSettings settings = context.dependOnInheritedWidgetOfExactType<FlexibleSpaceBarSettings>()!;
-                    final double deltaExtent = settings.maxExtent - settings.minExtent;
-                    final double t = (1.0 - (settings.currentExtent - settings.minExtent) / deltaExtent).clamp(0.0, 1.0);
-                    
-                    // t est 0.0 quand complètement déployé, 1.0 quand complètement replié
-                    return FlexibleSpaceBar(
-                      title: Text(
-                        _trackDetailProvider.currentTrack!.name!,
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                          shadows: t < 0.5 ? [
-                            Shadow(
-                              offset: Offset(1.0, 1.0),
-                              blurRadius: 3.0,
-                              color: Colors.black,
-                            ),
-                          ] : null,
-                        ),
+        decoration: CustomDecorations.mainContent,
+        child: CustomScrollView(
+          slivers: <Widget>[
+            SliverAppBar(
+              pinned: true,
+              expandedHeight: 200,
+              flexibleSpace: LayoutBuilder(
+                builder: (BuildContext context, BoxConstraints constraints) {
+                  final FlexibleSpaceBarSettings settings =
+                      context
+                          .dependOnInheritedWidgetOfExactType<
+                            FlexibleSpaceBarSettings
+                          >()!;
+                  final double deltaExtent =
+                      settings.maxExtent - settings.minExtent;
+                  final double t = (1.0 -
+                          (settings.currentExtent - settings.minExtent) /
+                              deltaExtent)
+                      .clamp(0.0, 1.0);
+
+                  // t est 0.0 quand complètement déployé, 1.0 quand complètement replié
+                  return FlexibleSpaceBar(
+                    title: Text(
+                      _trackDetailProvider.currentTrack!.name!,
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        shadows:
+                            t < 0.5
+                                ? [
+                                  Shadow(
+                                    offset: Offset(1.0, 1.0),
+                                    blurRadius: 3.0,
+                                    color: Colors.black,
+                                  ),
+                                ]
+                                : null,
                       ),
-                      background: Stack(
-                        alignment: Alignment.bottomLeft,
-                        fit: StackFit.expand,
-                        children: <Widget>[
-                          Image.asset(
-                            TrackUtils.trackCoverImageUrlFromName(_trackDetailProvider.currentTrack!.name),
-                            fit: BoxFit.fitWidth,
-                          ),
-                          DecoratedBox(
-                            decoration: BoxDecoration(
-                              gradient: LinearGradient(
-                                begin: Alignment(0.0, 0.5),
-                                end: Alignment(0.0, -0.5),
-                                colors: <Color>[
-                                  Colors.black.withAlpha(179),
-                                  Colors.black.withAlpha(76),
-                                  Colors.transparent,
-                                ],
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    );
-                  },
-                ),
-              ),
-              SliverPadding(
-                  padding: EdgeInsets.all(8.0),
-                  sliver: SliverList(
-                      delegate: SliverChildListDelegate(<Widget>[
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                    ),
+                    background: Stack(
+                      alignment: Alignment.bottomLeft,
+                      fit: StackFit.expand,
                       children: <Widget>[
-                        Container(
-                          padding: EdgeInsets.all(8.0),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.stretch,
-                            children: <Widget>[
-                              Row(
-                                children: <Widget>[
-                                  Expanded(
-                                    flex: 1,
-                                    child: Container(
-                                      height: 100,
-                                      margin: EdgeInsets.all(4.0),
-                                      padding: EdgeInsets.all(8.0),
-                                      decoration: CustomDecorations.cardLight,
-                                      child: Column(
-                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                        children: <Widget>[
-                                          Icon(
-                                            Icons.timer,
-                                            size: 30,
-                                            color: Colors.red[700],
-                                          ),
-                                          Text(
-                                            AppString.lapRecord,
-                                            textAlign: TextAlign.center,
-                                          ),
-                                          Text(
-                                            AppDateUtils.toLapTimeString(
-                                                    _trackDetailProvider.currentTrack!.lapRecord) ??
-                                                "",
-                                            textAlign: TextAlign.center,
-                                            maxLines: 2,
-                                            overflow: TextOverflow.ellipsis,
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                  Expanded(
-                                    flex: 1,
-                                    child: Container(
-                                      height: 100,
-                                      margin: EdgeInsets.all(4.0),
-                                      padding: EdgeInsets.all(8.0),
-                                      decoration: CustomDecorations.cardLight,
-                                      child: Column(
-                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                        children: <Widget>[
-                                          Icon(
-                                            Icons.straighten,
-                                            size: 30,
-                                            color: Colors.red[700],
-                                          ),
-                                          Text(
-                                            AppString.length,
-                                            textAlign: TextAlign.center,
-                                          ),
-                                          Text(
-                                            "${_trackDetailProvider.currentTrack!.distance}",
-                                            textAlign: TextAlign.center,
-                                            maxLines: 2,
-                                            overflow: TextOverflow.ellipsis,
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                  Expanded(
-                                    flex: 1,
-                                    child: InkWell(
-                                      onTap: () => AppUtils.launchURL(
-                                          "geo:${_trackDetailProvider.currentTrack!.latitude},${_trackDetailProvider.currentTrack!.longitude}"),
-                                      child: Container(
-                                        height: 100,
-                                        margin: EdgeInsets.all(4.0),
-                                        padding: EdgeInsets.all(8.0),
-                                        decoration: CustomDecorations.cardLight,
-                                        child: Column(
-                                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                          children: <Widget>[
-                                            Icon(
-                                              Icons.place,
-                                              size: 30,
-                                              color: Colors.red[700],
-                                            ),
-                                            Text(
-                                              "${_trackDetailProvider.currentTrack!.latitude}",
-                                              textAlign: TextAlign.center,
-                                            ),
-                                            Text(
-                                              "${_trackDetailProvider.currentTrack!.longitude}",
-                                              textAlign: TextAlign.center,
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              Divider(color: Colors.white),
-                              SizedBox(height: 10),
-                              Row(
-                                children: <Widget>[
-                                  Icon(Icons.description, size: 16, color: Colors.black.withAlpha(204)),
-                                  SizedBox(width: 5.0),
-                                  Text(
-                                    AppString.trackEvents,
-                                    textScaler: TextScaler.linear(1.2),
-                                    style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black.withAlpha(204)),
-                                  ),
-                                ],
-                              ),
-                              SizedBox(height: 10),
-                              //_eventsTable(_eventProvider),
-                              SizedBox(height: 10),
-                              Divider(color: Colors.white),
-                              SizedBox(height: 10),
-                              Row(
-                                children: <Widget>[
-                                  Icon(Icons.group, size: 18, color: Colors.black.withAlpha(163)),
-                                  SizedBox(width: 5.0),
-                                  Text(
-                                    AppString.chronos,
-                                    textScaler: TextScaler.linear(1.2),
-                                    style:
-                                        TextStyle(fontWeight: FontWeight.bold, color: Colors.black.withAlpha(163)),
-                                  ),
-                                ],
-                              ),
-                              SizedBox(height: 10),
-                              _recordsTable(_recordListProvider),
-                            ],
+                        Image.asset(
+                          TrackUtils.trackCoverImageUrlFromName(
+                            _trackDetailProvider.currentTrack!.name,
+                          ),
+                          fit: BoxFit.fitWidth,
+                        ),
+                        DecoratedBox(
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment(0.0, 0.5),
+                              end: Alignment(0.0, -0.5),
+                              colors: <Color>[
+                                Colors.black.withAlpha(179),
+                                Colors.black.withAlpha(76),
+                                Colors.transparent,
+                              ],
+                            ),
                           ),
                         ),
-                        SizedBox(
-                          height: 400,
-                        )
                       ],
                     ),
-                  ]))),
-            ],
-          )
+                  );
+                },
+              ),
+            ),
+            SliverPadding(
+              padding: EdgeInsets.all(8.0),
+              sliver: SliverList(
+                delegate: SliverChildListDelegate(<Widget>[
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: <Widget>[
+                      Container(
+                        padding: EdgeInsets.all(8.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: <Widget>[
+                            Row(
+                              children: <Widget>[
+                                Expanded(
+                                  flex: 1,
+                                  child: Container(
+                                    height: 100,
+                                    margin: EdgeInsets.all(4.0),
+                                    padding: EdgeInsets.all(8.0),
+                                    decoration: CustomDecorations.cardLight,
+                                    child: Column(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: <Widget>[
+                                        Icon(
+                                          Icons.timer,
+                                          size: 30,
+                                          color: Colors.red[700],
+                                        ),
+                                        Text(
+                                          AppString.lapRecord,
+                                          textAlign: TextAlign.center,
+                                        ),
+                                        Text(
+                                          AppDateUtils.toLapTimeString(
+                                                _trackDetailProvider
+                                                    .currentTrack!
+                                                    .lapRecord,
+                                              ) ??
+                                              "",
+                                          textAlign: TextAlign.center,
+                                          maxLines: 2,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                                Expanded(
+                                  flex: 1,
+                                  child: Container(
+                                    height: 100,
+                                    margin: EdgeInsets.all(4.0),
+                                    padding: EdgeInsets.all(8.0),
+                                    decoration: CustomDecorations.cardLight,
+                                    child: Column(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: <Widget>[
+                                        Icon(
+                                          Icons.straighten,
+                                          size: 30,
+                                          color: Colors.red[700],
+                                        ),
+                                        Text(
+                                          AppString.length,
+                                          textAlign: TextAlign.center,
+                                        ),
+                                        Text(
+                                          "${_trackDetailProvider.currentTrack!.distance}",
+                                          textAlign: TextAlign.center,
+                                          maxLines: 2,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                                Expanded(
+                                  flex: 1,
+                                  child: InkWell(
+                                    onTap:
+                                        () => AppUtils.launchURL(
+                                          "geo:${_trackDetailProvider.currentTrack!.latitude},${_trackDetailProvider.currentTrack!.longitude}",
+                                        ),
+                                    child: Container(
+                                      height: 100,
+                                      margin: EdgeInsets.all(4.0),
+                                      padding: EdgeInsets.all(8.0),
+                                      decoration: CustomDecorations.cardLight,
+                                      child: Column(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
+                                        children: <Widget>[
+                                          Icon(
+                                            Icons.place,
+                                            size: 30,
+                                            color: Colors.red[700],
+                                          ),
+                                          Text(
+                                            "${_trackDetailProvider.currentTrack!.latitude}",
+                                            textAlign: TextAlign.center,
+                                          ),
+                                          Text(
+                                            "${_trackDetailProvider.currentTrack!.longitude}",
+                                            textAlign: TextAlign.center,
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            Divider(color: Colors.white),
+                            SizedBox(height: 10),
+                            Row(
+                              children: <Widget>[
+                                Icon(
+                                  Icons.description,
+                                  size: 16,
+                                  color: Colors.black.withAlpha(204),
+                                ),
+                                SizedBox(width: 5.0),
+                                Text(
+                                  AppString.trackEvents,
+                                  textScaler: TextScaler.linear(1.2),
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.black.withAlpha(204),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            SizedBox(height: 10),
+                            //_eventsTable(_eventProvider),
+                            SizedBox(height: 10),
+                            Divider(color: Colors.white),
+                            SizedBox(height: 10),
+                            Row(
+                              children: <Widget>[
+                                Icon(
+                                  Icons.group,
+                                  size: 18,
+                                  color: Colors.black.withAlpha(163),
+                                ),
+                                SizedBox(width: 5.0),
+                                Text(
+                                  AppString.chronos,
+                                  textScaler: TextScaler.linear(1.2),
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.black.withAlpha(163),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            SizedBox(height: 10),
+                            _recordsTable(_recordListProvider),
+                          ],
+                        ),
+                      ),
+                      SizedBox(height: 400),
+                    ],
+                  ),
+                ]),
+              ),
+            ),
+          ],
+        ),
 
-          /*ListView(
+        /*ListView(
           children: <Widget>[
             Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -569,7 +638,7 @@ class _TrackDetailState extends State<TrackDetail> {
             ),
           ],
         ),*/
-          ),
+      ),
     );
   }
 }

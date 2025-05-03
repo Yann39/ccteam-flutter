@@ -31,10 +31,7 @@ class ImageCrop extends StatelessWidget {
     final _avatarProvider = Provider.of<AvatarProvider>(context, listen: true);
 
     return Scaffold(
-      appBar: AppBar(
-        elevation: 0,
-        title: Text(AppString.zoomAndCrop),
-      ),
+      appBar: AppBar(elevation: 0, title: Text(AppString.zoomAndCrop)),
       body: Center(
         child: Crop(
           image: _avatarProvider.pickedImage!.readAsBytesSync(),
@@ -45,35 +42,43 @@ class ImageCrop extends StatelessWidget {
               case CropSuccess(:final croppedImage):
                 _avatarProvider.setCroppedImage(croppedImage);
                 Navigator.pop(context);
-                case CropFailure(:final cause):
-              showDialog(
-                context: context,
-                builder: (context) => AlertDialog(
-                  title: Text('Error'),
-                  content:
-                  Text('Failed to crop image: ${cause}'),
-                  actions: [
-                    TextButton(
-                        onPressed: () =>
-                            Navigator.pop(context),
-                        child: Text('OK')),
-                  ],
-                ),
-              );
+              case CropFailure(:final cause):
+                showDialog(
+                  context: context,
+                  builder:
+                      (context) => AlertDialog(
+                        title: Text('Error'),
+                        content: Text(
+                          'Failed to crop image: ${cause.toString()}',
+                        ),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.pop(context),
+                            child: Text('OK'),
+                          ),
+                        ],
+                      ),
+                );
             }
           },
           withCircleUi: true,
-          initialRectBuilder: InitialRectBuilder.withBuilder(
-                (viewportRect, imageRect) {
-              return Rect.fromLTRB(
-                viewportRect.left + 24,
-                viewportRect.top + 24,
-                viewportRect.right - 24,
-                viewportRect.bottom - 24,
-              );
-            },
-          ),
+          radius: 20,
+          initialRectBuilder: InitialRectBuilder.withBuilder((
+            viewportRect,
+            imageRect,
+          ) {
+            return Rect.fromLTRB(
+              viewportRect.left + 50,
+              viewportRect.top + 100,
+              viewportRect.right - 50,
+              viewportRect.bottom - 150,
+            );
+          }),
           baseColor: Colors.black54,
+          clipBehavior: Clip.none,
+          interactive: true,
+          cornerDotBuilder:
+              (size, edgeAlignment) => const DotControl(color: Colors.blue),
         ),
       ),
       floatingActionButton: FloatingActionButton(

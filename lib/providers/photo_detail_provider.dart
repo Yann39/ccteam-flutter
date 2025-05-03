@@ -70,16 +70,31 @@ class PhotoDetailProvider extends ChangeNotifier {
 
   /// Delete the specified [photo].
   Future<void> deletePhoto(Photo photo) async {
-    await _photosService.deletePhoto(photo).then((value) {
-      _log.fine("Photo deleted successfully : ${photo.title}");
-      _messageProvider.setMessage(AppString.photoDeleted, MessageType.SUCCESS);
-      _notifyListeners();
-    }, onError: (error) {
-      _log.warning("Failed to delete photo ($error)");
-      _messageProvider.setMessage(AppString.photoDeletionFailed, MessageType.ERROR);
-      AppUtils.handleServiceException(error, _messageProvider, _loginProvider);
-      _notifyListeners();
-    });
+    await _photosService
+        .deletePhoto(photo)
+        .then(
+          (value) {
+            _log.fine("Photo deleted successfully : ${photo.title}");
+            _messageProvider.setMessage(
+              AppString.photoDeleted,
+              MessageType.SUCCESS,
+            );
+            _notifyListeners();
+          },
+          onError: (error) {
+            _log.warning("Failed to delete photo ($error)");
+            _messageProvider.setMessage(
+              AppString.photoDeletionFailed,
+              MessageType.ERROR,
+            );
+            AppUtils.handleServiceException(
+              error,
+              _messageProvider,
+              _loginProvider,
+            );
+            _notifyListeners();
+          },
+        );
   }
 
   /// Notify all the registered listeners of this provider.

@@ -97,98 +97,94 @@ class _MemberChronosState extends State<MemberChronos> {
                 separatorBuilder: (context, index) => SizedBox(height: 8.0),
                 itemCount: _recordListProvider.memberRecords.length,
                 itemBuilder: (context, index) {
-                  return Container(
-                    padding: EdgeInsets.all(8.0),
-                    decoration: CustomDecorations.cardFull,
-                    height: 91,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: <Widget>[
-                        //Icon(TrackUtils.trackIconFromName(_recordListProvider.memberRecords[index].track.name), size: 38, color: Colors.red[700]),
-                        Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: <Widget>[
-                            Row(
-                              children: <Widget>[
-                                //Icon(Icons.location_on, size: 16, color: Colors.deepPurple),
-                                //SizedBox(width: 5.0),
-                                Text(
-                                  _recordListProvider
-                                      .memberRecords[index]
-                                      .track!
-                                      .name!,
-                                  textScaler: TextScaler.linear(1.3),
-                                  style: TextStyle(color: Colors.white),
-                                ),
-                              ],
-                            ),
-                            SizedBox(height: 8.0),
-                            Row(
-                              children: <Widget>[
-                                Icon(
-                                  Icons.event,
-                                  size: 16,
-                                  color: Colors.teal[700],
-                                ),
-                                SizedBox(width: 5.0),
-                                Text(
-                                  AppDateUtils.convertToString(
-                                        _recordListProvider
-                                            .memberRecords[index]
-                                            .recordDate!,
-                                        'dd MMM yyyy',
-                                      ) ??
-                                      "",
-                                  style: TextStyle(color: Colors.white),
-                                ),
-                              ],
-                            ),
-                            Row(
-                              children: <Widget>[
-                                Icon(
-                                  CustomIcons.motorbike,
-                                  size: 16,
-                                  color: Colors.deepPurple,
-                                ),
-                                SizedBox(width: 5.0),
-                                Text(
-                                  _recordListProvider
-                                          .memberRecords[index]
-                                          .member!
-                                          .bike ??
-                                      "",
-                                  style: TextStyle(color: Colors.white),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                        Container(
-                          padding: EdgeInsets.symmetric(
-                            horizontal: 4.0,
-                            vertical: 0.0,
+                  final record = _recordListProvider.memberRecords[index];
+                  return InkWell(
+                    onTap: () {
+                      Provider.of<RecordCreationProvider>(context, listen: false).setRecordToEdit(record);
+                      Navigator.pushNamed(context, '/addEditRecord');
+                    },
+                    child: Container(
+                      padding: EdgeInsets.all(8.0),
+                      decoration: CustomDecorations.cardFull,
+                      height: 91,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: <Widget>[
+                          //Icon(TrackUtils.trackIconFromName(_recordListProvider.memberRecords[index].track.name), size: 38, color: Colors.red[700]),
+                          Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: <Widget>[
+                              Row(
+                                children: <Widget>[
+                                  //Icon(Icons.location_on, size: 16, color: Colors.deepPurple),
+                                  //SizedBox(width: 5.0),
+                                  Text(
+                                    record.track!.name!,
+                                    textScaler: TextScaler.linear(1.3),
+                                    style: TextStyle(color: Colors.white),
+                                  ),
+                                ],
+                              ),
+                              SizedBox(height: 8.0),
+                              Row(
+                                children: <Widget>[
+                                  Icon(
+                                    Icons.event,
+                                    size: 16,
+                                    color: Colors.teal[700],
+                                  ),
+                                  SizedBox(width: 5.0),
+                                  Text(
+                                    AppDateUtils.convertToString(
+                                          record.recordDate!,
+                                          'dd MMM yyyy',
+                                        ) ??
+                                          "",
+                                    style: TextStyle(color: Colors.white),
+                                  ),
+                                ],
+                              ),
+                              Row(
+                                children: <Widget>[
+                                  Icon(
+                                    CustomIcons.motorbike,
+                                    size: 16,
+                                    color: Colors.deepPurple,
+                                  ),
+                                  SizedBox(width: 5.0),
+                                  Text(
+                                    record.member!.bike ?? "",
+                                    style: TextStyle(color: Colors.white),
+                                  ),
+                                ],
+                              ),
+                            ],
                           ),
-                          decoration: BoxDecoration(
-                            shape: BoxShape.rectangle,
-                            borderRadius: BorderRadius.circular(4.0),
-                            border: Border.all(color: Colors.white),
-                          ),
-                          child: Text(
-                            AppDateUtils.toLapTimeString(
-                                  _recordListProvider
-                                      .memberRecords[index]
-                                      .lapTime,
-                                ) ??
+                          Container(
+                            padding: EdgeInsets.symmetric(
+                              horizontal: 4.0,
+                              vertical: 0.0,
+                            ),
+                            decoration: BoxDecoration(
+                              shape: BoxShape.rectangle,
+                              borderRadius: BorderRadius.circular(4.0),
+                              border: Border.all(color: Colors.white),
+                            ),
+                            child: Text(
+                              AppDateUtils.toLapTimeString(
+                                    record.lapTime,
+                                  ) ??
                                 "",
-                            style: TextStyle(
-                              fontFamily: "AlarmClock",
-                              color: Colors.white,
+                              style: TextStyle(
+                                fontFamily: "AlarmClock",
+                                color: Colors.white,
+                              ),
+                              textScaler: TextScaler.linear(1.6),
                             ),
-                            textScaler: TextScaler.linear(1.6),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   );
                 },

@@ -33,11 +33,42 @@ import 'package:flutter/material.dart';
 import 'package:logging/logging.dart';
 import 'package:provider/provider.dart';
 
-class EventList extends StatelessWidget {
+class EventList extends StatefulWidget {
+  @override
+  _EventListState createState() => _EventListState();
+}
+
+class _EventListState extends State<EventList> {
   final Logger _log = new Logger('EventsList');
+  final Set<int> _expandedYears = {};
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final _eventListProvider = Provider.of<EventListProvider>(
+      context,
+      listen: false,
+    );
+    List<Event> _events = List<Event>.from(
+      _eventListProvider.eventModeSelectorIndex == 0
+          ? _eventListProvider.allEvents
+          : _eventListProvider.eventModeSelectorIndex == 1
+          ? _eventListProvider.yearEvents
+          : _eventListProvider.dayEvents,
+    );
+    _events.sort((a, b) => b.startDate!.compareTo(a.startDate!));
+    if (_events.isNotEmpty) {
+      int lastYear = _events.first.startDate!.year;
+      if (!_expandedYears.contains(lastYear)) {
+        setState(() {
+          _expandedYears.add(lastYear);
+        });
+      }
+    }
+  }
 
   /// Navigate to the event creation form screen to create a new event.
-  _navigateToAddEventScreen(BuildContext context) async {
+  void _navigateToAddEventScreen(BuildContext context) async {
     // set a new event to be created
     Provider.of<EventCreationProvider>(
       context,
@@ -49,17 +80,14 @@ class EventList extends StatelessWidget {
   }
 
   /// Navigate to the detail screen of the specified [event].
-  _navigateToEventDetailScreen(BuildContext context, Event event) async {
-    // fetch the event to get complete data
+  void _navigateToEventDetailScreen(BuildContext context, Event event) async {
+    // fetch the event to get complete data then navigate to event detail screen
     Provider.of<EventDetailProvider>(context, listen: false)
         .fetchEvent(event)
-        .then(
-          (value) =>
-          // navigate to event detail screen
-          Navigator.pushNamed(context, '/eventDetail'),
-        );
+        .then((value) => Navigator.pushNamed(context, '/eventDetail'));
   }
 
+  @override
   Widget build(BuildContext context) {
     _log.info("Building Event list");
     final _eventListProvider = Provider.of<EventListProvider>(
@@ -107,6 +135,18 @@ class EventList extends StatelessWidget {
 
     // Sort events by date in descending order
     _events.sort((a, b) => b.startDate!.compareTo(a.startDate!));
+
+    // Group events by year
+    Map<int, List<Event>> eventsByYear = {};
+    for (var event in _events) {
+      int year = event.startDate!.year;
+      if (!eventsByYear.containsKey(year)) {
+        eventsByYear[year] = [];
+      }
+      eventsByYear[year]!.add(event);
+    }
+    List<int> sortedYears =
+        eventsByYear.keys.toList()..sort((a, b) => b.compareTo(a));
 
     return Scaffold(
       appBar: AppBar(
@@ -277,48 +317,101 @@ class EventList extends StatelessWidget {
                       _events.isEmpty
                           ? LoadingStatus.empty
                           : _eventListProvider.loadingStatus,
-                  child: ListView.separated(
-                    separatorBuilder: (context, index) => SizedBox(height: 8.0),
-                    itemCount: _events.length,
-                    itemBuilder: (context, index) {
-                      // Show year header only if it's the first event or if the year is different from the previous event
-                      bool showYear =
-                          index == 0 ||
-                          _events[index].startDate!.year !=
-                              _events[index - 1].startDate!.year;
-
+                  child: ListView.builder(
+                    itemCount: sortedYears.length,
+                    itemBuilder: (context, yearIndex) {
+                      int year = sortedYears[yearIndex];
+                      List<Event> yearEvents = eventsByYear[year]!;
+                      bool expanded = _expandedYears.contains(year);
                       return Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
-                        children: <Widget>[
-                          if (showYear) ...[
-                            Row(
-                              children: <Widget>[
-                                Icon(
-                                  Icons.calendar_today,
-                                  size: 16,
-                                  color: Colors.grey[600],
+                        children: [
+                          GestureDetector(
+                            onTap: () {
+                              setState(() {
+                                if (expanded) {
+                                  _expandedYears.remove(year);
+                                } else {
+                                  _expandedYears.add(year);
+                                }
+                              });
+                            },
+                            child: Card(
+                              margin: EdgeInsets.symmetric(vertical: 6.0),
+                              elevation: 2,
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  gradient: LinearGradient(
+                                    colors: [
+                                      Colors.blue[400]!,
+                                      Colors.blue[600]!,
+                                    ],
+                                    begin: Alignment.centerLeft,
+                                    end: Alignment.centerRight,
+                                  ),
+                                  borderRadius: BorderRadius.circular(4.0),
                                 ),
-                                SizedBox(width: 8),
-                                Text(
-                                  "${_events[index].startDate!.year}",
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.grey[600],
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 12.0,
+                                    horizontal: 16.0,
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      Icon(
+                                        Icons.calendar_today,
+                                        size: 20,
+                                        color: Colors.white,
+                                      ),
+                                      SizedBox(width: 12),
+                                      Text(
+                                        "$year",
+                                        style: TextStyle(
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                      Spacer(),
+                                      Text(
+                                        yearEvents.length.toString(),
+                                        style: TextStyle(
+                                          fontSize: 13,
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                      ),
+                                      SizedBox(width: 8),
+                                      Icon(
+                                        expanded
+                                            ? Icons.expand_less
+                                            : Icons.expand_more,
+                                        color: Colors.white,
+                                      ),
+                                    ],
                                   ),
                                 ),
-                              ],
+                              ),
                             ),
-                            SizedBox(height: 8.0),
-                          ],
-                          InkWell(
-                            child: EventCard(_events[index]),
-                            onTap:
-                                () => _navigateToEventDetailScreen(
-                                  context,
-                                  _events[index],
-                                ),
                           ),
+                          if (expanded)
+                            ...yearEvents.map(
+                              (event) => Padding(
+                                padding: const EdgeInsets.only(
+                                  left: 8.0,
+                                  right: 8.0,
+                                  bottom: 8.0,
+                                ),
+                                child: InkWell(
+                                  child: EventCard(event),
+                                  onTap:
+                                      () => _navigateToEventDetailScreen(
+                                        context,
+                                        event,
+                                      ),
+                                ),
+                              ),
+                            ),
                         ],
                       );
                     },

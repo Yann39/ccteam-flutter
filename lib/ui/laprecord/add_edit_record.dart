@@ -21,6 +21,7 @@ import 'package:ccteam/models/track.dart';
 import 'package:ccteam/providers/login_provider.dart';
 import 'package:ccteam/providers/record_creation_provider.dart';
 import 'package:ccteam/providers/track_list_provider.dart';
+import 'package:ccteam/services/tracks_service.dart';
 import 'package:ccteam/utils/constants.dart';
 import 'package:ccteam/utils/custom_decorations.dart';
 import 'package:ccteam/utils/custom_icons.dart';
@@ -49,6 +50,24 @@ class _AddEditRecordState extends State<AddEditRecord> {
   final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
   final TextEditingController _datePickerController =
       new TextEditingController();
+  final TracksService _tracksService = new TracksService();
+
+  Future<List<Track>>? _futureTracks;
+  Track? _selectedTrack;
+
+  @override
+  void initState() {
+    super.initState();
+    _futureTracks = _tracksService.fetchTracks();
+
+    final record =
+        Provider.of<RecordCreationProvider>(context, listen: false).record;
+    if (record.recordDate != null) {
+      _datePickerController.text = DateFormat(
+        DATE_FORMAT,
+      ).format(record.recordDate!);
+    }
+  }
 
   /// Initialize and display a Date picker related to the specified [controller] in the specified [context]
   Future _chooseDate(
@@ -193,25 +212,52 @@ class _AddEditRecordState extends State<AddEditRecord> {
       ),
     );
 
-    final _trackField = DropdownButtonFormField<Track>(
-      value: _trackListProvider.selectedTrack,
-      decoration: const InputDecoration(
-        icon: const Icon(CustomIcons.track_sample),
-        hintText: AppString.eventTrackIdHint,
-        labelText: AppString.eventTrackId,
-      ),
-      items:
-          _trackListProvider.tracks.map((Track value) {
-            return DropdownMenuItem<Track>(
-              value: value,
-              child: Text(value.name!),
-            );
-          }).toList(),
-      onChanged: (Track? value) {
-        _trackListProvider.selectTrack(value!);
+    final _trackField = FutureBuilder<List<Track>>(
+      future: _futureTracks,
+      builder: (context, snapshot) {
+        if (snapshot.hasData) {
+          return Column(
+            children: <Widget>[
+              DropdownButtonFormField<Track>(
+                value:
+                    _selectedTrack != null
+                        ? _selectedTrack
+                        : _recordCreationProvider.record.id != null
+                        ? snapshot.data!.firstWhere(
+                          (Track t) =>
+                              t.id == _recordCreationProvider.record.track!.id,
+                        )
+                        : snapshot.data!.first,
+                decoration: const InputDecoration(
+                  icon: const Icon(CustomIcons.track_sample),
+                  hintText: AppString.eventTrackIdHint,
+                  labelText: AppString.eventTrackId,
+                ),
+                items:
+                    snapshot.data!.map((Track val) {
+                      return DropdownMenuItem<Track>(
+                        value: val,
+                        child: Text(val.name!),
+                      );
+                    }).toList(),
+                onChanged: (Track? val) {
+                  setState(() {
+                    _selectedTrack = val;
+                  });
+                },
+                onSaved: (val) => _recordCreationProvider.record.track = val,
+                validator:
+                    (val) =>
+                        val == null ? AppString.eventTrackIdMandatory : null,
+              ),
+            ],
+          );
+        } else if (snapshot.hasError) {
+          return Text("${snapshot.error}");
+        }
+        // By default, show a loading spinner
+        return CircularProgressIndicator();
       },
-      onSaved: (val) => _recordCreationProvider.record.track = val,
-      validator: (val) => val == null ? AppString.eventTrackIdMandatory : null,
     );
 
     final _lapTimeField = TextFormField(
@@ -264,29 +310,12 @@ class _AddEditRecordState extends State<AddEditRecord> {
           (val) => val == null ? AppString.recordConditionMandatory : null,
     );
 
-    final listView = ListView(
-      children: <Widget>[
-        Container(
-          padding: const EdgeInsets.only(
-            top: 0,
-            left: 16.0,
-            right: 16.0,
-            bottom: 56.0,
-          ),
-          child: Form(
-            autovalidateMode: AutovalidateMode.disabled,
-            key: _formKey,
-            child: Column(
-              children: <Widget>[
-                _dateField,
-                _trackField,
-                _lapTimeField,
-                _conditions,
-              ],
-            ),
-          ),
-        ),
-      ],
+    final form = Form(
+      autovalidateMode: AutovalidateMode.disabled,
+      key: _formKey,
+      child: ListView(
+        children: <Widget>[_dateField, _trackField, _lapTimeField, _conditions],
+      ),
     );
 
     final List<Widget> actionMenu = [
@@ -316,27 +345,25 @@ class _AddEditRecordState extends State<AddEditRecord> {
                 ? null
                 : actionMenu,
       ),
-      body:
-          MediaQuery.of(context).orientation == Orientation.portrait
-              ? Container(
-                decoration: CustomDecorations.mainContent,
-                child: LoadingContent(
-                  loadingStatus: _recordCreationProvider.loadingStatus,
-                  defaultText: AppString.contentNotLoaded,
-                  emptyText: AppString.contentNotLoaded,
-                  child: Stack(
-                    alignment: Alignment.topCenter,
-                    children: <Widget>[
-                      listView,
-                      SaveCancelBar(
-                        saveFunction: () => submitForm(),
-                        cancelFunction: () => Navigator.pop(context),
-                      ),
-                    ],
-                  ),
+      body: Container(
+        decoration: CustomDecorations.mainContent,
+        child: LoadingContent(
+          loadingStatus: _recordCreationProvider.loadingStatus,
+          defaultText: AppString.contentNotLoaded,
+          emptyText: AppString.noContentToDisplay,
+          child: Column(
+            children: <Widget>[
+              Expanded(child: form),
+              SafeArea(
+                child: SaveCancelBar(
+                  saveFunction: () => submitForm(),
+                  cancelFunction: () => Navigator.pop(context),
                 ),
-              )
-              : listView,
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }
