@@ -20,7 +20,25 @@
 
 # About
 
-# CCTeam
+# Installation
+
+For Intellij :
+
+1. Clone the project
+2. Install the Android SDK on your machine (command line tools)
+   sdkmanager --install "platform-tools" "platforms;android-34" "build-tools;34.0.0"
+   sdkmanager "emulator" "system-images;android-34;google_apis;x86_64"
+3. Install the flutter SDK on your machine
+4. Install the Flutter plugin in Intellij
+5. In the project settings, set the Flutter SDK path
+6. Create a _local.properties_ files inside the android folder and set :
+   ```properties
+    sdk.dir=C:\\Me\\android
+    flutter.sdk=C:\\Me\\flutter
+    flutter.buildMode=debug
+    ```
+7. Run `flutter pub get`
+8. Run `gradle app:build`
 
 # Play Store
 
