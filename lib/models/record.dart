@@ -61,26 +61,33 @@ class Record {
 
   /// Convert [json] map to the corresponding object
   Record.fromJson(Map<String, dynamic> json)
-      : id = json['id'] != null ? int.parse(json['id']) : null,
-        track = json['track'] != null ? Track.fromJson(json['track']) : null,
-        member = json['member'] != null ? Member.fromJson(json['member']) : null,
-        lapTime = json['lapTime'] != null ? json['lapTime'] : null,
-        recordDate = json['recordDate'] != null ? DateTime.parse(json['recordDate']) : null,
-        conditions = json['conditions'],
-        comments = json['comments'],
-        createdOn = json['createdOn'] != null ? DateTime.parse(json['createdOn']) : null,
-        modifiedOn = json['modifiedOn'] != null ? DateTime.parse(json['modifiedOn']) : null;
+    : id = json['id'] != null ? int.parse(json['id']) : null,
+      track = json['track'] != null ? Track.fromJson(json['track']) : null,
+      member = json['member'] != null ? Member.fromJson(json['member']) : null,
+      lapTime = json['lapTime'] != null ? json['lapTime'] : null,
+      recordDate =
+          json['recordDate'] != null
+              ? DateTime.parse(json['recordDate'])
+              : null,
+      conditions = json['conditions'],
+      comments = json['comments'],
+      createdOn =
+          json['createdOn'] != null ? DateTime.parse(json['createdOn']) : null,
+      modifiedOn =
+          json['modifiedOn'] != null
+              ? DateTime.parse(json['modifiedOn'])
+              : null;
 
   /// Convert [Record] object to the corresponding JSON map
   Map<String, dynamic> toJson() => {
-        "id": id.toString(),
-        "track": track?.toJson(),
-        "member": member?.toJson(),
-        "lapTime": lapTime,
-        "recordDate": recordDate?.toIso8601String(),
-        "conditions": conditions,
-        "comments": comments,
-        "createdOn": createdOn?.toIso8601String(),
-        "modifiedOn": modifiedOn?.toIso8601String(),
-      };
+    "id": id.toString(),
+    "track": track?.toJson(),
+    "member": member?.toJson(),
+    "lapTime": lapTime,
+    "recordDate": recordDate?.toIso8601String(),
+    "conditions": conditions,
+    "comments": comments,
+    "createdOn": createdOn?.toIso8601String(),
+    "modifiedOn": modifiedOn?.toIso8601String(),
+  };
 }

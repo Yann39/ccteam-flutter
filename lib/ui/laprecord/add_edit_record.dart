@@ -219,15 +219,18 @@ class _AddEditRecordState extends State<AddEditRecord> {
           return Column(
             children: <Widget>[
               DropdownButtonFormField<Track>(
-                value:
+                initialValue:
                     _selectedTrack != null
                         ? _selectedTrack
                         : _recordCreationProvider.record.id != null
                         ? snapshot.data!.firstWhere(
                           (Track t) =>
                               t.id == _recordCreationProvider.record.track!.id,
+                          orElse: () => snapshot.data!.first,
                         )
-                        : snapshot.data!.first,
+                        : snapshot.data!.isNotEmpty
+                        ? snapshot.data!.first
+                        : null,
                 decoration: const InputDecoration(
                   icon: const Icon(CustomIcons.track_sample),
                   hintText: AppString.eventTrackIdHint,
@@ -289,7 +292,7 @@ class _AddEditRecordState extends State<AddEditRecord> {
     );
 
     final _conditions = DropdownButtonFormField<TrackCondition>(
-      value: _recordCreationProvider.selectedTrackCondition,
+      initialValue: _recordCreationProvider.selectedTrackCondition,
       decoration: const InputDecoration(
         icon: Icon(Icons.sunny_snowing),
         hintText: AppString.recordConditionHint,

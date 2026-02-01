@@ -27,7 +27,7 @@ import 'package:ccteam/utils/enums.dart';
 import 'package:flutter/foundation.dart';
 import 'package:logging/logging.dart';
 
-import '../models/track.dart';
+import 'package:ccteam/models/track.dart';
 
 class TrackDetailProvider extends ChangeNotifier {
   final Logger _log = new Logger('TrackDetailProvider');
@@ -71,29 +71,43 @@ class TrackDetailProvider extends ChangeNotifier {
   Future<void> fetchTrack(Track track) async {
     _log.fine("Fetching track ${track.name}...");
     _updateStatus(LoadingStatus.loading);
-    await _tracksService.getTrackById(track.id!).then((value) async {
-      _log.fine("News with ID ${track.id} retrieved successfully");
-      _currentTrack = value;
-      _updateStatus(LoadingStatus.loaded);
-    }, onError: (error) {
-      _log.warning("Error when retrieving news ($error)");
-      _currentTrack = null;
-      AppUtils.handleServiceException(error, _messageProvider, _loginProvider);
-      _updateStatus(LoadingStatus.notLoaded);
-    });
+    await _tracksService
+        .getTrackById(track.id!)
+        .then(
+          (value) async {
+            _log.fine("Track ID ${track.id} retrieved successfully");
+            _currentTrack = value;
+            _updateStatus(LoadingStatus.loaded);
+          },
+          onError: (error) {
+            _log.warning("Error when retrieving track ($error)");
+            _currentTrack = null;
+            AppUtils.handleServiceException(
+              error,
+              _messageProvider,
+              _loginProvider,
+            );
+            _updateStatus(LoadingStatus.notLoaded);
+          },
+        );
   }
 
   /// Delete the specified [track]
   Future<void> deleteTrack(Track track) async {
-    await _tracksService.deleteTrack(track).then((value) {
-      _log.fine("Track deleted successfully : ${track.name}");
-      _currentTrack = null;
-      _log.info("Notifying listeners of TrackListProvider");
-      notifyListeners();
-    }, onError: (error) {
-      _log.severe("Failed to delete track ($error)");
-      throw (error);
-    });
+    await _tracksService
+        .deleteTrack(track)
+        .then(
+          (value) {
+            _log.fine("Track deleted successfully : ${track.name}");
+            _currentTrack = null;
+            _log.info("Notifying listeners of TrackListProvider");
+            notifyListeners();
+          },
+          onError: (error) {
+            _log.severe("Failed to delete track ($error)");
+            throw (error);
+          },
+        );
   }
 
   /// Notify all the registered listeners of this provider.

@@ -33,7 +33,6 @@ import 'package:ccteam/utils/custom_decorations.dart';
 import 'package:ccteam/utils/custom_icons.dart';
 import 'package:ccteam/utils/date_utils.dart';
 import 'package:ccteam/utils/strings.dart';
-import 'package:ccteam/widgets/flexible_title.dart';
 import 'package:ccteam/widgets/loading_content.dart';
 import 'package:flutter/material.dart';
 import 'package:logging/logging.dart';
@@ -74,13 +73,6 @@ class MemberDetail extends StatelessWidget {
   /// Navigate to the specified [track] detail screen.
   void _navigateToTrackDetailScreen(BuildContext context, Track track) async {
     // todo Maybe better to do it in detail screen init method instead of each time here ?
-    Provider.of<RecordListProvider>(
-      context,
-      listen: false,
-    ).fetchTrackRecords(track.id!);
-    /*Provider.of<EventProvider>(context, listen: false)
-        .fetchTrackEvents(track.id);*/
-
     Provider.of<TrackDetailProvider>(
       context,
       listen: false,

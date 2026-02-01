@@ -2,11 +2,11 @@
 
 **Flutter** mobile application for the **CCTeam** motorcycle racing club
 
-![Version](https://img.shields.io/badge/Version-0.8.0-2AAB92.svg)
-![Static Badge](https://img.shields.io/badge/Last_update-19_Mar_2024-blue)
+![Version](https://img.shields.io/badge/Version-0.8.1-2AAB92.svg)
+![Static Badge](https://img.shields.io/badge/Last_update-01_Feb_2026-blue)
 
-![Version](https://img.shields.io/badge/Flutter-3.19.3-red.svg)
-![Version](https://img.shields.io/badge/Dart-3.3.1-green.svg)
+![Version](https://img.shields.io/badge/Flutter-3.38.3-red.svg)
+![Version](https://img.shields.io/badge/Dart-3.10.1-green.svg)
 
 ---
 
@@ -71,6 +71,21 @@ The application is available on the Play Store :
 ![Gallery page screenshot](doc/gallery.png "Gallery page")
 
 # Usage
+
+## Install emulator
+
+Install a proper system image and create an emulator :
+
+```bash
+sdkmanager "platforms;android-34" "system-images;android-34;google_apis;x86_64" "emulator"
+avdmanager create avd -n flutter_x86_64 -k "system-images;android-34;google_apis;x86_64" -d pixel
+```
+
+Then start it with:
+
+```bash
+emulator -avd flutter_x86_64
+```
 
 ## Upgrading Dart
 

@@ -53,36 +53,38 @@ class RecordsService {
       }
     """;
 
-    return GraphQLConnection()
-        .graphQLClient
-        .query(QueryOptions(
-          document: parseString(query),
-          fetchPolicy: FetchPolicy.noCache,
-        ))
+    return GraphQLConnection().graphQLClient
+        .query(
+          QueryOptions(
+            document: parseString(query),
+            fetchPolicy: FetchPolicy.noCache,
+          ),
+        )
         .then(
-      (result) {
-        final List<Record> records = [];
-        if (result.hasException) {
-          throw AppUtils.handleGraphQlException(result)!;
-        } else {
-          dynamic lapRecordList = result.data!['getAllLapRecords'];
-          if (lapRecordList == null) {
-            _log.info("getAllLapRecords returned null data");
-          } else if (lapRecordList is Map<String, dynamic> && lapRecordList.isEmpty) {
-            _log.info("getAllLapRecords returned empty data");
-          } else {
-            for (dynamic record in lapRecordList) {
-              records.add(Record.fromJson(record));
+          (result) {
+            final List<Record> records = [];
+            if (result.hasException) {
+              throw AppUtils.handleGraphQlException(result)!;
+            } else {
+              dynamic lapRecordList = result.data!['getAllLapRecords'];
+              if (lapRecordList == null) {
+                _log.info("getAllLapRecords returned null data");
+              } else if (lapRecordList is Map<String, dynamic> &&
+                  lapRecordList.isEmpty) {
+                _log.info("getAllLapRecords returned empty data");
+              } else {
+                for (dynamic record in lapRecordList) {
+                  records.add(Record.fromJson(record));
+                }
+              }
+              return records;
             }
-          }
-          return records;
-        }
-      },
-      onError: (error) {
-        _log.severe("Error while fetching lap record list : $error");
-        throw Exception(error);
-      },
-    );
+          },
+          onError: (error) {
+            _log.severe("Error while fetching lap record list : $error");
+            throw Exception(error);
+          },
+        );
   }
 
   /// Fetch all records for the specified [trackId] from the database.
@@ -98,6 +100,8 @@ class RecordsService {
           conditions
           member {
             id
+            firstName
+            lastName
             email
           }
           track {
@@ -111,39 +115,41 @@ class RecordsService {
       }
     """;
 
-    return GraphQLConnection()
-        .graphQLClient
-        .query(QueryOptions(
-          document: parseString(query),
-          variables: {
-            'trackId': trackId,
-          },
-          fetchPolicy: FetchPolicy.noCache,
-        ))
+    return GraphQLConnection().graphQLClient
+        .query(
+          QueryOptions(
+            document: parseString(query),
+            variables: {'trackId': trackId},
+            fetchPolicy: FetchPolicy.noCache,
+          ),
+        )
         .then(
-      (result) {
-        final List<Record> records = [];
-        if (result.hasException) {
-          throw AppUtils.handleGraphQlException(result)!;
-        } else {
-          dynamic lapRecordList = result.data!['getTrackLapRecords'];
-          if (lapRecordList == null) {
-            _log.info("getTrackLapRecords returned null data");
-          } else if (lapRecordList is Map<String, dynamic> && lapRecordList.isEmpty) {
-            _log.info("getTrackLapRecords returned empty data");
-          } else {
-            for (dynamic record in lapRecordList) {
-              records.add(Record.fromJson(record));
+          (result) {
+            final List<Record> records = [];
+            if (result.hasException) {
+              throw AppUtils.handleGraphQlException(result)!;
+            } else {
+              dynamic lapRecordList = result.data!['getTrackLapRecords'];
+              if (lapRecordList == null) {
+                _log.info("getTrackLapRecords returned null data");
+              } else if (lapRecordList is Map<String, dynamic> &&
+                  lapRecordList.isEmpty) {
+                _log.info("getTrackLapRecords returned empty data");
+              } else {
+                for (dynamic record in lapRecordList) {
+                  records.add(Record.fromJson(record));
+                }
+              }
+              return records;
             }
-          }
-          return records;
-        }
-      },
-      onError: (error) {
-        _log.severe("Error while fetching lap record list for track ID $trackId: $error");
-        throw Exception(error);
-      },
-    );
+          },
+          onError: (error) {
+            _log.severe(
+              "Error while fetching lap record list for track ID $trackId: $error",
+            );
+            throw Exception(error);
+          },
+        );
   }
 
   /// Fetch all records for the specified [memberId] from the database.
@@ -172,44 +178,48 @@ class RecordsService {
       }
     """;
 
-    return GraphQLConnection()
-        .graphQLClient
-        .query(QueryOptions(
-          document: parseString(query),
-          variables: {
-            'memberId': memberId,
-          },
-          fetchPolicy: FetchPolicy.noCache,
-        ))
+    return GraphQLConnection().graphQLClient
+        .query(
+          QueryOptions(
+            document: parseString(query),
+            variables: {'memberId': memberId},
+            fetchPolicy: FetchPolicy.noCache,
+          ),
+        )
         .then(
-      (result) {
-        final List<Record> records = [];
-        if (result.hasException) {
-          throw AppUtils.handleGraphQlException(result)!;
-        } else {
-          dynamic lapRecordList = result.data!['getMemberLapRecords'];
-          if (lapRecordList == null) {
-            _log.info("getMemberLapRecords returned null data");
-          } else if (lapRecordList is Map<String, dynamic> && lapRecordList.isEmpty) {
-            _log.info("getMemberLapRecords returned empty data");
-          } else {
-            for (dynamic record in lapRecordList) {
-              records.add(Record.fromJson(record));
+          (result) {
+            final List<Record> records = [];
+            if (result.hasException) {
+              throw AppUtils.handleGraphQlException(result)!;
+            } else {
+              dynamic lapRecordList = result.data!['getMemberLapRecords'];
+              if (lapRecordList == null) {
+                _log.info("getMemberLapRecords returned null data");
+              } else if (lapRecordList is Map<String, dynamic> &&
+                  lapRecordList.isEmpty) {
+                _log.info("getMemberLapRecords returned empty data");
+              } else {
+                for (dynamic record in lapRecordList) {
+                  records.add(Record.fromJson(record));
+                }
+              }
+              return records;
             }
-          }
-          return records;
-        }
-      },
-      onError: (error) {
-        _log.severe("Error while fetching lap record list for member ID $memberId: $error");
-        throw Exception(error);
-      },
-    );
+          },
+          onError: (error) {
+            _log.severe(
+              "Error while fetching lap record list for member ID $memberId: $error",
+            );
+            throw Exception(error);
+          },
+        );
   }
 
   /// Create the specified [record] into the database.
   Future<Record> createRecord(Record record) async {
-    _log.info("Creating lap record for member ID ${record.member!.id} on track ID ${record.track!.id} ...");
+    _log.info(
+      "Creating lap record for member ID ${record.member!.id} on track ID ${record.track!.id} ...",
+    );
 
     final String newLapRecordMutation = """
       mutation CreateLapRecord(\$memberId: Long!, \$trackId: Long!, \$recordDate: String!, \$lapTime: Int!, \$conditions: String!, \$comments: String) {
@@ -248,12 +258,14 @@ class RecordsService {
         'recordDate': record.recordDate!.toIso8601String(),
         'lapTime': record.lapTime,
         'conditions': record.conditions,
-        'comments': record.comments
+        'comments': record.comments,
       },
       fetchPolicy: FetchPolicy.noCache,
     );
 
-    final QueryResult result = await GraphQLConnection().graphQLClient.mutate(mutationOptions);
+    final QueryResult result = await GraphQLConnection().graphQLClient.mutate(
+      mutationOptions,
+    );
 
     if (result.hasException) {
       throw AppUtils.handleGraphQlException(result)!;
@@ -303,12 +315,14 @@ class RecordsService {
         'recordDate': record.recordDate!.toIso8601String(),
         'lapTime': record.lapTime,
         'conditions': record.conditions,
-        'comments': record.comments
+        'comments': record.comments,
       },
       fetchPolicy: FetchPolicy.noCache,
     );
 
-    final QueryResult result = await GraphQLConnection().graphQLClient.mutate(mutationOptions);
+    final QueryResult result = await GraphQLConnection().graphQLClient.mutate(
+      mutationOptions,
+    );
 
     if (result.hasException) {
       throw AppUtils.handleGraphQlException(result)!;
@@ -347,13 +361,13 @@ class RecordsService {
 
     final MutationOptions mutationOptions = new MutationOptions(
       document: parseString(lapRecordMutation),
-      variables: {
-        'lapRecordId': record.id,
-      },
+      variables: {'lapRecordId': record.id},
       fetchPolicy: FetchPolicy.noCache,
     );
 
-    final QueryResult result = await GraphQLConnection().graphQLClient.mutate(mutationOptions);
+    final QueryResult result = await GraphQLConnection().graphQLClient.mutate(
+      mutationOptions,
+    );
 
     if (result.hasException) {
       throw AppUtils.handleGraphQlException(result)!;

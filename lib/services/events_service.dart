@@ -59,36 +59,60 @@ class EventsService {
       }
     """;
 
-    return GraphQLConnection()
-        .graphQLClient
-        .query(QueryOptions(
-          document: parseString(query),
-          fetchPolicy: FetchPolicy.noCache,
-        ))
+    return GraphQLConnection().graphQLClient
+        .query(
+          QueryOptions(
+            document: parseString(query),
+            fetchPolicy: FetchPolicy.noCache,
+          ),
+        )
         .then(
-      (result) {
-        final List<Event> events = [];
-        if (result.hasException) {
-          throw AppUtils.handleGraphQlException(result)!;
-        } else {
-          dynamic eventList = result.data!['getAllEvents'];
-          if (eventList == null) {
-            _log.info("getAllEvents returned null data");
-          } else if (eventList is Map<String, dynamic> && eventList.isEmpty) {
-            _log.info("getAllEvents returned empty data");
-          } else {
-            for (dynamic event in eventList) {
-              events.add(Event.fromJson(event));
+          (result) {
+            final List<Event> events = [];
+            if (result.hasException) {
+              throw AppUtils.handleGraphQlException(result)!;
+            } else {
+              dynamic eventList = result.data!['getAllEvents'];
+              if (eventList == null) {
+                _log.info("getAllEvents returned null data");
+              } else if (eventList is Map<String, dynamic> &&
+                  eventList.isEmpty) {
+                _log.info("getAllEvents returned empty data");
+              } else {
+                for (dynamic event in eventList) {
+                  events.add(Event.fromJson(event));
+                }
+              }
+              return events;
             }
-          }
-          return events;
-        }
-      },
-      onError: (error) {
-        _log.severe("Error while fetching event list : $error");
-        throw Exception(error);
-      },
-    );
+          },
+          onError: (error) {
+            _log.severe("Error while fetching event list : $error");
+            throw Exception(error);
+          },
+        );
+  }
+
+  /// Fetch all events for a specific [trackId]
+  Future<List<Event>> fetchEventsByTrack(int trackId) async {
+    _log.info("Getting events for track $trackId from database...");
+    return fetchEvents().then((events) {
+      _log.info(
+        "Fetched ${events.length} total events. Filtering for track $trackId...",
+      );
+      final filtered =
+          events.where((e) {
+            final match = e.track?.id == trackId;
+            if (e.track != null) {
+              _log.fine(
+                "Event track id: ${e.track?.id} (type: ${e.track?.id.runtimeType}), target id: $trackId (type: ${trackId.runtimeType}) -> Match: $match",
+              );
+            }
+            return match;
+          }).toList();
+      _log.info("Found ${filtered.length} events for track $trackId");
+      return filtered;
+    });
   }
 
   /// Fetch all events from the database for the specified [year] based on event start date.
@@ -115,42 +139,48 @@ class EventsService {
       }
     """;
 
-    return GraphQLConnection()
-        .graphQLClient
-        .query(QueryOptions(
-          document: parseString(query),
-          variables: {'year': year},
-          fetchPolicy: FetchPolicy.noCache,
-        ))
+    return GraphQLConnection().graphQLClient
+        .query(
+          QueryOptions(
+            document: parseString(query),
+            variables: {'year': year},
+            fetchPolicy: FetchPolicy.noCache,
+          ),
+        )
         .then(
-      (result) {
-        final List<Event> events = [];
-        if (result.hasException) {
-          throw AppUtils.handleGraphQlException(result)!;
-        } else {
-          dynamic eventList = result.data!['getEventsByYear'];
-          if (eventList == null) {
-            _log.info("getEventsByYear returned null data");
-          } else if (eventList is Map<String, dynamic> && eventList.isEmpty) {
-            _log.info("getEventsByYear returned empty data");
-          } else {
-            for (dynamic event in eventList) {
-              events.add(Event.fromJson(event));
+          (result) {
+            final List<Event> events = [];
+            if (result.hasException) {
+              throw AppUtils.handleGraphQlException(result)!;
+            } else {
+              dynamic eventList = result.data!['getEventsByYear'];
+              if (eventList == null) {
+                _log.info("getEventsByYear returned null data");
+              } else if (eventList is Map<String, dynamic> &&
+                  eventList.isEmpty) {
+                _log.info("getEventsByYear returned empty data");
+              } else {
+                for (dynamic event in eventList) {
+                  events.add(Event.fromJson(event));
+                }
+              }
+              return events;
             }
-          }
-          return events;
-        }
-      },
-      onError: (error) {
-        _log.severe("Error while fetching event list for year $year : $error");
-        throw Exception(error);
-      },
-    );
+          },
+          onError: (error) {
+            _log.severe(
+              "Error while fetching event list for year $year : $error",
+            );
+            throw Exception(error);
+          },
+        );
   }
 
   /// Fetch all events from the database for the specified [month] and [year] based on event start date.
   Future<List<Event>> fetchEventsForMonthAndYear(int month, int year) async {
-    _log.info("Getting all events of month $month and year $year from database...");
+    _log.info(
+      "Getting all events of month $month and year $year from database...",
+    );
 
     final String query = """
       query GetEventsByMonthAndYear(\$month: Int!, \$year: Int!) {
@@ -172,42 +202,52 @@ class EventsService {
       }
     """;
 
-    return GraphQLConnection()
-        .graphQLClient
-        .query(QueryOptions(
-          document: parseString(query),
-          variables: {'month': month, 'year': year},
-          fetchPolicy: FetchPolicy.noCache,
-        ))
+    return GraphQLConnection().graphQLClient
+        .query(
+          QueryOptions(
+            document: parseString(query),
+            variables: {'month': month, 'year': year},
+            fetchPolicy: FetchPolicy.noCache,
+          ),
+        )
         .then(
-      (result) {
-        final List<Event> events = [];
-        if (result.hasException) {
-          throw AppUtils.handleGraphQlException(result)!;
-        } else {
-          dynamic eventList = result.data!['getEventsByMonthAndYear'];
-          if (eventList == null) {
-            _log.info("getEventsByMonthAndYear returned null data");
-          } else if (eventList is Map<String, dynamic> && eventList.isEmpty) {
-            _log.info("getEventsByMonthAndYear returned empty data");
-          } else {
-            for (dynamic event in eventList) {
-              events.add(Event.fromJson(event));
+          (result) {
+            final List<Event> events = [];
+            if (result.hasException) {
+              throw AppUtils.handleGraphQlException(result)!;
+            } else {
+              dynamic eventList = result.data!['getEventsByMonthAndYear'];
+              if (eventList == null) {
+                _log.info("getEventsByMonthAndYear returned null data");
+              } else if (eventList is Map<String, dynamic> &&
+                  eventList.isEmpty) {
+                _log.info("getEventsByMonthAndYear returned empty data");
+              } else {
+                for (dynamic event in eventList) {
+                  events.add(Event.fromJson(event));
+                }
+              }
+              return events;
             }
-          }
-          return events;
-        }
-      },
-      onError: (error) {
-        _log.severe("Error while fetching event list for month $month and year $year : $error");
-        throw Exception(error);
-      },
-    );
+          },
+          onError: (error) {
+            _log.severe(
+              "Error while fetching event list for month $month and year $year : $error",
+            );
+            throw Exception(error);
+          },
+        );
   }
 
   /// Fetch all events from the database for the specified [day], [month] and [year] based on event start date.
-  Future<List<Event>> fetchEventsForDayAndMonthAndYear(int day, int month, int year) async {
-    _log.info("Getting all events for day $day, month $month and year $year from database...");
+  Future<List<Event>> fetchEventsForDayAndMonthAndYear(
+    int day,
+    int month,
+    int year,
+  ) async {
+    _log.info(
+      "Getting all events for day $day, month $month and year $year from database...",
+    );
 
     final String query = """
       query GetEventsByDayAndMonthAndYear(\$day: Int!, \$month: Int!, \$year: Int!) {
@@ -229,37 +269,41 @@ class EventsService {
       }
     """;
 
-    return GraphQLConnection()
-        .graphQLClient
-        .query(QueryOptions(
-          document: parseString(query),
-          variables: {'day': day, 'month': month, 'year': year},
-          fetchPolicy: FetchPolicy.noCache,
-        ))
+    return GraphQLConnection().graphQLClient
+        .query(
+          QueryOptions(
+            document: parseString(query),
+            variables: {'day': day, 'month': month, 'year': year},
+            fetchPolicy: FetchPolicy.noCache,
+          ),
+        )
         .then(
-      (result) {
-        final List<Event> events = [];
-        if (result.hasException) {
-          throw AppUtils.handleGraphQlException(result)!;
-        } else {
-          dynamic eventList = result.data!['getEventsByDayAndMonthAndYear'];
-          if (eventList == null) {
-            _log.info("getEventsByDayAndMonthAndYear returned null data");
-          } else if (eventList is Map<String, dynamic> && eventList.isEmpty) {
-            _log.info("getEventsByDayAndMonthAndYear returned empty data");
-          } else {
-            for (dynamic event in eventList) {
-              events.add(Event.fromJson(event));
+          (result) {
+            final List<Event> events = [];
+            if (result.hasException) {
+              throw AppUtils.handleGraphQlException(result)!;
+            } else {
+              dynamic eventList = result.data!['getEventsByDayAndMonthAndYear'];
+              if (eventList == null) {
+                _log.info("getEventsByDayAndMonthAndYear returned null data");
+              } else if (eventList is Map<String, dynamic> &&
+                  eventList.isEmpty) {
+                _log.info("getEventsByDayAndMonthAndYear returned empty data");
+              } else {
+                for (dynamic event in eventList) {
+                  events.add(Event.fromJson(event));
+                }
+              }
+              return events;
             }
-          }
-          return events;
-        }
-      },
-      onError: (error) {
-        _log.severe("Error while fetching event list for day $day, month $month and year $year : $error");
-        throw Exception(error);
-      },
-    );
+          },
+          onError: (error) {
+            _log.severe(
+              "Error while fetching event list for day $day, month $month and year $year : $error",
+            );
+            throw Exception(error);
+          },
+        );
   }
 
   /// Get an event from the database given its [id].
@@ -267,7 +311,7 @@ class EventsService {
     _log.info("Getting event $id from database...");
 
     final String query = """
-      query GetEventById(\$id: Int!) {
+      query GetEventById(\$id: Long!) {
         getEventById(id: \$id) {
           id
           title
@@ -291,8 +335,7 @@ class EventsService {
       }
     """;
 
-    return GraphQLConnection()
-        .graphQLClient
+    return GraphQLConnection().graphQLClient
         .query(
           QueryOptions(
             document: parseString(query),
@@ -301,21 +344,24 @@ class EventsService {
           ),
         )
         .then(
-      (result) {
-        if (result.hasException) {
-          throw AppUtils.handleGraphQlException(result)!;
-        } else {
-          // this should never happen as an exception is returned above when no data is found
-          if (result.data == null || result.data!['getEventById'] == null) {
-            throw CustomGraphQlException("no_event_found_with_id", "Event has not been found");
-          }
-          return Event.fromJson(result.data!['getEventById']);
-        }
-      },
-      onError: (error) {
-        throw Exception(error);
-      },
-    );
+          (result) {
+            if (result.hasException) {
+              throw AppUtils.handleGraphQlException(result)!;
+            } else {
+              // this should never happen as an exception is returned above when no data is found
+              if (result.data == null || result.data!['getEventById'] == null) {
+                throw CustomGraphQlException(
+                  "no_event_found_with_id",
+                  "Event has not been found",
+                );
+              }
+              return Event.fromJson(result.data!['getEventById']);
+            }
+          },
+          onError: (error) {
+            throw Exception(error);
+          },
+        );
   }
 
   /// Create the specified [event] into the database.
@@ -377,12 +423,14 @@ class EventsService {
         'trackId': event.track!.id,
         'organizer': event.organizer,
         'price': event.price,
-        'memberId': event.createdBy!.id
+        'memberId': event.createdBy!.id,
       },
       fetchPolicy: FetchPolicy.noCache,
     );
 
-    final QueryResult result = await GraphQLConnection().graphQLClient.mutate(mutationOptions);
+    final QueryResult result = await GraphQLConnection().graphQLClient.mutate(
+      mutationOptions,
+    );
 
     if (result.hasException) {
       throw AppUtils.handleGraphQlException(result)!;
@@ -452,12 +500,14 @@ class EventsService {
         'trackId': event.track!.id,
         'organizer': event.organizer,
         'price': event.price,
-        'memberId': event.modifiedBy!.id
+        'memberId': event.modifiedBy!.id,
       },
       fetchPolicy: FetchPolicy.noCache,
     );
 
-    final QueryResult result = await GraphQLConnection().graphQLClient.mutate(mutationOptions);
+    final QueryResult result = await GraphQLConnection().graphQLClient.mutate(
+      mutationOptions,
+    );
 
     if (result.hasException) {
       throw AppUtils.handleGraphQlException(result)!;
@@ -514,7 +564,9 @@ class EventsService {
       fetchPolicy: FetchPolicy.noCache,
     );
 
-    final QueryResult result = await GraphQLConnection().graphQLClient.mutate(mutationOptions);
+    final QueryResult result = await GraphQLConnection().graphQLClient.mutate(
+      mutationOptions,
+    );
 
     if (result.hasException) {
       throw AppUtils.handleGraphQlException(result)!;

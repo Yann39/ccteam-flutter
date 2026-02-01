@@ -58,23 +58,11 @@ class _TracksState extends State<Tracks> {
 
   /// Method that launches the Track detail screen and awaits the result from Navigator.pop
   void _navigateToTrackDetailScreen(BuildContext context, Track track) async {
-    /*Provider.of<EventProvider>(context, listen: false)
-        .fetchTrackEvents(track.id);*/
-
     Provider.of<TrackDetailProvider>(
       context,
       listen: false,
     ).setCurrentTrack(track);
-
-    // Navigator.push returns a Future that will complete after we call Navigator.pop on the target screen
-    final _result = await Navigator.pushNamed(context, '/trackDetail');
-
-    // after the target screen returns a result, hide any previous snack bars and show the result
-    if (_result != null) {
-      ScaffoldMessenger.of(context)
-        ..removeCurrentSnackBar()
-        ..showSnackBar(SnackBar(content: Text("$_result")));
-    }
+    Navigator.pushNamed(context, '/trackDetail');
   }
 
   Widget build(BuildContext context) {

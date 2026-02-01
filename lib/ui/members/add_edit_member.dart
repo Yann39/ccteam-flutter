@@ -213,7 +213,7 @@ class _AddEditMemberState extends State<AddEditMember> {
         SizedBox(width: 16),
         Text("Actif ?"),
         Switch(
-          activeColor: Colors.green[700],
+          activeThumbColor: Colors.green[700],
           value: _memberCreationProvider.currentMember.active!,
           onChanged:
               (val) => setState(() {
@@ -229,7 +229,7 @@ class _AddEditMemberState extends State<AddEditMember> {
         SizedBox(width: 16),
         Text("Admin ?"),
         Switch(
-          activeColor: Colors.green[700],
+          activeThumbColor: Colors.green[700],
           value: _memberCreationProvider.currentMember.admin!,
           onChanged:
               (val) => setState(() {

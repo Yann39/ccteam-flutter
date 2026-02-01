@@ -17,8 +17,6 @@
  * along with CCTeam. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import 'dart:convert';
-
 import 'package:ccteam/models/track.dart';
 import 'package:ccteam/utils/app_utils.dart';
 import 'package:ccteam/utils/constants.dart';
@@ -49,8 +47,7 @@ class TracksService {
       }
     """;
 
-    return GraphQLConnection()
-        .graphQLClient
+    return GraphQLConnection().graphQLClient
         .query(
           QueryOptions(
             document: parseString(allTracksQuery),
@@ -58,52 +55,85 @@ class TracksService {
           ),
         )
         .then(
-      (result) {
-        final List<Track> tracks = [];
-        if (result.hasException) {
-          throw AppUtils.handleGraphQlException(result)!;
-        } else {
-          dynamic trackList = result.data!['getAllTracks'];
-          if (trackList == null) {
-            _log.info("getAllTracks returned null data");
-          } else if (trackList is Map<String, dynamic> && trackList.isEmpty) {
-            _log.info("getAllTracks returned empty data");
-          } else {
-            for (dynamic oneTrack in trackList) {
-              tracks.add(Track.fromJson(oneTrack));
+          (result) {
+            final List<Track> tracks = [];
+            if (result.hasException) {
+              throw AppUtils.handleGraphQlException(result)!;
+            } else {
+              dynamic trackList = result.data!['getAllTracks'];
+              if (trackList == null) {
+                _log.info("getAllTracks returned null data");
+              } else if (trackList is Map<String, dynamic> &&
+                  trackList.isEmpty) {
+                _log.info("getAllTracks returned empty data");
+              } else {
+                for (dynamic oneTrack in trackList) {
+                  tracks.add(Track.fromJson(oneTrack));
+                }
+              }
+              return tracks;
             }
-          }
-          return tracks;
-        }
-      },
-      onError: (error) {
-        _log.severe("Error while fetching track list : $error");
-        throw Exception(error);
-      },
-    );
+          },
+          onError: (error) {
+            _log.severe("Error while fetching track list : $error");
+            throw Exception(error);
+          },
+        );
   }
 
   /// Search for tracks according to the specified [text]
   /// Send a POST request to the Restful API
   /// Throw an exception if response status code is different from 200
   Future<List<Track>> searchTracks(String text) async {
-    // format text as URL parameter string
-    final String urlParameters = "?s=${Uri.encodeComponent(text)}";
+    _log.info("Searching tracks with text: $text...");
 
-    // call to API
-    final response = await http.get(Uri.parse(API_BASE_URL + API_SEARCH_TRACKS_ENDPOINT + urlParameters),
-        headers: {'Content-Type': 'application/json'});
+    final String searchTracksQuery = """
+      query GetTracksFiltered(\$text: String) {
+        getTracksFiltered(text: \$text) {
+          id
+          name
+          distance
+          lapRecord
+          website
+          latitude
+          longitude 
+        }
+      }
+    """;
 
-    if (response.statusCode == 200) {
-      // if the call to the server was successful, parse the JSON and return content
-      dynamic responseJson = json.decode(response.body);
-      return (responseJson['records'] as List).map((p) => Track.fromJson(p)).toList();
-    } else if (response.statusCode == 404) {
-      // no data found, return empty array
-      return [];
-    } else {
-      throw Exception('Unexpected server response');
-    }
+    return GraphQLConnection().graphQLClient
+        .query(
+          QueryOptions(
+            document: parseString(searchTracksQuery),
+            variables: {'text': text},
+            fetchPolicy: FetchPolicy.noCache,
+          ),
+        )
+        .then(
+          (result) {
+            final List<Track> tracks = [];
+            if (result.hasException) {
+              throw AppUtils.handleGraphQlException(result)!;
+            } else {
+              dynamic trackList = result.data!['getTracksFiltered'];
+              if (trackList == null) {
+                _log.info("getTracksFiltered returned null data");
+              } else if (trackList is Map<String, dynamic> &&
+                  trackList.isEmpty) {
+                _log.info("getTracksFiltered returned empty data");
+              } else {
+                for (dynamic oneTrack in trackList) {
+                  tracks.add(Track.fromJson(oneTrack));
+                }
+              }
+              return tracks;
+            }
+          },
+          onError: (error) {
+            _log.severe("Error while searching tracks : $error");
+            throw Exception(error);
+          },
+        );
   }
 
   /// Get a track from the database given its [id].
@@ -124,8 +154,7 @@ class TracksService {
       }
     """;
 
-    return GraphQLConnection()
-        .graphQLClient
+    return GraphQLConnection().graphQLClient
         .query(
           QueryOptions(
             document: parseString(trackByIdQuery),
@@ -134,20 +163,20 @@ class TracksService {
           ),
         )
         .then(
-      (result) {
-        if (result.hasException) {
-          throw AppUtils.handleGraphQlException(result)!;
-        } else {
-          if (result.data!['getTrackById'] == null) {
-            return null;
-          }
-          return Track.fromJson(result.data!['getTrackById']);
-        }
-      },
-      onError: (error) {
-        throw Exception(error);
-      },
-    );
+          (result) {
+            if (result.hasException) {
+              throw AppUtils.handleGraphQlException(result)!;
+            } else {
+              if (result.data!['getTrackById'] == null) {
+                return null;
+              }
+              return Track.fromJson(result.data!['getTrackById']);
+            }
+          },
+          onError: (error) {
+            throw Exception(error);
+          },
+        );
   }
 
   /// Create the specified [track] into the database
@@ -155,8 +184,11 @@ class TracksService {
   /// Throw an exception if response status code is different from 201
   Future<void> createTrack(Track track) async {
     // call to API
-    final response = await http.post(Uri.parse(API_BASE_URL + API_CREATE_TRACK_ENDPOINT),
-        headers: {'Content-Type': 'application/json'}, body: track.toJson());
+    final response = await http.post(
+      Uri.parse(API_BASE_URL + API_CREATE_TRACK_ENDPOINT),
+      headers: {'Content-Type': 'application/json'},
+      body: track.toJson(),
+    );
 
     // handle server response code
     if (response.statusCode == 201) {
@@ -175,8 +207,11 @@ class TracksService {
   /// Throw an exception if response status code is different from 200
   Future<void> updateTrack(Track track) async {
     // call to API
-    final response = await http.post(Uri.parse(API_BASE_URL + API_UPDATE_TRACK_ENDPOINT),
-        headers: {'Content-Type': 'application/json'}, body: track.toJson());
+    final response = await http.post(
+      Uri.parse(API_BASE_URL + API_UPDATE_TRACK_ENDPOINT),
+      headers: {'Content-Type': 'application/json'},
+      body: track.toJson(),
+    );
 
     // handle server response code
     if (response.statusCode == 200) {
@@ -193,8 +228,11 @@ class TracksService {
   /// Throw an exception if response status code is different from 204
   Future<void> deleteTrack(Track track) async {
     // call to API
-    final response = await http.post(Uri.parse(API_BASE_URL + API_DELETE_TRACK_ENDPOINT),
-        headers: {'Content-Type': 'application/json'}, body: track.toJson());
+    final response = await http.post(
+      Uri.parse(API_BASE_URL + API_DELETE_TRACK_ENDPOINT),
+      headers: {'Content-Type': 'application/json'},
+      body: track.toJson(),
+    );
 
     if (response.statusCode != 204) {
       throw Exception('Unexpected server response');

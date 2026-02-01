@@ -69,56 +69,74 @@ class TrackListProvider extends ChangeNotifier {
   void _fetchTracks() async {
     _updateStatus(LoadingStatus.loading);
     notifyListeners();
-    await _tracksService.fetchTracks().then((value) async {
-      _log.fine("Tracks list retrieved successfully");
-      _tracks = value;
-      _updateStatus(LoadingStatus.loaded);
-    }, onError: (error) {
-      _log.warning("Error when retrieving tracks list ($error)");
-      _tracks = [];
-      _updateStatus(LoadingStatus.notLoaded);
-      throw (error);
-    });
+    await _tracksService.fetchTracks().then(
+      (value) async {
+        _log.fine("Tracks list retrieved successfully");
+        _tracks = value;
+        _updateStatus(LoadingStatus.loaded);
+      },
+      onError: (error) {
+        _log.warning("Error when retrieving tracks list ($error)");
+        _tracks = [];
+        _updateStatus(LoadingStatus.notLoaded);
+        throw (error);
+      },
+    );
   }
 
   /// Search for tracks according to the specified [text]
   void searchTracks(String text) async {
     _updateStatus(LoadingStatus.loading);
-    await _tracksService.searchTracks(text).then((value) async {
-      _log.fine("Members search list retrieved successfully");
-      _tracks = value;
-      _updateStatus(LoadingStatus.loaded);
-    }, onError: (error) {
-      _log.warning("Error when searching tracks ($error)");
-      _tracks = [];
-      _updateStatus(LoadingStatus.notLoaded);
-      throw (error);
-    });
+    await _tracksService
+        .searchTracks(text)
+        .then(
+          (value) async {
+            _log.fine("Tracks search list retrieved successfully");
+            _tracks = value;
+            _updateStatus(LoadingStatus.loaded);
+          },
+          onError: (error) {
+            _log.warning("Error when searching tracks ($error)");
+            _tracks = [];
+            _updateStatus(LoadingStatus.notLoaded);
+            throw (error);
+          },
+        );
   }
 
   /// Create the specified [track]
   Future<void> createTrack(Track track) async {
-    await _tracksService.createTrack(track).then((value) {
-      _log.fine("New track created : ${track.name}");
-      _tracks.add(track);
-      _log.info("Notifying listeners of TrackListProvider");
-      notifyListeners();
-    }, onError: (error) {
-      _log.severe("Failed to create new track ($error)");
-      throw (error);
-    });
+    await _tracksService
+        .createTrack(track)
+        .then(
+          (value) {
+            _log.fine("New track created : ${track.name}");
+            _tracks.add(track);
+            _log.info("Notifying listeners of TrackListProvider");
+            notifyListeners();
+          },
+          onError: (error) {
+            _log.severe("Failed to create new track ($error)");
+            throw (error);
+          },
+        );
   }
 
   /// Update the specified [track]
   Future<void> updateTrack(Track track) async {
-    await _tracksService.updateTrack(track).then((value) {
-      _log.fine("Track successfully updated : ${track.name}");
-      _tracks[_tracks.indexWhere((m) => m.id == track.id)] = track;
-      _log.info("Notifying listeners of TrackListProvider");
-      notifyListeners();
-    }, onError: (error) {
-      _log.severe("Failed to update track ($error)");
-      throw (error);
-    });
+    await _tracksService
+        .updateTrack(track)
+        .then(
+          (value) {
+            _log.fine("Track successfully updated : ${track.name}");
+            _tracks[_tracks.indexWhere((m) => m.id == track.id)] = track;
+            _log.info("Notifying listeners of TrackListProvider");
+            notifyListeners();
+          },
+          onError: (error) {
+            _log.severe("Failed to update track ($error)");
+            throw (error);
+          },
+        );
   }
 }

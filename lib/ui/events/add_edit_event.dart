@@ -273,7 +273,7 @@ class _AddEditEventState extends State<AddEditEvent> {
                             return Column(
                               children: <Widget>[
                                 DropdownButtonFormField<Track>(
-                                  value:
+                                  initialValue:
                                       _selectedTrack != null
                                           ? _selectedTrack
                                           : _eventCreationProvider.event.id !=
@@ -285,8 +285,11 @@ class _AddEditEventState extends State<AddEditEvent> {
                                                     .event
                                                     .track!
                                                     .id,
+                                            orElse: () => snapshot.data!.first,
                                           )
-                                          : snapshot.data!.first,
+                                          : snapshot.data!.isNotEmpty
+                                          ? snapshot.data!.first
+                                          : null,
                                   decoration: const InputDecoration(
                                     icon: const Icon(CustomIcons.track_sample),
                                     hintText: AppString.eventTrackIdHint,

@@ -17,14 +17,17 @@
  * along with CCTeam. If not, see <http://www.gnu.org/licenses/>.
  */
 
+import 'package:ccteam/models/event.dart';
 import 'package:ccteam/models/record.dart';
 import 'package:ccteam/models/track.dart';
+import 'package:ccteam/providers/event_detail_provider.dart';
 import 'package:ccteam/providers/record_list_provider.dart';
 import 'package:ccteam/providers/track_detail_provider.dart';
 import 'package:ccteam/utils/app_utils.dart';
 import 'package:ccteam/utils/custom_decorations.dart';
 import 'package:ccteam/utils/custom_icons.dart';
 import 'package:ccteam/utils/date_utils.dart';
+import 'package:ccteam/utils/string_utils.dart';
 import 'package:ccteam/utils/strings.dart';
 import 'package:ccteam/utils/track_utils.dart';
 import 'package:flutter/material.dart';
@@ -40,6 +43,26 @@ class TrackDetail extends StatefulWidget {
 }
 
 class _TrackDetailState extends State<TrackDetail> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final TrackDetailProvider trackDetailProvider =
+          Provider.of<TrackDetailProvider>(context, listen: false);
+      if (trackDetailProvider.currentTrack != null) {
+        final int trackId = trackDetailProvider.currentTrack!.id!;
+        Provider.of<EventDetailProvider>(
+          context,
+          listen: false,
+        ).fetchEventsByTrack(trackDetailProvider.currentTrack!);
+        Provider.of<RecordListProvider>(
+          context,
+          listen: false,
+        ).fetchTrackRecords(trackId);
+      }
+    });
+  }
+
   /// Method that launches the Edit track screen and awaits the result from Navigator.pop
   _navigateToEditTrackScreen(BuildContext context, Track track) async {
     /*// Navigator.push returns a Future that will complete after we call Navigator.pop on the target screen
@@ -136,9 +159,8 @@ class _TrackDetailState extends State<TrackDetail> {
     }
   }
 
-  /*Widget _eventsTable(EventProvider eventProvider) {
-    if (eventProvider.trackEvents != null &&
-        eventProvider.trackEvents.length > 0) {
+  Widget _eventsTable(EventDetailProvider eventDetailProvider) {
+    if (eventDetailProvider.allEvents.isNotEmpty) {
       return Container(
         decoration: CustomDecorations.cardLight,
         child: Table(
@@ -146,43 +168,52 @@ class _TrackDetailState extends State<TrackDetail> {
             0: FlexColumnWidth(3),
             1: FlexColumnWidth(2),
             2: FlexColumnWidth(1),
-            3: FlexColumnWidth(1)
+            3: FlexColumnWidth(1),
           },
           defaultVerticalAlignment: TableCellVerticalAlignment.middle,
           border: TableBorder(
-              horizontalInside:
-                  BorderSide(color: Colors.black.withOpacity(0.3), width: 1),
-              verticalInside:
-                  BorderSide(color: Colors.black.withOpacity(0.3), width: 1)),
+            horizontalInside: BorderSide(
+              color: Colors.black.withOpacity(0.3),
+              width: 1,
+            ),
+            verticalInside: BorderSide(
+              color: Colors.black.withOpacity(0.3),
+              width: 1,
+            ),
+          ),
           children: [
-            for (Event ev in eventProvider.trackEvents)
-              TableRow(children: [
-                Padding(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 8.0, vertical: 12.0),
-                  child: Text(
-                    ev.fullDate,
+            for (Event ev in eventDetailProvider.allEvents)
+              TableRow(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8.0,
+                      vertical: 12.0,
+                    ),
+                    child: Text(
+                      ev.fullDate,
+                      style: TextStyle(color: Colors.black.withOpacity(0.8)),
+                      overflow: TextOverflow.ellipsis,
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                  Text(
+                    ev.organizer ?? "",
                     style: TextStyle(color: Colors.black.withOpacity(0.8)),
-                    overflow: TextOverflow.ellipsis,
                     textAlign: TextAlign.center,
                   ),
-                ),
-                Text(
-                  ev.organizer,
-                  style: TextStyle(color: Colors.black.withOpacity(0.8)),
-                  textAlign: TextAlign.center,
-                ),
-                Text(
-                  "${StringUtils.formatPrice(ev.price)} €",
-                  style: TextStyle(color: Colors.black.withOpacity(0.8)),
-                  textAlign: TextAlign.center,
-                ),
-                Text(
-                  "${ev.members.length}",
-                  style: TextStyle(color: Colors.black.withOpacity(0.8)),
-                  textAlign: TextAlign.center,
-                ),
-              ])
+                  Text(
+                    "${StringUtils.formatPrice(ev.price ?? 0.0)} €",
+                    style: TextStyle(color: Colors.black.withOpacity(0.8)),
+                    textAlign: TextAlign.center,
+                  ),
+                  Text(
+                    "${ev.participants?.length ?? 0}",
+                    style: TextStyle(color: Colors.black.withOpacity(0.8)),
+                    textAlign: TextAlign.center,
+                  ),
+                ],
+              ),
           ],
         ),
       );
@@ -193,14 +224,15 @@ class _TrackDetailState extends State<TrackDetail> {
         child: Text(AppString.trackNoEvent),
       );
     }
-  }*/
+  }
 
   Widget build(BuildContext context) {
     final RecordListProvider _recordListProvider =
         Provider.of<RecordListProvider>(context, listen: true);
     final TrackDetailProvider _trackDetailProvider =
         Provider.of<TrackDetailProvider>(context, listen: true);
-    //final EventProvider _eventProvider = Provider.of<EventProvider>(context, listen: true);
+    final EventDetailProvider _eventDetailProvider =
+        Provider.of<EventDetailProvider>(context, listen: true);
 
     return Scaffold(
       /*appBar: AppBar(
@@ -242,7 +274,9 @@ class _TrackDetailState extends State<TrackDetail> {
                   // t est 0.0 quand complètement déployé, 1.0 quand complètement replié
                   return FlexibleSpaceBar(
                     title: Text(
-                      _trackDetailProvider.currentTrack!.name!,
+                      _trackDetailProvider.currentTrack != null
+                          ? _trackDetailProvider.currentTrack!.name!
+                          : "",
                       style: TextStyle(
                         color: Colors.white,
                         fontWeight: FontWeight.bold,
@@ -262,12 +296,14 @@ class _TrackDetailState extends State<TrackDetail> {
                       alignment: Alignment.bottomLeft,
                       fit: StackFit.expand,
                       children: <Widget>[
-                        Image.asset(
-                          TrackUtils.trackCoverImageUrlFromName(
-                            _trackDetailProvider.currentTrack!.name,
-                          ),
-                          fit: BoxFit.fitWidth,
-                        ),
+                        _trackDetailProvider.currentTrack != null
+                            ? Image.asset(
+                              TrackUtils.trackCoverImageUrlFromName(
+                                _trackDetailProvider.currentTrack!.name,
+                              ),
+                              fit: BoxFit.fitWidth,
+                            )
+                            : Container(),
                         DecoratedBox(
                           decoration: BoxDecoration(
                             gradient: LinearGradient(
@@ -321,17 +357,20 @@ class _TrackDetailState extends State<TrackDetail> {
                                           AppString.lapRecord,
                                           textAlign: TextAlign.center,
                                         ),
-                                        Text(
-                                          AppDateUtils.toLapTimeString(
-                                                _trackDetailProvider
-                                                    .currentTrack!
-                                                    .lapRecord,
-                                              ) ??
-                                              "",
-                                          textAlign: TextAlign.center,
-                                          maxLines: 2,
-                                          overflow: TextOverflow.ellipsis,
-                                        ),
+                                        _trackDetailProvider.currentTrack !=
+                                                null
+                                            ? Text(
+                                              AppDateUtils.toLapTimeString(
+                                                    _trackDetailProvider
+                                                        .currentTrack!
+                                                        .lapRecord,
+                                                  ) ??
+                                                  "",
+                                              textAlign: TextAlign.center,
+                                              maxLines: 2,
+                                              overflow: TextOverflow.ellipsis,
+                                            )
+                                            : Container(),
                                       ],
                                     ),
                                   ),
@@ -356,50 +395,56 @@ class _TrackDetailState extends State<TrackDetail> {
                                           AppString.length,
                                           textAlign: TextAlign.center,
                                         ),
-                                        Text(
-                                          "${_trackDetailProvider.currentTrack!.distance}",
-                                          textAlign: TextAlign.center,
-                                          maxLines: 2,
-                                          overflow: TextOverflow.ellipsis,
-                                        ),
+                                        _trackDetailProvider.currentTrack !=
+                                                null
+                                            ? Text(
+                                              "${_trackDetailProvider.currentTrack!.distance}",
+                                              textAlign: TextAlign.center,
+                                              maxLines: 2,
+                                              overflow: TextOverflow.ellipsis,
+                                            )
+                                            : Container(),
                                       ],
                                     ),
                                   ),
                                 ),
-                                Expanded(
-                                  flex: 1,
-                                  child: InkWell(
-                                    onTap:
-                                        () => AppUtils.launchURL(
-                                          "geo:${_trackDetailProvider.currentTrack!.latitude},${_trackDetailProvider.currentTrack!.longitude}",
+                                _trackDetailProvider.currentTrack != null
+                                    ? Expanded(
+                                      flex: 1,
+                                      child: InkWell(
+                                        onTap:
+                                            () => AppUtils.launchURL(
+                                              "geo:${_trackDetailProvider.currentTrack!.latitude},${_trackDetailProvider.currentTrack!.longitude}",
+                                            ),
+                                        child: Container(
+                                          height: 100,
+                                          margin: EdgeInsets.all(4.0),
+                                          padding: EdgeInsets.all(8.0),
+                                          decoration:
+                                              CustomDecorations.cardLight,
+                                          child: Column(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.spaceBetween,
+                                            children: <Widget>[
+                                              Icon(
+                                                Icons.place,
+                                                size: 30,
+                                                color: Colors.red[700],
+                                              ),
+                                              Text(
+                                                "${_trackDetailProvider.currentTrack!.latitude}",
+                                                textAlign: TextAlign.center,
+                                              ),
+                                              Text(
+                                                "${_trackDetailProvider.currentTrack!.longitude}",
+                                                textAlign: TextAlign.center,
+                                              ),
+                                            ],
+                                          ),
                                         ),
-                                    child: Container(
-                                      height: 100,
-                                      margin: EdgeInsets.all(4.0),
-                                      padding: EdgeInsets.all(8.0),
-                                      decoration: CustomDecorations.cardLight,
-                                      child: Column(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceBetween,
-                                        children: <Widget>[
-                                          Icon(
-                                            Icons.place,
-                                            size: 30,
-                                            color: Colors.red[700],
-                                          ),
-                                          Text(
-                                            "${_trackDetailProvider.currentTrack!.latitude}",
-                                            textAlign: TextAlign.center,
-                                          ),
-                                          Text(
-                                            "${_trackDetailProvider.currentTrack!.longitude}",
-                                            textAlign: TextAlign.center,
-                                          ),
-                                        ],
                                       ),
-                                    ),
-                                  ),
-                                ),
+                                    )
+                                    : Container(),
                               ],
                             ),
                             Divider(color: Colors.white),
@@ -423,7 +468,7 @@ class _TrackDetailState extends State<TrackDetail> {
                               ],
                             ),
                             SizedBox(height: 10),
-                            //_eventsTable(_eventProvider),
+                            _eventsTable(_eventDetailProvider),
                             SizedBox(height: 10),
                             Divider(color: Colors.white),
                             SizedBox(height: 10),
