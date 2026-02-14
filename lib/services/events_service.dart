@@ -574,4 +574,108 @@ class EventsService {
       return Event.fromJson(result.data!['deleteEvent']);
     }
   }
+
+  /// Mark the specified [eventId] as registered for the member identified by the specified [memberId].
+  /// Return the up-to-date event.
+  Future<Event> registerToEvent(int eventId, int memberId) async {
+    _log.info("Registering to event $eventId for member $memberId ...");
+
+    final String registerMutation = """
+      mutation RegisterToEvent(\$eventId: Long!, \$memberId: Long!) {
+        registerToEvent(
+            eventId: \$eventId
+            memberId: \$memberId
+        )
+        {
+          id
+          title
+          description
+          startDate
+          endDate
+          track {
+            id
+            name
+          }
+          organizer
+          price
+          participants {
+            id
+            member {
+              id
+              firstName
+              lastName
+            }
+          }
+        }
+      }
+    """;
+
+    final MutationOptions mutationOptions = new MutationOptions(
+      document: parseString(registerMutation),
+      variables: {'eventId': eventId, 'memberId': memberId},
+      fetchPolicy: FetchPolicy.noCache,
+    );
+
+    final QueryResult result = await GraphQLConnection().graphQLClient.mutate(
+      mutationOptions,
+    );
+
+    if (result.hasException) {
+      throw AppUtils.handleGraphQlException(result)!;
+    } else {
+      return Event.fromJson(result.data!['registerToEvent']);
+    }
+  }
+
+  /// Mark the specified [eventId] as unregistered for the member identified by the specified [memberId].
+  /// Return the up-to-date event.
+  Future<Event> unregisterFromEvent(int eventId, int memberId) async {
+    _log.info("Unregistering from event $eventId for member $memberId ...");
+
+    final String unregisterMutation = """
+      mutation UnregisterFromEvent(\$eventId: Long!, \$memberId: Long!) {
+        unregisterFromEvent(
+            eventId: \$eventId
+            memberId: \$memberId
+        )
+        {
+          id
+          title
+          description
+          startDate
+          endDate
+          track {
+            id
+            name
+          }
+          organizer
+          price
+          participants {
+            id
+            member {
+              id
+              firstName
+              lastName
+            }
+          }
+        }
+      }
+    """;
+
+    final MutationOptions mutationOptions = new MutationOptions(
+      document: parseString(unregisterMutation),
+      variables: {'eventId': eventId, 'memberId': memberId},
+      fetchPolicy: FetchPolicy.noCache,
+    );
+
+    final QueryResult result = await GraphQLConnection().graphQLClient.mutate(
+      mutationOptions,
+    );
+
+    if (result.hasException) {
+      throw AppUtils.handleGraphQlException(result)!;
+    } else {
+      return Event.fromJson(result.data!['unregisterFromEvent']);
+    }
+  }
 }

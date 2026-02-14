@@ -40,6 +40,12 @@ For Intellij :
 7. Run `flutter pub get`
 8. Run `gradle app:build`
 
+To deploy the app in release mode in a local device :
+
+```
+flutter run --release --dart-define=API_BASE_URL=https://ccteam.rockybox.net/ccteam-gql
+```
+
 # Play Store
 
 In build.gradle, upgrade version code and name :

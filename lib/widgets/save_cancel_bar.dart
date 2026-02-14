@@ -33,57 +33,51 @@ class SaveCancelBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Positioned(
-      height: 50,
-      bottom: 0,
-      left: 0,
-      right: 0,
-      child: Row(
-        children: <Widget>[
-          Expanded(
-            child: TextButton(
-              style: TextButton.styleFrom(
-                backgroundColor: Colors.red[700],
-                shape: LinearBorder(),
-                fixedSize: Size.fromHeight(50),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.arrow_back, color: Colors.white, size: 15),
-                  SizedBox(width: 5),
-                  Text(
-                    AppString.cancel.toUpperCase(),
-                    style: TextStyle(color: Colors.white),
-                  ),
-                ],
-              ),
-              onPressed: cancelFunction,
+    return Row(
+      children: <Widget>[
+        Expanded(
+          child: TextButton(
+            style: TextButton.styleFrom(
+              backgroundColor: Colors.red[700],
+              shape: LinearBorder(),
+              fixedSize: Size.fromHeight(50),
             ),
-          ),
-          Expanded(
-            child: TextButton(
-              style: TextButton.styleFrom(
-                backgroundColor: Colors.blue[700],
-                shape: LinearBorder(),
-                fixedSize: Size.fromHeight(50),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.check, color: Colors.white, size: 15),
-                  SizedBox(width: 5),
-                  Text(
-                    AppString.save.toUpperCase(),
-                    style: TextStyle(color: Colors.white),
-                  ),
-                ],
-              ),
-              onPressed: saveFunction,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.arrow_back, color: Colors.white, size: 15),
+                SizedBox(width: 5),
+                Text(
+                  AppString.cancel.toUpperCase(),
+                  style: TextStyle(color: Colors.white),
+                ),
+              ],
             ),
+            onPressed: cancelFunction,
           ),
-        ],
-      ),
+        ),
+        Expanded(
+          child: TextButton(
+            style: TextButton.styleFrom(
+              backgroundColor: Colors.blue[700],
+              shape: LinearBorder(),
+              fixedSize: Size.fromHeight(50),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.check, color: Colors.white, size: 15),
+                SizedBox(width: 5),
+                Text(
+                  AppString.save.toUpperCase(),
+                  style: TextStyle(color: Colors.white),
+                ),
+              ],
+            ),
+            onPressed: saveFunction,
+          ),
+        ),
+      ],
     );
   }
 }

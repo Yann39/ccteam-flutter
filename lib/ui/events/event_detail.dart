@@ -24,6 +24,7 @@ import 'package:ccteam/models/member.dart';
 import 'package:ccteam/providers/event_creation_provider.dart';
 import 'package:ccteam/providers/event_detail_provider.dart';
 import 'package:ccteam/providers/event_list_provider.dart';
+import 'package:ccteam/providers/login_provider.dart';
 import 'package:ccteam/providers/member_detail_provider.dart';
 import 'package:ccteam/utils/custom_decorations.dart';
 import 'package:ccteam/utils/custom_icons.dart';
@@ -113,11 +114,51 @@ class EventDetail extends StatelessWidget {
     );
   }
 
+  Widget _registrationButton(
+    Event event,
+    int memberId,
+    EventDetailProvider provider,
+  ) {
+    final bool isRegistered =
+        event.participants?.any((p) => p.member?.id == memberId) ?? false;
+
+    return Center(
+      child: ElevatedButton(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: isRegistered ? Colors.green[700] : Colors.red[700],
+          padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        ),
+        onPressed: () {
+          if (isRegistered) {
+            provider.unregisterFromEvent(event, memberId);
+          } else {
+            provider.registerToEvent(event, memberId);
+          }
+        },
+        child: Text(
+          isRegistered
+              ? AppString.eventUnregister
+              : AppString.eventParticipated,
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget build(BuildContext context) {
     _log.info("Building Event detail...");
 
     final EventDetailProvider _eventDetailProvider =
         Provider.of<EventDetailProvider>(context, listen: true);
+    final LoginProvider _loginProvider = Provider.of<LoginProvider>(
+      context,
+      listen: true,
+    );
 
     return Scaffold(
       appBar: AppBar(
@@ -544,6 +585,14 @@ class EventDetail extends StatelessWidget {
                               ),
                             )
                             : Text(AppString.noParticipant),
+                        SizedBox(height: 20),
+                        _loginProvider.loggedMember != null
+                            ? _registrationButton(
+                              _eventDetailProvider.currentEvent,
+                              _loginProvider.loggedMember!.id!,
+                              _eventDetailProvider,
+                            )
+                            : Container(),
                         SizedBox(height: 10),
                         Divider(color: Colors.white),
                       ],

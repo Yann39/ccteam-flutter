@@ -49,8 +49,12 @@ class _AddEditPhotoState extends State<AddEditPhoto> {
     final FormState form = _formKey.currentState!;
 
     if (!form.validate()) {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(backgroundColor: Colors.red, content: Text(AppString.formNotValid)));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          backgroundColor: Colors.red,
+          content: Text(AppString.formNotValid),
+        ),
+      );
     } else {
       // this invokes each onSaved photo
       form.save();
@@ -60,32 +64,46 @@ class _AddEditPhotoState extends State<AddEditPhoto> {
       // submit data to backend, if id is set this is an update, else a creation
       if (photo.id != null) {
         // update the photo and go back with a message, the result is awaited in caller
-        photosService.updatePhoto(photo).then((value) {
-          Navigator.pop(context, AppString.photoUpdated);
-        }, onError: (error) {
-          Navigator.pop(context, AppString.photoUpdateFailed);
-        });
+        photosService
+            .updatePhoto(photo)
+            .then(
+              (value) {
+                Navigator.pop(context, AppString.photoUpdated);
+              },
+              onError: (error) {
+                Navigator.pop(context, AppString.photoUpdateFailed);
+              },
+            );
       } else {
         // create the photo and go back with a message, the result is awaited in caller
-        photosService.createPhoto(photo).then((value) {
-          Navigator.pop(context, AppString.photoCreated);
-        }, onError: (error) {
-          Navigator.pop(context, AppString.photoCreationFailed);
-        });
+        photosService
+            .createPhoto(photo)
+            .then(
+              (value) {
+                Navigator.pop(context, AppString.photoCreated);
+              },
+              onError: (error) {
+                Navigator.pop(context, AppString.photoCreationFailed);
+              },
+            );
       }
     }
   }
 
   Widget build(BuildContext context) {
-    final _photoCreationProvider = Provider.of<PhotoCreationProvider>(context, listen: true);
+    final _photoCreationProvider = Provider.of<PhotoCreationProvider>(
+      context,
+      listen: true,
+    );
     // the current Photo to be edited
-    final Photo _currPhoto = _photoCreationProvider.photo.id != null ? _photoCreationProvider.photo : _newPhoto;
+    final Photo _currPhoto =
+        _photoCreationProvider.photo.id != null
+            ? _photoCreationProvider.photo
+            : _newPhoto;
 
     return Scaffold(
       key: _scaffoldKey,
-      appBar: AppBar(
-        title: Text(AppString.photoCreate),
-      ),
+      appBar: AppBar(title: Text(AppString.photoCreate)),
       body: Container(
         decoration: CustomDecorations.mainContent,
         child: Stack(
@@ -104,7 +122,11 @@ class _AddEditPhotoState extends State<AddEditPhoto> {
                     ),
                     maxLines: 1,
                     inputFormatters: [LengthLimitingTextInputFormatter(128)],
-                    validator: (val) => (val == null || val.isEmpty) ? AppString.photoTitleMandatory : null,
+                    validator:
+                        (val) =>
+                            (val == null || val.isEmpty)
+                                ? AppString.photoTitleMandatory
+                                : null,
                     onSaved: (val) => _currPhoto.title = val,
                     initialValue: _currPhoto.title,
                   ),
@@ -116,7 +138,11 @@ class _AddEditPhotoState extends State<AddEditPhoto> {
                     ),
                     maxLines: 1,
                     inputFormatters: [LengthLimitingTextInputFormatter(2048)],
-                    validator: (val) => (val == null || val.isEmpty) ? AppString.photoDescriptionMandatory : null,
+                    validator:
+                        (val) =>
+                            (val == null || val.isEmpty)
+                                ? AppString.photoDescriptionMandatory
+                                : null,
                     onSaved: (val) => _currPhoto.description = val,
                     initialValue: _currPhoto.description,
                   ),
@@ -128,16 +154,26 @@ class _AddEditPhotoState extends State<AddEditPhoto> {
                     ),
                     maxLines: 1,
                     inputFormatters: [LengthLimitingTextInputFormatter(2048)],
-                    validator: (val) => (val == null || val.isEmpty) ? AppString.photoLinkMandatory : null,
+                    validator:
+                        (val) =>
+                            (val == null || val.isEmpty)
+                                ? AppString.photoLinkMandatory
+                                : null,
                     onSaved: (val) => _currPhoto.link = val,
                     initialValue: _currPhoto.link,
                   ),
                 ],
               ),
             ),
-            SaveCancelBar(
-              saveFunction: () => submitForm(_currPhoto),
-              cancelFunction: () => Navigator.pop(context),
+            Positioned(
+              height: 50,
+              bottom: 0,
+              left: 0,
+              right: 0,
+              child: SaveCancelBar(
+                saveFunction: () => submitForm(_currPhoto),
+                cancelFunction: () => Navigator.pop(context),
+              ),
             ),
           ],
         ),

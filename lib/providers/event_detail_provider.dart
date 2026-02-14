@@ -168,4 +168,66 @@ class EventDetailProvider extends ChangeNotifier {
     _loadingStatus = status;
     _notifyListeners();
   }
+
+  /// Register the specified [member] to the specified [event].
+  Future<void> registerToEvent(Event event, int memberId) async {
+    _log.fine("Registering member $memberId to event ${event.title}...");
+    await _eventsService
+        .registerToEvent(event.id!, memberId)
+        .then(
+          (value) {
+            _log.fine("Registered successfully to event : ${event.title}");
+            _updateEventInList(value);
+            _messageProvider.setMessage(
+              AppString.eventRegistered,
+              MessageType.SUCCESS,
+            );
+          },
+          onError: (error) {
+            _log.warning("Failed to register to event ($error)");
+            AppUtils.handleServiceException(
+              error,
+              _messageProvider,
+              _loginProvider,
+            );
+          },
+        );
+  }
+
+  /// Unregister the specified [member] from the specified [event].
+  Future<void> unregisterFromEvent(Event event, int memberId) async {
+    _log.fine("Unregistering member $memberId from event ${event.title}...");
+    await _eventsService
+        .unregisterFromEvent(event.id!, memberId)
+        .then(
+          (value) {
+            _log.fine("Unregistered successfully from event : ${event.title}");
+            _updateEventInList(value);
+            _messageProvider.setMessage(
+              AppString.eventUnregistered,
+              MessageType.SUCCESS,
+            );
+          },
+          onError: (error) {
+            _log.warning("Failed to unregister from event ($error)");
+            AppUtils.handleServiceException(
+              error,
+              _messageProvider,
+              _loginProvider,
+            );
+          },
+        );
+  }
+
+  /// Update the specified [event] in the list of events.
+  void _updateEventInList(Event event) {
+    final int index = _allEvents.indexWhere((e) => e.id == event.id);
+    if (index != -1) {
+      _allEvents[index] = event;
+    }
+    if (_currentEvent.id == event.id) {
+      _currentEvent = event;
+    }
+    _notifyListeners();
+  }
 }
