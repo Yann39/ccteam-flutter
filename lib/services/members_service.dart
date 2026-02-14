@@ -39,7 +39,9 @@ class MembersService {
   Future<http.Response> checkAccount(String email) {
     return http.post(
       Uri.parse(API_BASE_URL + API_CHECK_ACCOUNT_ENDPOINT),
-      headers: <String, String>{'Content-Type': 'application/json; charset=UTF-8'},
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
       body: jsonEncode(<String, String>{'email': email}),
     );
   }
@@ -47,11 +49,21 @@ class MembersService {
   /// Pre-register a member given its e-mail address, first name and last name.
   /// It creates the account with minimal information, but the user will still need to
   /// confirm its e-mail address and create a passcode to complete the registration process.
-  Future<http.Response> preRegister(String firstName, String lastName, String email) {
+  Future<http.Response> preRegister(
+    String firstName,
+    String lastName,
+    String email,
+  ) {
     return http.post(
       Uri.parse(API_BASE_URL + API_PRE_REGISTER_ENDPOINT),
-      headers: <String, String>{'Content-Type': 'application/json; charset=UTF-8'},
-      body: jsonEncode(<String, String>{'firstName': firstName, 'lastName': lastName, 'email': email}),
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
+      body: jsonEncode(<String, String>{
+        'firstName': firstName,
+        'lastName': lastName,
+        'email': email,
+      }),
     );
   }
 
@@ -60,7 +72,9 @@ class MembersService {
   Future<http.Response> resendOtp(String email) {
     return http.post(
       Uri.parse(API_BASE_URL + API_RESEND_OTP_ENDPOINT),
-      headers: <String, String>{'Content-Type': 'application/json; charset=UTF-8'},
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
       body: jsonEncode(<String, String>{'email': email}),
     );
   }
@@ -70,7 +84,9 @@ class MembersService {
   Future<http.Response> confirmEmail(String email, String otp) {
     return http.post(
       Uri.parse(API_BASE_URL + API_CONFIRM_EMAIL_ENDPOINT),
-      headers: <String, String>{'Content-Type': 'application/json; charset=UTF-8'},
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
       body: jsonEncode(<String, String>{'email': email, 'otp': otp}),
     );
   }
@@ -79,7 +95,9 @@ class MembersService {
   Future<http.Response> completeRegistration(String email, String passcode) {
     return http.post(
       Uri.parse(API_BASE_URL + API_COMPLETE_REGISTRATION_ENDPOINT),
-      headers: <String, String>{'Content-Type': 'application/json; charset=UTF-8'},
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
       body: jsonEncode(<String, String>{'email': email, 'password': passcode}),
     );
   }
@@ -89,7 +107,9 @@ class MembersService {
   Future<http.Response> authenticate(String email, String password) {
     return http.post(
       Uri.parse(API_BASE_URL + API_AUTHENTICATE_ENDPOINT),
-      headers: <String, String>{'Content-Type': 'application/json; charset=UTF-8'},
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
       body: jsonEncode(<String, String>{'email': email, 'password': password}),
     );
   }
@@ -113,8 +133,7 @@ class MembersService {
       }
     """;
 
-    return GraphQLConnection()
-        .graphQLClient
+    return GraphQLConnection().graphQLClient
         .query(
           QueryOptions(
             document: parseString(query),
@@ -122,28 +141,29 @@ class MembersService {
           ),
         )
         .then(
-      (result) {
-        final List<Member> members = [];
-        if (result.hasException) {
-          throw AppUtils.handleGraphQlException(result)!;
-        } else {
-          dynamic memberList = result.data!['getMembersFiltered'];
-          if (memberList == null) {
-            _log.info("getMembersFiltered returned null data");
-          } else if (memberList is Map<String, dynamic> && memberList.isEmpty) {
-            _log.info("getMembersFiltered returned empty data");
-          } else {
-            for (dynamic member in memberList) {
-              members.add(Member.fromJson(member));
+          (result) {
+            final List<Member> members = [];
+            if (result.hasException) {
+              throw AppUtils.handleGraphQlException(result)!;
+            } else {
+              dynamic memberList = result.data!['getMembersFiltered'];
+              if (memberList == null) {
+                _log.info("getMembersFiltered returned null data");
+              } else if (memberList is Map<String, dynamic> &&
+                  memberList.isEmpty) {
+                _log.info("getMembersFiltered returned empty data");
+              } else {
+                for (dynamic member in memberList) {
+                  members.add(Member.fromJson(member));
+                }
+              }
+              return members;
             }
-          }
-          return members;
-        }
-      },
-      onError: (error) {
-        throw Exception(error);
-      },
-    );
+          },
+          onError: (error) {
+            throw Exception(error);
+          },
+        );
   }
 
   /// Get a member from the database given its [id].
@@ -165,15 +185,18 @@ class MembersService {
           active
           registrationDate
           eventMembers {
+            id
             event {
               id
               title
               startDate
+              endDate
               track {
                 id
                 name
               }
               organizer
+              price
             }
           }
           createdOn
@@ -182,29 +205,32 @@ class MembersService {
       }
     """;
 
-    return GraphQLConnection()
-        .graphQLClient
+    return GraphQLConnection().graphQLClient
         .query(
           QueryOptions(
             document: parseString(query),
             variables: {'id': id},
+            fetchPolicy: FetchPolicy.networkOnly,
           ),
         )
         .then(
-      (result) {
-        if (result.hasException) {
-          throw AppUtils.handleGraphQlException(result)!;
-        } else {
-          if (result.data!['getMemberById'] == null) {
-            throw CustomGraphQlException("member_not_found", "Member not found");
-          }
-          return Member.fromJson(result.data!['getMemberById']);
-        }
-      },
-      onError: (error) {
-        throw Exception(error);
-      },
-    );
+          (result) {
+            if (result.hasException) {
+              throw AppUtils.handleGraphQlException(result)!;
+            } else {
+              if (result.data!['getMemberById'] == null) {
+                throw CustomGraphQlException(
+                  "member_not_found",
+                  "Member not found",
+                );
+              }
+              return Member.fromJson(result.data!['getMemberById']);
+            }
+          },
+          onError: (error) {
+            throw Exception(error);
+          },
+        );
   }
 
   /// Get the member corresponding to the specified [email].
@@ -224,6 +250,21 @@ class MembersService {
           bike
           admin
           registrationDate
+          eventMembers {
+            id
+            event {
+              id
+              title
+              startDate
+              endDate
+              track {
+                id
+                name
+              }
+              organizer
+              price
+            }
+          }
           likedNews {
             id
             news {
@@ -237,8 +278,7 @@ class MembersService {
       }
     """;
 
-    return GraphQLConnection()
-        .graphQLClient
+    return GraphQLConnection().graphQLClient
         .query(
           QueryOptions(
             document: parseString(query),
@@ -246,20 +286,23 @@ class MembersService {
           ),
         )
         .then(
-      (result) {
-        if (result.hasException) {
-          throw AppUtils.handleGraphQlException(result)!;
-        } else {
-          if (result.data!['getMemberByEmail'] == null) {
-            throw CustomGraphQlException("member_not_found", "Member not found");
-          }
-          return Member.fromJson(result.data!['getMemberByEmail']);
-        }
-      },
-      onError: (error) {
-        throw Exception(error);
-      },
-    );
+          (result) {
+            if (result.hasException) {
+              throw AppUtils.handleGraphQlException(result)!;
+            } else {
+              if (result.data!['getMemberByEmail'] == null) {
+                throw CustomGraphQlException(
+                  "member_not_found",
+                  "Member not found",
+                );
+              }
+              return Member.fromJson(result.data!['getMemberByEmail']);
+            }
+          },
+          onError: (error) {
+            throw Exception(error);
+          },
+        );
   }
 
   /// Create the specified [member] into the database.
@@ -314,12 +357,14 @@ class MembersService {
         'avatarFileName': member.avatarName,
         'bike': member.bike,
         'active': member.active,
-        'admin': member.admin
+        'admin': member.admin,
       },
       fetchPolicy: FetchPolicy.noCache,
     );
 
-    final QueryResult result = await GraphQLConnection().graphQLClient.mutate(mutationOptions);
+    final QueryResult result = await GraphQLConnection().graphQLClient.mutate(
+      mutationOptions,
+    );
 
     if (result.hasException) {
       throw AppUtils.handleGraphQlException(result)!;
@@ -382,12 +427,14 @@ class MembersService {
         'avatarFileName': member.avatarName,
         'bike': member.bike,
         'active': member.active,
-        'admin': member.admin
+        'admin': member.admin,
       },
       fetchPolicy: FetchPolicy.noCache,
     );
 
-    final QueryResult result = await GraphQLConnection().graphQLClient.mutate(mutationOptions);
+    final QueryResult result = await GraphQLConnection().graphQLClient.mutate(
+      mutationOptions,
+    );
 
     if (result.hasException) {
       throw AppUtils.handleGraphQlException(result)!;
@@ -436,7 +483,9 @@ class MembersService {
       fetchPolicy: FetchPolicy.noCache,
     );
 
-    final QueryResult result = await GraphQLConnection().graphQLClient.mutate(mutationOptions);
+    final QueryResult result = await GraphQLConnection().graphQLClient.mutate(
+      mutationOptions,
+    );
 
     if (result.hasException) {
       throw AppUtils.handleGraphQlException(result)!;
@@ -453,8 +502,11 @@ class MembersService {
     final String jsonString = '{email:$email}';
 
     // call to API
-    final response = await http.post(Uri.parse(API_OLD_ROOT_URL + API_ASK_PASSWORD_MEMBER_ENDPOINT),
-        headers: {'Content-Type': 'application/json'}, body: jsonString);
+    final response = await http.post(
+      Uri.parse(API_OLD_ROOT_URL + API_ASK_PASSWORD_MEMBER_ENDPOINT),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonString,
+    );
 
     // handle server response code
     if (response.statusCode == 200) {
@@ -477,12 +529,23 @@ class MembersService {
   /// Throw an exception if response status code is different from 200.
   /// Return the uploaded avatar relative path.
   Future<String> uploadAvatar(File file, int memberId) async {
-    final http.ByteStream stream = new http.ByteStream(Stream.castFrom(file.openRead()));
+    final http.ByteStream stream = new http.ByteStream(
+      Stream.castFrom(file.openRead()),
+    );
     final int length = await file.length();
-    final Uri uri = Uri.parse(API_OLD_ROOT_URL + API_UPLOAD_MEMBER_AVATAR_ENDPOINT);
-    final http.MultipartRequest request = new http.MultipartRequest("POST", uri);
-    final http.MultipartFile multipartFile =
-        new http.MultipartFile('avatar', stream, length, filename: basename(file.path));
+    final Uri uri = Uri.parse(
+      API_OLD_ROOT_URL + API_UPLOAD_MEMBER_AVATAR_ENDPOINT,
+    );
+    final http.MultipartRequest request = new http.MultipartRequest(
+      "POST",
+      uri,
+    );
+    final http.MultipartFile multipartFile = new http.MultipartFile(
+      'avatar',
+      stream,
+      length,
+      filename: basename(file.path),
+    );
     request.files.add(multipartFile);
 
     Map<String, String> params = new Map();
@@ -514,8 +577,11 @@ class MembersService {
     final String jsonString = '{\"memberId\":$memberId}';
 
     // call to API
-    final response = await http.post(Uri.parse(API_OLD_ROOT_URL + API_DELETE_MEMBER_AVATAR_ENDPOINT),
-        headers: {'Content-Type': 'application/json'}, body: jsonString);
+    final response = await http.post(
+      Uri.parse(API_OLD_ROOT_URL + API_DELETE_MEMBER_AVATAR_ENDPOINT),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonString,
+    );
 
     // handle server response code
     if (response.statusCode == 200) {
@@ -525,7 +591,9 @@ class MembersService {
     } else if (response.statusCode == 400) {
       throw Exception('Missing member id');
     } else {
-      throw Exception('Unexpected server response, member avatar has not been deleted');
+      throw Exception(
+        'Unexpected server response, member avatar has not been deleted',
+      );
     }
   }
 }

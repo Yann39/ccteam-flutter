@@ -412,6 +412,8 @@ class AppString {
   static const String profile = 'Profil';
   static const String myTrackEvents = 'Mes roulages';
   static const String myChronos = 'Mes chronos';
+  static const String upcomingEvents = 'Événements à venir';
+  static const String pastEvents = 'Événements passés';
   static const String notifications = 'Notifications';
   static const String preferences = 'Préférences';
   static const String disconnect = 'Déconnexion';

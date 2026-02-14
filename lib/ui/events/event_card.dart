@@ -32,9 +32,7 @@ class EventCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Card(
       margin: EdgeInsets.symmetric(vertical: 4.0, horizontal: 8.0),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(10.0),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.0)),
       elevation: 5,
       child: Container(
         decoration: BoxDecoration(
@@ -103,7 +101,7 @@ class EventCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      event.title!,
+                      event.title ?? "",
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
@@ -127,7 +125,7 @@ class EventCard extends StatelessWidget {
                             DateFormat(
                               'dd MMM yyyy',
                               'fr',
-                            ).format(event.startDate!),
+                            ).format(event.startDate ?? DateTime.now()),
                             style: TextStyle(color: Colors.white),
                             overflow: TextOverflow.ellipsis,
                             maxLines: 1,
@@ -146,7 +144,7 @@ class EventCard extends StatelessWidget {
                         SizedBox(width: 4.0),
                         Expanded(
                           child: Text(
-                            event.track!.name!,
+                            event.track?.name ?? "",
                             style: TextStyle(color: Colors.white),
                             overflow: TextOverflow.ellipsis,
                             maxLines: 1,
@@ -165,7 +163,7 @@ class EventCard extends StatelessWidget {
                         SizedBox(width: 4.0),
                         Expanded(
                           child: Text(
-                            "${StringUtils.formatPrice(event.price!)}€",
+                            "${StringUtils.formatPrice(event.price ?? 0.0)}€",
                             style: TextStyle(color: Colors.white),
                             overflow: TextOverflow.ellipsis,
                             maxLines: 1,
@@ -184,7 +182,7 @@ class EventCard extends StatelessWidget {
                         SizedBox(width: 4.0),
                         Expanded(
                           child: Text(
-                            event.organizer!,
+                            event.organizer ?? "",
                             style: TextStyle(color: Colors.white),
                             overflow: TextOverflow.ellipsis,
                             maxLines: 1,

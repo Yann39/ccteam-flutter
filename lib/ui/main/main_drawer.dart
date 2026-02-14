@@ -39,7 +39,10 @@ class MainDrawer extends StatelessWidget {
   _navigateToEditMemberScreen(BuildContext context, Member member) async {
     // set the member to edit
     final Member newMember = Member.fromJson(member.toJson());
-    Provider.of<MemberCreationProvider>(context, listen: false).setMemberToEdit(newMember);
+    Provider.of<MemberCreationProvider>(
+      context,
+      listen: false,
+    ).setMemberToEdit(newMember);
 
     // navigate to the edit member screen
     Navigator.pushNamed(context, '/addEditMember');
@@ -47,7 +50,10 @@ class MainDrawer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final LoginProvider _loginProvider = Provider.of<LoginProvider>(context, listen: false);
+    final LoginProvider _loginProvider = Provider.of<LoginProvider>(
+      context,
+      listen: false,
+    );
 
     return Drawer(
       child: Container(
@@ -72,7 +78,9 @@ class MainDrawer extends StatelessWidget {
                     children: <Widget>[
                       Icon(Icons.person_outline, size: 12, color: Colors.white),
                       SizedBox(width: 5),
-                      Text("${_loginProvider.loggedMember!.firstName} ${_loginProvider.loggedMember!.lastName}"),
+                      Text(
+                        "${_loginProvider.loggedMember!.firstName} ${_loginProvider.loggedMember!.lastName}",
+                      ),
                     ],
                   ),
                   accountEmail: Row(
@@ -83,26 +91,42 @@ class MainDrawer extends StatelessWidget {
                     ],
                   ),
                   currentAccountPicture: Container(
-                    decoration: ShapeDecoration(shape: CircleBorder(), color: Colors.white),
+                    decoration: ShapeDecoration(
+                      shape: CircleBorder(),
+                      color: Colors.white,
+                    ),
                     padding: EdgeInsets.all(2.0),
-                    child: _loginProvider.loggedMember!.avatar != null
-                        ? CircleAvatar(
-                            backgroundColor: Colors.blue[100],
-                            backgroundImage: MemoryImage(base64Decode(_loginProvider.loggedMember!.avatar!)),
-                          )
-                        : CircleAvatar(
-                            backgroundColor: Colors.blue[100],
-                            child: ShaderMask(
-                              blendMode: BlendMode.srcATop,
-                              shaderCallback: (bounds) => LinearGradient(
-                                begin: const FractionalOffset(0.0, 0.0),
-                                end: const FractionalOffset(0.0, 1.0),
-                                stops: [0.0, 1.0],
-                                colors: [Colors.red[700]!, Colors.blue[700]!],
-                              ).createShader(bounds),
-                              child: Icon(CustomIcons.pilot, size: 50, color: Colors.white),
+                    child:
+                        _loginProvider.loggedMember!.avatar != null
+                            ? CircleAvatar(
+                              backgroundColor: Colors.blue[100],
+                              backgroundImage: MemoryImage(
+                                base64Decode(
+                                  _loginProvider.loggedMember!.avatar!,
+                                ),
+                              ),
+                            )
+                            : CircleAvatar(
+                              backgroundColor: Colors.blue[100],
+                              child: ShaderMask(
+                                blendMode: BlendMode.srcATop,
+                                shaderCallback:
+                                    (bounds) => LinearGradient(
+                                      begin: const FractionalOffset(0.0, 0.0),
+                                      end: const FractionalOffset(0.0, 1.0),
+                                      stops: [0.0, 1.0],
+                                      colors: [
+                                        Colors.red[700]!,
+                                        Colors.blue[700]!,
+                                      ],
+                                    ).createShader(bounds),
+                                child: Icon(
+                                  CustomIcons.pilot,
+                                  size: 50,
+                                  color: Colors.white,
+                                ),
+                              ),
                             ),
-                          ),
                   ),
                 ),
                 Container(
@@ -125,75 +149,84 @@ class MainDrawer extends StatelessWidget {
               child: Column(
                 children: <Widget>[
                   ListTile(
-                    leading: Icon(
-                      Icons.person,
-                      color: Colors.green[700],
-                    ),
+                    leading: Icon(Icons.person, color: Colors.green[700]),
                     trailing: Icon(Icons.arrow_right, color: Colors.black),
-                    title: Text(AppString.profile, style: TextStyle(color: Colors.black)),
+                    title: Text(
+                      AppString.profile,
+                      style: TextStyle(color: Colors.black),
+                    ),
                     onTap: () {
-                      _navigateToEditMemberScreen(context, _loginProvider.loggedMember!);
+                      Navigator.pop(context);
+                      _navigateToEditMemberScreen(
+                        context,
+                        _loginProvider.loggedMember!,
+                      );
                     },
                   ),
                   ListTile(
-                    leading: Icon(
-                      Icons.event,
-                      color: Colors.purple[600],
-                    ),
+                    leading: Icon(Icons.event, color: Colors.purple[600]),
                     trailing: Icon(Icons.arrow_right, color: Colors.black),
-                    title: Text(AppString.myTrackEvents, style: TextStyle(color: Colors.black)),
+                    title: Text(
+                      AppString.myTrackEvents,
+                      style: TextStyle(color: Colors.black),
+                    ),
                     onTap: () {
-                      Navigator.pushNamed(context, '/memberEvents', arguments: _loginProvider.loggedMember);
+                      Navigator.pop(context);
+                      Navigator.pushNamed(
+                        context,
+                        '/memberEvents',
+                        arguments: _loginProvider.loggedMember,
+                      );
                     },
                   ),
                   ListTile(
-                    leading: Icon(
-                      Icons.timer,
-                      color: Colors.orange[800],
-                    ),
+                    leading: Icon(Icons.timer, color: Colors.orange[800]),
                     trailing: Icon(Icons.arrow_right, color: Colors.black),
-                    title: Text(AppString.myChronos, style: TextStyle(color: Colors.black)),
+                    title: Text(
+                      AppString.myChronos,
+                      style: TextStyle(color: Colors.black),
+                    ),
                     onTap: () {
+                      Navigator.pop(context);
                       // fetch member records
-                      Provider.of<RecordListProvider>(context, listen: false)
-                          .fetchMemberRecords(_loginProvider.loggedMember!.id!);
+                      Provider.of<RecordListProvider>(
+                        context,
+                        listen: false,
+                      ).fetchMemberRecords(_loginProvider.loggedMember!.id!);
                       Navigator.pushNamed(context, '/memberChronos');
                     },
                   ),
                   Divider(),
                   ListTile(
-                    leading: Icon(
-                      Icons.notifications,
-                      color: Colors.blue[700],
-                    ),
+                    leading: Icon(Icons.notifications, color: Colors.blue[700]),
                     trailing: Icon(Icons.arrow_right, color: Colors.black),
-                    title: Text(AppString.notifications, style: TextStyle(color: Colors.black)),
+                    title: Text(
+                      AppString.notifications,
+                      style: TextStyle(color: Colors.black),
+                    ),
                     onTap: () {
                       Navigator.pop(context);
                     },
                   ),
                   ListTile(
-                    leading: Icon(
-                      Icons.settings,
-                      color: Colors.teal[700],
-                    ),
+                    leading: Icon(Icons.settings, color: Colors.teal[700]),
                     trailing: Icon(Icons.arrow_right, color: Colors.black),
-                    title: Text(AppString.preferences, style: TextStyle(color: Colors.black)),
+                    title: Text(
+                      AppString.preferences,
+                      style: TextStyle(color: Colors.black),
+                    ),
                     onTap: () {
                       Navigator.pop(context);
                     },
                   ),
                   Divider(),
                   ListTile(
-                    leading: Icon(
-                      Icons.lock,
-                      color: Colors.red[900],
+                    leading: Icon(Icons.lock, color: Colors.red[900]),
+                    trailing: Icon(Icons.arrow_right, color: Colors.black),
+                    title: Text(
+                      AppString.disconnect,
+                      style: TextStyle(color: Colors.black),
                     ),
-                    trailing: Icon(
-                      Icons.arrow_right,
-                      color: Colors.black,
-                    ),
-                    title: Text(AppString.disconnect, style: TextStyle(color: Colors.black)),
                     onTap: () {
                       _logout(context);
                     },
