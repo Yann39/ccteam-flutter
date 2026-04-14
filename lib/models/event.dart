@@ -84,7 +84,7 @@ class Event {
         organizer = json['organizer'],
         price = json['price'],
         participants = json['participants'] != null
-            ? (json['participants'] as List).map((i) => EventMember.fromJson(i)).toList()
+            ? (json['participants'] as Iterable).map((i) => EventMember.fromJson(i)).toList()
             : null,
         createdOn = json['createdOn'] != null ? DateTime.parse(json['createdOn']) : null,
         createdBy = json['createdBy'] != null ? Member.fromJson(json['createdBy']) : null,
@@ -101,7 +101,7 @@ class Event {
         "track": track?.toJson(),
         "organizer": organizer,
         "price": price,
-        "participants": participants?.map((i) => i.toJson()),
+        "participants": participants?.map((i) => i.toJson()).toList(),
         "createdOn": createdOn?.toIso8601String(),
         "createdBy": createdBy?.toJson(),
         "modifiedOn": modifiedOn?.toIso8601String(),

@@ -104,7 +104,7 @@ class Member {
         otpDate = json['otpDate'] != null ? DateTime.parse(json['otpDate']) : null,
         registrationDate = json['registrationDate'] != null ? DateTime.parse(json['registrationDate']) : null,
         eventMembers = json['eventMembers'] != null
-            ? (json['eventMembers'] as List).map((i) => EventMember.fromJson(i)).toList()
+            ? (json['eventMembers'] as Iterable).map((i) => EventMember.fromJson(i)).toList()
             : null,
         createdOn = json['createdOn'] != null ? DateTime.parse(json['createdOn']) : null,
         modifiedOn = json['modifiedOn'] != null ? DateTime.parse(json['modifiedOn']) : null;
@@ -126,7 +126,7 @@ class Member {
         "otp": otp,
         "otpDate": otpDate?.toIso8601String(),
         "registrationDate": registrationDate?.toIso8601String(),
-        "eventMembers": eventMembers?.map((i) => i.toJson()),
+        "eventMembers": eventMembers?.map((i) => i.toJson()).toList(),
         "createdOn": createdOn?.toIso8601String(),
         "modifiedOn": modifiedOn?.toIso8601String(),
       };

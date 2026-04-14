@@ -82,7 +82,7 @@ class News {
         content = json['content'],
         newsDate = json['newsDate'] != null ? DateTime.parse(json['newsDate']) : null,
         likedNews =
-            json['likedNews'] != null ? (json['likedNews'] as List).map((i) => LikedNews.fromJson(i)).toList() : null,
+            json['likedNews'] != null ? (json['likedNews'] as Iterable).map((i) => LikedNews.fromJson(i)).toList() : null,
         createdOn = json['createdOn'] != null ? DateTime.parse(json['createdOn']) : null,
         createdBy = json['createdBy'] != null ? Member.fromJson(json['createdBy']) : null,
         modifiedOn = json['modifiedOn'] != null ? DateTime.parse(json['modifiedOn']) : null,
@@ -95,7 +95,7 @@ class News {
         "catchLine": catchLine,
         "content": content,
         "newsDate": newsDate?.toIso8601String(),
-        "likedNews": likedNews?.map((ln) => ln.toJson()),
+        "likedNews": likedNews?.map((ln) => ln.toJson()).toList(),
         "createdOn": createdOn?.toIso8601String(),
         "createdBy": createdBy?.toJson(),
         "modifiedOn": modifiedOn?.toIso8601String(),
