@@ -24,6 +24,7 @@ import 'package:ccteam/providers/avatar_provider.dart';
 import 'package:ccteam/providers/member_creation_provider.dart';
 import 'package:ccteam/providers/member_detail_provider.dart';
 import 'package:ccteam/providers/member_list_provider.dart';
+import 'package:ccteam/utils/constants.dart';
 import 'package:ccteam/utils/custom_decorations.dart';
 import 'package:ccteam/utils/custom_icons.dart';
 import 'package:ccteam/utils/string_utils.dart';
@@ -370,8 +371,8 @@ class _AddEditMemberState extends State<AddEditMember> {
         Container(
           padding: const EdgeInsets.only(
             top: 0,
-            left: 16.0,
-            right: 16.0,
+            left: UI_FORM_PADDING,
+            right: UI_FORM_PADDING,
             bottom: 56.0,
           ),
           child: Form(

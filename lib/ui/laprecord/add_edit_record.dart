@@ -20,7 +20,6 @@
 import 'package:ccteam/models/track.dart';
 import 'package:ccteam/providers/login_provider.dart';
 import 'package:ccteam/providers/record_creation_provider.dart';
-import 'package:ccteam/providers/track_list_provider.dart';
 import 'package:ccteam/services/tracks_service.dart';
 import 'package:ccteam/utils/constants.dart';
 import 'package:ccteam/utils/custom_decorations.dart';
@@ -175,10 +174,6 @@ class _AddEditRecordState extends State<AddEditRecord> {
   Widget build(BuildContext context) {
     RecordCreationProvider _recordCreationProvider =
         Provider.of<RecordCreationProvider>(context, listen: true);
-    TrackListProvider _trackListProvider = Provider.of<TrackListProvider>(
-      context,
-      listen: true,
-    );
 
     final _dateField = GestureDetector(
       onTap:
@@ -317,7 +312,19 @@ class _AddEditRecordState extends State<AddEditRecord> {
       autovalidateMode: AutovalidateMode.disabled,
       key: _formKey,
       child: ListView(
-        children: <Widget>[_dateField, _trackField, _lapTimeField, _conditions],
+        padding: const EdgeInsets.symmetric(
+          horizontal: UI_FORM_PADDING,
+          vertical: 16.0,
+        ),
+        children: <Widget>[
+          _dateField,
+          const SizedBox(height: 16),
+          _trackField,
+          const SizedBox(height: 16),
+          _lapTimeField,
+          const SizedBox(height: 16),
+          _conditions,
+        ],
       ),
     );
 

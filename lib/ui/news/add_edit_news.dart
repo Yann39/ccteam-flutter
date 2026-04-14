@@ -176,7 +176,7 @@ class _AddEditNewsState extends State<AddEditNews> {
                   autovalidateMode: AutovalidateMode.disabled,
                   key: _formKey,
                   child: ListView(
-                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                    padding: const EdgeInsets.symmetric(horizontal: UI_FORM_PADDING),
                     children: <Widget>[
                       TextFormField(
                         style: TextStyle(color: Colors.black87),

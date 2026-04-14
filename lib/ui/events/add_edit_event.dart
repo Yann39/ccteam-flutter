@@ -194,7 +194,9 @@ class _AddEditEventState extends State<AddEditEvent> {
                   autovalidateMode: AutovalidateMode.disabled,
                   key: _formKey,
                   child: ListView(
-                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: UI_FORM_PADDING,
+                    ),
                     children: <Widget>[
                       TextFormField(
                         decoration: const InputDecoration(

@@ -19,6 +19,7 @@
 
 import 'package:ccteam/models/photo.dart';
 import 'package:ccteam/services/photos_service.dart';
+import 'package:ccteam/utils/constants.dart';
 import 'package:ccteam/utils/custom_decorations.dart';
 import 'package:ccteam/utils/strings.dart';
 import 'package:ccteam/widgets/save_cancel_bar.dart';
@@ -112,7 +113,7 @@ class _AddEditPhotoState extends State<AddEditPhoto> {
               autovalidateMode: AutovalidateMode.disabled,
               key: _formKey,
               child: ListView(
-                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                padding: const EdgeInsets.symmetric(horizontal: UI_FORM_PADDING),
                 children: <Widget>[
                   TextFormField(
                     decoration: const InputDecoration(
