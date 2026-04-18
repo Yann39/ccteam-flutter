@@ -42,6 +42,11 @@ class RecordsService {
             id
             email
           }
+          bike {
+            id
+            manufacturer
+            modelName
+          }
           track {
             id
             name
@@ -103,6 +108,11 @@ class RecordsService {
             firstName
             lastName
             email
+          }
+          bike {
+            id
+            manufacturer
+            modelName
           }
           track {
             id
@@ -167,6 +177,11 @@ class RecordsService {
             id
             email
           }
+          bike {
+            id
+            manufacturer
+            modelName
+          }
           track {
             id
             name
@@ -222,10 +237,11 @@ class RecordsService {
     );
 
     final String newLapRecordMutation = """
-      mutation CreateLapRecord(\$memberId: Long!, \$trackId: Long!, \$recordDate: String!, \$lapTime: Int!, \$conditions: String!, \$comments: String) {
+      mutation CreateLapRecord(\$memberId: Long!, \$trackId: Long!, \$bikeId: Long!, \$recordDate: String!, \$lapTime: Int!, \$conditions: String!, \$comments: String) {
         createLapRecord(
           memberId: \$memberId
           trackId: \$trackId
+          bikeId: \$bikeId
           recordDate: \$recordDate
           lapTime: \$lapTime
           conditions: \$conditions
@@ -238,6 +254,11 @@ class RecordsService {
           member {
             id
             email
+          }
+          bike {
+            id
+            manufacturer
+            modelName
           }
           track {
             id
@@ -255,6 +276,7 @@ class RecordsService {
       variables: {
         'memberId': record.member!.id,
         'trackId': record.track!.id,
+        'bikeId': record.bike!.id,
         'recordDate': record.recordDate!.toIso8601String(),
         'lapTime': record.lapTime,
         'conditions': record.conditions,
@@ -279,10 +301,11 @@ class RecordsService {
     _log.info("Updating lap record with ID ${record.id} ...");
 
     final String newLapRecordMutation = """
-      mutation UpdateLapRecord(\$lapRecordId: Long!, \$trackId: Long!, \$recordDate: String!, \$lapTime: Int!, \$conditions: String!, \$comments: String) {
+      mutation UpdateLapRecord(\$lapRecordId: Long!, \$trackId: Long!, \$bikeId: Long!, \$recordDate: String!, \$lapTime: Int!, \$conditions: String!, \$comments: String) {
         updateLapRecord(
           lapRecordId: \$lapRecordId
           trackId: \$trackId
+          bikeId: \$bikeId
           recordDate: \$recordDate
           lapTime: \$lapTime
           conditions: \$conditions
@@ -295,6 +318,11 @@ class RecordsService {
           member {
             id
             email
+          }
+          bike {
+            id
+            manufacturer
+            modelName
           }
           track {
             id
@@ -312,6 +340,7 @@ class RecordsService {
       variables: {
         'lapRecordId': record.id,
         'trackId': record.track!.id,
+        'bikeId': record.bike!.id,
         'recordDate': record.recordDate!.toIso8601String(),
         'lapTime': record.lapTime,
         'conditions': record.conditions,

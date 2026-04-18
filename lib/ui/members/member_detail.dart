@@ -410,11 +410,20 @@ class MemberDetail extends StatelessWidget {
                     style: TextStyle(color: Colors.red[700]),
                   ),
                   Container(
-                    child: Text(
-                      "${_memberDetailProvider.currentMember?.bike}",
-                      style: TextStyle(color: Colors.black.withAlpha(204)),
-                      textScaler: TextScaler.linear(1.1),
-                    ),
+                    child: _memberDetailProvider.currentMember?.bikes != null && _memberDetailProvider.currentMember!.bikes!.isNotEmpty
+                        ? Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: _memberDetailProvider.currentMember!.bikes!.map((bike) => Text(
+                              "${bike.manufacturer?.toUpperCase()} ${bike.modelName}",
+                              style: TextStyle(color: Colors.black.withAlpha(204)),
+                              textScaler: TextScaler.linear(1.1),
+                            )).toList(),
+                          )
+                        : Text(
+                            AppString.notDefined,
+                            style: TextStyle(color: Colors.black.withAlpha(204)),
+                            textScaler: TextScaler.linear(1.1),
+                          ),
                   ),
                 ],
               ),

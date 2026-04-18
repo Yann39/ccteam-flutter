@@ -196,6 +196,18 @@ class MainDrawer extends StatelessWidget {
                       Navigator.pushNamed(context, '/memberChronos');
                     },
                   ),
+                  ListTile(
+                    leading: Icon(Icons.motorcycle, color: Colors.blue[900]),
+                    trailing: Icon(Icons.arrow_right, color: Colors.black),
+                    title: Text(
+                      AppString.myBikes,
+                      style: TextStyle(color: Colors.black),
+                    ),
+                    onTap: () {
+                      Navigator.pop(context);
+                      Navigator.pushNamed(context, '/myBikes');
+                    },
+                  ),
                   Divider(),
                   ListTile(
                     leading: Icon(Icons.notifications, color: Colors.blue[700]),

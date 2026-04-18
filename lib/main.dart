@@ -17,6 +17,7 @@
  * along with CCTeam. If not, see <http://www.gnu.org/licenses/>.
  */
 
+import 'package:ccteam/providers/bike_list_provider.dart';
 import 'package:ccteam/providers/avatar_provider.dart';
 import 'package:ccteam/providers/event_creation_provider.dart';
 import 'package:ccteam/providers/event_detail_provider.dart';
@@ -47,6 +48,9 @@ import 'package:ccteam/ui/laprecord/member_chronos.dart';
 import 'package:ccteam/ui/main/edit_avatar.dart';
 import 'package:ccteam/ui/main/home.dart';
 import 'package:ccteam/ui/main/image_crop.dart';
+import 'package:ccteam/ui/members/add_edit_bike.dart';
+import 'package:ccteam/ui/members/member_list.dart';
+import 'package:ccteam/ui/members/my_bikes.dart';
 import 'package:ccteam/ui/members/add_edit_member.dart';
 import 'package:ccteam/ui/members/member_detail.dart';
 import 'package:ccteam/ui/members/member_events.dart';
@@ -131,6 +135,18 @@ void main() {
           update:
               (context, messageProvider, loginProvider, newsCreationProvider) =>
                   newsCreationProvider!
+                    ..updateMessageProvider(messageProvider)
+                    ..updateLoginProvider(loginProvider),
+        ),
+        ChangeNotifierProxyProvider2<
+          MessageProvider,
+          LoginProvider,
+          BikeListProvider
+        >(
+          create: (context) => BikeListProvider(),
+          update:
+              (context, messageProvider, loginProvider, bikeListProvider) =>
+                  bikeListProvider!
                     ..updateMessageProvider(messageProvider)
                     ..updateLoginProvider(loginProvider),
         ),
@@ -332,6 +348,9 @@ class CCTeamApp extends StatelessWidget {
           '/newsDetail': (context) => NewsDetail(),
           '/eventDetail': (context) => EventDetail(),
           '/memberDetail': (context) => MemberDetail(),
+          '/myBikes': (context) => MyBikes(),
+          '/addEditBike': (context) => AddEditBike(),
+          '/members': (context) => MemberList(),
           '/memberEvents': (context) => MemberEvents(),
           '/memberChronos': (context) => MemberChronos(),
           '/photoDetail': (context) => PhotoDetail(),

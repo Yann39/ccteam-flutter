@@ -263,6 +263,23 @@ class AppString {
   static const String memberNoEvent = 'Ce membre n\'a aucun roulage';
   static const String memberNoChrono = 'Ce membre n\'a aucun chrono';
 
+  static const String myBikes = 'Mes motos';
+  static const String bikeCreate = 'Ajouter une moto';
+  static const String bikeEdit = 'Modifier une moto';
+  static const String bikeAdded = 'La moto a été ajoutée avec succès !';
+  static const String bikeUpdated = 'La moto a été mise à jour avec succès !';
+  static const String bikeDeleted = 'La moto a été supprimée avec succès !';
+  static const String bikeManufacturer = 'Constructeur';
+  static const String bikeModel = 'Modèle';
+  static const String bikeEngineSize = 'Cylindrée';
+  static const String bikeYear = 'Année';
+  static const String bikeManufacturerMandatory = 'Le constructeur est obligatoire';
+  static const String bikeModelMandatory = 'Le modèle est obligatoire';
+  static const String bikeEngineSizeMandatory = 'La cylindrée est obligatoire';
+  static const String bikeYearMandatory = 'L\'année est obligatoire';
+  static const String noBike = 'Aucune moto enregistrée';
+  static const String bikeDeletionAreYouSure = 'Etes-vous sûr de vouloir supprimer cette moto ?';
+
   static const String tracksSearchHint = 'Nom du circuit';
   static const String tracksNotFound = 'Aucun circuit trouvé';
   static const String trackNoEvent = 'Ce circuit n\'a aucun roulage prévu';
@@ -361,6 +378,9 @@ class AppString {
   static const String recordConditionHint = 'Conditions de la piste';
   static const String recordConditionMandatory =
       'La condition de la piste doit être indiquée';
+  static const String recordBikeLabel = 'Moto';
+  static const String recordBikeHint = 'Moto utilisée';
+  static const String recordBikeMandatory = 'La moto doit être indiquée';
 
   static const String photoScreenTitle = 'Gallerie';
   static const String photoCreate = 'Ajouter une photo';

@@ -127,7 +127,13 @@ class MembersService {
           lastName
           avatarFile
           avatarFileName
-          bike
+          bikes {
+            id
+            manufacturer
+            modelName
+            engineSize
+            year
+          }
           admin
         }
       }
@@ -180,7 +186,13 @@ class MembersService {
           phone
           avatarFile
           avatarFileName
-          bike
+          bikes {
+            id
+            manufacturer
+            modelName
+            engineSize
+            year
+          }
           admin
           active
           registrationDate
@@ -247,7 +259,13 @@ class MembersService {
           phone
           avatarFile
           avatarFileName
-          bike
+          bikes {
+            id
+            manufacturer
+            modelName
+            engineSize
+            year
+          }
           admin
           registrationDate
           eventMembers {
@@ -311,7 +329,7 @@ class MembersService {
     _log.info("Creating member ${member.email} ...");
 
     final String query = """
-      mutation CreateMember(\$firstName: String!, \$lastName: String!, \$email: String!, \$phone: String, \$avatarFile: String, \$avatarFileName: String, \$bike: String, \$active: Boolean!, \$admin: Boolean!) {
+      mutation CreateMember(\$firstName: String!, \$lastName: String!, \$email: String!, \$phone: String, \$avatarFile: String, \$avatarFileName: String, \$active: Boolean!, \$admin: Boolean!) {
         createMember(
           firstName: \$firstName
           lastName: \$lastName
@@ -319,7 +337,6 @@ class MembersService {
           phone: \$phone
           avatarFile: \$avatarFile
           avatarFileName: \$avatarFileName
-          bike: \$bike
           active: \$active
           admin: \$admin
         ) {
@@ -330,7 +347,13 @@ class MembersService {
           phone
           avatarFile
           avatarFileName
-          bike
+          bikes {
+            id
+            manufacturer
+            modelName
+            engineSize
+            year
+          }
           active
           admin
           registrationDate
@@ -355,7 +378,6 @@ class MembersService {
         'phone': member.phone,
         'avatarFile': member.avatar,
         'avatarFileName': member.avatarName,
-        'bike': member.bike,
         'active': member.active,
         'admin': member.admin,
       },
@@ -379,7 +401,7 @@ class MembersService {
     _log.info("Updating member ${member.email} ...");
 
     final String query = """
-      mutation UpdateMember(\$memberId: Long!, \$firstName: String!, \$lastName: String!, \$email: String!, \$phone: String, \$avatarFile: String, \$avatarFileName: String, \$bike: String, \$active: Boolean!, \$admin: Boolean!) {
+      mutation UpdateMember(\$memberId: Long!, \$firstName: String!, \$lastName: String!, \$email: String!, \$phone: String, \$avatarFile: String, \$avatarFileName: String, \$active: Boolean!, \$admin: Boolean!) {
         updateMember(
           memberId: \$memberId
           firstName: \$firstName
@@ -388,7 +410,6 @@ class MembersService {
           phone: \$phone
           avatarFile: \$avatarFile
           avatarFileName: \$avatarFileName
-          bike: \$bike
           active: \$active
           admin: \$admin
         ) {
@@ -399,7 +420,13 @@ class MembersService {
           phone
           avatarFile
           avatarFileName
-          bike
+          bikes {
+            id
+            manufacturer
+            modelName
+            engineSize
+            year
+          }
           active
           admin
           registrationDate
@@ -425,7 +452,6 @@ class MembersService {
         'phone': member.phone,
         'avatarFile': member.avatar,
         'avatarFileName': member.avatarName,
-        'bike': member.bike,
         'active': member.active,
         'admin': member.admin,
       },
@@ -461,7 +487,13 @@ class MembersService {
           phone
           avatarFile
           avatarFileName
-          bike
+          bikes {
+            id
+            manufacturer
+            modelName
+            engineSize
+            year
+          }
           active
           admin
           registrationDate

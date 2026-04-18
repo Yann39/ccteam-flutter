@@ -17,6 +17,7 @@
  * along with CCTeam. If not, see <http://www.gnu.org/licenses/>.
  */
 
+import 'package:ccteam/models/bike.dart';
 import 'package:ccteam/models/event_member.dart';
 
 /// Class representing a member
@@ -30,7 +31,7 @@ class Member {
   String? phone;
   String? avatar;
   String? avatarName;
-  String? bike;
+  List<Bike>? bikes;
   bool? active;
   bool? verified;
   bool? admin;
@@ -50,7 +51,7 @@ class Member {
     this.phone,
     this.avatar,
     this.avatarName,
-    this.bike,
+    this.bikes,
     this.active = false,
     this.verified = false,
     this.admin = false,
@@ -73,7 +74,7 @@ class Member {
       phone: ${this.phone},
       avatar: ${this.avatar},
       avatarName: ${this.avatarName},
-      bike: ${this.bike},
+      bikes: ${this.bikes?.map((bike) => bike.toString())},
       active: ${this.active},
       verified: ${this.verified},
       admin: ${this.admin},
@@ -96,7 +97,9 @@ class Member {
         phone = json['phone'],
         avatar = json['avatarFile'],
         avatarName = json['avatarFileName'],
-        bike = json['bike'],
+        bikes = json['bikes'] != null
+            ? (json['bikes'] as Iterable).map((i) => Bike.fromJson(i)).toList()
+            : null,
         active = json['active'] != null && (json['active'] == '1'),
         verified = json['verified'] != null && (json['verified'] == '1'),
         admin = json['admin'] != null && (json['admin'] == '1'),
@@ -119,7 +122,7 @@ class Member {
         "phone": phone,
         "avatarFile": avatar,
         "avatarFileName": avatarName,
-        "bike": bike,
+        "bikes": bikes?.map((i) => i.toJson()).toList(),
         "active": active,
         "verified": verified,
         "admin": admin,

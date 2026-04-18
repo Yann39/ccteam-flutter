@@ -17,6 +17,7 @@
  * along with CCTeam. If not, see <http://www.gnu.org/licenses/>.
  */
 
+import 'package:ccteam/models/bike.dart';
 import 'package:ccteam/models/member.dart';
 import 'package:ccteam/models/track.dart';
 
@@ -25,6 +26,7 @@ class Record {
   int? id;
   Track? track;
   Member? member;
+  Bike? bike;
   int? lapTime;
   DateTime? recordDate;
   String? conditions;
@@ -36,6 +38,7 @@ class Record {
     this.id,
     this.track,
     this.member,
+    this.bike,
     this.lapTime,
     this.recordDate,
     this.conditions,
@@ -50,6 +53,7 @@ class Record {
       id: ${this.id.toString()},
       track: ${this.track.toString()},
       member: ${this.member.toString()},
+      bike: ${this.bike.toString()},
       lapTime: ${this.lapTime},
       recordDate: ${this.recordDate?.toIso8601String()},
       conditions: ${this.conditions},
@@ -64,6 +68,7 @@ class Record {
     : id = json['id'] != null ? int.parse(json['id']) : null,
       track = json['track'] != null ? Track.fromJson(json['track']) : null,
       member = json['member'] != null ? Member.fromJson(json['member']) : null,
+      bike = json['bike'] != null ? Bike.fromJson(json['bike']) : null,
       lapTime = json['lapTime'] != null ? json['lapTime'] : null,
       recordDate =
           json['recordDate'] != null
@@ -83,6 +88,7 @@ class Record {
     "id": id.toString(),
     "track": track?.toJson(),
     "member": member?.toJson(),
+    "bike": bike?.toJson(),
     "lapTime": lapTime,
     "recordDate": recordDate?.toIso8601String(),
     "conditions": conditions,

@@ -100,7 +100,10 @@ class _MemberChronosState extends State<MemberChronos> {
                   final record = _recordListProvider.memberRecords[index];
                   return InkWell(
                     onTap: () {
-                      Provider.of<RecordCreationProvider>(context, listen: false).setRecordToEdit(record);
+                      Provider.of<RecordCreationProvider>(
+                        context,
+                        listen: false,
+                      ).setRecordToEdit(record);
                       Navigator.pushNamed(context, '/addEditRecord');
                     },
                     child: Container(
@@ -140,7 +143,7 @@ class _MemberChronosState extends State<MemberChronos> {
                                           record.recordDate!,
                                           'dd MMM yyyy',
                                         ) ??
-                                          "",
+                                        "",
                                     style: TextStyle(color: Colors.white),
                                   ),
                                 ],
@@ -154,7 +157,9 @@ class _MemberChronosState extends State<MemberChronos> {
                                   ),
                                   SizedBox(width: 5.0),
                                   Text(
-                                    record.member!.bike ?? "",
+                                    record.bike != null
+                                        ? "${record.bike!.manufacturer} ${record.bike!.modelName}"
+                                        : AppString.notDefined,
                                     style: TextStyle(color: Colors.white),
                                   ),
                                 ],
@@ -172,10 +177,8 @@ class _MemberChronosState extends State<MemberChronos> {
                               border: Border.all(color: Colors.white),
                             ),
                             child: Text(
-                              AppDateUtils.toLapTimeString(
-                                    record.lapTime,
-                                  ) ??
-                                "",
+                              AppDateUtils.toLapTimeString(record.lapTime) ??
+                                  "",
                               style: TextStyle(
                                 fontFamily: "AlarmClock",
                                 color: Colors.white,

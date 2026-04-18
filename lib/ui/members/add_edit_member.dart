@@ -240,22 +240,6 @@ class _AddEditMemberState extends State<AddEditMember> {
       ],
     );
 
-    final bikeField = TextFormField(
-      decoration: const InputDecoration(
-        icon: const Icon(CustomIcons.motorbike),
-        hintText: AppString.memberBikeHint,
-        labelText: AppString.memberBike,
-      ),
-      maxLines: 1,
-      inputFormatters: [LengthLimitingTextInputFormatter(64)],
-      validator:
-          (val) =>
-              (val == null || val.isEmpty)
-                  ? AppString.memberBikeMandatory
-                  : null,
-      onSaved: (val) => _memberCreationProvider.currentMember.bike = val,
-      initialValue: _memberCreationProvider.currentMember.bike,
-    );
 
     final editableAvatar = Stack(
       children: <Widget>[
@@ -384,7 +368,6 @@ class _AddEditMemberState extends State<AddEditMember> {
                 lastNameField,
                 emailField,
                 phoneField,
-                bikeField,
                 activeField,
                 adminField,
               ],

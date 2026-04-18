@@ -42,3 +42,16 @@ enum DialogType { info, success, warning, error }
 enum MessageType { INFO, SUCCESS, WARNING, ERROR }
 
 enum TrackCondition { dry, drying, wet }
+
+enum BikeManufacturer {
+  honda,
+  yamaha,
+  aprilia,
+  ducati,
+  kawasaki,
+  suzuki,
+  bmw,
+  ktm,
+  triumph,
+  other
+}

@@ -17,6 +17,7 @@
  * along with CCTeam. If not, see <http://www.gnu.org/licenses/>.
  */
 
+import 'package:ccteam/models/bike.dart';
 import 'package:ccteam/models/track.dart';
 import 'package:ccteam/providers/login_provider.dart';
 import 'package:ccteam/providers/record_creation_provider.dart';
@@ -320,6 +321,30 @@ class _AddEditRecordState extends State<AddEditRecord> {
           _dateField,
           const SizedBox(height: 16),
           _trackField,
+          const SizedBox(height: 16),
+          DropdownButtonFormField<Bike>(
+            initialValue: _recordCreationProvider.selectedBike,
+            decoration: const InputDecoration(
+              icon: Icon(CustomIcons.motorbike),
+              hintText: AppString.recordBikeHint,
+              labelText: AppString.recordBikeLabel,
+            ),
+            items:
+                Provider.of<LoginProvider>(
+                  context,
+                  listen: false,
+                ).loggedMember!.bikes!.map((Bike bike) {
+                  return DropdownMenuItem<Bike>(
+                    value: bike,
+                    child: Text("${bike.manufacturer} ${bike.modelName}"),
+                  );
+                }).toList(),
+            onChanged: (Bike? val) {
+              _recordCreationProvider.selectBike(val!);
+            },
+            validator:
+                (val) => val == null ? AppString.recordBikeMandatory : null,
+          ),
           const SizedBox(height: 16),
           _lapTimeField,
           const SizedBox(height: 16),

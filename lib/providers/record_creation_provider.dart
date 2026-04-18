@@ -19,6 +19,7 @@
 
 import 'dart:async';
 
+import 'package:ccteam/models/bike.dart';
 import 'package:ccteam/models/record.dart';
 import 'package:ccteam/providers/login_provider.dart';
 import 'package:ccteam/providers/message_provider.dart';
@@ -42,6 +43,9 @@ class RecordCreationProvider extends ChangeNotifier {
   // current record
   Record _record = new Record();
 
+  // selected bike
+  Bike? _selectedBike;
+
   // selected track condition in the dropdown list
   TrackCondition _selectedTrackCondition = TrackCondition.dry;
 
@@ -49,6 +53,8 @@ class RecordCreationProvider extends ChangeNotifier {
   LoadingStatus _loadingStatus = LoadingStatus.notLoaded;
 
   Record get record => _record;
+
+  Bike? get selectedBike => _selectedBike;
 
   TrackCondition get selectedTrackCondition => _selectedTrackCondition;
 
@@ -69,6 +75,7 @@ class RecordCreationProvider extends ChangeNotifier {
   /// Set the [Record] to be edited.
   void setRecordToEdit(Record record) {
     _record = record;
+    _selectedBike = _record.bike;
     _updateStatus(LoadingStatus.loaded);
   }
 
@@ -78,37 +85,74 @@ class RecordCreationProvider extends ChangeNotifier {
     _notifyListeners();
   }
 
+  /// Set the specified [bike] as the current selected bike
+  void selectBike(Bike bike) {
+    _selectedBike = bike;
+    _record.bike = bike;
+    _notifyListeners();
+  }
+
   /// Create the current record being edited.
   Future<void> createRecord() async {
     _updateStatus(LoadingStatus.loading);
-    await _recordsService.createRecord(_record).then((value) async {
-      _log.fine("Record created successfully");
-      //_record = value;
-      _updateStatus(LoadingStatus.loaded);
-      _messageProvider.setMessage(AppString.recordCreated, MessageType.SUCCESS);
-    }, onError: (error) {
-      _log.warning("Error when creating record ($error)");
-      _messageProvider.setMessage(AppString.recordCreationFailed, MessageType.ERROR);
-      AppUtils.handleServiceException(error, _messageProvider, _loginProvider);
-      _updateStatus(LoadingStatus.notLoaded);
-    });
+    await _recordsService
+        .createRecord(_record)
+        .then(
+          (value) async {
+            _log.fine("Record created successfully");
+            //_record = value;
+            _updateStatus(LoadingStatus.loaded);
+            _messageProvider.setMessage(
+              AppString.recordCreated,
+              MessageType.SUCCESS,
+            );
+          },
+          onError: (error) {
+            _log.warning("Error when creating record ($error)");
+            _messageProvider.setMessage(
+              AppString.recordCreationFailed,
+              MessageType.ERROR,
+            );
+            AppUtils.handleServiceException(
+              error,
+              _messageProvider,
+              _loginProvider,
+            );
+            _updateStatus(LoadingStatus.notLoaded);
+          },
+        );
   }
 
   /// Update the current record being edited.
   Future<void> updateRecord() async {
     _updateStatus(LoadingStatus.loading);
-    await _recordsService.updateRecord(_record).then((value) {
-      _log.fine("Record successfully updated : ${_record.id}");
-      //_record = value;
-      _updateStatus(LoadingStatus.loaded);
-      _messageProvider.setMessage(AppString.recordUpdated, MessageType.SUCCESS);
-    }, onError: (error) {
-      // todo here we should reload the original record as it has not been updated in db ?
-      _log.warning("Error when updating record ($error)");
-      _messageProvider.setMessage(AppString.recordUpdateFailed, MessageType.ERROR);
-      AppUtils.handleServiceException(error, _messageProvider, _loginProvider);
-      _updateStatus(LoadingStatus.notLoaded);
-    });
+    await _recordsService
+        .updateRecord(_record)
+        .then(
+          (value) {
+            _log.fine("Record successfully updated : ${_record.id}");
+            //_record = value;
+            _updateStatus(LoadingStatus.loaded);
+            _messageProvider.setMessage(
+              AppString.recordUpdated,
+              MessageType.SUCCESS,
+            );
+          },
+          onError: (error) {
+            // todo here we should reload the original record as it has not been updated in db ?
+            _log.warning("Error when updating record ($error)");
+            _messageProvider.setMessage(
+              AppString.recordUpdateFailed,
+              MessageType.ERROR,
+            );
+            AppUtils.handleServiceException(
+              error,
+              _messageProvider,
+              _loginProvider,
+            );
+            _updateStatus(LoadingStatus.notLoaded);
+          },
+        );
   }
 
   /// Notify all the registered listeners of this provider.

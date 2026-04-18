@@ -116,8 +116,9 @@ class MemberList extends StatelessWidget {
                             "${_memberListProvider.memberList[index].firstName} ${_memberListProvider.memberList[index].lastName}",
                           ),
                           subtitle: Text(
-                            _memberListProvider.memberList[index].bike ??
-                                AppString.notDefined,
+                             _memberListProvider.memberList[index].bikes != null && _memberListProvider.memberList[index].bikes!.isNotEmpty
+                                ? _memberListProvider.memberList[index].bikes!.map((bike) => "${bike.manufacturer?.toUpperCase()} ${bike.modelName}").join(", ")
+                                : AppString.notDefined,
                           ),
                           leading:
                               _memberListProvider.memberList[index].avatar !=

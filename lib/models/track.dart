@@ -52,22 +52,31 @@ class Track {
 
   /// Convert [json] map to the corresponding object
   Track.fromJson(Map<String, dynamic> json)
-      : id = json['id'] != null ? int.parse(json['id']) : null,
-        name = json['name'],
-        distance = json['distance'] != null ? json['distance'] : null,
-        lapRecord = json['lapRecord'] != null ? json['lapRecord'] : null,
-        website = json['website'],
-        latitude = json['latitude'] != null ? json['latitude'] : null,
-        longitude = json['longitude'] != null ? json['longitude'] : null;
+    : id = json['id'] != null ? int.parse(json['id']) : null,
+      name = json['name'],
+      distance = json['distance'] != null ? json['distance'] : null,
+      lapRecord = json['lapRecord'] != null ? json['lapRecord'] : null,
+      website = json['website'],
+      latitude = json['latitude'] != null ? json['latitude'] : null,
+      longitude = json['longitude'] != null ? json['longitude'] : null;
 
   /// Convert [Record] object to the corresponding JSON map
   Map<String, dynamic> toJson() => {
-        "id": id.toString(),
-        "name": name,
-        "distance": distance,
-        "lapRecord": lapRecord,
-        "website": website,
-        "latitude": latitude,
-        "longitude": longitude,
-      };
+    "id": id.toString(),
+    "name": name,
+    "distance": distance,
+    "lapRecord": lapRecord,
+    "website": website,
+    "latitude": latitude,
+    "longitude": longitude,
+  };
+
+  /// Override == operator to compare tracks by id
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is Track && runtimeType == other.runtimeType && id == other.id;
+
+  @override
+  int get hashCode => id.hashCode;
 }
