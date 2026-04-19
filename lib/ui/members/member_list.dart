@@ -120,6 +120,23 @@ class MemberList extends StatelessWidget {
                                 ? _memberListProvider.memberList[index].bikes!.map((bike) => "${bike.manufacturer?.toUpperCase()} ${bike.modelName}").join(", ")
                                 : AppString.notDefined,
                           ),
+                          trailing: _memberListProvider.memberList[index].riderNumber != null
+                              ? Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                                  decoration: BoxDecoration(
+                                    color: Colors.red[700],
+                                    borderRadius: BorderRadius.circular(20),
+                                  ),
+                                  child: Text(
+                                    "#${_memberListProvider.memberList[index].riderNumber}",
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 16,
+                                    ),
+                                  ),
+                                )
+                              : null,
                           leading:
                               _memberListProvider.memberList[index].avatar !=
                                       null

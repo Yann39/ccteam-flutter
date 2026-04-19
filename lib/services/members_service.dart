@@ -127,6 +127,7 @@ class MembersService {
           lastName
           avatarFile
           avatarFileName
+          riderNumber
           bikes {
             id
             manufacturer
@@ -186,6 +187,7 @@ class MembersService {
           phone
           avatarFile
           avatarFileName
+          riderNumber
           bikes {
             id
             manufacturer
@@ -259,6 +261,7 @@ class MembersService {
           phone
           avatarFile
           avatarFileName
+          riderNumber
           bikes {
             id
             manufacturer
@@ -329,12 +332,13 @@ class MembersService {
     _log.info("Creating member ${member.email} ...");
 
     final String query = """
-      mutation CreateMember(\$firstName: String!, \$lastName: String!, \$email: String!, \$phone: String, \$avatarFile: String, \$avatarFileName: String, \$active: Boolean!, \$admin: Boolean!) {
+      mutation CreateMember(\$firstName: String!, \$lastName: String!, \$email: String!, \$phone: String, \$riderNumber: Int, \$avatarFile: String, \$avatarFileName: String, \$active: Boolean!, \$admin: Boolean!) {
         createMember(
           firstName: \$firstName
           lastName: \$lastName
           email: \$email
           phone: \$phone
+          riderNumber: \$riderNumber
           avatarFile: \$avatarFile
           avatarFileName: \$avatarFileName
           active: \$active
@@ -347,6 +351,7 @@ class MembersService {
           phone
           avatarFile
           avatarFileName
+          riderNumber
           bikes {
             id
             manufacturer
@@ -378,6 +383,7 @@ class MembersService {
         'phone': member.phone,
         'avatarFile': member.avatar,
         'avatarFileName': member.avatarName,
+        'riderNumber': member.riderNumber,
         'active': member.active,
         'admin': member.admin,
       },
@@ -401,13 +407,14 @@ class MembersService {
     _log.info("Updating member ${member.email} ...");
 
     final String query = """
-      mutation UpdateMember(\$memberId: Long!, \$firstName: String!, \$lastName: String!, \$email: String!, \$phone: String, \$avatarFile: String, \$avatarFileName: String, \$active: Boolean!, \$admin: Boolean!) {
+      mutation UpdateMember(\$memberId: Long!, \$firstName: String!, \$lastName: String!, \$email: String!, \$phone: String, \$riderNumber: Int, \$avatarFile: String, \$avatarFileName: String, \$active: Boolean!, \$admin: Boolean!) {
         updateMember(
           memberId: \$memberId
           firstName: \$firstName
           lastName: \$lastName
           email: \$email
           phone: \$phone
+          riderNumber: \$riderNumber
           avatarFile: \$avatarFile
           avatarFileName: \$avatarFileName
           active: \$active
@@ -420,6 +427,7 @@ class MembersService {
           phone
           avatarFile
           avatarFileName
+          riderNumber
           bikes {
             id
             manufacturer
@@ -452,6 +460,7 @@ class MembersService {
         'phone': member.phone,
         'avatarFile': member.avatar,
         'avatarFileName': member.avatarName,
+        'riderNumber': member.riderNumber,
         'active': member.active,
         'admin': member.admin,
       },

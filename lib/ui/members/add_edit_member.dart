@@ -207,6 +207,22 @@ class _AddEditMemberState extends State<AddEditMember> {
       onSaved: (val) => _memberCreationProvider.currentMember.phone = val,
       initialValue: _memberCreationProvider.currentMember.phone,
     );
+    
+    final riderNumberField = TextFormField(
+      decoration: const InputDecoration(
+        icon: const Icon(Icons.tag),
+        hintText: AppString.memberRiderNumberHint,
+        labelText: AppString.memberRiderNumber,
+      ),
+      keyboardType: TextInputType.number,
+      maxLines: 1,
+      inputFormatters: <TextInputFormatter>[
+        FilteringTextInputFormatter.digitsOnly,
+        LengthLimitingTextInputFormatter(3),
+      ],
+      onSaved: (val) => _memberCreationProvider.currentMember.riderNumber = (val != null && val.isNotEmpty) ? int.parse(val) : null,
+      initialValue: _memberCreationProvider.currentMember.riderNumber?.toString(),
+    );
 
     final activeField = Row(
       children: [
@@ -368,6 +384,7 @@ class _AddEditMemberState extends State<AddEditMember> {
                 lastNameField,
                 emailField,
                 phoneField,
+                riderNumberField,
                 activeField,
                 adminField,
               ],

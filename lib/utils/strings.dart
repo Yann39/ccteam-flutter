@@ -241,6 +241,8 @@ class AppString {
       'Le numéro de téléphone est obligatoire';
   static const String memberPhoneNotValid =
       'Le numéro de téléphone indiqué n\'est pas valide';
+  static const String memberRiderNumber = 'Numéro de pilote';
+  static const String memberRiderNumberHint = 'Numéro de pilote (ex: 46)';
   static const String memberBike = 'Moto';
   static const String memberBikeHint = 'Moto du membre';
   static const String memberBikeMandatory = 'La moto est obligatoire';
