@@ -46,7 +46,7 @@ class Bike {
 
   /// Convert [json] map to the corresponding object
   Bike.fromJson(Map<String, dynamic> json)
-    : id = json['id'] != null ? int.parse(json['id']) : null,
+    : id = json['id'] != null ? int.parse(json['id'].toString()) : null,
       manufacturer = json['manufacturer'],
       modelName = json['modelName'],
       engineSize = json['engineSize'],

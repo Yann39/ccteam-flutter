@@ -19,6 +19,7 @@
 
 import 'package:ccteam/models/bike.dart';
 import 'package:ccteam/models/event_member.dart';
+import 'package:ccteam/utils/enums.dart';
 
 /// Class representing a member
 /// todo add Role attribute ?
@@ -34,7 +35,7 @@ class Member {
   List<Bike>? bikes;
   bool? active;
   bool? verified;
-  bool? admin;
+  MemberRole? role;
   String? otp;
   DateTime? otpDate;
   DateTime? registrationDate;
@@ -55,7 +56,7 @@ class Member {
     this.bikes,
     this.active = false,
     this.verified = false,
-    this.admin = false,
+    this.role = MemberRole.ROLE_USER,
     this.otp,
     this.otpDate,
     this.registrationDate,
@@ -79,7 +80,7 @@ class Member {
       bikes: ${this.bikes?.map((bike) => bike.toString())},
       active: ${this.active},
       verified: ${this.verified},
-      admin: ${this.admin},
+      role: ${this.role},
       otp: ${this.otp},
       otpDate: ${this.otpDate?.toIso8601String()},
       registrationDate: ${this.registrationDate?.toIso8601String()},
@@ -92,7 +93,7 @@ class Member {
 
   /// Convert [json] map to the corresponding object
   Member.fromJson(Map<String, dynamic> json)
-    : id = json['id'] != null ? int.parse(json['id']) : null,
+    : id = json['id'] != null ? int.parse(json['id'].toString()) : null,
       firstName = json['firstName'],
       lastName = json['lastName'],
       email = json['email'],
@@ -100,35 +101,17 @@ class Member {
       phone = json['phone'],
       avatar = json['avatarFile'],
       avatarName = json['avatarFileName'],
-      bikes =
-          json['bikes'] != null
-              ? (json['bikes'] as Iterable)
-                  .map((i) => Bike.fromJson(i))
-                  .toList()
-              : null,
-      active = json['active'] != null && (json['active'] == '1'),
-      verified = json['verified'] != null && (json['verified'] == '1'),
-      admin = json['admin'] != null && (json['admin'] == '1'),
+      bikes = json['bikes'] != null ? (json['bikes'] as Iterable).map((i) => Bike.fromJson(i)).toList() : null,
+      active = json['active'] != null && (json['active'] == '1' || json['active'] == true),
+      verified = json['verified'] != null && (json['verified'] == '1' || json['verified'] == true),
+      role = json['role'] != null ? MemberRole.values.firstWhere((e) => e.toString().split('.').last == json['role'], orElse: () => MemberRole.ROLE_USER) : MemberRole.ROLE_USER,
       otp = json['otp'],
-      otpDate =
-          json['otpDate'] != null ? DateTime.parse(json['otpDate']) : null,
-      registrationDate =
-          json['registrationDate'] != null
-              ? DateTime.parse(json['registrationDate'])
-              : null,
-      eventMembers =
-          json['eventMembers'] != null
-              ? (json['eventMembers'] as Iterable)
-                  .map((i) => EventMember.fromJson(i))
-                  .toList()
-              : null,
+      otpDate = json['otpDate'] != null ? DateTime.parse(json['otpDate']) : null,
+      registrationDate = json['registrationDate'] != null ? DateTime.parse(json['registrationDate']) : null,
+      eventMembers = json['eventMembers'] != null ? (json['eventMembers'] as Iterable).map((i) => EventMember.fromJson(i)).toList() : null,
       riderNumber = json['riderNumber'],
-      createdOn =
-          json['createdOn'] != null ? DateTime.parse(json['createdOn']) : null,
-      modifiedOn =
-          json['modifiedOn'] != null
-              ? DateTime.parse(json['modifiedOn'])
-              : null;
+      createdOn = json['createdOn'] != null ? DateTime.parse(json['createdOn']) : null,
+      modifiedOn = json['modifiedOn'] != null ? DateTime.parse(json['modifiedOn']) : null;
 
   /// Convert [Member] object to the corresponding JSON map
   Map<String, dynamic> toJson() => {
@@ -143,7 +126,7 @@ class Member {
     "bikes": bikes?.map((i) => i.toJson()).toList(),
     "active": active,
     "verified": verified,
-    "admin": admin,
+    "role": role?.toString().split('.').last,
     "otp": otp,
     "otpDate": otpDate?.toIso8601String(),
     "registrationDate": registrationDate?.toIso8601String(),

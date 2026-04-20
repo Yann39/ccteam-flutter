@@ -27,8 +27,10 @@ import 'package:ccteam/providers/member_list_provider.dart';
 import 'package:ccteam/utils/constants.dart';
 import 'package:ccteam/utils/custom_decorations.dart';
 import 'package:ccteam/utils/custom_icons.dart';
+import 'package:ccteam/utils/enums.dart';
 import 'package:ccteam/utils/string_utils.dart';
 import 'package:ccteam/utils/strings.dart';
+import 'package:ccteam/providers/login_provider.dart';
 import 'package:ccteam/widgets/save_cancel_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -129,6 +131,10 @@ class _AddEditMemberState extends State<AddEditMember> {
       context,
       listen: false,
     );
+    final LoginProvider _loginProvider = Provider.of<LoginProvider>(
+      context,
+      listen: false,
+    );
 
     final firstNameField = TextFormField(
       decoration: const InputDecoration(
@@ -207,7 +213,7 @@ class _AddEditMemberState extends State<AddEditMember> {
       onSaved: (val) => _memberCreationProvider.currentMember.phone = val,
       initialValue: _memberCreationProvider.currentMember.phone,
     );
-    
+
     final riderNumberField = TextFormField(
       decoration: const InputDecoration(
         icon: const Icon(Icons.tag),
@@ -220,8 +226,12 @@ class _AddEditMemberState extends State<AddEditMember> {
         FilteringTextInputFormatter.digitsOnly,
         LengthLimitingTextInputFormatter(3),
       ],
-      onSaved: (val) => _memberCreationProvider.currentMember.riderNumber = (val != null && val.isNotEmpty) ? int.parse(val) : null,
-      initialValue: _memberCreationProvider.currentMember.riderNumber?.toString(),
+      onSaved:
+          (val) =>
+              _memberCreationProvider.currentMember.riderNumber =
+                  (val != null && val.isNotEmpty) ? int.parse(val) : null,
+      initialValue:
+          _memberCreationProvider.currentMember.riderNumber?.toString(),
     );
 
     final activeField = Row(
@@ -240,22 +250,42 @@ class _AddEditMemberState extends State<AddEditMember> {
       ],
     );
 
-    final adminField = Row(
+    final roleField = Row(
       children: [
         Icon(Icons.enhanced_encryption, color: Colors.black45),
         SizedBox(width: 16),
-        Text("Admin ?"),
-        Switch(
-          activeThumbColor: Colors.green[700],
-          value: _memberCreationProvider.currentMember.admin!,
-          onChanged:
-              (val) => setState(() {
-                _memberCreationProvider.currentMember.admin = val;
-              }),
+        Expanded(
+          child: DropdownButtonFormField<MemberRole>(
+            decoration: InputDecoration(labelText: AppString.memberRole),
+            initialValue: _memberCreationProvider.currentMember.role,
+            items:
+                MemberRole.values.map((MemberRole role) {
+                  String label = "";
+                  switch (role) {
+                    case MemberRole.ROLE_USER:
+                      label = AppString.memberRoleUser;
+                      break;
+                    case MemberRole.ROLE_MEMBER:
+                      label = AppString.memberRoleMember;
+                      break;
+                    case MemberRole.ROLE_ADMIN:
+                      label = AppString.memberRoleAdmin;
+                      break;
+                  }
+                  return DropdownMenuItem<MemberRole>(
+                    value: role,
+                    child: Text(label),
+                  );
+                }).toList(),
+            onChanged: (MemberRole? newValue) {
+              setState(() {
+                _memberCreationProvider.currentMember.role = newValue;
+              });
+            },
+          ),
         ),
       ],
     );
-
 
     final editableAvatar = Stack(
       children: <Widget>[
@@ -385,8 +415,11 @@ class _AddEditMemberState extends State<AddEditMember> {
                 emailField,
                 phoneField,
                 riderNumberField,
-                activeField,
-                adminField,
+                if (_loginProvider.loggedMember?.role ==
+                    MemberRole.ROLE_ADMIN) ...[
+                  activeField,
+                  roleField,
+                ],
               ],
             ),
           ),

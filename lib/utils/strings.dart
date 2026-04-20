@@ -22,10 +22,11 @@ class AppString {
   /// Format the specified [source] string according to the given [arguments].
   /// Parameters in the source string must be numbered in the format {x} starting from 0.
   /// Example : format('Hello {0}, your preferred color is {1}.', ['Bob', 'purple'])
-  static format(String source, List<String> arguments) {
+  static format(String source, List<dynamic> arguments) {
     int index = 0;
     arguments.forEach(
-      (element) => source = source.replaceFirst("{${index++}}", element),
+      (element) => source = source.replaceFirst(
+          "{${index++}}", element != null ? element.toString() : "null"),
     );
     return source;
   }
@@ -256,6 +257,10 @@ class AppString {
   static const String memberActive = 'Actif ?';
   static const String memberActiveMandatory =
       'Le statut du membre (actif ou non) est obligatoire';
+  static const String memberRole = 'Rôle';
+  static const String memberRoleUser = 'Utilisateur';
+  static const String memberRoleMember = 'Membre';
+  static const String memberRoleAdmin = 'Administrateur';
   static const String memberPasswordMandatory =
       'Le mot de passe est obligatoire';
   static const String memberLoginFailed =

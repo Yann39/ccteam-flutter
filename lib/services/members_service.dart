@@ -135,7 +135,7 @@ class MembersService {
             engineSize
             year
           }
-          admin
+          role
         }
       }
     """;
@@ -195,7 +195,7 @@ class MembersService {
             engineSize
             year
           }
-          admin
+          role
           active
           registrationDate
           eventMembers {
@@ -269,7 +269,7 @@ class MembersService {
             engineSize
             year
           }
-          admin
+          role
           registrationDate
           eventMembers {
             id
@@ -332,7 +332,7 @@ class MembersService {
     _log.info("Creating member ${member.email} ...");
 
     final String query = """
-      mutation CreateMember(\$firstName: String!, \$lastName: String!, \$email: String!, \$phone: String, \$riderNumber: Int, \$avatarFile: String, \$avatarFileName: String, \$active: Boolean!, \$admin: Boolean!) {
+      mutation CreateMember(\$firstName: String!, \$lastName: String!, \$email: String!, \$phone: String, \$riderNumber: Int, \$avatarFile: String, \$avatarFileName: String, \$active: Boolean!, \$role: Role!) {
         createMember(
           firstName: \$firstName
           lastName: \$lastName
@@ -342,7 +342,7 @@ class MembersService {
           avatarFile: \$avatarFile
           avatarFileName: \$avatarFileName
           active: \$active
-          admin: \$admin
+          role: \$role
         ) {
           id
           firstName
@@ -360,7 +360,7 @@ class MembersService {
             year
           }
           active
-          admin
+          role
           registrationDate
           likedNews {
             news {
@@ -385,7 +385,7 @@ class MembersService {
         'avatarFileName': member.avatarName,
         'riderNumber': member.riderNumber,
         'active': member.active,
-        'admin': member.admin,
+        'role': member.role?.toString().split('.').last,
       },
       fetchPolicy: FetchPolicy.noCache,
     );
@@ -407,7 +407,7 @@ class MembersService {
     _log.info("Updating member ${member.email} ...");
 
     final String query = """
-      mutation UpdateMember(\$memberId: Long!, \$firstName: String!, \$lastName: String!, \$email: String!, \$phone: String, \$riderNumber: Int, \$avatarFile: String, \$avatarFileName: String, \$active: Boolean!, \$admin: Boolean!) {
+      mutation UpdateMember(\$memberId: Long!, \$firstName: String!, \$lastName: String!, \$email: String!, \$phone: String, \$riderNumber: Int, \$avatarFile: String, \$avatarFileName: String, \$active: Boolean!, \$role: Role!) {
         updateMember(
           memberId: \$memberId
           firstName: \$firstName
@@ -418,7 +418,7 @@ class MembersService {
           avatarFile: \$avatarFile
           avatarFileName: \$avatarFileName
           active: \$active
-          admin: \$admin
+          role: \$role
         ) {
           id
           firstName
@@ -436,7 +436,7 @@ class MembersService {
             year
           }
           active
-          admin
+          role
           registrationDate
           likedNews {
             news {
@@ -462,7 +462,7 @@ class MembersService {
         'avatarFileName': member.avatarName,
         'riderNumber': member.riderNumber,
         'active': member.active,
-        'admin': member.admin,
+        'role': member.role?.toString().split('.').last,
       },
       fetchPolicy: FetchPolicy.noCache,
     );
@@ -504,7 +504,7 @@ class MembersService {
             year
           }
           active
-          admin
+          role
           registrationDate
           likedNews {
             news {

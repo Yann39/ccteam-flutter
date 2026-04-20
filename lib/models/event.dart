@@ -75,7 +75,7 @@ class Event {
 
   /// Convert [json] map to the corresponding object
   Event.fromJson(Map<String, dynamic> json)
-      : id = json['id'] != null ? int.parse(json['id']) : null,
+      : id = json['id'] != null ? int.parse(json['id'].toString()) : null,
         title = json['title'],
         description = json['description'],
         startDate = json['startDate'] != null ? DateTime.parse(json['startDate']) : null,

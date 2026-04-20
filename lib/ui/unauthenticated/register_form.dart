@@ -210,6 +210,7 @@ class _RegisterFormState extends State<RegisterForm> {
             SizedBox(height: 16.0),
             _preRegisterButton,
             _backButton,
+            SizedBox(height: 24.0),
           ],
         ),
       ),

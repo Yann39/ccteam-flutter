@@ -199,8 +199,7 @@ class LoginProvider extends ChangeNotifier {
         _setAuthStatus(AuthStatus.Unauthenticated);
         // member not found
         if (error.code == "member_not_found") {
-          _messageProvider.setMessage(
-              AppString.format(AppString.errorEmailNotFoundInDatabase, [_email]), MessageType.ERROR);
+          _messageProvider.setMessage(AppString.format(AppString.errorEmailNotFoundInDatabase, [_email]), MessageType.ERROR);
         }
         // JWT token has expired
         else if (error.code == "token_expired") {
@@ -294,8 +293,7 @@ class LoginProvider extends ChangeNotifier {
     _log.info("Pre-registering user ${this.firstName} ${this.lastName} ($_email)");
     _setLoginStatus(LoginStatus.Loading);
 
-    await _membersService.preRegister(this.firstName!, this.lastName!, _email!).timeout(Duration(seconds: 5)).then(
-        (response) async {
+    await _membersService.preRegister(this.firstName!, this.lastName!, _email!).timeout(Duration(seconds: 5)).then((response) async {
       // member has been pre-registered successfully
       if (response.statusCode == 201) {
         _setLoginStatus(LoginStatus.OtpStep);
@@ -313,8 +311,7 @@ class LoginProvider extends ChangeNotifier {
       // member successfully created but the confirmation e-mail failed to be sent
       else if (response.statusCode == 207) {
         _setLoginStatus(LoginStatus.OtpStep);
-        _messageProvider.setMessage(
-            AppString.format(AppString.preRegisterConfirmationEmailNotSent, [_email!]), MessageType.WARNING);
+        _messageProvider.setMessage(AppString.format(AppString.preRegisterConfirmationEmailNotSent, [_email!]), MessageType.WARNING);
       }
       // unexpected status code
       else {
@@ -494,17 +491,28 @@ class LoginProvider extends ChangeNotifier {
 
         // get the full member from the database
         await _membersService.getMemberByEmail(email!).timeout(Duration(seconds: 5)).then((m) async {
-          _log.info("Member ${m.email} successfully retrieved from database");
+          _log.info("Member ${m.email} successfully retrieved from database with role ${m.role}");
 
           // store the user's e-mail and token in the shared preferences
           final SharedPreferences prefs = await SharedPreferences.getInstance();
-          prefs.setString('email', m.email!);
-          prefs.setString('jwt', _jwtToken!);
+
+          if (m.email != null) {
+            prefs.setString('email', m.email!);
+          } else {
+            _log.severe("Retrieved member has a null email address!");
+          }
+
+          if (_jwtToken != null) {
+            prefs.setString('jwt', _jwtToken!);
+          } else {
+            _log.severe("JWT token is null after successful authentication!");
+          }
 
           _loggedMember = m;
           _setAuthStatus(AuthStatus.Authenticated);
           _setLoginStatus(LoginStatus.EmailStep);
-        }, onError: (error) {
+        },
+        onError: (error) {
           _log.info("Member with e-mail $email not found in the database from app ($error)");
           _loggedMember = null;
           _jwtToken = null;
@@ -515,7 +523,9 @@ class LoginProvider extends ChangeNotifier {
           // member not found
           if (error.code == "member_not_found") {
             _messageProvider.setMessage(
-                AppString.format(AppString.errorEmailNotFoundInDatabase, [email != null ? email : ""]), MessageType.ERROR);
+              AppString.format(AppString.errorEmailNotFoundInDatabase, [email != null ? email : ""]),
+              MessageType.ERROR,
+            );
           }
           // JWT token has expired
           else if (error.code == "token_expired") {

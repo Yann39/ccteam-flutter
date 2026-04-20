@@ -27,12 +27,7 @@ class EventMember {
   Event? event;
   DateTime? createdOn;
 
-  EventMember({
-    this.id,
-    this.member,
-    this.event,
-    this.createdOn,
-  });
+  EventMember({this.id, this.member, this.event, this.createdOn});
 
   @override
   String toString() {
@@ -46,7 +41,7 @@ class EventMember {
 
   /// Convert [json] map to the corresponding object
   EventMember.fromJson(Map<String, dynamic> json)
-      : id = json['id'] != null ? int.parse(json['id']) : null,
+      : id = json['id'] != null ? int.parse(json['id'].toString()) : null,
         member = json['member'] != null ? Member.fromJson(json['member']) : null,
         event = json['event'] != null ? Event.fromJson(json['event']) : null,
         createdOn = json['createdOn'] != null ? DateTime.parse(json['createdOn']) : null;

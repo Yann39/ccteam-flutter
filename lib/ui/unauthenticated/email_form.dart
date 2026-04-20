@@ -152,6 +152,7 @@ class _EmailFormState extends State<EmailForm> {
             SizedBox(height: 32.0),
             _emailContinueButton,
             _createAccountButton,
+            SizedBox(height: 24.0),
           ],
         ),
       ),

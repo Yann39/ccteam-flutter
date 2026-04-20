@@ -70,9 +70,10 @@ class _LoginState extends State<Login> {
         decoration: CustomDecorations.bluePurpleGradient,
         child: Scaffold(
           backgroundColor: Colors.transparent,
-          body: SingleChildScrollView(
-            reverse: true,
-            child: _displayForm(),
+          body: SafeArea(
+            child: SingleChildScrollView(
+              child: _displayForm(),
+            ),
           ),
         ),
       ),

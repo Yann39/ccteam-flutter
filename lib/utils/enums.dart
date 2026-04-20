@@ -19,6 +19,8 @@
 
 enum AuthStatus { Initializing, Unauthenticated, Authenticating, Authenticated }
 
+enum MemberRole { ROLE_USER, ROLE_MEMBER, ROLE_ADMIN }
+
 enum LoginStatus {
   Loading,
   EmailStep,

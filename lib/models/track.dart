@@ -52,7 +52,7 @@ class Track {
 
   /// Convert [json] map to the corresponding object
   Track.fromJson(Map<String, dynamic> json)
-    : id = json['id'] != null ? int.parse(json['id']) : null,
+    : id = json['id'] != null ? int.parse(json['id'].toString()) : null,
       name = json['name'],
       distance = json['distance'] != null ? json['distance'] : null,
       lapRecord = json['lapRecord'] != null ? json['lapRecord'] : null,
