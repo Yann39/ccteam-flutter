@@ -83,6 +83,13 @@ class MemberDetailProvider extends ChangeNotifier {
     });
   }
 
+  /// Refresh the current member from the database.
+  Future<void> refreshCurrentMember() async {
+    if (_currentMember != null) {
+      await fetchMember(_currentMember!);
+    }
+  }
+
   /// Delete the specified [member].
   Future<void> deleteMember(Member member) async {
     await _membersService.deleteMember(member).then((value) {

@@ -19,10 +19,10 @@
 
 import 'package:ccteam/models/bike.dart';
 import 'package:ccteam/models/event_member.dart';
+import 'package:ccteam/models/membership_fee.dart';
 import 'package:ccteam/utils/enums.dart';
 
 /// Class representing a member
-/// todo add Role attribute ?
 class Member {
   int? id;
   String? firstName;
@@ -33,6 +33,7 @@ class Member {
   String? avatar;
   String? avatarName;
   List<Bike>? bikes;
+  List<MembershipFee>? membershipFees;
   bool? active;
   bool? verified;
   MemberRole? role;
@@ -54,6 +55,7 @@ class Member {
     this.avatar,
     this.avatarName,
     this.bikes,
+    this.membershipFees,
     this.active = false,
     this.verified = false,
     this.role = MemberRole.ROLE_USER,
@@ -78,6 +80,7 @@ class Member {
       avatar: ${this.avatar},
       avatarName: ${this.avatarName},
       bikes: ${this.bikes?.map((bike) => bike.toString())},
+      membershipFees: ${this.membershipFees?.map((fee) => fee.toString())},
       active: ${this.active},
       verified: ${this.verified},
       role: ${this.role},
@@ -102,6 +105,12 @@ class Member {
       avatar = json['avatarFile'],
       avatarName = json['avatarFileName'],
       bikes = json['bikes'] != null ? (json['bikes'] as Iterable).map((i) => Bike.fromJson(i)).toList() : null,
+      membershipFees =
+          json['membershipFees'] != null
+              ? (json['membershipFees'] as Iterable)
+                  .map((i) => MembershipFee.fromJson(i))
+                  .toList()
+              : null,
       active = json['active'] != null && (json['active'] == '1' || json['active'] == true),
       verified = json['verified'] != null && (json['verified'] == '1' || json['verified'] == true),
       role = json['role'] != null ? MemberRole.values.firstWhere((e) => e.toString().split('.').last == json['role'], orElse: () => MemberRole.ROLE_USER) : MemberRole.ROLE_USER,
@@ -124,6 +133,7 @@ class Member {
     "avatarFile": avatar,
     "avatarFileName": avatarName,
     "bikes": bikes?.map((i) => i.toJson()).toList(),
+    "membershipFees": membershipFees?.map((i) => i.toJson()).toList(),
     "active": active,
     "verified": verified,
     "role": role?.toString().split('.').last,

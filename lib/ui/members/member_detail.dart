@@ -22,13 +22,17 @@ import 'dart:math';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:ccteam/models/member.dart';
+import 'package:ccteam/models/membership_fee.dart';
 import 'package:ccteam/models/record.dart';
 import 'package:ccteam/models/track.dart';
+import 'package:ccteam/providers/login_provider.dart';
 import 'package:ccteam/providers/member_creation_provider.dart';
 import 'package:ccteam/providers/member_detail_provider.dart';
 import 'package:ccteam/providers/member_list_provider.dart';
 import 'package:ccteam/providers/record_list_provider.dart';
+import 'package:ccteam/providers/record_list_provider.dart';
 import 'package:ccteam/utils/app_utils.dart';
+import 'package:ccteam/utils/enums.dart';
 import 'package:ccteam/utils/custom_decorations.dart';
 import 'package:ccteam/utils/custom_icons.dart';
 import 'package:ccteam/utils/date_utils.dart';
@@ -217,6 +221,90 @@ class MemberDetail extends StatelessWidget {
     }
   }
 
+  Widget _feesTable(BuildContext context, MemberDetailProvider memberDetailProvider, bool isAdmin) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        if (memberDetailProvider.currentMember!.membershipFees != null && memberDetailProvider.currentMember!.membershipFees!.length > 0)
+          Container(
+            decoration: CustomDecorations.cardLight,
+            child: Table(
+              columnWidths: {
+                0: FlexColumnWidth(2),
+                1: FlexColumnWidth(2),
+                2: FlexColumnWidth(2),
+                3: isAdmin ? FlexColumnWidth(1) : FlexColumnWidth(0),
+              },
+              defaultVerticalAlignment: TableCellVerticalAlignment.middle,
+              border: TableBorder(
+                horizontalInside: BorderSide(
+                  color: Colors.black.withAlpha(76),
+                  width: 1,
+                ),
+                verticalInside: BorderSide(
+                  color: Colors.black.withAlpha(76),
+                  width: 1,
+                ),
+              ),
+              children: [
+                for (MembershipFee fee in memberDetailProvider.currentMember!.membershipFees!)
+                  TableRow(
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 12.0),
+                        child: Text(
+                          "${fee.year}",
+                          style: TextStyle(color: Colors.black.withAlpha(204), fontWeight: FontWeight.bold),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                      Text(
+                        "${fee.amount} €",
+                        style: TextStyle(color: Colors.black.withAlpha(204)),
+                        textAlign: TextAlign.center,
+                      ),
+                      Icon(
+                        fee.paid == true ? Icons.check_circle : Icons.cancel,
+                        color: fee.paid == true ? Colors.green : Colors.red,
+                        size: 20,
+                      ),
+                      if (isAdmin)
+                        IconButton(
+                          icon: Icon(Icons.edit, size: 18),
+                          onPressed: () {
+                            Navigator.pushNamed(context, '/addEditMembershipFee', arguments: {'member': memberDetailProvider.currentMember, 'fee': fee});
+                          },
+                        ),
+                    ],
+                  ),
+              ],
+            ),
+          )
+        else
+          Container(
+            padding: EdgeInsets.all(12.0),
+            decoration: CustomDecorations.cardLight,
+            child: Text(AppString.notDefined),
+          ),
+        if (isAdmin)
+          Padding(
+            padding: const EdgeInsets.only(top: 8.0),
+            child: ElevatedButton.icon(
+              onPressed: () {
+                Navigator.pushNamed(context, '/addEditMembershipFee', arguments: {'member': memberDetailProvider.currentMember});
+              },
+              icon: Icon(Icons.add),
+              label: Text("Ajouter une cotisation"),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.red[700],
+                foregroundColor: Colors.white,
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+
   Widget _eventsTimeline(MemberDetailProvider memberDetailProvider) {
     if (memberDetailProvider.currentMember!.eventMembers != null &&
         memberDetailProvider.currentMember!.eventMembers!.length > 0) {
@@ -394,6 +482,8 @@ class MemberDetail extends StatelessWidget {
         Provider.of<MemberDetailProvider>(context, listen: true);
     final RecordListProvider _recordListProvider =
         Provider.of<RecordListProvider>(context, listen: true);
+    final LoginProvider _loginProvider = Provider.of<LoginProvider>(context, listen: false);
+    final bool _isAdmin = _loginProvider.loggedMember?.role == MemberRole.ROLE_ADMIN;
 
     final _motoInfo = MergeSemantics(
       child: Padding(
@@ -791,6 +881,27 @@ class MemberDetail extends StatelessWidget {
                           ),
                           SizedBox(height: 10),
                           _recordsTable(_recordListProvider),
+                          SizedBox(height: 15),
+                          Row(
+                            children: <Widget>[
+                              Icon(
+                                Icons.payment,
+                                size: 16,
+                                color: Colors.black.withAlpha(204),
+                              ),
+                              SizedBox(width: 5.0),
+                              Text(
+                                "Cotisations",
+                                textScaler: TextScaler.linear(1.2),
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.black.withAlpha(204),
+                                ),
+                              ),
+                            ],
+                          ),
+                          SizedBox(height: 10),
+                          _feesTable(context, _memberDetailProvider, _isAdmin),
                         ],
                       ),
                     ),

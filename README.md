@@ -212,13 +212,13 @@ flutter run lib/main.dart --dart-define=API_BASE_URL=https://ccteam.rockybox.net
 For connected mobile device :
 
 ```bash
-flutter run lib/main.dart --dart-define=API_BASE_URL=http://192.168.0.11:5001/ccteam-gql // for
+flutter run lib/main.dart --dart-define=API_BASE_URL=http://192.168.0.11:5001/ccteam-gql
 ```
 
 For local emulator :
 
 ```bash
-flutter run lib/main.dart --dart-define=API_BASE_URL=http://10.0.2.2:5000/ccteam-gql // for local emulator
+flutter run lib/main.dart --dart-define=API_BASE_URL=http://10.0.2.2:5000/ccteam-gql
 ```
 
 # Dependencies

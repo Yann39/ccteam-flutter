@@ -21,6 +21,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:ccteam/models/member.dart';
+import 'package:ccteam/models/membership_fee.dart';
 import 'package:ccteam/utils/app_utils.dart';
 import 'package:ccteam/utils/constants.dart';
 import 'package:ccteam/utils/custom_graphql_exception.dart';
@@ -195,6 +196,14 @@ class MembersService {
             engineSize
             year
           }
+          membershipFees {
+            id
+            year
+            amount
+            paid
+            createdOn
+            modifiedOn
+          }
           role
           active
           registrationDate
@@ -268,6 +277,14 @@ class MembersService {
             modelName
             engineSize
             year
+          }
+          membershipFees {
+            id
+            year
+            amount
+            paid
+            createdOn
+            modifiedOn
           }
           role
           registrationDate
@@ -635,6 +652,103 @@ class MembersService {
       throw Exception(
         'Unexpected server response, member avatar has not been deleted',
       );
+    }
+  }
+
+  Future<MembershipFee> addMembershipFee(int memberId, int year, double amount, bool paid) async {
+    final String query = """
+      mutation AddMembershipFee(\$memberId: Long!, \$year: Int!, \$amount: Float!, \$paid: Boolean!) {
+        addMembershipFee(memberId: \$memberId, year: \$year, amount: \$amount, paid: \$paid) {
+          id
+          year
+          amount
+          paid
+          createdOn
+          modifiedOn
+        }
+      }
+    """;
+
+    final MutationOptions mutationOptions = new MutationOptions(
+      document: parseString(query),
+      variables: {
+        'memberId': memberId,
+        'year': year,
+        'amount': amount,
+        'paid': paid,
+      },
+      fetchPolicy: FetchPolicy.noCache,
+    );
+
+    final QueryResult result = await GraphQLConnection().graphQLClient.mutate(mutationOptions);
+
+    if (result.hasException) {
+      throw AppUtils.handleGraphQlException(result)!;
+    } else {
+      return MembershipFee.fromJson(result.data!['addMembershipFee']);
+    }
+  }
+
+  Future<MembershipFee> updateMembershipFee(int feeId, int year, double amount, bool paid) async {
+    final String query = """
+      mutation UpdateMembershipFee(\$feeId: Long!, \$year: Int!, \$amount: Float!, \$paid: Boolean!) {
+        updateMembershipFee(feeId: \$feeId, year: \$year, amount: \$amount, paid: \$paid) {
+          id
+          year
+          amount
+          paid
+          createdOn
+          modifiedOn
+        }
+      }
+    """;
+
+    final MutationOptions mutationOptions = new MutationOptions(
+      document: parseString(query),
+      variables: {
+        'feeId': feeId,
+        'year': year,
+        'amount': amount,
+        'paid': paid,
+      },
+      fetchPolicy: FetchPolicy.noCache,
+    );
+
+    final QueryResult result = await GraphQLConnection().graphQLClient.mutate(mutationOptions);
+
+    if (result.hasException) {
+      throw AppUtils.handleGraphQlException(result)!;
+    } else {
+      return MembershipFee.fromJson(result.data!['updateMembershipFee']);
+    }
+  }
+
+  Future<MembershipFee> deleteMembershipFee(int feeId) async {
+    final String query = """
+      mutation DeleteMembershipFee(\$feeId: Long!) {
+        deleteMembershipFee(feeId: \$feeId) {
+          id
+          year
+          amount
+          paid
+          createdOn
+          modifiedOn
+        }
+      }
+    """;
+
+    final MutationOptions mutationOptions = new MutationOptions(
+      document: parseString(query),
+      variables: {'feeId': feeId},
+      fetchPolicy: FetchPolicy.noCache,
+    );
+
+    final QueryResult result = await GraphQLConnection().graphQLClient.mutate(mutationOptions);
+
+    if (result.hasException) {
+      throw AppUtils.handleGraphQlException(result)!;
+    } else {
+      return MembershipFee.fromJson(result.data!['deleteMembershipFee']);
     }
   }
 }
