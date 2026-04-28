@@ -151,6 +151,7 @@ class _MemberEventsState extends State<MemberEvents> {
           }
         },
         child: Container(
+          padding: const EdgeInsets.all(8.0),
           decoration: CustomDecorations.mainContent,
           child: content,
         ),
@@ -167,21 +168,34 @@ class _MemberEventsState extends State<MemberEvents> {
   }
 
   Widget _buildSectionHeader(String title) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-      child: Text(
-        title,
-        style: TextStyle(
-          fontSize: 20,
-          fontWeight: FontWeight.bold,
-          color: Colors.white,
-          shadows: [
-            Shadow(
-              blurRadius: 2.0,
-              color: Colors.black26,
-              offset: Offset(1.0, 1.0),
-            ),
-          ],
+    return Card(
+      margin: EdgeInsets.symmetric(vertical: 6.0),
+      elevation: 2,
+      child: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Colors.blue[600]!, Colors.blue[800]!],
+            begin: Alignment.centerLeft,
+            end: Alignment.centerRight,
+          ),
+          borderRadius: BorderRadius.circular(4.0),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 16.0),
+          child: Row(
+            children: [
+              Icon(Icons.calendar_today, size: 20, color: Colors.white),
+              SizedBox(width: 12),
+              Text(
+                "$title",
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -200,7 +214,10 @@ class _MemberEventsState extends State<MemberEvents> {
         ).fetchEvent(event);
         Navigator.pushNamed(context, '/eventDetail');
       },
-      child: EventCard(event),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 2.0),
+        child: EventCard(event),
+      ),
     );
   }
 }

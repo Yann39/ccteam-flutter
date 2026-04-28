@@ -86,7 +86,7 @@ class _PasscodeWidgetState extends State<PasscodeWidget> {
         style: TextButton.styleFrom(
           shape: CircleBorder(side: BorderSide(color: Colors.blue[900]!)),
           foregroundColor: Colors.black,
-          padding: EdgeInsets.all(20.0),
+          padding: EdgeInsets.all(12.0),
           disabledForegroundColor: Colors.blue[700],
         ),
         child: Text("$digitId"),
@@ -136,7 +136,7 @@ class _PasscodeWidgetState extends State<PasscodeWidget> {
       style: TextButton.styleFrom(
         shape: CircleBorder(side: BorderSide(color: Colors.blue[900]!)),
         foregroundColor: Colors.black,
-        padding: EdgeInsets.all(20.0),
+        padding: EdgeInsets.all(12.0),
         disabledForegroundColor: Colors.blue[700],
       ),
     );
@@ -224,9 +224,9 @@ class _PasscodeWidgetState extends State<PasscodeWidget> {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: <Widget>[
         _passcodeIndicator(_loginProvider, _passcodeProvider),
-        SizedBox(height: 24.0),
+        SizedBox(height: 12.0),
         _passcodeField,
-        SizedBox(height: 24.0),
+        SizedBox(height: 8.0),
       ],
     );
 

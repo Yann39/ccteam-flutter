@@ -234,22 +234,6 @@ class _AddEditMemberState extends State<AddEditMember> {
           _memberCreationProvider.currentMember.riderNumber?.toString(),
     );
 
-    final activeField = Row(
-      children: [
-        Icon(Icons.timelapse, color: Colors.black45),
-        SizedBox(width: 16),
-        Text("Actif ?"),
-        Switch(
-          activeThumbColor: Colors.green[700],
-          value: _memberCreationProvider.currentMember.active!,
-          onChanged:
-              (val) => setState(() {
-                _memberCreationProvider.currentMember.active = val;
-              }),
-        ),
-      ],
-    );
-
     final roleField = Row(
       children: [
         Icon(Icons.enhanced_encryption, color: Colors.black45),
@@ -274,7 +258,13 @@ class _AddEditMemberState extends State<AddEditMember> {
                   }
                   return DropdownMenuItem<MemberRole>(
                     value: role,
-                    child: Text(label),
+                    child: Text(
+                      label,
+                      style: TextStyle(
+                        color: Colors.black87,
+                        fontWeight: FontWeight.normal,
+                      ),
+                    ),
                   );
                 }).toList(),
             onChanged: (MemberRole? newValue) {
@@ -417,7 +407,6 @@ class _AddEditMemberState extends State<AddEditMember> {
                 riderNumberField,
                 if (_loginProvider.loggedMember?.role ==
                     MemberRole.ROLE_ADMIN) ...[
-                  activeField,
                   roleField,
                 ],
               ],

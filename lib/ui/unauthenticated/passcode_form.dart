@@ -48,15 +48,15 @@ class _PasscodeFormState extends State<PasscodeForm> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: <Widget>[
           CCTeamLogo(),
-          SizedBox(height: 36.0),
+          SizedBox(height: 16.0),
           Text(
             AppString.enterPasscode,
             style: TextStyle(fontSize: 20.0, fontWeight: FontWeight.bold, color: Colors.black87),
             textAlign: TextAlign.center,
           ),
-          SizedBox(height: 32.0),
+          SizedBox(height: 16.0),
           PasscodeWidget(),
-          SizedBox(height: 32.0),
+          SizedBox(height: 16.0),
           TextButton(
             key: Key('useAnotherEmailAddressButton'),
             onPressed: () {

@@ -21,6 +21,7 @@ import 'package:ccteam/models/bike.dart';
 import 'package:ccteam/providers/bike_list_provider.dart';
 import 'package:ccteam/utils/enums.dart';
 import 'package:ccteam/utils/strings.dart';
+import 'package:ccteam/utils/custom_decorations.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -29,8 +30,10 @@ class MyBikes extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text(AppString.myBikes)),
-      body: Consumer<BikeListProvider>(
-        builder: (context, provider, child) {
+      body: Container(
+        decoration: CustomDecorations.mainContent,
+        child: Consumer<BikeListProvider>(
+          builder: (context, provider, child) {
           if (provider.loadingStatus == LoadingStatus.loading) {
             return Center(child: CircularProgressIndicator());
           }
@@ -51,21 +54,34 @@ class MyBikes extends StatelessWidget {
                   borderRadius: BorderRadius.circular(12),
                 ),
                 elevation: 4,
-                child: ListTile(
+                  child: Container(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [Colors.lightBlueAccent, Colors.blueAccent],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      borderRadius: BorderRadius.circular(10.0),
+                    ),
+                    child: ListTile(
                   contentPadding: EdgeInsets.all(16),
                   title: Text(
                     "${bike.manufacturer?.toUpperCase()} ${bike.modelName}",
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 18,
+                          color: Colors.white,
+                        ),
                   ),
                   subtitle: Text(
                     "${bike.engineSize} cc - ${bike.year}",
-                    style: TextStyle(fontSize: 16),
+                        style: TextStyle(fontSize: 16, color: Colors.white),
                   ),
                   trailing: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       IconButton(
-                        icon: Icon(Icons.edit, color: Colors.blue),
+                            icon: Icon(Icons.edit, color: Colors.white),
                         onPressed: () {
                           Navigator.pushNamed(
                             context,
@@ -86,12 +102,15 @@ class MyBikes extends StatelessWidget {
                     ],
                   ),
                 ),
-              );
+                  ),
+                );
             },
           );
         },
+        ),
       ),
       floatingActionButton: FloatingActionButton(
+        backgroundColor: Colors.red[700],
         onPressed: () {
           Navigator.pushNamed(context, '/addEditBike');
         },

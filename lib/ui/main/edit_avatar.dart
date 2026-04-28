@@ -250,7 +250,7 @@ class HolePainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint();
-    paint.color = Colors.black38;
+    paint.color = Colors.black12;
     paint.blendMode = BlendMode.darken;
     canvas.drawPath(
       Path.combine(

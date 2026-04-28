@@ -343,8 +343,8 @@ class _EventListState extends State<EventList> {
                                 decoration: BoxDecoration(
                                   gradient: LinearGradient(
                                     colors: [
-                                      Colors.blue[400]!,
                                       Colors.blue[600]!,
+                                      Colors.blue[800]!,
                                     ],
                                     begin: Alignment.centerLeft,
                                     end: Alignment.centerRight,
@@ -397,11 +397,7 @@ class _EventListState extends State<EventList> {
                           if (expanded)
                             ...yearEvents.map(
                               (event) => Padding(
-                                padding: const EdgeInsets.only(
-                                  left: 8.0,
-                                  right: 8.0,
-                                  bottom: 8.0,
-                                ),
+                                padding: const EdgeInsets.only(bottom: 8.0),
                                 child: InkWell(
                                   child: EventCard(event),
                                   onTap:

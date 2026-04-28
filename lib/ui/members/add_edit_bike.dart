@@ -21,6 +21,8 @@ import 'package:ccteam/models/bike.dart';
 import 'package:ccteam/providers/bike_list_provider.dart';
 import 'package:ccteam/utils/enums.dart';
 import 'package:ccteam/utils/strings.dart';
+import 'package:ccteam/utils/custom_decorations.dart';
+import 'package:ccteam/widgets/save_cancel_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -51,34 +53,65 @@ class _AddEditBikeState extends State<AddEditBike> {
 
   @override
   Widget build(BuildContext context) {
+    final formContent = SingleChildScrollView(
+      padding: EdgeInsets.all(16.0),
+      child: Form(
+        key: _formKey,
+        child: Column(
+          children: <Widget>[
+            _buildManufacturerField(),
+            SizedBox(height: 16),
+            _buildModelNameField(),
+            SizedBox(height: 16),
+            _buildEngineSizeField(),
+            SizedBox(height: 16),
+            _buildYearField(),
+          ],
+        ),
+      ),
+    );
+
+    final List<Widget> actionMenu = [
+      TextButton(
+        child: Text(
+          AppString.cancel.toUpperCase(),
+          style: TextStyle(color: Colors.white),
+        ),
+        onPressed: () => Navigator.pop(context),
+      ),
+      TextButton(
+        child: Text(
+          AppString.save.toUpperCase(),
+          style: TextStyle(color: Colors.white),
+        ),
+        onPressed: _submit,
+      ),
+    ];
+
     return Scaffold(
       appBar: AppBar(
         title: Text(_isEditing ? AppString.bikeEdit : AppString.bikeCreate),
+        actions:
+            MediaQuery.of(context).orientation == Orientation.portrait
+                ? null
+                : actionMenu,
       ),
-      body: SingleChildScrollView(
-        padding: EdgeInsets.all(16.0),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            children: <Widget>[
-              _buildManufacturerField(),
-              SizedBox(height: 16),
-              _buildModelNameField(),
-              SizedBox(height: 16),
-              _buildEngineSizeField(),
-              SizedBox(height: 16),
-              _buildYearField(),
-              SizedBox(height: 32),
-              ElevatedButton(
-                onPressed: _submit,
-                child: Text(AppString.save),
-                style: ElevatedButton.styleFrom(
-                  minimumSize: Size(double.infinity, 50),
-                ),
-              ),
-            ],
-          ),
-        ),
+      body: Container(
+        decoration: CustomDecorations.mainContent,
+        child:
+            MediaQuery.of(context).orientation == Orientation.portrait
+                ? Column(
+                  children: <Widget>[
+                    Expanded(child: formContent),
+                    SafeArea(
+                      child: SaveCancelBar(
+                        saveFunction: _submit,
+                        cancelFunction: () => Navigator.pop(context),
+                      ),
+                    ),
+                  ],
+                )
+                : formContent,
       ),
     );
   }
@@ -89,11 +122,17 @@ class _AddEditBikeState extends State<AddEditBike> {
         labelText: AppString.bikeManufacturer,
         border: OutlineInputBorder(),
       ),
-      value: _bike.manufacturer,
+      initialValue: _bike.manufacturer,
       items: BikeManufacturer.values.map((BikeManufacturer value) {
         return DropdownMenuItem<String>(
           value: value.name,
-          child: Text(value.name[0].toUpperCase() + value.name.substring(1)),
+              child: Text(
+                value.name[0].toUpperCase() + value.name.substring(1),
+                style: TextStyle(
+                  color: Colors.black87,
+                  fontWeight: FontWeight.normal,
+                ),
+              ),
         );
       }).toList(),
       onChanged: (value) {
