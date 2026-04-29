@@ -22,7 +22,7 @@
 /// Class representing a photo
 /// todo Add Gallery property ?
 class Photo {
-  int? id;
+  String? id;
   String? title;
   String? description;
   String? link;
@@ -41,7 +41,7 @@ class Photo {
   @override
   String toString() {
     return """{
-      id: ${this.id.toString()},
+      id: ${this.id},
       title: ${this.title},
       description: ${this.description},
       link: ${this.link},
@@ -52,7 +52,7 @@ class Photo {
 
   /// Convert [json] map to the corresponding [photo] object
   Photo.fromJson(Map<String, dynamic> json)
-      : id = json['id'] != null ? int.parse(json['id']) : null,
+      : id = json['id']?.toString(),
         title = json['title'],
         description = json['description'],
         link = json['link'],
@@ -61,7 +61,7 @@ class Photo {
 
   /// Convert [Photo] object to the corresponding JSON map
   Map<String, dynamic> toJson() => {
-        "id": id.toString(),
+        "id": id,
         "title": title,
         "description": description,
         "link": link,

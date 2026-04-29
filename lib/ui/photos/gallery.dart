@@ -18,6 +18,7 @@
  */
 
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:ccteam/providers/photo_detail_provider.dart';
 import 'package:ccteam/providers/photo_provider.dart';
 import 'package:ccteam/ui/main/main_action_menu.dart';
 import 'package:ccteam/ui/photos/add_edit_photo.dart';
@@ -72,13 +73,19 @@ class Gallery extends StatelessWidget {
             itemCount: _photoProvider.photos.length,
             itemBuilder:
                 (BuildContext context, int index) => InkWell(
-                  onTap:
-                      () => Navigator.pushNamed(
-                        context,
-                        "/photoDetail",
-                        arguments: _photoProvider.photos[index],
-                      ),
+                  onTap: () {
+                    Provider.of<PhotoDetailProvider>(
+                      context,
+                      listen: false,
+                    ).setCurrentPhoto(_photoProvider.photos[index]);
+                    Navigator.pushNamed(
+                      context,
+                      "/photoDetail",
+                      arguments: _photoProvider.photos[index],
+                    );
+                  },
                   child: Stack(
+                    fit: StackFit.expand,
                     alignment: Alignment.bottomCenter,
                     children: [
                       Container(
@@ -98,20 +105,25 @@ class Gallery extends StatelessWidget {
                           imageUrl: _photoProvider.photos[index].link,
                         ),*/
                       ),
-                      Container(
-                        height: 20.0,
-                        alignment: Alignment.center,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.rectangle,
-                          color: Colors.black.withAlpha(128),
-                        ),
-                        child: Text(
-                          _photoProvider.photos[index].title!,
-                          softWrap: false,
-                          style: TextStyle(color: Colors.white),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          textAlign: TextAlign.center,
+                      Positioned(
+                        bottom: 0,
+                        left: 0,
+                        right: 0,
+                        child: Container(
+                          height: 20.0,
+                          alignment: Alignment.center,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.rectangle,
+                            color: Colors.black.withAlpha(128),
+                          ),
+                          child: Text(
+                            _photoProvider.photos[index].title!,
+                            softWrap: false,
+                            style: TextStyle(color: Colors.white),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            textAlign: TextAlign.center,
+                          ),
                         ),
                       ),
                     ],

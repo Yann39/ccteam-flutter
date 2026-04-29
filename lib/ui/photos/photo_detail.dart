@@ -174,80 +174,41 @@ class _PhotoDetailState extends State<PhotoDetail> with SingleTickerProviderStat
     final _photoProvider = Provider.of<PhotoProvider>(context, listen: true);
 
     return Scaffold(
+      backgroundColor: Colors.black,
       appBar: AppBar(
-        actions: <Widget>[
-          IconButton(
-            icon: const Icon(Icons.edit),
-            onPressed: () => _navigateToEditPhotoScreen(context, _photoProvider.photos[_currentPage]),
-          ),
-          IconButton(
-            icon: const Icon(Icons.delete_forever),
-            onPressed: () =>
-                _showConfirmation(context, AppString.photoDeletionAreYouSure, _photoProvider.photos[_currentPage]),
-          )
-        ],
-        title: Text(AppString.detail),
+        backgroundColor: Colors.black.withAlpha(150),
+        elevation: 0,
+        title: Text(_photoProvider.photos[_currentPage].title ?? ""),
         leading: IconButton(
-          icon: Icon(Icons.arrow_back),
+          icon: Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () => Navigator.pop(context),
         ),
       ),
-      body: Container(
-        decoration: CustomDecorations.mainContent,
-        child: PageView.builder(
-          itemCount: _photoProvider.photos.length,
-          onPageChanged: (value) {
-            setState(() {
-              _currentPage = value;
-              _offset = Offset.zero;
-              _scale = 1.0;
-            });
-          },
-          controller: _pageController,
-          itemBuilder: (context, index) => AnimatedBuilder(
-            animation: _pageController,
-            builder: (context, child) {
-              /*double value = 1.0;
-              if (_pageController.position.haveDimensions) {
-                value = _pageController.page - index;
-                value = (1 - (value.abs() * .5)).clamp(0.0, 1.0);
-              }*/
-              return SingleChildScrollView(
-                child: Container(
-                  margin: EdgeInsets.all(8.0),
-                  /*height: Curves.easeOut.transform(value) * 400,
-                  width: Curves.easeOut.transform(value) * 350,*/
-                  child: Column(
-                    children: <Widget>[
-                      Text("${_photoProvider.photos[index].title}", textScaler: TextScaler.linear(1.6)),
-                      SizedBox(height: 12.0),
-                      child!,
-                      SizedBox(height: 12.0),
-                      Text("${_photoProvider.photos[index].description}"),
-                    ],
-                  ),
-                ),
-              );
-            },
-            child:
-                /*ClipRRect(
-              borderRadius: BorderRadius.circular(8.0),
-              child:*/
-                GestureDetector(
-              onScaleStart: _handleOnScaleStart,
-              onScaleUpdate: _handleOnScaleUpdate,
-              onScaleEnd: _handleOnScaleEnd,
-              child: Transform(
-                transform: Matrix4.identity()
-                  ..translate(_offset.dx, _offset.dy)
-                  ..scale(_scale),
-                child: CachedNetworkImage(
-                  placeholder: (context, url) => CircularProgressIndicator(),
-                  imageUrl: _photoProvider.photos[index].link!,
-                  fit: BoxFit.cover,
-                ),
+      extendBodyBehindAppBar: true,
+      body: PageView.builder(
+        itemCount: _photoProvider.photos.length,
+        onPageChanged: (value) {
+          setState(() {
+            _currentPage = value;
+            _offset = Offset.zero;
+            _scale = 1.0;
+          });
+        },
+        controller: _pageController,
+        itemBuilder: (context, index) => Center(
+          child: GestureDetector(
+            onScaleStart: _handleOnScaleStart,
+            onScaleUpdate: _handleOnScaleUpdate,
+            onScaleEnd: _handleOnScaleEnd,
+            child: Transform(
+              transform: Matrix4.identity()
+                ..translate(_offset.dx, _offset.dy)
+                ..scale(_scale),
+              child: CachedNetworkImage(
+                placeholder: (context, url) => Center(child: CircularProgressIndicator(color: Colors.white)),
+                imageUrl: _photoProvider.photos[index].link!,
+                fit: BoxFit.contain,
               ),
-              //),
             ),
           ),
         ),

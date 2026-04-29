@@ -86,133 +86,159 @@ class Galleries extends StatelessWidget {
                     );
                   },
                   child: Stack(
+                    fit: StackFit.expand,
                     alignment: Alignment.bottomCenter,
                     children: [
-                      Column(
-                        children: <Widget>[
-                          Expanded(
-                            child: Row(
+                      _photoProvider.galleries[index].photos!.length > 1
+                          ? Column(
                               children: <Widget>[
-                                Expanded(
-                                  child: Container(
-                                    decoration:
-                                        _photoProvider
-                                                    .galleries[index]
-                                                    .photos!
-                                                    .length >
-                                                0
-                                            ? BoxDecoration(
-                                              image: DecorationImage(
-                                                image:
-                                                    CachedNetworkImageProvider(
-                                                      _photoProvider
-                                                          .galleries[index]
-                                                          .photos![0]
-                                                          .link!,
-                                                    ),
-                                                fit: BoxFit.cover,
-                                              ),
-                                            )
-                                            : BoxDecoration(),
+                                  Expanded(
+                                    child: Row(
+                                      children: <Widget>[
+                                        Expanded(
+                                          child: Container(
+                                            decoration:
+                                                _photoProvider
+                                                            .galleries[index]
+                                                            .photos!
+                                                            .length >
+                                                        0
+                                                    ? BoxDecoration(
+                                                      image: DecorationImage(
+                                                        image:
+                                                            CachedNetworkImageProvider(
+                                                              _photoProvider
+                                                                  .galleries[index]
+                                                                  .photos![0]
+                                                                  .link!,
+                                                            ),
+                                                        fit: BoxFit.cover,
+                                                      ),
+                                                    )
+                                                    : BoxDecoration(),
+                                          ),
+                                        ),
+                                        SizedBox(width: 2),
+                                        Expanded(
+                                          child: Container(
+                                            decoration:
+                                                _photoProvider
+                                                            .galleries[index]
+                                                            .photos!
+                                                            .length >
+                                                        1
+                                                    ? BoxDecoration(
+                                                      image: DecorationImage(
+                                                        image:
+                                                            CachedNetworkImageProvider(
+                                                              _photoProvider
+                                                                  .galleries[index]
+                                                                  .photos![1]
+                                                                  .link!,
+                                                            ),
+                                                        fit: BoxFit.cover,
+                                                      ),
+                                                    )
+                                                    : BoxDecoration(),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
                                   ),
-                                ),
-                                SizedBox(width: 2),
-                                Expanded(
-                                  child: Container(
-                                    decoration:
-                                        _photoProvider
-                                                    .galleries[index]
-                                                    .photos!
-                                                    .length >
-                                                1
-                                            ? BoxDecoration(
-                                              image: DecorationImage(
-                                                image:
-                                                    CachedNetworkImageProvider(
-                                                      _photoProvider
-                                                          .galleries[index]
-                                                          .photos![1]
-                                                          .link!,
-                                                    ),
-                                                fit: BoxFit.cover,
-                                              ),
-                                            )
-                                            : BoxDecoration(),
+                                  SizedBox(height: 2),
+                                  Expanded(
+                                    child: Row(
+                                      children: <Widget>[
+                                        Expanded(
+                                          child: Container(
+                                            decoration:
+                                                _photoProvider
+                                                            .galleries[index]
+                                                            .photos!
+                                                            .length >
+                                                        2
+                                                    ? BoxDecoration(
+                                                      image: DecorationImage(
+                                                        image:
+                                                            CachedNetworkImageProvider(
+                                                              _photoProvider
+                                                                  .galleries[index]
+                                                                  .photos![2]
+                                                                  .link!,
+                                                            ),
+                                                        fit: BoxFit.cover,
+                                                      ),
+                                                    )
+                                                    : BoxDecoration(),
+                                          ),
+                                        ),
+                                        SizedBox(width: 2),
+                                        Expanded(
+                                          child: Container(
+                                            decoration:
+                                                _photoProvider
+                                                            .galleries[index]
+                                                            .photos!
+                                                            .length >
+                                                        3
+                                                    ? BoxDecoration(
+                                                      image: DecorationImage(
+                                                        image:
+                                                            CachedNetworkImageProvider(
+                                                              _photoProvider
+                                                                  .galleries[index]
+                                                                  .photos![3]
+                                                                  .link!,
+                                                            ),
+                                                        fit: BoxFit.cover,
+                                                      ),
+                                                    )
+                                                    : BoxDecoration(),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
                                   ),
-                                ),
-                              ],
-                            ),
+                                ],
+                              )
+                            : Container(
+                                decoration: _photoProvider
+                                            .galleries[index]
+                                            .photos!
+                                            .length >
+                                        0
+                                    ? BoxDecoration(
+                                      image: DecorationImage(
+                                        image: CachedNetworkImageProvider(
+                                          _photoProvider
+                                              .galleries[index]
+                                              .photos![0]
+                                              .link!,
+                                        ),
+                                        fit: BoxFit.cover,
+                                      ),
+                                    )
+                                    : BoxDecoration(),
+                              ),
+                      Positioned(
+                        bottom: 0,
+                        left: 0,
+                        right: 0,
+                        child: Container(
+                          height: 20.0,
+                          alignment: Alignment.center,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.rectangle,
+                            color: Colors.black.withAlpha(128),
                           ),
-                          SizedBox(height: 2),
-                          Expanded(
-                            child: Row(
-                              children: <Widget>[
-                                Expanded(
-                                  child: Container(
-                                    decoration:
-                                        _photoProvider
-                                                    .galleries[index]
-                                                    .photos!
-                                                    .length >
-                                                2
-                                            ? BoxDecoration(
-                                              image: DecorationImage(
-                                                image:
-                                                    CachedNetworkImageProvider(
-                                                      _photoProvider
-                                                          .galleries[index]
-                                                          .photos![2]
-                                                          .link!,
-                                                    ),
-                                                fit: BoxFit.cover,
-                                              ),
-                                            )
-                                            : BoxDecoration(),
-                                  ),
-                                ),
-                                SizedBox(width: 2),
-                                Expanded(
-                                  child: Container(
-                                    decoration:
-                                        _photoProvider
-                                                    .galleries[index]
-                                                    .photos!
-                                                    .length >
-                                                3
-                                            ? BoxDecoration(
-                                              image: DecorationImage(
-                                                image:
-                                                    CachedNetworkImageProvider(
-                                                      _photoProvider
-                                                          .galleries[index]
-                                                          .photos![3]
-                                                          .link!,
-                                                    ),
-                                                fit: BoxFit.cover,
-                                              ),
-                                            )
-                                            : BoxDecoration(),
-                                  ),
-                                ),
-                              ],
-                            ),
+                          child: Text(
+                            _photoProvider.galleries[index].title!,
+                            softWrap: false,
+                            style: TextStyle(color: Colors.white),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            textAlign: TextAlign.center,
                           ),
-                        ],
-                      ),
-                      Container(
-                        height: 20.0,
-                        alignment: Alignment.center,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.rectangle,
-                          color: Colors.black.withAlpha(128),
-                        ),
-                        child: Text(
-                          _photoProvider.galleries[index].title!,
-                          softWrap: false,
-                          style: TextStyle(color: Colors.white),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          textAlign: TextAlign.center,
                         ),
                       ),
                     ],

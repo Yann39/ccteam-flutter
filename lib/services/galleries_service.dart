@@ -20,78 +20,166 @@
 import 'dart:convert';
 
 import 'package:ccteam/models/gallery.dart';
+import 'package:ccteam/models/photo.dart';
 import 'package:ccteam/utils/constants.dart';
 import 'package:http/http.dart' as http;
 
 class GalleriesService {
-  /// Fetch all galleries from the database
-  /// Send a GET request to the Restful API
-  /// Throw an exception if response status code is different from 200 or 404
-  /// Return empty array if no data found (404)
+  /// Map of cookies to maintain the session
+  Map<String, String> _cookies = {};
+
+  /// Initialize the Lychee session by fetching the root page and extracting CSRF token
+  Future<String?> _initSession() async {
+    // If we already have cookies and an XSRF token, reuse them
+    if (_cookies.containsKey('XSRF-TOKEN')) {
+      return Uri.decodeComponent(_cookies['XSRF-TOKEN']!);
+    }
+
+    final response = await http.get(Uri.parse(LYCHEE_BASE_URL + "/"));
+    
+    if (response.headers.containsKey('set-cookie')) {
+      final setCookie = response.headers['set-cookie']!;
+      // Simple cookie extraction
+      final cookies = setCookie.split(',');
+      for (var cookie in cookies) {
+        final parts = cookie.split(';')[0].split('=');
+        if (parts.length == 2) {
+          _cookies[parts[0].trim()] = parts[1].trim();
+        }
+      }
+    }
+
+    if (_cookies.containsKey('XSRF-TOKEN')) {
+      return Uri.decodeComponent(_cookies['XSRF-TOKEN']!);
+    }
+    return null;
+  }
+
+  /// Fetch all galleries from the Lychee API
   Future<List<Gallery>> fetchGalleries() async {
-    // call to API
-    final response = await http.get(Uri.parse(API_BASE_URL + API_GET_ALL_GALLERIES_ENDPOINT));
+    final xsrfToken = await _initSession();
+    
+    if (xsrfToken == null) {
+      throw Exception('Failed to initialize Lychee session');
+    }
+
+    final cookieHeader = _cookies.entries.map((e) => '${e.key}=${e.value}').join('; ');
+
+    final response = await http.get(
+      Uri.parse(LYCHEE_BASE_URL + LYCHEE_ALBUMS_ENDPOINT),
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+        'X-Requested-With': 'XMLHttpRequest',
+        'X-XSRF-TOKEN': xsrfToken,
+        'Cookie': cookieHeader,
+      },
+    );
 
     if (response.statusCode == 200) {
-      // if the call to the server was successful, parse the JSON and return content
-      dynamic responseJson = json.decode(response.body);
-      return (responseJson['records'] as List).map((p) => Gallery.fromJson(p)).toList();
-    } else if (response.statusCode == 404) {
-      // no data found, return empty array
-      return [];
+      final dynamic responseJson = json.decode(response.body);
+      final List<dynamic> albumsJson = responseJson['albums'] ?? [];
+      
+      return albumsJson.map((album) {
+        // Map Lychee album to CCTeam Gallery
+        return Gallery(
+          id: album['id'],
+          title: album['title'],
+          description: album['description'] ?? '',
+          // Populate the photos list with the thumbnail as the first entry
+          // to maintain compatibility with the UI's stack preview
+          photos: [
+            if (album['thumb'] != null && album['thumb']['thumb'] != null)
+              Photo(
+                id: album['thumb']['id']?.toString() ?? 'thumb',
+                title: 'Thumbnail',
+                link: album['thumb']['thumb'],
+              ),
+          ],
+        );
+      }).toList();
+    } else if (response.statusCode == 401 || response.statusCode == 419) {
+      // If session expired, clear cookies and retry once
+      _cookies.clear();
+      return fetchGalleries();
     } else {
-      throw Exception('Unexpected server response');
+      throw Exception('Failed to fetch albums from Lychee: ${response.statusCode}');
+    }
+  }
+
+  /// Fetch all photos for a specific album from Lychee
+  Future<List<Photo>> fetchPhotosForAlbum(String albumId) async {
+    final xsrfToken = await _initSession();
+    if (xsrfToken == null) throw Exception('Failed to initialize Lychee session');
+
+    final cookieHeader = _cookies.entries.map((e) => '${e.key}=${e.value}').join('; ');
+
+    final response = await http.get(
+      Uri.parse(LYCHEE_BASE_URL + LYCHEE_ALBUM_ENDPOINT).replace(
+        queryParameters: {'album_id': albumId},
+      ),
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+        'X-Requested-With': 'XMLHttpRequest',
+        'X-XSRF-TOKEN': xsrfToken,
+        'Cookie': cookieHeader,
+      },
+    );
+
+    if (response.statusCode == 200) {
+      final dynamic responseJson = json.decode(response.body);
+      
+      // Lychee v2 returns the album resource inside a 'resource' field
+      final resource = responseJson['resource'];
+      if (resource == null) return [];
+      
+      final List<dynamic> photosJson = resource['photos'] ?? [];
+
+      return photosJson.map((p) {
+        // Find a suitable URL (medium variant if available, otherwise original)
+        String? link;
+        if (p['size_variants'] != null) {
+          if (p['size_variants']['medium'] != null) {
+            link = p['size_variants']['medium']['url'];
+          } else if (p['size_variants']['original'] != null) {
+            link = p['size_variants']['original']['url'];
+          }
+        }
+
+        return Photo(
+          id: p['id'].toString(),
+          title: p['title'],
+          description: p['description'] ?? '',
+          link: link != null
+              ? (link.startsWith('http') ? link : LYCHEE_BASE_URL + '/' + link)
+              : '',
+          createdOn: p['created_at'] != null ? DateTime.parse(p['created_at']) : null,
+        );
+      }).toList();
+    } else if (response.statusCode == 401 || response.statusCode == 419) {
+       _cookies.clear();
+       return fetchPhotosForAlbum(albumId);
+    } else {
+      throw Exception('Failed to fetch photos for album $albumId: ${response.statusCode}');
     }
   }
 
   /// Create the specified [gallery] into the database
-  /// Send a POST request to the Restful API
-  /// Throw an exception if response status code is different from 201
+  /// (Deprecated/Not implemented for Lychee)
   Future<void> createGallery(Gallery gallery) async {
-    // call to API
-    final response = await http.post(Uri.parse(API_BASE_URL + API_CREATE_GALLERY_ENDPOINT),
-        headers: {'Content-Type': 'application/json'}, body: gallery.toJson());
-
-    // handle server response code
-    if (response.statusCode == 201) {
-      return;
-    } else if (response.statusCode == 503) {
-      throw Exception('Failed to create the gallery');
-    } else if (response.statusCode == 400) {
-      throw Exception('Bad request, gallery has not been created');
-    } else {
-      throw Exception('Unexpected server response, gallery has not been created');
-    }
+    throw UnimplementedError('Creation not supported for Lychee integration');
   }
 
   /// Update the specified [gallery] into the database
-  /// Send a POST request to the Restful API
-  /// Throw an exception if response status code is different from 200
+  /// (Deprecated/Not implemented for Lychee)
   Future<void> updateGallery(Gallery gallery) async {
-    // call to API
-    final response = await http.post(Uri.parse(API_BASE_URL + API_UPDATE_GALLERY_ENDPOINT),
-        headers: {'Content-Type': 'application/json'}, body: gallery.toJson());
-
-    // handle server response code
-    if (response.statusCode == 200) {
-      return;
-    } else if (response.statusCode == 503) {
-      throw Exception('Failed to update the gallery');
-    } else {
-      throw Exception('Unexpected server response, gallery has not been updated');
-    }
+    throw UnimplementedError('Update not supported for Lychee integration');
   }
 
   /// Delete specified [gallery] from the database
-  /// Send a POST request to the Restful API
-  /// Throw an exception if response status code is different from 204
+  /// (Deprecated/Not implemented for Lychee)
   Future<void> deleteGallery(Gallery gallery) async {
-    // call to API
-    final response = await http.post(Uri.parse(API_BASE_URL + API_DELETE_GALLERY_ENDPOINT),
-        headers: {'Content-Type': 'application/json'}, body: gallery.toJson());
-
-    if (response.statusCode != 204) {
-      throw Exception('Unexpected server response');
-    }
+    throw UnimplementedError('Deletion not supported for Lychee integration');
   }
 }

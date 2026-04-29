@@ -79,11 +79,18 @@ class PhotoProvider extends ChangeNotifier {
 
   /// Get the list of all photos for the specified [galleryId]
   /// Galleries must have be fetched before
-  void fetchPhotosFromGallery(int galleryId) async {
+  void fetchPhotosFromGallery(String galleryId) async {
     _updateStatus(LoadingStatus.loading);
     _log.fine("Fetching photos for gallery ID $galleryId");
-    _photos = _galleries.singleWhere((element) => element.id == galleryId).photos!;
-    _updateStatus(LoadingStatus.loaded);
+    try {
+      final photos = await _galleriesService.fetchPhotosForAlbum(galleryId);
+      _photos = photos;
+      _updateStatus(LoadingStatus.loaded);
+    } catch (error) {
+      _log.warning("Error when retrieving photos for gallery $galleryId ($error)");
+      _photos = [];
+      _updateStatus(LoadingStatus.notLoaded);
+    }
   }
 
   /// Get the list of all galleries

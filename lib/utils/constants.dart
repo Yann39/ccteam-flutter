@@ -59,6 +59,10 @@ const String API_CREATE_PHOTO_ENDPOINT = '/photos/create.php';
 const String API_UPDATE_PHOTO_ENDPOINT = '/photos/update.php';
 const String API_DELETE_PHOTO_ENDPOINT = '/photos/delete.php';
 
+const String LYCHEE_BASE_URL = String.fromEnvironment('LYCHEE_BASE_URL');
+const String LYCHEE_ALBUMS_ENDPOINT = '/api/v2/Albums';
+const String LYCHEE_ALBUM_ENDPOINT = '/api/v2/Album';
+
 const String DATE_FORMAT = 'dd/MM/yyyy HH:mm';
 const String DATE_FORMAT_TXT = 'dd MMM yyyy HH:mm';
 const String PRICE_FORMAT = '####.##';

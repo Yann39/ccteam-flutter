@@ -21,7 +21,7 @@ import 'package:ccteam/models/photo.dart';
 
 /// Class representing a photo gallery
 class Gallery {
-  int? id;
+  String? id;
   String? title;
   String? description;
   DateTime? createdOn;
@@ -40,7 +40,7 @@ class Gallery {
   @override
   String toString() {
     return """{
-      id: ${this.id.toString()},
+      id: ${this.id},
       title: ${this.title},
       description: ${this.description},
       createdOn: ${this.createdOn?.toIso8601String()},
@@ -51,7 +51,7 @@ class Gallery {
 
   /// Convert [json] map to the corresponding [Gallery] object
   Gallery.fromJson(Map<String, dynamic> json)
-      : id = json['id'] != null ? int.parse(json['id']) : null,
+      : id = json['id']?.toString(),
         title = json['title'],
         description = json['description'],
         createdOn = json['createdOn'] != null ? DateTime.parse(json['createdOn']) : null,
@@ -60,7 +60,7 @@ class Gallery {
 
   /// Convert [Gallery] object to the corresponding JSON map
   Map<String, dynamic> toJson() => {
-        "id": id.toString(),
+        "id": id,
         "title": title,
         "description": description,
         "createdOn": createdOn?.toIso8601String(),
