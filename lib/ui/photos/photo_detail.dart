@@ -173,6 +173,14 @@ class _PhotoDetailState extends State<PhotoDetail> with SingleTickerProviderStat
   Widget build(BuildContext context) {
     final _photoProvider = Provider.of<PhotoProvider>(context, listen: true);
 
+    // if photos list is empty (e.g. after session expiration), don't render content
+    if (_photoProvider.photos.isEmpty) {
+      return Scaffold(
+        backgroundColor: Colors.black,
+        body: Container(),
+      );
+    }
+
     return Scaffold(
       backgroundColor: Colors.black,
       appBar: AppBar(

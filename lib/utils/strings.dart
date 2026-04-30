@@ -456,7 +456,8 @@ class AppString {
 
   static const String errorEmailNotFoundInDatabase =
       'Aucune donnée n\' a été trouvé pour l\'adresse e-mail {0}';
-  static const String errorTokenExpired = 'Votre session a expirée';
+  static const String errorTokenExpired =
+      'Votre session a expirée, veuillez vous reconnecter';
   static const String errorTokenNotFound = 'Votre session n\'est pas valide';
   static const String errorTokenWrongFormat =
       'Votre identifiant de session n\'est pas valide';

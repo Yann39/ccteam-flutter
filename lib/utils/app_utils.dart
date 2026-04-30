@@ -48,13 +48,6 @@ class AppUtils {
     launchUrl(uri);
   }
 
-  /// Return the message string from a given exception.
-  /// By default [Exception]'s [toString] method appends "Exception: " string before the message,
-  /// so simply remove it.
-  static String extractExceptionMessage(dynamic exception) {
-    return exception.toString().substring(11);
-  }
-
   /// Handle exception encountered during a GraphQL request.
   /// It parses the specified [QueryResult] and return the appropriate exception.
   static Exception? handleGraphQlException(QueryResult result) {
@@ -99,8 +92,10 @@ class AppUtils {
   static void handleServiceException(dynamic error, MessageProvider messageProvider, LoginProvider loginProvider) {
     if (error is CustomGraphQlException) {
       if (error.code == "token_expired") {
-        messageProvider.setMessage(AppString.errorTokenExpired, MessageType.INFO);
-        loginProvider.logoutMember();
+        messageProvider.setMessage(
+          AppString.errorTokenExpired,
+          MessageType.SESSION_EXPIRED,
+        );
       } else if (error.code == "wrong_token_format") {
         messageProvider.setMessage(AppString.errorTokenWrongFormat, MessageType.ERROR);
         loginProvider.logoutMember();

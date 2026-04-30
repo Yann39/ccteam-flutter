@@ -143,6 +143,13 @@ class NewsDetail extends StatelessWidget {
       listen: false,
     );
 
+    // if currentNews is null (e.g. after session expiration), don't render content
+    if (_newsDetailProvider.currentNews == null) {
+      return Scaffold(
+        body: Container(decoration: CustomDecorations.mainContent),
+      );
+    }
+
     // get if that news is liked for current logged member
     final bool isLiked =
         _newsDetailProvider.currentNews!.likedNews?.any(

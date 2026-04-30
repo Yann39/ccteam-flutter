@@ -195,37 +195,55 @@ class LoginProvider extends ChangeNotifier {
     }, onError: (error) {
       _log.info("An error occurred while retrieving member from the database : $error");
       if (error is CustomGraphQlException) {
+        // JWT token has expired
+        if (error.code == "token_expired") {
+          _prefs.remove('jwt');
+          _messageProvider.setMessage(
+            AppString.errorTokenExpired,
+            MessageType.SESSION_EXPIRED,
+          );
+          return;
+        }
+
         _setLoginStatus(LoginStatus.PasscodeStep);
         _setAuthStatus(AuthStatus.Unauthenticated);
+
         // member not found
         if (error.code == "member_not_found") {
-          _messageProvider.setMessage(AppString.format(AppString.errorEmailNotFoundInDatabase, [_email]), MessageType.ERROR);
-        }
-        // JWT token has expired
-        else if (error.code == "token_expired") {
-          _prefs.remove('jwt');
-          _messageProvider.setMessage(AppString.errorTokenExpired, MessageType.INFO);
+          _messageProvider.setMessage(
+            AppString.format(AppString.errorEmailNotFoundInDatabase, [_email]),
+            MessageType.ERROR,
+          );
         }
         // JWT token has wrong format and cannot be decoded
         else if (error.code == "wrong_token_format") {
-          _messageProvider.setMessage(AppString.errorTokenWrongFormat, MessageType.ERROR);
+          _messageProvider.setMessage(
+            AppString.errorTokenWrongFormat,
+            MessageType.ERROR,
+          );
         }
         // JWT token has not been specified
         else if (error.code == "no_token") {
-          _messageProvider.setMessage(AppString.errorTokenNotFound, MessageType.ERROR);
+          _messageProvider.setMessage(
+            AppString.errorTokenNotFound,
+            MessageType.ERROR,
+          );
         }
         // wrong credentials
         else if (error.code == "bad_credentials") {
-          _messageProvider.setMessage(AppString.errorBadCredentials, MessageType.ERROR);
+          _messageProvider.setMessage(
+            AppString.errorBadCredentials,
+            MessageType.ERROR,
+          );
         }
         // unknown error code (should never happen)
         else {
-                _messageProvider.setMessage(
-                  AppString.format(AppString.errorUnknown, [
-                    error.code ?? "Unknown error",
-                  ]),
-                  MessageType.ERROR,
-                );
+          _messageProvider.setMessage(
+            AppString.format(AppString.errorUnknown, [
+              error.code ?? "Unknown error",
+            ]),
+            MessageType.ERROR,
+          );
         }
       } else if (error is TimeoutException) {
         _setAuthStatus(AuthStatus.Unauthenticated);
@@ -536,7 +554,7 @@ class LoginProvider extends ChangeNotifier {
             // JWT token has expired
             else if (error.code == "token_expired") {
               prefs.remove('jwt');
-              _messageProvider.setMessage(AppString.errorTokenExpired, MessageType.INFO);
+              _messageProvider.setMessage(AppString.errorTokenExpired, MessageType.SESSION_EXPIRED);
             }
             // JWT token has wrong format and cannot be decoded
             else if (error.code == "wrong_token_format") {

@@ -41,7 +41,7 @@ enum QuickActions { about, contact, logout }
 
 enum DialogType { info, success, warning, error }
 
-enum MessageType { INFO, SUCCESS, WARNING, ERROR }
+enum MessageType { INFO, SUCCESS, WARNING, ERROR, SESSION_EXPIRED }
 
 enum TrackCondition { dry, drying, wet }
 

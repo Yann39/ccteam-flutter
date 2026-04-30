@@ -20,7 +20,10 @@
 import 'dart:collection';
 
 import 'package:ccteam/models/track.dart';
+import 'package:ccteam/providers/login_provider.dart';
+import 'package:ccteam/providers/message_provider.dart';
 import 'package:ccteam/services/tracks_service.dart';
+import 'package:ccteam/utils/app_utils.dart';
 import 'package:ccteam/utils/enums.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
@@ -29,6 +32,12 @@ import 'package:logging/logging.dart';
 class TrackListProvider extends ChangeNotifier {
   final Logger _log = new Logger('TrackListProvider');
   final TracksService _tracksService = new TracksService();
+
+  // message provider that can be set from the proxy provider
+  late MessageProvider _messageProvider;
+
+  // login provider that can be set from the proxy provider
+  late LoginProvider _loginProvider;
 
   // current list of tracks
   List<Track> _tracks = [];
@@ -42,7 +51,7 @@ class TrackListProvider extends ChangeNotifier {
   // constructor
   TrackListProvider() {
     // as soon as it is instantiated, we fetch all news
-    _fetchTracks();
+    fetchTracks();
   }
 
   UnmodifiableListView<Track> get tracks => UnmodifiableListView(_tracks);
@@ -65,21 +74,38 @@ class TrackListProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Get the list of all tracks
-  void _fetchTracks() async {
-    _updateStatus(LoadingStatus.loading);
+  /// Update message provider with the specified [messageProvider].
+  void updateMessageProvider(MessageProvider messageProvider) {
+    _messageProvider = messageProvider;
     notifyListeners();
+  }
+
+  /// Update login provider with the specified [loginProvider].
+  void updateLoginProvider(LoginProvider loginProvider) {
+    _loginProvider = loginProvider;
+    notifyListeners();
+  }
+
+  /// Get the list of all tracks
+  Future<void> fetchTracks() async {
+    _updateStatus(LoadingStatus.loading);
     await _tracksService.fetchTracks().then(
       (value) async {
-        _log.fine("Tracks list retrieved successfully");
+        _log.fine(
+          "Tracks list of ${value.length} tracks retrieved successfully",
+        );
         _tracks = value;
         _updateStatus(LoadingStatus.loaded);
       },
       onError: (error) {
         _log.warning("Error when retrieving tracks list ($error)");
         _tracks = [];
+        AppUtils.handleServiceException(
+          error,
+          _messageProvider,
+          _loginProvider,
+        );
         _updateStatus(LoadingStatus.notLoaded);
-        throw (error);
       },
     );
   }

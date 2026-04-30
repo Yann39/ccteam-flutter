@@ -234,6 +234,13 @@ class _TrackDetailState extends State<TrackDetail> {
     final EventDetailProvider _eventDetailProvider =
         Provider.of<EventDetailProvider>(context, listen: true);
 
+    // if currentTrack is null (e.g. after session expiration), don't render content
+    if (_trackDetailProvider.currentTrack == null) {
+      return Scaffold(
+        body: Container(decoration: CustomDecorations.mainContent),
+      );
+    }
+
     return Scaffold(
       /*appBar: AppBar(
         actions: <Widget>[

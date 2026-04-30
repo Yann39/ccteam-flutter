@@ -160,6 +160,13 @@ class EventDetail extends StatelessWidget {
       listen: true,
     );
 
+    // if currentEvent is null or empty (e.g. after session expiration), don't render content
+    if (_eventDetailProvider.currentEvent.id == null) {
+      return Scaffold(
+        body: Container(decoration: CustomDecorations.mainContent),
+      );
+    }
+
     return Scaffold(
       appBar: AppBar(
         actions: <Widget>[

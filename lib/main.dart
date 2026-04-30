@@ -74,6 +74,9 @@ import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:logging/logging.dart';
 import 'package:provider/provider.dart';
 
+/// Global navigator key to allow showing dialogs on top of any active route.
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+
 void main() {
   // logging configuration
   Logger.root.level = Level.ALL;
@@ -252,6 +255,19 @@ void main() {
                     ..updateMessageProvider(messageProvider)
                     ..updateLoginProvider(loginProvider),
         ),
+        // so that we can set messages and logout user from TrackListProvider
+        ChangeNotifierProxyProvider2<
+          MessageProvider,
+          LoginProvider,
+          TrackListProvider
+        >(
+          create: (context) => TrackListProvider(),
+          update:
+              (context, messageProvider, loginProvider, trackListProvider) =>
+                  trackListProvider!
+                    ..updateMessageProvider(messageProvider)
+                    ..updateLoginProvider(loginProvider),
+        ),
         // so that we can set messages and logout user from TrackDetailProvider
         ChangeNotifierProxyProvider2<
           MessageProvider,
@@ -333,6 +349,7 @@ class CCTeamApp extends StatelessWidget {
     return GraphQLProvider(
       client: GraphQLConnection().client,
       child: MaterialApp(
+        navigatorKey: navigatorKey,
         title: AppString.applicationTitle,
         initialRoute: '/',
         routes: {
@@ -364,6 +381,43 @@ class CCTeamApp extends StatelessWidget {
             if (messageProvider.message != null) {
               // to prevent calling setState() during build
               WidgetsBinding.instance.addPostFrameCallback((_) {
+                // handle session expired with a dialog
+                if (messageProvider.messageType ==
+                    MessageType.SESSION_EXPIRED) {
+                  _log.info(
+                    "Session expired message detected in main.dart, showing dialog",
+                  );
+                  final BuildContext? activeContext =
+                      navigatorKey.currentContext;
+                  if (activeContext == null) return;
+                  showDialog(
+                    context: activeContext,
+                    barrierDismissible: false,
+                    builder: (BuildContext context) {
+                      return AlertDialog(
+                        title: Text(AppString.info),
+                        content: Text(messageProvider.message!),
+                        actions: [
+                          TextButton(
+                            child: Text(AppString.validate),
+                            onPressed: () {
+                              Navigator.of(activeContext).pop();
+                              loginProvider.logoutMember();
+                              messageProvider.clearMessage();
+                              navigatorKey.currentState
+                                  ?.pushNamedAndRemoveUntil(
+                                    '/',
+                                    (Route<dynamic> route) => false,
+                                  );
+                            },
+                          ),
+                        ],
+                      );
+                    },
+                  );
+                  return;
+                }
+
                 // global application success/warning/error snack bar messages
                 final Color notificationColor =
                     messageProvider.messageType == MessageType.ERROR

@@ -485,6 +485,13 @@ class MemberDetail extends StatelessWidget {
     final LoginProvider _loginProvider = Provider.of<LoginProvider>(context, listen: false);
     final bool _isAdmin = _loginProvider.loggedMember?.role == MemberRole.ROLE_ADMIN;
 
+    // if currentMember is null (e.g. after session expiration), don't render content
+    if (_memberDetailProvider.currentMember == null) {
+      return Scaffold(
+        body: Container(decoration: CustomDecorations.mainContent),
+      );
+    }
+
     final _motoInfo = MergeSemantics(
       child: Padding(
         padding: EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
