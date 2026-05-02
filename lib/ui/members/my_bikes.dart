@@ -19,15 +19,32 @@
 
 import 'package:ccteam/models/bike.dart';
 import 'package:ccteam/providers/bike_list_provider.dart';
+import 'package:ccteam/providers/login_provider.dart';
 import 'package:ccteam/utils/enums.dart';
 import 'package:ccteam/utils/strings.dart';
 import 'package:ccteam/utils/custom_decorations.dart';
+import 'package:ccteam/widgets/restricted_content.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 class MyBikes extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    final LoginProvider _loginProvider = Provider.of<LoginProvider>(
+      context,
+      listen: false,
+    );
+
+    if (!_loginProvider.isMember) {
+      return Scaffold(
+        appBar: AppBar(title: Text(AppString.myBikes)),
+        body: Container(
+          decoration: CustomDecorations.mainContent,
+          child: RestrictedContent(),
+        ),
+      );
+    }
+
     return Scaffold(
       appBar: AppBar(title: Text(AppString.myBikes)),
       body: Container(

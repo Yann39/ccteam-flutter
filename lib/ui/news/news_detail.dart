@@ -160,40 +160,42 @@ class NewsDetail extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         actions: <Widget>[
-          Builder(
-            builder:
-                (context) => IconButton(
-                  icon: Icon(Icons.notifications_active),
-                  onPressed:
-                      () =>
-                      // send a push notification
-                      NotificationsService.pushInstantNewsNotification(
-                        _newsDetailProvider.currentNews!,
-                      ),
-                ),
-          ),
-          Builder(
-            builder:
-                (context) => IconButton(
-                  icon: Icon(Icons.edit),
-                  onPressed:
-                      () => _navigateToEditNewsScreen(
-                        context,
-                        _newsDetailProvider.currentNews!,
-                      ),
-                ),
-          ),
-          Builder(
-            builder:
-                (context) => IconButton(
-                  icon: Icon(Icons.delete_forever),
-                  onPressed:
-                      () => _showDeleteNewsConfirmation(
-                        context,
-                        AppString.newsDeletionAreYouSure,
-                      ),
-                ),
-          ),
+          if (_loginProvider.isMember) ...[
+            Builder(
+              builder:
+                  (context) => IconButton(
+                    icon: Icon(Icons.notifications_active),
+                    onPressed:
+                        () =>
+                        // send a push notification
+                        NotificationsService.pushInstantNewsNotification(
+                          _newsDetailProvider.currentNews!,
+                        ),
+                  ),
+            ),
+            Builder(
+              builder:
+                  (context) => IconButton(
+                    icon: Icon(Icons.edit),
+                    onPressed:
+                        () => _navigateToEditNewsScreen(
+                          context,
+                          _newsDetailProvider.currentNews!,
+                        ),
+                  ),
+            ),
+            Builder(
+              builder:
+                  (context) => IconButton(
+                    icon: Icon(Icons.delete_forever),
+                    onPressed:
+                        () => _showDeleteNewsConfirmation(
+                          context,
+                          AppString.newsDeletionAreYouSure,
+                        ),
+                  ),
+            ),
+          ],
         ],
         title: Text(AppString.detail),
         leading: IconButton(
@@ -275,80 +277,81 @@ class NewsDetail extends StatelessWidget {
                   style: TextStyle(color: Colors.black87),
                 ),
               ),
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Row(
-                  children: <Widget>[
-                    SizedBox(
-                      height: 20,
-                      child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(4),
+              if (_loginProvider.isMember)
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Row(
+                    children: <Widget>[
+                      SizedBox(
+                        height: 20,
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            padding: EdgeInsets.symmetric(horizontal: 6.0),
+                            backgroundColor: Colors.blue[700],
                           ),
-                          padding: EdgeInsets.symmetric(horizontal: 6.0),
-                          backgroundColor: Colors.blue[700],
-                        ),
-                        onPressed:
-                            () => {
-                              Share.share(
-                                _newsDetailProvider.currentNews!.catchLine!,
+                          onPressed:
+                              () => {
+                                Share.share(
+                                  _newsDetailProvider.currentNews!.catchLine!,
                                 subject: _newsDetailProvider.currentNews!.title,
+                                ),
+                              },
+                          child: Row(
+                            children: <Widget>[
+                              Icon(Icons.share, color: Colors.white, size: 13),
+                              SizedBox(width: 5),
+                              Text(
+                                AppString.share,
+                                style: TextStyle(color: Colors.white),
                               ),
-                            },
-                        child: Row(
-                          children: <Widget>[
-                            Icon(Icons.share, color: Colors.white, size: 13),
-                            SizedBox(width: 5),
-                            Text(
-                              AppString.share,
-                              style: TextStyle(color: Colors.white),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                    SizedBox(width: 8.0),
-                    SizedBox(
-                      height: 20,
-                      child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(4),
+                            ],
                           ),
-                          padding: EdgeInsets.symmetric(horizontal: 6.0),
-                          backgroundColor: Colors.blue[700],
-                        ),
-                        onPressed:
-                            () =>
-                                isLiked
-                                    ? _unlikeNews(
-                                      context,
-                                      _newsDetailProvider.currentNews!,
-                                    )
-                                    : _likeNews(
-                                      context,
-                                      _newsDetailProvider.currentNews!,
-                                    ),
-                        child: Row(
-                          children: <Widget>[
-                            Icon(
-                              isLiked ? Icons.favorite : Icons.favorite_border,
-                              color: isLiked ? Colors.pink : Colors.white,
-                              size: 13,
-                            ),
-                            SizedBox(width: 5),
-                            Text(
-                              isLiked ? AppString.unlike : AppString.like,
-                              style: TextStyle(color: Colors.white),
-                            ),
-                          ],
                         ),
                       ),
-                    ),
-                  ],
+                      SizedBox(width: 8.0),
+                      SizedBox(
+                        height: 20,
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            padding: EdgeInsets.symmetric(horizontal: 6.0),
+                            backgroundColor: Colors.blue[700],
+                          ),
+                          onPressed:
+                              () =>
+                                  isLiked
+                                      ? _unlikeNews(
+                                        context,
+                                        _newsDetailProvider.currentNews!,
+                                      )
+                                      : _likeNews(
+                                        context,
+                                        _newsDetailProvider.currentNews!,
+                                      ),
+                          child: Row(
+                            children: <Widget>[
+                              Icon(
+                              isLiked ? Icons.favorite : Icons.favorite_border,
+                                color: isLiked ? Colors.pink : Colors.white,
+                                size: 13,
+                              ),
+                              SizedBox(width: 5),
+                              Text(
+                                isLiked ? AppString.unlike : AppString.like,
+                                style: TextStyle(color: Colors.white),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
               Flexible(
                 child: Markdown(
                   padding: EdgeInsets.all(8.0),

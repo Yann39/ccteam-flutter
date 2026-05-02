@@ -25,6 +25,7 @@ import 'package:ccteam/ui/events/event_card.dart';
 import 'package:ccteam/utils/custom_decorations.dart';
 import 'package:ccteam/utils/enums.dart';
 import 'package:ccteam/utils/strings.dart';
+import 'package:ccteam/widgets/restricted_content.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -46,7 +47,7 @@ class _MemberEventsState extends State<MemberEvents> {
         context,
         listen: false,
       );
-      if (loginProvider.loggedMember != null) {
+      if (loginProvider.isMember && loginProvider.loggedMember != null) {
         Provider.of<MemberDetailProvider>(
           context,
           listen: false,
@@ -70,12 +71,29 @@ class _MemberEventsState extends State<MemberEvents> {
 
   @override
   Widget build(BuildContext context) {
-    final MemberDetailProvider _memberDetailProvider =
-        Provider.of<MemberDetailProvider>(context, listen: true);
     final LoginProvider loginProvider = Provider.of<LoginProvider>(
       context,
       listen: true,
     );
+
+    if (!loginProvider.isMember) {
+      return Scaffold(
+        appBar: AppBar(
+          title: Text(AppString.myTrackEvents),
+          leading: IconButton(
+            icon: Icon(Icons.arrow_back),
+            onPressed: () => Navigator.pop(context),
+          ),
+        ),
+        body: Container(
+          decoration: CustomDecorations.mainContent,
+          child: RestrictedContent(),
+        ),
+      );
+    }
+
+    final MemberDetailProvider _memberDetailProvider =
+        Provider.of<MemberDetailProvider>(context, listen: true);
 
     Widget content;
 

@@ -170,25 +170,27 @@ class EventDetail extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         actions: <Widget>[
-          Builder(
-            builder:
-                (context) => IconButton(
-                  icon: Icon(Icons.edit),
-                  onPressed:
-                      () => _navigateToEditEventScreen(
-                        context,
-                        _eventDetailProvider.currentEvent,
-                      ),
-                ),
-          ),
-          IconButton(
-            icon: Icon(Icons.delete_forever),
-            onPressed:
-                () => _showDeleteEventConfirmation(
-                  context,
-                  AppString.eventDeletionAreYouSure,
-                ),
-          ),
+          if (_loginProvider.isMember) ...[
+            Builder(
+              builder:
+                  (context) => IconButton(
+                    icon: Icon(Icons.edit),
+                    onPressed:
+                        () => _navigateToEditEventScreen(
+                          context,
+                          _eventDetailProvider.currentEvent,
+                        ),
+                  ),
+            ),
+            IconButton(
+              icon: Icon(Icons.delete_forever),
+              onPressed:
+                  () => _showDeleteEventConfirmation(
+                    context,
+                    AppString.eventDeletionAreYouSure,
+                  ),
+            ),
+          ],
         ],
         title: Text(AppString.eventDetailScreenTitle),
         leading: IconButton(
@@ -463,145 +465,147 @@ class EventDetail extends StatelessWidget {
                           _eventDetailProvider.currentEvent.description ?? "",
                         ),
                         SizedBox(height: 10),
-                        Divider(color: Colors.white),
-                        SizedBox(height: 10),
-                        Row(
-                          children: <Widget>[
-                            Icon(
-                              Icons.group,
-                              size: 18,
-                              color: Colors.black.withAlpha(163),
-                            ),
-                            SizedBox(width: 5.0),
-                            Text(
-                              AppString.participants,
-                              textScaler: TextScaler.linear(1.2),
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
+                        if (_loginProvider.isMember) ...[
+                          Divider(color: Colors.white),
+                          SizedBox(height: 10),
+                          Row(
+                            children: <Widget>[
+                              Icon(
+                                Icons.group,
+                                size: 18,
                                 color: Colors.black.withAlpha(163),
                               ),
-                            ),
-                          ],
-                        ),
-                        SizedBox(height: 10),
-                        (_eventDetailProvider
-                                        .currentEvent
-                                        .participants
-                                        ?.length ??
-                                    0) >
-                                0
-                            ? SizedBox(
-                              height: 140,
-                              child: ListView.builder(
-                                scrollDirection: Axis.horizontal,
-                                itemCount:
-                                    _eventDetailProvider
-                                        .currentEvent
-                                        .participants!
-                                        .length,
-                                itemBuilder: (BuildContext context, int index) {
-                                  return Column(
-                                    children: <Widget>[
-                                      InkWell(
-                                        onTap:
-                                            () => _navigateToMemberDetailScreen(
-                                              context,
-                                              _eventDetailProvider
-                                                  .currentEvent
-                                                  .participants![index]
-                                                  .member!,
+                              SizedBox(width: 5.0),
+                              Text(
+                                AppString.participants,
+                                textScaler: TextScaler.linear(1.2),
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.black.withAlpha(163),
+                                ),
+                              ),
+                            ],
+                          ),
+                          SizedBox(height: 10),
+                          (_eventDetailProvider
+                                          .currentEvent
+                                          .participants
+                                          ?.length ??
+                                      0) >
+                                  0
+                              ? SizedBox(
+                                height: 140,
+                                child: ListView.builder(
+                                  scrollDirection: Axis.horizontal,
+                                  itemCount:
+                                      _eventDetailProvider
+                                          .currentEvent
+                                          .participants!
+                                          .length,
+                                  itemBuilder: (BuildContext context, int index) {
+                                    return Column(
+                                      children: <Widget>[
+                                        InkWell(
+                                          onTap:
+                                              () => _navigateToMemberDetailScreen(
+                                                context,
+                                                _eventDetailProvider
+                                                    .currentEvent
+                                                    .participants![index]
+                                                    .member!,
+                                              ),
+                                          child: Container(
+                                            width: 80,
+                                            height: 80,
+                                            padding: EdgeInsets.all(2.0),
+                                            margin: EdgeInsets.symmetric(
+                                              horizontal: 12.0,
                                             ),
-                                        child: Container(
-                                          width: 80,
-                                          height: 80,
-                                          padding: EdgeInsets.all(2.0),
-                                          margin: EdgeInsets.symmetric(
-                                            horizontal: 12.0,
-                                          ),
-                                          decoration: ShapeDecoration(
-                                            shape: CircleBorder(),
-                                            color: Colors.white70,
-                                          ),
-                                          child:
-                                              _eventDetailProvider
-                                                          .currentEvent
-                                                          .participants![index]
-                                                          .member!
-                                                          .avatar !=
-                                                      null
-                                                  ? CircleAvatar(
-                                                    backgroundColor:
-                                                        Colors.blue[100],
-                                                    backgroundImage: MemoryImage(
-                                                      base64Decode(
-                                                        _eventDetailProvider
+                                            decoration: ShapeDecoration(
+                                              shape: CircleBorder(),
+                                              color: Colors.white70,
+                                            ),
+                                            child:
+                                                _eventDetailProvider
                                                             .currentEvent
                                                             .participants![index]
                                                             .member!
-                                                            .avatar!,
+                                                            .avatar !=
+                                                        null
+                                                    ? CircleAvatar(
+                                                      backgroundColor:
+                                                          Colors.blue[100],
+                                                      backgroundImage: MemoryImage(
+                                                        base64Decode(
+                                                          _eventDetailProvider
+                                                              .currentEvent
+                                                              .participants![index]
+                                                              .member!
+                                                              .avatar!,
+                                                        ),
+                                                      ),
+                                                    )
+                                                    : CircleAvatar(
+                                                      backgroundColor:
+                                                          Colors.blue[100],
+                                                      child: ShaderMask(
+                                                        shaderCallback:
+                                                            (
+                                                              bounds,
+                                                            ) => LinearGradient(
+                                                              begin:
+                                                                  const FractionalOffset(
+                                                                    0.0,
+                                                                    0.0,
+                                                                  ),
+                                                              end:
+                                                                  const FractionalOffset(
+                                                                    0.0,
+                                                                    1.0,
+                                                                  ),
+                                                              stops: [0.0, 1.0],
+                                                              colors: [
+                                                                Colors.red[300]!,
+                                                                Colors.white,
+                                                              ],
+                                                            ).createShader(
+                                                              bounds,
+                                                            ),
+                                                        child: Icon(
+                                                          CustomIcons.pilot,
+                                                          size: 50,
+                                                        ),
                                                       ),
                                                     ),
-                                                  )
-                                                  : CircleAvatar(
-                                                    backgroundColor:
-                                                        Colors.blue[100],
-                                                    child: ShaderMask(
-                                                      shaderCallback:
-                                                          (
-                                                            bounds,
-                                                          ) => LinearGradient(
-                                                            begin:
-                                                                const FractionalOffset(
-                                                                  0.0,
-                                                                  0.0,
-                                                                ),
-                                                            end:
-                                                                const FractionalOffset(
-                                                                  0.0,
-                                                                  1.0,
-                                                                ),
-                                                            stops: [0.0, 1.0],
-                                                            colors: [
-                                                              Colors.red[300]!,
-                                                              Colors.white,
-                                                            ],
-                                                          ).createShader(
-                                                            bounds,
-                                                          ),
-                                                      child: Icon(
-                                                        CustomIcons.pilot,
-                                                        size: 50,
-                                                      ),
-                                                    ),
-                                                  ),
+                                          ),
                                         ),
-                                      ),
-                                      SizedBox(height: 5.0),
-                                      Container(
-                                        width: 80,
-                                        child: Text(
-                                          "${_eventDetailProvider.currentEvent.participants![index].member!.firstName} ${_eventDetailProvider.currentEvent.participants![index].member!.lastName}",
-                                          overflow: TextOverflow.ellipsis,
-                                          maxLines: 2,
-                                          textAlign: TextAlign.center,
+                                        SizedBox(height: 5.0),
+                                        Container(
+                                          width: 80,
+                                          child: Text(
+                                            "${_eventDetailProvider.currentEvent.participants![index].member!.firstName} ${_eventDetailProvider.currentEvent.participants![index].member!.lastName}",
+                                            overflow: TextOverflow.ellipsis,
+                                            maxLines: 2,
+                                            textAlign: TextAlign.center,
+                                          ),
                                         ),
-                                      ),
-                                    ],
-                                  );
-                                },
-                              ),
-                            )
-                            : Text(AppString.noParticipant),
-                        SizedBox(height: 20),
-                        _loginProvider.loggedMember != null
-                            ? _registrationButton(
-                              _eventDetailProvider.currentEvent,
-                              _loginProvider.loggedMember!.id!,
-                              _eventDetailProvider,
-                            )
-                            : Container(),
-                        SizedBox(height: 10),
-                        Divider(color: Colors.white),
+                                      ],
+                                    );
+                                  },
+                                ),
+                              )
+                              : Text(AppString.noParticipant),
+                          SizedBox(height: 20),
+                          _loginProvider.loggedMember != null
+                              ? _registrationButton(
+                                _eventDetailProvider.currentEvent,
+                                _loginProvider.loggedMember!.id!,
+                                _eventDetailProvider,
+                              )
+                              : Container(),
+                          SizedBox(height: 10),
+                          Divider(color: Colors.white),
+                        ],
                       ],
                     ),
                   ),

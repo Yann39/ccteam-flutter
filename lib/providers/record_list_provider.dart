@@ -22,12 +22,14 @@ import 'dart:collection';
 import 'package:ccteam/models/record.dart';
 import 'package:ccteam/services/records_service.dart';
 import 'package:ccteam/utils/enums.dart';
+import 'package:ccteam/providers/login_provider.dart';
 import 'package:flutter/foundation.dart';
 import 'package:logging/logging.dart';
 
 class RecordListProvider extends ChangeNotifier {
   final Logger _log = new Logger('RecordListProvider');
   final RecordsService _recordsService = new RecordsService();
+  late LoginProvider _loginProvider;
 
   // list of all track records
   List<Record> _trackRecords = [];
@@ -51,8 +53,21 @@ class RecordListProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Update login provider with the specified [loginProvider].
+  void updateLoginProvider(LoginProvider loginProvider) {
+    _loginProvider = loginProvider;
+    _log.info("LoginProvider injected into RecordListProvider");
+  }
+
   /// Get the list of all records for the specified [trackId]
   void fetchTrackRecords(int trackId) async {
+    // guard against unauthorized access
+    if (!_loginProvider.isMember) {
+      _log.info("User not member, skipping track records fetch");
+      _trackRecords = [];
+      _updateStatus(LoadingStatus.loaded);
+      return;
+    }
     _updateStatus(LoadingStatus.loading);
     await _recordsService.fetchTrackRecords(trackId).then((value) async {
       _log.fine("Track records list retrieved successfully");
@@ -68,6 +83,13 @@ class RecordListProvider extends ChangeNotifier {
 
   /// Get the list of all records for the specified [memberId]
   Future<void> fetchMemberRecords(int memberId) async {
+    // guard against unauthorized access
+    if (!_loginProvider.isMember) {
+      _log.info("User not member, skipping member records fetch");
+      _memberRecords = [];
+      _updateStatus(LoadingStatus.loaded);
+      return;
+    }
     _updateStatus(LoadingStatus.loading);
     await _recordsService.fetchMemberRecords(memberId).then((value) async {
       _log.fine("Member records list retrieved successfully");

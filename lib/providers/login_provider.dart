@@ -84,6 +84,8 @@ class LoginProvider extends ChangeNotifier {
   AuthStatus get authStatus => _authStatus;
 
   LoginStatus get loginStatus => _loginStatus;
+  
+  bool get isMember => _loggedMember?.role == MemberRole.ROLE_MEMBER || _loggedMember?.role == MemberRole.ROLE_ADMIN;
 
   String? get loginPassCode => _loginPassCode;
 
@@ -536,7 +538,7 @@ class LoginProvider extends ChangeNotifier {
           _setLoginStatus(LoginStatus.EmailStep);
         },
         onError: (error) {
-          _log.info("Member with e-mail $email not found in the database from app ($error)");
+          _log.info("Error while getting member with email $email from database: $error");
           _loggedMember = null;
           _jwtToken = null;
           GraphQLConnection().jwtToken = null;

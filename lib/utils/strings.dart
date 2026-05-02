@@ -65,6 +65,8 @@ class AppString {
   static const String codeNotReceived = 'Code non reçu ?';
   static const String contentNotLoaded = 'Le contenu n\'a pas pu être chargé';
   static const String noContentToDisplay = 'Aucun contenu à afficher';
+  static const String contentReservedForMembers =
+      'This content is available only for members';
 
   static const String notDefined = 'Non-défini';
   static const String confirmation = 'Confirmation';

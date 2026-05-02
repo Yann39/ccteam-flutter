@@ -93,7 +93,6 @@ void main() {
         ChangeNotifierProvider(create: (context) => HomeProvider()),
         ChangeNotifierProvider(create: (context) => PhotoProvider()),
         ChangeNotifierProvider(create: (context) => TrackListProvider()),
-        ChangeNotifierProvider(create: (context) => RecordListProvider()),
         ChangeNotifierProvider(create: (context) => PasscodeProvider()),
         ChangeNotifierProvider(create: (context) => MessageProvider()),
         // so that we can set messages from login provider
@@ -102,6 +101,13 @@ void main() {
           update:
               (context, messageProvider, loginProvider) =>
                   loginProvider!..updateMessageProvider(messageProvider),
+        ),
+        // so that we can check member role from RecordListProvider
+        ChangeNotifierProxyProvider<LoginProvider, RecordListProvider>(
+          create: (context) => RecordListProvider(),
+          update:
+              (context, loginProvider, recordListProvider) =>
+                  recordListProvider!..updateLoginProvider(loginProvider),
         ),
         // so that we can set messages and logout user from NewsListProvider
         ChangeNotifierProxyProvider2<

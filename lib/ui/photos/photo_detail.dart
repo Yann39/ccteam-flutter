@@ -21,7 +21,6 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:ccteam/models/photo.dart';
 import 'package:ccteam/providers/photo_provider.dart';
 import 'package:ccteam/services/photos_service.dart';
-import 'package:ccteam/utils/custom_decorations.dart';
 import 'package:ccteam/utils/enums.dart';
 import 'package:ccteam/utils/strings.dart';
 import 'package:flutter/material.dart';

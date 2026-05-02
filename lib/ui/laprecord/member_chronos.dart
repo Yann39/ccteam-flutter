@@ -18,6 +18,7 @@
  */
 
 import 'package:ccteam/models/record.dart';
+import 'package:ccteam/providers/login_provider.dart';
 import 'package:ccteam/providers/record_creation_provider.dart';
 import 'package:ccteam/providers/record_list_provider.dart';
 import 'package:ccteam/utils/custom_decorations.dart';
@@ -25,6 +26,7 @@ import 'package:ccteam/utils/custom_icons.dart';
 import 'package:ccteam/utils/date_utils.dart';
 import 'package:ccteam/utils/strings.dart';
 import 'package:ccteam/widgets/loading_content.dart';
+import 'package:ccteam/widgets/restricted_content.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -67,6 +69,27 @@ class _MemberChronosState extends State<MemberChronos> {
   }
 
   Widget build(BuildContext context) {
+    final LoginProvider _loginProvider = Provider.of<LoginProvider>(
+      context,
+      listen: false,
+    );
+
+    if (!_loginProvider.isMember) {
+      return Scaffold(
+        appBar: AppBar(
+          title: Text(AppString.myChronos),
+          leading: IconButton(
+            icon: Icon(Icons.arrow_back),
+            onPressed: () => Navigator.pop(context),
+          ),
+        ),
+        body: Container(
+          decoration: CustomDecorations.mainContent,
+          child: RestrictedContent(),
+        ),
+      );
+    }
+
     final RecordListProvider _recordListProvider =
         Provider.of<RecordListProvider>(context, listen: true);
     final MemberDetailProvider _memberDetailProvider =

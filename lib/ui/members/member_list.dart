@@ -20,6 +20,7 @@
 import 'dart:convert';
 
 import 'package:ccteam/models/member.dart';
+import 'package:ccteam/providers/login_provider.dart';
 import 'package:ccteam/providers/member_creation_provider.dart';
 import 'package:ccteam/providers/member_detail_provider.dart';
 import 'package:ccteam/providers/member_list_provider.dart';
@@ -29,6 +30,7 @@ import 'package:ccteam/utils/custom_decorations.dart';
 import 'package:ccteam/utils/enums.dart';
 import 'package:ccteam/utils/strings.dart';
 import 'package:ccteam/widgets/loading_content.dart';
+import 'package:ccteam/widgets/restricted_content.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -81,6 +83,10 @@ class MemberList extends StatelessWidget {
   Widget build(BuildContext context) {
     final MemberListProvider _memberListProvider =
         Provider.of<MemberListProvider>(context, listen: true);
+    final LoginProvider _loginProvider = Provider.of<LoginProvider>(
+      context,
+      listen: false,
+    );
 
     return Scaffold(
       appBar: AppBar(
@@ -88,102 +94,111 @@ class MemberList extends StatelessWidget {
         actions: <Widget>[MainActionMenu()],
       ),
       drawer: MainDrawer(),
-      body: Column(
-        children: <Widget>[
-          _buildSearchField(_memberListProvider),
-          Expanded(
-            child: Container(
-              width: MediaQuery.of(context).size.width,
-              alignment: Alignment.topCenter,
-              decoration: CustomDecorations.mainContent,
-              child: LoadingContent(
-                loadingStatus:
-                    _memberListProvider.memberList.isEmpty
-                        ? LoadingStatus.empty
-                        : _memberListProvider.loadingStatus,
-                defaultText: AppString.membersNotFound,
-                emptyText: AppString.membersNotFound,
-                child: ListView.separated(
-                  separatorBuilder:
-                      (context, index) =>
-                          Divider(color: Colors.black, height: 4),
-                  itemCount: _memberListProvider.memberList.length,
-                  itemBuilder: (context, index) {
-                    return Material(
-                      child: InkWell(
-                        child: ListTile(
-                          title: Text(
-                            "${_memberListProvider.memberList[index].firstName} ${_memberListProvider.memberList[index].lastName}",
-                          ),
-                          subtitle: Text(
+      body:
+          !_loginProvider.isMember
+              ? Container(
+                decoration: CustomDecorations.mainContent,
+                child: RestrictedContent(),
+              )
+              : Column(
+                children: <Widget>[
+                  _buildSearchField(_memberListProvider),
+                  Expanded(
+                    child: Container(
+                      width: MediaQuery.of(context).size.width,
+                      alignment: Alignment.topCenter,
+                      decoration: CustomDecorations.mainContent,
+                      child: LoadingContent(
+                        loadingStatus:
+                            _memberListProvider.memberList.isEmpty
+                                ? LoadingStatus.empty
+                                : _memberListProvider.loadingStatus,
+                        defaultText: AppString.membersNotFound,
+                        emptyText: AppString.membersNotFound,
+                        child: ListView.separated(
+                          separatorBuilder:
+                              (context, index) =>
+                                  Divider(color: Colors.black, height: 4),
+                          itemCount: _memberListProvider.memberList.length,
+                          itemBuilder: (context, index) {
+                            return Material(
+                              child: InkWell(
+                                child: ListTile(
+                                  title: Text(
+                                    "${_memberListProvider.memberList[index].firstName} ${_memberListProvider.memberList[index].lastName}",
+                                  ),
+                                  subtitle: Text(
                              _memberListProvider.memberList[index].bikes != null && _memberListProvider.memberList[index].bikes!.isNotEmpty
                                 ? _memberListProvider.memberList[index].bikes!.map((bike) => "${bike.manufacturer?.toUpperCase()} ${bike.modelName}").join(", ")
-                                : AppString.notDefined,
-                          ),
+                                        : AppString.notDefined,
+                                  ),
                           trailing: _memberListProvider.memberList[index].riderNumber != null
-                              ? Container(
+                                          ? Container(
                                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                                  decoration: BoxDecoration(
-                                    color: Colors.red[700],
+                                            decoration: BoxDecoration(
+                                              color: Colors.red[700],
                                     borderRadius: BorderRadius.circular(20),
-                                  ),
-                                  child: Text(
-                                    "#${_memberListProvider.memberList[index].riderNumber}",
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 16,
-                                    ),
-                                  ),
-                                )
-                              : null,
-                          leading:
+                                            ),
+                                            child: Text(
+                                              "#${_memberListProvider.memberList[index].riderNumber}",
+                                              style: TextStyle(
+                                                color: Colors.white,
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 16,
+                                              ),
+                                            ),
+                                          )
+                                          : null,
+                                  leading:
                               _memberListProvider.memberList[index].avatar !=
-                                      null
-                                  ? CircleAvatar(
-                                    radius: 25,
-                                    backgroundImage: MemoryImage(
-                                      base64Decode(
-                                        _memberListProvider
-                                            .memberList[index]
-                                            .avatar!,
-                                      ),
-                                    ),
-                                  )
-                                  : CircleAvatar(
-                                    radius: 25,
-                                    child: Text(
-                                      _memberListProvider
-                                          .memberList[index]
-                                          .firstName![0],
+                                              null
+                                          ? CircleAvatar(
+                                            radius: 25,
+                                            backgroundImage: MemoryImage(
+                                              base64Decode(
+                                                _memberListProvider
+                                                    .memberList[index]
+                                                    .avatar!,
+                                              ),
+                                            ),
+                                          )
+                                          : CircleAvatar(
+                                            radius: 25,
+                                            child: Text(
+                                              _memberListProvider
+                                                  .memberList[index]
+                                                  .firstName![0],
                                       style: TextStyle(color: Colors.white),
+                                            ),
+                                            backgroundColor: Colors.red[700],
+                                          ),
+                                ),
+                                onTap:
+                                    () => _navigateToMemberDetailScreen(
+                                      context,
+                                      _memberListProvider.memberList[index],
                                     ),
-                                    backgroundColor: Colors.red[700],
-                                  ),
+                              ),
+                              color: Colors.transparent,
+                            );
+                          },
                         ),
-                        onTap:
-                            () => _navigateToMemberDetailScreen(
-                              context,
-                              _memberListProvider.memberList[index],
-                            ),
                       ),
-                      color: Colors.transparent,
-                    );
-                  },
-                ),
+                    ),
+                  ),
+                ],
               ),
-            ),
-          ),
-        ],
-      ),
-      floatingActionButton: FloatingActionButton(
-        elevation: 0.0,
-        child: Icon(Icons.add, color: Colors.white),
-        backgroundColor: Colors.red[700],
-        onPressed: () {
-          _navigateToAddMemberScreen(context);
-        },
-      ),
+      floatingActionButton:
+          _loginProvider.isMember
+              ? FloatingActionButton(
+                elevation: 0.0,
+                child: Icon(Icons.add, color: Colors.white),
+                backgroundColor: Colors.red[700],
+                onPressed: () {
+                  _navigateToAddMemberScreen(context);
+                },
+              )
+              : null,
     );
   }
 }

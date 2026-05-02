@@ -37,7 +37,7 @@ class MemberListProvider extends ChangeNotifier {
   late MessageProvider _messageProvider;
 
   // login provider that can be set from the proxy provider
-  late LoginProvider _loginProvider;
+  LoginProvider? _loginProvider;
 
   // current members list
   List<Member> _memberList = [];
@@ -94,6 +94,13 @@ class MemberListProvider extends ChangeNotifier {
 
   /// Fetch the list of all members according to the specified [text] filter.
   void fetchMemberList(String? text) async {
+    // guard against unauthorized access
+    if (!(_loginProvider?.isMember ?? false)) {
+      _log.info("User not member, skipping member list fetch");
+      _memberList = [];
+      _updateLoadingStatus(LoadingStatus.loaded);
+      return;
+    }
     _updateLoadingStatus(LoadingStatus.loading);
     await _membersService.fetchMembers(text).then((value) async {
       _log.fine("Members list of ${value.length} members retrieved successfully");
@@ -102,7 +109,7 @@ class MemberListProvider extends ChangeNotifier {
     }, onError: (error) {
       _log.warning("Error when retrieving members list ($error)");
       _memberList = [];
-      AppUtils.handleServiceException(error, _messageProvider, _loginProvider);
+      AppUtils.handleServiceException(error, _messageProvider, _loginProvider!);
       _updateLoadingStatus(LoadingStatus.notLoaded);
     });
   }

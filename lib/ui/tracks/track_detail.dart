@@ -21,6 +21,7 @@ import 'package:ccteam/models/event.dart';
 import 'package:ccteam/models/record.dart';
 import 'package:ccteam/models/track.dart';
 import 'package:ccteam/providers/event_detail_provider.dart';
+import 'package:ccteam/providers/login_provider.dart';
 import 'package:ccteam/providers/record_list_provider.dart';
 import 'package:ccteam/providers/track_detail_provider.dart';
 import 'package:ccteam/utils/app_utils.dart';
@@ -233,6 +234,8 @@ class _TrackDetailState extends State<TrackDetail> {
         Provider.of<TrackDetailProvider>(context, listen: true);
     final EventDetailProvider _eventDetailProvider =
         Provider.of<EventDetailProvider>(context, listen: true);
+    final LoginProvider _loginProvider =
+        Provider.of<LoginProvider>(context, listen: false);
 
     // if currentTrack is null (e.g. after session expiration), don't render content
     if (_trackDetailProvider.currentTrack == null) {
@@ -477,28 +480,30 @@ class _TrackDetailState extends State<TrackDetail> {
                             SizedBox(height: 10),
                             _eventsTable(_eventDetailProvider),
                             SizedBox(height: 10),
-                            Divider(color: Colors.white),
-                            SizedBox(height: 10),
-                            Row(
-                              children: <Widget>[
-                                Icon(
-                                  Icons.group,
-                                  size: 18,
-                                  color: Colors.black.withAlpha(163),
-                                ),
-                                SizedBox(width: 5.0),
-                                Text(
-                                  AppString.chronos,
-                                  textScaler: TextScaler.linear(1.2),
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.bold,
+                            if (_loginProvider.isMember) ...[
+                              Divider(color: Colors.white),
+                              SizedBox(height: 10),
+                              Row(
+                                children: <Widget>[
+                                  Icon(
+                                    Icons.group,
+                                    size: 18,
                                     color: Colors.black.withAlpha(163),
                                   ),
-                                ),
-                              ],
-                            ),
-                            SizedBox(height: 10),
-                            _recordsTable(_recordListProvider),
+                                  SizedBox(width: 5.0),
+                                  Text(
+                                    AppString.chronos,
+                                    textScaler: TextScaler.linear(1.2),
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.black.withAlpha(163),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              SizedBox(height: 10),
+                              _recordsTable(_recordListProvider),
+                            ],
                           ],
                         ),
                       ),

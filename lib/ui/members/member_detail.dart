@@ -30,7 +30,6 @@ import 'package:ccteam/providers/member_creation_provider.dart';
 import 'package:ccteam/providers/member_detail_provider.dart';
 import 'package:ccteam/providers/member_list_provider.dart';
 import 'package:ccteam/providers/record_list_provider.dart';
-import 'package:ccteam/providers/record_list_provider.dart';
 import 'package:ccteam/utils/app_utils.dart';
 import 'package:ccteam/utils/enums.dart';
 import 'package:ccteam/utils/custom_decorations.dart';
@@ -38,6 +37,7 @@ import 'package:ccteam/utils/custom_icons.dart';
 import 'package:ccteam/utils/date_utils.dart';
 import 'package:ccteam/utils/strings.dart';
 import 'package:ccteam/widgets/loading_content.dart';
+import 'package:ccteam/widgets/restricted_content.dart';
 import 'package:flutter/material.dart';
 import 'package:logging/logging.dart';
 import 'package:provider/provider.dart';
@@ -484,6 +484,10 @@ class MemberDetail extends StatelessWidget {
         Provider.of<RecordListProvider>(context, listen: true);
     final LoginProvider _loginProvider = Provider.of<LoginProvider>(context, listen: false);
     final bool _isAdmin = _loginProvider.loggedMember?.role == MemberRole.ROLE_ADMIN;
+    final bool _isOwnProfile =
+        _memberDetailProvider.currentMember?.id ==
+        _loginProvider.loggedMember?.id;
+    final bool _canView = _loginProvider.isMember || _isOwnProfile;
 
     // if currentMember is null (e.g. after session expiration), don't render content
     if (_memberDetailProvider.currentMember == null) {
@@ -630,9 +634,15 @@ class MemberDetail extends StatelessWidget {
     );
 
     return Scaffold(
-      body: Container(
-        decoration: CustomDecorations.mainContent,
-        child: LoadingContent(
+      body:
+          !_canView
+              ? Container(
+                decoration: CustomDecorations.mainContent,
+                child: RestrictedContent(),
+              )
+              : Container(
+                decoration: CustomDecorations.mainContent,
+                child: LoadingContent(
           loadingStatus: _memberDetailProvider.loadingStatus,
           defaultText: AppString.contentNotLoaded,
           emptyText: AppString.contentNotLoaded,

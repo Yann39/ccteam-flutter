@@ -18,6 +18,7 @@
  */
 
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:ccteam/providers/login_provider.dart';
 import 'package:ccteam/providers/photo_detail_provider.dart';
 import 'package:ccteam/providers/photo_provider.dart';
 import 'package:ccteam/ui/main/main_action_menu.dart';
@@ -25,6 +26,7 @@ import 'package:ccteam/ui/photos/add_edit_photo.dart';
 import 'package:ccteam/utils/custom_decorations.dart';
 import 'package:ccteam/utils/strings.dart';
 import 'package:ccteam/widgets/loading_content.dart';
+import 'package:ccteam/widgets/restricted_content.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -49,97 +51,106 @@ class Gallery extends StatelessWidget {
 
   Widget build(BuildContext context) {
     final _photoProvider = Provider.of<PhotoProvider>(context, listen: true);
+    final _loginProvider = Provider.of<LoginProvider>(context, listen: false);
 
     return Scaffold(
-      appBar: AppBar(title: Text("title"), actions: <Widget>[MainActionMenu()]),
-      body: Container(
-        decoration: CustomDecorations.mainContent,
-        padding: EdgeInsets.all(4.0),
-        child: LoadingContent(
-          loadingStatus: _photoProvider.loadingStatus,
-          defaultText: AppString.photosNotFound,
-          emptyText: AppString.photosNotFound,
-          child: GridView.builder(
-            padding: EdgeInsets.all(4.0),
-            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount:
-                  MediaQuery.of(context).orientation == Orientation.portrait
-                      ? 2
-                      : 3,
-              crossAxisSpacing: 4,
-              mainAxisSpacing: 4,
-              childAspectRatio: 1.3,
-            ),
-            itemCount: _photoProvider.photos.length,
-            itemBuilder:
-                (BuildContext context, int index) => InkWell(
-                  onTap: () {
-                    Provider.of<PhotoDetailProvider>(
-                      context,
-                      listen: false,
-                    ).setCurrentPhoto(_photoProvider.photos[index]);
-                    Navigator.pushNamed(
-                      context,
-                      "/photoDetail",
-                      arguments: _photoProvider.photos[index],
-                    );
-                  },
-                  child: Stack(
-                    fit: StackFit.expand,
-                    alignment: Alignment.bottomCenter,
-                    children: [
-                      Container(
-                        decoration: BoxDecoration(
-                          image: DecorationImage(
-                            image: CachedNetworkImageProvider(
-                              _photoProvider.photos[index].link!,
-                              /*placeholder: (context, url) => CircularProgressIndicator(),
-                              imageUrl: _photoProvider.photos[index].link,
-                              fit: BoxFit.fitWidth,*/
-                            ),
-                            fit: BoxFit.cover,
+      appBar: AppBar(
+        title: Text(
+          ModalRoute.of(context)?.settings.arguments as String? ?? "",
+        ),
+        actions: <Widget>[MainActionMenu()],
+      ),
+      body:
+          !_loginProvider.isMember
+              ? Container(
+                decoration: CustomDecorations.mainContent,
+                child: RestrictedContent(),
+              )
+              : Container(
+                decoration: CustomDecorations.mainContent,
+                padding: EdgeInsets.all(4.0),
+                child: LoadingContent(
+                  loadingStatus: _photoProvider.loadingStatus,
+                  defaultText: AppString.photosNotFound,
+                  emptyText: AppString.photosNotFound,
+                  child: GridView.builder(
+                    padding: EdgeInsets.all(4.0),
+                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount:
+                          MediaQuery.of(context).orientation ==
+                                  Orientation.portrait
+                              ? 2
+                              : 3,
+                      crossAxisSpacing: 4,
+                      mainAxisSpacing: 4,
+                      childAspectRatio: 1.3,
+                    ),
+                    itemCount: _photoProvider.photos.length,
+                    itemBuilder:
+                        (BuildContext context, int index) => InkWell(
+                          onTap: () {
+                            Provider.of<PhotoDetailProvider>(
+                              context,
+                              listen: false,
+                            ).setCurrentPhoto(_photoProvider.photos[index]);
+                            Navigator.pushNamed(
+                              context,
+                              "/photoDetail",
+                              arguments: _photoProvider.photos[index],
+                            );
+                          },
+                          child: Stack(
+                            fit: StackFit.expand,
+                            alignment: Alignment.bottomCenter,
+                            children: [
+                              Container(
+                                decoration: BoxDecoration(
+                                  image: DecorationImage(
+                                    image: CachedNetworkImageProvider(
+                                      _photoProvider.photos[index].link!,
+                                    ),
+                                    fit: BoxFit.cover,
+                                  ),
+                                ),
+                              ),
+                              Positioned(
+                                bottom: 0,
+                                left: 0,
+                                right: 0,
+                                child: Container(
+                                  height: 20.0,
+                                  alignment: Alignment.center,
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.rectangle,
+                                    color: Colors.black.withAlpha(128),
+                                  ),
+                                  child: Text(
+                                    _photoProvider.photos[index].title!,
+                                    softWrap: false,
+                                    style: TextStyle(color: Colors.white),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    textAlign: TextAlign.center,
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
                         ),
-                        /*child: CachedNetworkImage(
-                          placeholder: (context, url) => CircularProgressIndicator(),
-                          imageUrl: _photoProvider.photos[index].link,
-                        ),*/
-                      ),
-                      Positioned(
-                        bottom: 0,
-                        left: 0,
-                        right: 0,
-                        child: Container(
-                          height: 20.0,
-                          alignment: Alignment.center,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.rectangle,
-                            color: Colors.black.withAlpha(128),
-                          ),
-                          child: Text(
-                            _photoProvider.photos[index].title!,
-                            softWrap: false,
-                            style: TextStyle(color: Colors.white),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            textAlign: TextAlign.center,
-                          ),
-                        ),
-                      ),
-                    ],
                   ),
                 ),
-          ),
-        ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        elevation: 0.0,
-        child: Icon(Icons.add, color: Colors.white),
-        backgroundColor: Colors.red[700],
-        onPressed: () {
-          _navigateAndDisplaySelection(context);
-        },
-      ),
+              ),
+      floatingActionButton:
+          _loginProvider.isMember
+              ? FloatingActionButton(
+                elevation: 0.0,
+                child: Icon(Icons.add, color: Colors.white),
+                backgroundColor: Colors.red[700],
+                onPressed: () {
+                  _navigateAndDisplaySelection(context);
+                },
+              )
+              : null,
     );
   }
 }
