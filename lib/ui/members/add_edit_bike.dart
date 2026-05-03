@@ -88,13 +88,23 @@ class _AddEditBikeState extends State<AddEditBike> {
       ),
     ];
 
+    final List<Widget> appBarActions = [];
+    if (_isEditing) {
+      appBarActions.add(
+        IconButton(
+          icon: const Icon(Icons.delete),
+          onPressed: () => _deleteBike(),
+        ),
+      );
+    }
+    if (MediaQuery.of(context).orientation == Orientation.landscape) {
+      appBarActions.addAll(actionMenu);
+    }
+
     return Scaffold(
       appBar: AppBar(
         title: Text(_isEditing ? AppString.bikeEdit : AppString.bikeCreate),
-        actions:
-            MediaQuery.of(context).orientation == Orientation.portrait
-                ? null
-                : actionMenu,
+        actions: appBarActions.isNotEmpty ? appBarActions : null,
       ),
       body: Container(
         decoration: CustomDecorations.mainContent,
@@ -219,5 +229,32 @@ class _AddEditBikeState extends State<AddEditBike> {
       }
       Navigator.of(context).pop();
     }
+  }
+
+  void _deleteBike() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(AppString.confirmation),
+          content: Text(AppString.bikeDeletionAreYouSure),
+          actions: <Widget>[
+            TextButton(
+              child: Text(AppString.cancel),
+              onPressed: () => Navigator.of(context).pop(),
+            ),
+            TextButton(
+              child: Text(AppString.confirm),
+              onPressed: () {
+                Navigator.of(context).pop(); // close the dialog
+                _bikeListProvider.deleteBike(_bike).then((value) {
+                  Navigator.of(context).pop(); // close the page
+                });
+              },
+            ),
+          ],
+        );
+      },
+    );
   }
 }
