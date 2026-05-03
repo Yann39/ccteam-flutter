@@ -21,6 +21,7 @@ import 'package:ccteam/models/event.dart';
 import 'package:ccteam/providers/event_creation_provider.dart';
 import 'package:ccteam/providers/event_detail_provider.dart';
 import 'package:ccteam/providers/event_list_provider.dart';
+import 'package:ccteam/providers/login_provider.dart';
 import 'package:ccteam/ui/events/calendar_selector.dart';
 import 'package:ccteam/ui/events/event_card.dart';
 import 'package:ccteam/ui/main/main_action_menu.dart';
@@ -94,6 +95,10 @@ class _EventListState extends State<EventList> {
       context,
       listen: true,
     );
+    final LoginProvider _loginProvider = Provider.of<LoginProvider>(
+      context,
+      listen: false,
+    );
 
     // on date selection in calendar, fetch events for that date
     void onSelect(DateTime date, CalendarMode calendarMode) {
@@ -152,6 +157,7 @@ class _EventListState extends State<EventList> {
       appBar: AppBar(
         title: Text(AppString.tabCalendar),
         actions: <Widget>[
+          if (_loginProvider.isAdmin)
           IconButton(
             icon: Icon(Icons.add),
             onPressed: () {

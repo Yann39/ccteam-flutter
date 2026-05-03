@@ -18,11 +18,7 @@
  */
 
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:ccteam/models/photo.dart';
 import 'package:ccteam/providers/photo_provider.dart';
-import 'package:ccteam/services/photos_service.dart';
-import 'package:ccteam/utils/enums.dart';
-import 'package:ccteam/utils/strings.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -111,62 +107,6 @@ class _PhotoDetailState extends State<PhotoDetail> with SingleTickerProviderStat
     _controller
       ..value = 0.0
       ..fling(velocity: magnitude / 1000.0);
-  }
-
-  /// Method that launches the Edit New screen and awaits the result from Navigator.pop
-  _navigateToEditPhotoScreen(BuildContext context, Photo photo) async {
-    // Navigator.push returns a Future that will complete after we call Navigator.pop on the Add Photo Screen
-    final result = await Navigator.pushNamed(context, "/addEditPhoto", arguments: photo);
-
-    // after the Edit New Screen returns a result, hide any previous snack bars and show the new result
-    if (result != null) {
-      ScaffoldMessenger.of(context)
-        ..removeCurrentSnackBar()
-        ..showSnackBar(SnackBar(content: Text("$result")));
-    }
-  }
-
-  /// Display a confirmation popup when trying to delete a photo
-  void _showConfirmation(BuildContext context, String value, Photo photo) {
-    showDialog(
-      context: context,
-      builder: (_) => AlertDialog(
-        title: Text(AppString.confirmation),
-        content: Text(value),
-        actions: <Widget>[
-          TextButton(
-            onPressed: () {
-              _dialogueResult(context, ConfirmDialogAction.yes, photo);
-            },
-            child: Text(AppString.confirm),
-          ),
-          TextButton(
-            onPressed: () {
-              _dialogueResult(context, ConfirmDialogAction.no, photo);
-            },
-            child: Text(AppString.cancel),
-          ),
-        ],
-      ),
-    );
-  }
-
-  /// Handle result of the photo deletion confirmation dialog
-  void _dialogueResult(BuildContext context, ConfirmDialogAction value, Photo photo) {
-    if (value == ConfirmDialogAction.yes) {
-      final PhotosService photosService = PhotosService();
-      // delete photo
-      photosService.deletePhoto(photo).then((value) {
-        ScaffoldMessenger.of(context)
-          ..removeCurrentSnackBar()
-          ..showSnackBar(SnackBar(content: Text(AppString.photoDeleted)));
-      }, onError: (error) {
-        ScaffoldMessenger.of(context)
-          ..removeCurrentSnackBar()
-          ..showSnackBar(SnackBar(content: Text(AppString.photoDeletionFailed)));
-      });
-    }
-    Navigator.pop(context);
   }
 
   Widget build(BuildContext context) {

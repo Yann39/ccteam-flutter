@@ -19,12 +19,7 @@
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:ccteam/models/photo.dart';
-import 'package:ccteam/providers/photo_provider.dart';
-import 'package:ccteam/ui/photos/add_edit_photo.dart';
-import 'package:ccteam/utils/enums.dart';
-import 'package:ccteam/utils/strings.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 
 import '../../utils/constants.dart';
 
@@ -32,22 +27,6 @@ class PhotoCard extends StatelessWidget {
   final Photo photo;
 
   PhotoCard(this.photo);
-
-  /// Method that launches the photo form screen and awaits the result from Navigator.pop
-  void _navigateAndDisplaySelection(BuildContext context, Photo photo) async {
-    // Navigator.push returns a Future that will complete after we call Navigator.pop on the photo form Screen
-    final result = await Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => AddEditPhoto()),
-    );
-
-    // after the photo form Screen returns a result, hide any previous snack bars and show the new result
-    if (result != null) {
-      ScaffoldMessenger.of(context)
-        ..removeCurrentSnackBar()
-        ..showSnackBar(SnackBar(content: Text("$result")));
-    }
-  }
 
   /// Method that launches the Photo detail screen and awaits the result from Navigator.pop
   _navigateToPhotoDetailScreen(BuildContext context, Photo photo) async {
@@ -66,82 +45,13 @@ class PhotoCard extends StatelessWidget {
     }
   }
 
-  /*void showPhoto(BuildContext context) {
-    Navigator.push(
-      context,
-      MaterialPageRoute<void>(builder: (BuildContext context) {
-        return Scaffold(
-          appBar: AppBar(title: Text(photo.title)),
-          body: SizedBox.expand(
-            child: Hero(
-              tag: photo.id,
-              child: GridPhotoViewer(photo: photo),
-            ),
-          ),
-        );
-      }),
-    );
-  }*/
-
-  /// Display a confirmation popup when trying to delete an photo
-  void _showConfirmation(BuildContext context, String value) {
-    showDialog(
-      context: context,
-      builder:
-          (_) => AlertDialog(
-            title: Text(AppString.confirmation),
-            content: Text(value),
-            actions: <Widget>[
-              TextButton(
-                onPressed: () {
-                  _dialogueResult(context, ConfirmDialogAction.yes);
-                },
-                child: Text(AppString.confirm),
-              ),
-              TextButton(
-                onPressed: () {
-                  _dialogueResult(context, ConfirmDialogAction.no);
-                },
-                child: Text(AppString.cancel),
-              ),
-            ],
-          ),
-    );
-  }
-
-  /// Handle result of the photo deletion confirmation dialog
-  void _dialogueResult(BuildContext context, ConfirmDialogAction value) {
-    if (value == ConfirmDialogAction.yes) {
-      // delete photo
-      Provider.of<PhotoProvider>(context, listen: false)
-          .deletePhoto(photo)
-          .then(
-            (value) {
-              ScaffoldMessenger.of(context)
-                ..removeCurrentSnackBar()
-                ..showSnackBar(SnackBar(content: Text(AppString.photoDeleted)));
-            },
-            onError: (error) {
-              ScaffoldMessenger.of(context)
-                ..removeCurrentSnackBar()
-                ..showSnackBar(
-                  SnackBar(content: Text(AppString.photoDeletionFailed)),
-                );
-            },
-          );
-    }
-    Navigator.pop(context);
-  }
-
   @override
   Widget build(BuildContext context) {
     return Container(
       color: Colors.transparent,
       margin: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 4.0),
       child: InkWell(
-        onTap:
-            () => /*showPhoto(context),*/
-                _navigateToPhotoDetailScreen(context, photo),
+        onTap: () => _navigateToPhotoDetailScreen(context, photo),
         child: Hero(
           flightShuttleBuilder: (
             BuildContext flightContext,

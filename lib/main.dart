@@ -58,7 +58,6 @@ import 'package:ccteam/ui/members/add_edit_membership_fee.dart';
 import 'package:ccteam/ui/news/add_edit_news.dart';
 import 'package:ccteam/ui/news/news_detail.dart';
 import 'package:ccteam/ui/news/news_list.dart';
-import 'package:ccteam/ui/photos/add_edit_photo.dart';
 import 'package:ccteam/ui/photos/gallery.dart';
 import 'package:ccteam/ui/photos/photo_detail.dart';
 import 'package:ccteam/ui/tracks/track_detail.dart';
@@ -366,7 +365,6 @@ class CCTeamApp extends StatelessWidget {
           '/addEditNews': (context) => AddEditNews(),
           '/addEditEvent': (context) => AddEditEvent(),
           '/addEditMember': (context) => AddEditMember(),
-          '/addEditPhoto': (context) => AddEditPhoto(),
           '/addEditRecord': (context) => AddEditRecord(),
           '/newsList': (context) => NewsList(),
           '/newsDetail': (context) => NewsDetail(),

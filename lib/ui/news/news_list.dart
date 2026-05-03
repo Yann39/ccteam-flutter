@@ -21,6 +21,7 @@ import 'package:ccteam/models/news.dart';
 import 'package:ccteam/providers/news_creation_provider.dart';
 import 'package:ccteam/providers/news_detail_provider.dart';
 import 'package:ccteam/providers/news_list_provider.dart';
+import 'package:ccteam/providers/login_provider.dart';
 import 'package:ccteam/ui/main/main_action_menu.dart';
 import 'package:ccteam/ui/main/main_drawer.dart';
 import 'package:ccteam/ui/news/news_card.dart';
@@ -65,17 +66,22 @@ class NewsList extends StatelessWidget {
       context,
       listen: true,
     );
+    final LoginProvider _loginProvider = Provider.of<LoginProvider>(
+      context,
+      listen: false,
+    );
 
     return Scaffold(
       appBar: AppBar(
         title: Text(AppString.tabHome),
         actions: <Widget>[
-          IconButton(
-            icon: Icon(Icons.add),
-            onPressed: () {
-              _navigateToAddNewsScreen(context);
-            },
-          ),
+          if (_loginProvider.isAdmin)
+            IconButton(
+              icon: Icon(Icons.add),
+              onPressed: () {
+                _navigateToAddNewsScreen(context);
+              },
+            ),
           MainActionMenu(),
         ],
       ),

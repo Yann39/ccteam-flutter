@@ -87,6 +87,8 @@ class LoginProvider extends ChangeNotifier {
   
   bool get isMember => _loggedMember?.role == MemberRole.ROLE_MEMBER || _loggedMember?.role == MemberRole.ROLE_ADMIN;
 
+  bool get isAdmin => _loggedMember?.role == MemberRole.ROLE_ADMIN;
+
   String? get loginPassCode => _loginPassCode;
 
   String? get firstPassCode => _firstPassCode;

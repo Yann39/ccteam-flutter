@@ -22,7 +22,6 @@ import 'package:ccteam/providers/login_provider.dart';
 import 'package:ccteam/providers/photo_detail_provider.dart';
 import 'package:ccteam/providers/photo_provider.dart';
 import 'package:ccteam/ui/main/main_action_menu.dart';
-import 'package:ccteam/ui/photos/add_edit_photo.dart';
 import 'package:ccteam/utils/custom_decorations.dart';
 import 'package:ccteam/utils/strings.dart';
 import 'package:ccteam/widgets/loading_content.dart';
@@ -32,22 +31,6 @@ import 'package:provider/provider.dart';
 
 class Gallery extends StatelessWidget {
   const Gallery({Key? key}) : super(key: key);
-
-  /// Method that launches the Add Photo screen and awaits the result from Navigator.pop
-  _navigateAndDisplaySelection(BuildContext context) async {
-    // Navigator.push returns a Future that will complete after we call Navigator.pop on the Add News Screen
-    final result = await Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => AddEditPhoto()),
-    );
-
-    // after the Add Photo Screen returns a result, hide any previous snack bars and show the new result
-    if (result != null) {
-      ScaffoldMessenger.of(context)
-        ..removeCurrentSnackBar()
-        ..showSnackBar(SnackBar(content: Text("$result")));
-    }
-  }
 
   Widget build(BuildContext context) {
     final _photoProvider = Provider.of<PhotoProvider>(context, listen: true);
@@ -140,17 +123,6 @@ class Gallery extends StatelessWidget {
                   ),
                 ),
               ),
-      floatingActionButton:
-          _loginProvider.isMember
-              ? FloatingActionButton(
-                elevation: 0.0,
-                child: Icon(Icons.add, color: Colors.white),
-                backgroundColor: Colors.red[700],
-                onPressed: () {
-                  _navigateAndDisplaySelection(context);
-                },
-              )
-              : null,
     );
   }
 }

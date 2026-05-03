@@ -91,7 +91,14 @@ class MemberList extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text(AppString.tabTeam),
-        actions: <Widget>[MainActionMenu()],
+        actions: <Widget>[
+          if (_loginProvider.isAdmin)
+            IconButton(
+              icon: Icon(Icons.add),
+              onPressed: () => _navigateToAddMemberScreen(context),
+            ),
+          MainActionMenu(),
+        ],
       ),
       drawer: MainDrawer(),
       body:
@@ -188,17 +195,6 @@ class MemberList extends StatelessWidget {
                   ),
                 ],
               ),
-      floatingActionButton:
-          _loginProvider.isMember
-              ? FloatingActionButton(
-                elevation: 0.0,
-                child: Icon(Icons.add, color: Colors.white),
-                backgroundColor: Colors.red[700],
-                onPressed: () {
-                  _navigateToAddMemberScreen(context);
-                },
-              )
-              : null,
     );
   }
 }
