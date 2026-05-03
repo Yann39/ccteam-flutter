@@ -55,7 +55,7 @@ class NotificationsService {
   static Future<void> initialize(BuildContext context) async {
     // initialise the plugin. app_icon needs to be a added as a drawable resource to the Android head project
     await flutterLocalNotificationsPlugin.initialize(
-      initializationSettings,
+      settings: initializationSettings,
       onDidReceiveNotificationResponse: onDidReceiveNotificationResponse,
     );
 
@@ -151,10 +151,10 @@ class NotificationsService {
     final Map<String, dynamic> param = {"type": "news", "value": news.toJson()};
 
     await flutterLocalNotificationsPlugin.show(
-      news.id!,
-      news.title,
-      news.catchLine,
-      notificationDetails,
+      id: news.id!,
+      title: news.title,
+      body: news.catchLine,
+      notificationDetails: notificationDetails,
       payload: json.encode(param),
     );
   }
@@ -187,11 +187,11 @@ class NotificationsService {
     };
 
     await flutterLocalNotificationsPlugin.zonedSchedule(
-      event.id!,
-      'Événement prévu dans 6 heures !',
-      event.title,
-      scheduledNotificationDateTime,
-      notificationDetails,
+      id: event.id!,
+      title: 'Événement prévu dans 6 heures !',
+      body: event.title,
+      scheduledDate: scheduledNotificationDateTime,
+      notificationDetails: notificationDetails,
       payload: json.encode(param),
       androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
     );

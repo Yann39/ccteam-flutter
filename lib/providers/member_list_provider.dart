@@ -37,7 +37,7 @@ class MemberListProvider extends ChangeNotifier {
   late MessageProvider _messageProvider;
 
   // login provider that can be set from the proxy provider
-  LoginProvider? _loginProvider;
+  late LoginProvider _loginProvider;
 
   // current members list
   List<Member> _memberList = [];
@@ -45,11 +45,6 @@ class MemberListProvider extends ChangeNotifier {
   // current loading status
   LoadingStatus _loadingStatus = LoadingStatus.notLoaded;
 
-  // constructor
-  MemberListProvider() {
-    // as soon as it is instantiated, we fetch members
-    fetchMemberList(null);
-  }
 
   UnmodifiableListView<Member> get memberList => UnmodifiableListView(_memberList);
 
@@ -64,6 +59,16 @@ class MemberListProvider extends ChangeNotifier {
   /// Update login provider with the specified [loginProvider].
   void updateLoginProvider(LoginProvider loginProvider) {
     _loginProvider = loginProvider;
+    
+    if (_loginProvider.isMember && _loadingStatus == LoadingStatus.notLoaded) {
+      // fetch members once the login provider is injected and user is a member
+      fetchMemberList(null);
+    } else if (!_loginProvider.isMember) {
+      // clear the list if the user is not a member (e.g. logged out)
+      _memberList = [];
+      _loadingStatus = LoadingStatus.notLoaded;
+    }
+    
     _notifyListeners();
   }
 
@@ -95,7 +100,7 @@ class MemberListProvider extends ChangeNotifier {
   /// Fetch the list of all members according to the specified [text] filter.
   void fetchMemberList(String? text) async {
     // guard against unauthorized access
-    if (!(_loginProvider?.isMember ?? false)) {
+    if (!_loginProvider.isMember) {
       _log.info("User not member, skipping member list fetch");
       _memberList = [];
       _updateLoadingStatus(LoadingStatus.loaded);
@@ -109,7 +114,11 @@ class MemberListProvider extends ChangeNotifier {
     }, onError: (error) {
       _log.warning("Error when retrieving members list ($error)");
       _memberList = [];
-      AppUtils.handleServiceException(error, _messageProvider, _loginProvider!);
+            AppUtils.handleServiceException(
+              error,
+              _messageProvider,
+              _loginProvider,
+            );
       _updateLoadingStatus(LoadingStatus.notLoaded);
     });
   }

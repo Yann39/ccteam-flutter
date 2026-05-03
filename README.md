@@ -2,11 +2,11 @@
 
 **Flutter** mobile application for the **CCTeam** motorcycle racing club
 
-![Version](https://img.shields.io/badge/Version-0.8.1-2AAB92.svg)
-![Static Badge](https://img.shields.io/badge/Last_update-01_Feb_2026-blue)
+![Version](https://img.shields.io/badge/Version-0.8.2-2AAB92.svg)
+![Static Badge](https://img.shields.io/badge/Last_update-03_May_2026-blue)
 
-![Version](https://img.shields.io/badge/Flutter-3.38.3-red.svg)
-![Version](https://img.shields.io/badge/Dart-3.10.1-green.svg)
+![Version](https://img.shields.io/badge/Flutter-3.41.9-red.svg)
+![Version](https://img.shields.io/badge/Dart-3.11.5-green.svg)
 
 ---
 
@@ -52,7 +52,7 @@ In build.gradle, upgrade version code and name :
 
 ```gradle
 versionCode 2
-versionName "0.8.0"
+versionName "0.8.2"
 ```
 
 Build the application bundle :
