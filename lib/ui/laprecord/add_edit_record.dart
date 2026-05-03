@@ -172,6 +172,39 @@ class _AddEditRecordState extends State<AddEditRecord> {
     }
   }
 
+  /// Delete the record after user confirmation
+  void _deleteRecord() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(AppString.confirmation),
+          content: Text(AppString.recordDeletionAreYouSure),
+          actions: <Widget>[
+            TextButton(
+              child: Text(AppString.cancel),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            TextButton(
+              child: Text(AppString.confirm),
+              onPressed: () {
+                Navigator.of(context).pop(); // close the dialog
+                Provider.of<RecordCreationProvider>(
+                  context,
+                  listen: false,
+                ).deleteRecord().then((value) {
+                  Navigator.pop(context, AppString.recordDeleted); // close the page
+                });
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   Widget build(BuildContext context) {
     RecordCreationProvider _recordCreationProvider =
         Provider.of<RecordCreationProvider>(context, listen: true);
@@ -370,15 +403,26 @@ class _AddEditRecordState extends State<AddEditRecord> {
       ),
     ];
 
+    final List<Widget> appBarActions = [];
+    if (_recordCreationProvider.record.id != null) {
+      appBarActions.add(
+        IconButton(
+          icon: const Icon(Icons.delete),
+          onPressed: () => _deleteRecord(),
+        ),
+      );
+    }
+    
+    if (MediaQuery.of(context).orientation == Orientation.landscape) {
+      appBarActions.addAll(actionMenu);
+    }
+
     return Scaffold(
       key: _scaffoldKey,
       appBar: AppBar(
         elevation: 0.0,
         title: Text(AppString.recordEdit),
-        actions:
-            MediaQuery.of(context).orientation == Orientation.portrait
-                ? null
-                : actionMenu,
+        actions: appBarActions.isNotEmpty ? appBarActions : null,
       ),
       body: Container(
         decoration: CustomDecorations.mainContent,

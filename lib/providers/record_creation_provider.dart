@@ -155,6 +155,36 @@ class RecordCreationProvider extends ChangeNotifier {
         );
   }
 
+  /// Delete the current record being edited.
+  Future<void> deleteRecord() async {
+    _updateStatus(LoadingStatus.loading);
+    await _recordsService
+        .deleteRecord(_record)
+        .then(
+          (value) {
+            _log.fine("Record successfully deleted : ${_record.id}");
+            _updateStatus(LoadingStatus.loaded);
+            _messageProvider.setMessage(
+              AppString.recordDeleted,
+              MessageType.SUCCESS,
+            );
+          },
+          onError: (error) {
+            _log.warning("Error when deleting record ($error)");
+            _messageProvider.setMessage(
+              AppString.recordDeletionFailed,
+              MessageType.ERROR,
+            );
+            AppUtils.handleServiceException(
+              error,
+              _messageProvider,
+              _loginProvider,
+            );
+            _updateStatus(LoadingStatus.notLoaded);
+          },
+        );
+  }
+
   /// Notify all the registered listeners of this provider.
   void _notifyListeners() {
     _log.info("Notifying listeners of RecordCreationProvider");

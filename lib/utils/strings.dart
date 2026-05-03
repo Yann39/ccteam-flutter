@@ -374,6 +374,12 @@ class AppString {
       'Le chrono à été mis à jour avec succès !';
   static const String recordUpdateFailed =
       'Echec lors de la mise à jour du chrono';
+  static const String recordDeleted = 
+      'Le chrono à été supprimé avec succès !';
+  static const String recordDeletionFailed = 
+      'Echec lors de la suppression du chrono';
+  static const String recordDeletionAreYouSure = 
+      'Etes-vous sûr de vouloir supprimer ce chrono ?';
   static const String recordDate = 'Date';
   static const String recordDateHint = 'Date du chrono';
   static const String recordDateMandatory = 'La date du chrono est obligatoire';

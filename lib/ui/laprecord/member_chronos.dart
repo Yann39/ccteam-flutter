@@ -54,8 +54,20 @@ class _MemberChronosState extends State<MemberChronos> {
       context,
       listen: false,
     ).setRecordToEdit(new Record());
-    // Navigator.push returns a Future that will complete after we call Navigator.pop on the target screen
-    await Navigator.pushNamed(context, '/addEditRecord');
+    final result = await Navigator.pushNamed(context, '/addEditRecord');
+    if (result != null) {
+      final _recordListProvider = Provider.of<RecordListProvider>(
+        context,
+        listen: false,
+      );
+      final _memberDetailProvider = Provider.of<MemberDetailProvider>(
+        context,
+        listen: false,
+      );
+      _recordListProvider.fetchMemberRecords(
+        _memberDetailProvider.currentMember!.id!,
+      );
+    }
   }
 
   List<DropdownMenuItem<String>> get dropdownItems {
@@ -122,12 +134,20 @@ class _MemberChronosState extends State<MemberChronos> {
                 itemBuilder: (context, index) {
                   final record = _recordListProvider.memberRecords[index];
                   return InkWell(
-                    onTap: () {
+                    onTap: () async {
                       Provider.of<RecordCreationProvider>(
                         context,
                         listen: false,
                       ).setRecordToEdit(record);
-                      Navigator.pushNamed(context, '/addEditRecord');
+                      final result = await Navigator.pushNamed(
+                        context,
+                        '/addEditRecord',
+                      );
+                      if (result != null) {
+                        _recordListProvider.fetchMemberRecords(
+                          _memberDetailProvider.currentMember!.id!,
+                        );
+                      }
                     },
                     child: Container(
                       padding: EdgeInsets.all(8.0),
