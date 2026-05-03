@@ -294,9 +294,17 @@ class NewsDetail extends StatelessWidget {
                           ),
                           onPressed:
                               () => {
-                                Share.share(
-                                  _newsDetailProvider.currentNews!.catchLine!,
-                                subject: _newsDetailProvider.currentNews!.title,
+                                SharePlus.instance.share(
+                                  ShareParams(
+                                    subject:
+                                        _newsDetailProvider.currentNews!.title,
+                                    text:
+                                        _newsDetailProvider
+                                            .currentNews!
+                                            .catchLine!,
+                                    title:
+                                        _newsDetailProvider.currentNews!.title,
+                                  )
                                 ),
                               },
                           child: Row(

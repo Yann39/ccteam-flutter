@@ -103,9 +103,4 @@ class PhotoDetailProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Update the current loading [status].
-  void _updateStatus(LoadingStatus status) {
-    _loadingStatus = status;
-    _notifyListeners();
-  }
 }

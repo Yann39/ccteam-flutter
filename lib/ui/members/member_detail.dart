@@ -39,14 +39,12 @@ import 'package:ccteam/utils/strings.dart';
 import 'package:ccteam/widgets/loading_content.dart';
 import 'package:ccteam/widgets/restricted_content.dart';
 import 'package:flutter/material.dart';
-import 'package:logging/logging.dart';
 import 'package:provider/provider.dart';
 
 import '../../providers/track_detail_provider.dart';
 import '../../utils/track_utils.dart';
 
 class MemberDetail extends StatelessWidget {
-  final Logger _log = new Logger('MemberDetail');
 
   final ScrollController _scrollController = new ScrollController();
 

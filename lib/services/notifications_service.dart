@@ -24,6 +24,8 @@ import 'package:ccteam/models/news.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:timezone/data/latest_all.dart' as tz;
+import 'package:timezone/timezone.dart' as tz;
 
 class NotificationsService {
   static late BuildContext buildContext;
@@ -56,6 +58,8 @@ class NotificationsService {
       initializationSettings,
       onDidReceiveNotificationResponse: onDidReceiveNotificationResponse,
     );
+
+    tz.initializeTimeZones();
 
     buildContext = context;
   }
@@ -158,8 +162,9 @@ class NotificationsService {
   /// Schedule an event notification for the specified [event]
   /// The notification will be sent 6 hours before the event start date
   static void scheduleEventNotification(Event event) async {
-    final DateTime scheduledNotificationDateTime = event.startDate!.subtract(
-      Duration(hours: 6),
+    final tz.TZDateTime scheduledNotificationDateTime = tz.TZDateTime.from(
+      event.startDate!.subtract(Duration(hours: 6)),
+      tz.local,
     );
     final AndroidNotificationDetails
     androidNotificationDetails = AndroidNotificationDetails(
@@ -181,7 +186,7 @@ class NotificationsService {
       "value": event.toJson(),
     };
 
-    /*await flutterLocalNotificationsPlugin.zonedSchedule(
+    await flutterLocalNotificationsPlugin.zonedSchedule(
       event.id!,
       'Événement prévu dans 6 heures !',
       event.title,
@@ -189,7 +194,6 @@ class NotificationsService {
       notificationDetails,
       payload: json.encode(param),
       androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
-      uiLocalNotificationDateInterpretation: UILocalNotificationDateInterpretation.absoluteTime,
-    );*/
+    );
   }
 }

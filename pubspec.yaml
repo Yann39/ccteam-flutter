@@ -55,6 +55,9 @@ dependencies:
   # to share content
   share_plus: ^12.0.1
 
+  # handle timezones
+  timezone: ^0.10.1
+
   # mocking
   mockito: ^5.4.5
 

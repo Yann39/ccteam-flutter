@@ -19,7 +19,6 @@
 
 import 'package:ccteam/models/event.dart';
 import 'package:ccteam/models/record.dart';
-import 'package:ccteam/models/track.dart';
 import 'package:ccteam/providers/event_detail_provider.dart';
 import 'package:ccteam/providers/login_provider.dart';
 import 'package:ccteam/providers/record_list_provider.dart';
@@ -62,19 +61,6 @@ class _TrackDetailState extends State<TrackDetail> {
         ).fetchTrackRecords(trackId);
       }
     });
-  }
-
-  /// Method that launches the Edit track screen and awaits the result from Navigator.pop
-  _navigateToEditTrackScreen(BuildContext context, Track track) async {
-    /*// Navigator.push returns a Future that will complete after we call Navigator.pop on the target screen
-    final result = await Navigator.push(context, MaterialPageRoute(builder: (context) => AddEditTrack(event: event)));
-
-    // after the target screen returns a result, hide any previous snack bars and show the new result
-    if (result != null) {
-      Scaffold.of(context)
-        ..removeCurrentSnackBar()
-        ..showSnackBar(SnackBar(content: Text("$result")));
-    }*/
   }
 
   Widget _recordsTable(RecordListProvider recordListProvider) {
@@ -174,11 +160,11 @@ class _TrackDetailState extends State<TrackDetail> {
           defaultVerticalAlignment: TableCellVerticalAlignment.middle,
           border: TableBorder(
             horizontalInside: BorderSide(
-              color: Colors.black.withOpacity(0.3),
+              color: Colors.black.withValues(alpha: 0.3),
               width: 1,
             ),
             verticalInside: BorderSide(
-              color: Colors.black.withOpacity(0.3),
+              color: Colors.black.withValues(alpha: 0.3),
               width: 1,
             ),
           ),
@@ -193,24 +179,32 @@ class _TrackDetailState extends State<TrackDetail> {
                     ),
                     child: Text(
                       ev.fullDate,
-                      style: TextStyle(color: Colors.black.withOpacity(0.8)),
+                      style: TextStyle(
+                        color: Colors.black.withValues(alpha: 0.8),
+                      ),
                       overflow: TextOverflow.ellipsis,
                       textAlign: TextAlign.center,
                     ),
                   ),
                   Text(
                     ev.organizer ?? "",
-                    style: TextStyle(color: Colors.black.withOpacity(0.8)),
+                    style: TextStyle(
+                      color: Colors.black.withValues(alpha: 0.8),
+                    ),
                     textAlign: TextAlign.center,
                   ),
                   Text(
                     "${StringUtils.formatPrice(ev.price ?? 0.0)} €",
-                    style: TextStyle(color: Colors.black.withOpacity(0.8)),
+                    style: TextStyle(
+                      color: Colors.black.withValues(alpha: 0.8),
+                    ),
                     textAlign: TextAlign.center,
                   ),
                   Text(
                     "${ev.participants?.length ?? 0}",
-                    style: TextStyle(color: Colors.black.withOpacity(0.8)),
+                    style: TextStyle(
+                      color: Colors.black.withValues(alpha: 0.8),
+                    ),
                     textAlign: TextAlign.center,
                   ),
                 ],
