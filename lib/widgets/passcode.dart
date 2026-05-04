@@ -45,99 +45,113 @@ class _PasscodeWidgetState extends State<PasscodeWidget> {
   /// A widget representing a digit of the passcode
   Widget _passcodeDigit(int digitId, LoginProvider loginProvider, PasscodeProvider passcodeProvider) {
     return Padding(
-      padding: const EdgeInsets.all(8.0),
-      child: TextButton(
-        onPressed: () {
-          // passcode for logging in
-          if (loginProvider.loginStatus == LoginStatus.PasscodeStep) {
-            // if 6 digits have already been entered, ignore any tap
-            if (passcodeProvider.loginPassCode != null && passcodeProvider.loginPassCode!.length >= 6) {
-              return;
+      padding: const EdgeInsets.all(6.0),
+      child: SizedBox(
+        width: 80.0,
+        height: 64.0,
+        child: TextButton(
+          onPressed: () {
+            // passcode for logging in
+            if (loginProvider.loginStatus == LoginStatus.PasscodeStep) {
+              // if 6 digits have already been entered, ignore any tap
+              if (passcodeProvider.loginPassCode != null && passcodeProvider.loginPassCode!.length >= 6) {
+                return;
+              }
+              // update the provider, so we can update the digits indicator
+              passcodeProvider.loginPassCode =
+                  (passcodeProvider.loginPassCode != null ? passcodeProvider.loginPassCode! : "") + "$digitId";
+              // auto submit form when last digit is entered
+              if (passcodeProvider.loginPassCode != null && passcodeProvider.loginPassCode!.length >= 6) {
+                _doLogin(context, passcodeProvider);
+              }
             }
-            // update the provider, so we can update the digits indicator
-            passcodeProvider.loginPassCode =
-                (passcodeProvider.loginPassCode != null ? passcodeProvider.loginPassCode! : "") + "$digitId";
-            // auto submit form when last digit is entered
-            if (passcodeProvider.loginPassCode != null && passcodeProvider.loginPassCode!.length >= 6) {
-              _doLogin(context, passcodeProvider);
+            // passcode creation 1st step
+            else if (loginProvider.loginStatus == LoginStatus.CreatePasscodeStep) {
+              // if 6 digits have already been entered, ignore any tap
+              if (passcodeProvider.firstPassCode != null && passcodeProvider.firstPassCode!.length >= 6) {
+                return;
+              }
+              // update the provider, so we can update the digits indicator
+              passcodeProvider.firstPassCode =
+                  (passcodeProvider.firstPassCode != null ? passcodeProvider.firstPassCode! : "") + "$digitId";
             }
-          }
-          // passcode creation 1st step
-          else if (loginProvider.loginStatus == LoginStatus.CreatePasscodeStep) {
-            // if 6 digits have already been entered, ignore any tap
-            if (passcodeProvider.firstPassCode != null && passcodeProvider.firstPassCode!.length >= 6) {
-              return;
+            // passcode creation 2nd step (confirmation)
+            else if (loginProvider.loginStatus == LoginStatus.ConfirmPasscodeStep) {
+              // if 6 digits have already been entered, ignore any tap
+              if (passcodeProvider.secondPassCode != null && passcodeProvider.secondPassCode!.length >= 6) {
+                return;
+              }
+              // update the provider, so we can update the digits indicator
+              passcodeProvider.secondPassCode =
+                  (passcodeProvider.secondPassCode != null ? passcodeProvider.secondPassCode! : "") + "$digitId";
             }
-            // update the provider, so we can update the digits indicator
-            passcodeProvider.firstPassCode =
-                (passcodeProvider.firstPassCode != null ? passcodeProvider.firstPassCode! : "") + "$digitId";
-          }
-          // passcode creation 2nd step (confirmation)
-          else if (loginProvider.loginStatus == LoginStatus.ConfirmPasscodeStep) {
-            // if 6 digits have already been entered, ignore any tap
-            if (passcodeProvider.secondPassCode != null && passcodeProvider.secondPassCode!.length >= 6) {
-              return;
-            }
-            // update the provider, so we can update the digits indicator
-            passcodeProvider.secondPassCode =
-                (passcodeProvider.secondPassCode != null ? passcodeProvider.secondPassCode! : "") + "$digitId";
-          }
-        },
-        style: TextButton.styleFrom(
-          shape: CircleBorder(side: BorderSide(color: Colors.blue[900]!)),
-          foregroundColor: Colors.black,
-          padding: EdgeInsets.all(12.0),
-          disabledForegroundColor: Colors.blue[700],
+          },
+          style: TextButton.styleFrom(
+            shape: CircleBorder(side: BorderSide(color: Colors.blue[900]!)),
+            foregroundColor: Colors.black,
+            padding: EdgeInsets.zero,
+            disabledForegroundColor: Colors.blue[700],
+          ),
+          child: Text(
+            "$digitId",
+            style: TextStyle(fontSize: 24.0),
+          ),
         ),
-        child: Text("$digitId"),
       ),
     );
   }
 
   /// A widget representing the back button of the passcode
   Widget _passcodeBack(LoginProvider loginProvider, PasscodeProvider passcodeProvider) {
-    return TextButton(
-      onPressed: () {
-        // passcode for logging in
-        if (loginProvider.loginStatus == LoginStatus.PasscodeStep) {
-          // remove last digit or set it to null if it was the last one
-          if (passcodeProvider.loginPassCode != null && passcodeProvider.loginPassCode!.length >= 1) {
-            passcodeProvider.loginPassCode =
-                passcodeProvider.loginPassCode!.substring(0, passcodeProvider.loginPassCode!.length - 1);
-          } else {
-            passcodeProvider.loginPassCode = null;
-          }
-        }
-        // passcode creation 1st step
-        else if (loginProvider.loginStatus == LoginStatus.CreatePasscodeStep) {
-          // remove last digit or set it to null if it was the last one
-          if (passcodeProvider.firstPassCode != null && passcodeProvider.firstPassCode!.length >= 1) {
-            passcodeProvider.firstPassCode =
-                passcodeProvider.firstPassCode!.substring(0, passcodeProvider.firstPassCode!.length - 1);
-          } else {
-            passcodeProvider.firstPassCode = null;
-          }
-        }
-        // passcode creation 2nd step (confirmation)
-        else if (loginProvider.loginStatus == LoginStatus.ConfirmPasscodeStep) {
-          // remove last digit or set it to null if it was the last one
-          if (passcodeProvider.secondPassCode != null && passcodeProvider.secondPassCode!.length >= 1) {
-            passcodeProvider.secondPassCode =
-                passcodeProvider.secondPassCode!.substring(0, passcodeProvider.secondPassCode!.length - 1);
-          } else {
-            passcodeProvider.secondPassCode = null;
-          }
-        }
-      },
-      child: Icon(
-        Icons.arrow_back,
-        size: 16.0,
-      ),
-      style: TextButton.styleFrom(
-        shape: CircleBorder(side: BorderSide(color: Colors.blue[900]!)),
-        foregroundColor: Colors.black,
-        padding: EdgeInsets.all(12.0),
-        disabledForegroundColor: Colors.blue[700],
+    return Padding(
+      padding: const EdgeInsets.all(6.0),
+      child: SizedBox(
+        width: 80.0,
+        height: 64.0,
+        child: TextButton(
+          onPressed: () {
+            // passcode for logging in
+            if (loginProvider.loginStatus == LoginStatus.PasscodeStep) {
+              // remove last digit or set it to null if it was the last one
+              if (passcodeProvider.loginPassCode != null && passcodeProvider.loginPassCode!.length >= 1) {
+                passcodeProvider.loginPassCode =
+                    passcodeProvider.loginPassCode!.substring(0, passcodeProvider.loginPassCode!.length - 1);
+              } else {
+                passcodeProvider.loginPassCode = null;
+              }
+            }
+            // passcode creation 1st step
+            else if (loginProvider.loginStatus == LoginStatus.CreatePasscodeStep) {
+              // remove last digit or set it to null if it was the last one
+              if (passcodeProvider.firstPassCode != null && passcodeProvider.firstPassCode!.length >= 1) {
+                passcodeProvider.firstPassCode =
+                    passcodeProvider.firstPassCode!.substring(0, passcodeProvider.firstPassCode!.length - 1);
+              } else {
+                passcodeProvider.firstPassCode = null;
+              }
+            }
+            // passcode creation 2nd step (confirmation)
+            else if (loginProvider.loginStatus == LoginStatus.ConfirmPasscodeStep) {
+              // remove last digit or set it to null if it was the last one
+              if (passcodeProvider.secondPassCode != null && passcodeProvider.secondPassCode!.length >= 1) {
+                passcodeProvider.secondPassCode =
+                    passcodeProvider.secondPassCode!.substring(0, passcodeProvider.secondPassCode!.length - 1);
+              } else {
+                passcodeProvider.secondPassCode = null;
+              }
+            }
+          },
+          child: Icon(
+            Icons.arrow_back,
+            size: 22.0,
+          ),
+          style: TextButton.styleFrom(
+            shape: CircleBorder(side: BorderSide(color: Colors.blue[900]!)),
+            foregroundColor: Colors.black,
+            padding: EdgeInsets.zero,
+            disabledForegroundColor: Colors.blue[700],
+          ),
+        ),
       ),
     );
   }
@@ -207,9 +221,9 @@ class _PasscodeWidgetState extends State<PasscodeWidget> {
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            TextButton(
-              onPressed: () {},
-              child: Text(""),
+            Padding(
+              padding: const EdgeInsets.all(6.0),
+              child: SizedBox(width: 80.0, height: 64.0),
             ),
             _passcodeDigit(0, _loginProvider, _passcodeProvider),
             _passcodeBack(_loginProvider, _passcodeProvider),

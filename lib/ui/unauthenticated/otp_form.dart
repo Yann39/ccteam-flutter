@@ -22,8 +22,8 @@ import 'package:ccteam/providers/timer_provider.dart';
 import 'package:ccteam/utils/constants.dart';
 import 'package:ccteam/utils/enums.dart';
 import 'package:ccteam/utils/strings.dart';
-import 'package:ccteam/widgets/ccteam_logo.dart';
 import 'package:ccteam/widgets/countdown_timer.dart';
+import 'package:ccteam/widgets/unauthenticated_layout.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:logging/logging.dart';
@@ -193,35 +193,26 @@ class _OtpFormState extends State<OtpForm> {
     final _otpForm = Form(
       autovalidateMode: AutovalidateMode.disabled,
       key: _otpFormKey,
-      child: Padding(
-        padding: EdgeInsets.only(left: 16.0, right: 16.0),
-        child: Column(
-          mainAxisSize: MainAxisSize.max,
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      child: UnauthenticatedLayout(
+        title: AppString.emailAddressVerification,
+        description: RichText(
+          textAlign: TextAlign.center,
+          text: TextSpan(
+            style: TextStyle(fontSize: 14.0, color: Colors.black),
+            children: <TextSpan>[
+              TextSpan(text: AppString.infoLoginOtp),
+              TextSpan(
+                text: " ${_loginProvider.email}".toLowerCase(),
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+            ],
+          ),
+        ),
+        body: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: <Widget>[
-            CCTeamLogo(),
-            SizedBox(height: 36.0),
-            Text(
-              AppString.emailAddressVerification,
-              style: TextStyle(fontSize: 20.0, fontWeight: FontWeight.bold),
-              textAlign: TextAlign.center,
-            ),
-            SizedBox(height: 16.0),
-            RichText(
-              textAlign: TextAlign.center,
-              text: TextSpan(
-                style: TextStyle(fontSize: 14.0, color: Colors.black),
-                children: <TextSpan>[
-                  TextSpan(text: AppString.infoLoginOtp),
-                  TextSpan(
-                      text: " ${_loginProvider.email}".toLowerCase(), style: TextStyle(fontWeight: FontWeight.bold)),
-                ],
-              ),
-            ),
-            SizedBox(height: 32.0),
             _otpField,
-            SizedBox(height: 32.0),
+            SizedBox(height: 24.0),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[
@@ -232,7 +223,7 @@ class _OtpFormState extends State<OtpForm> {
                 CountDownTimer(textStyle: TextStyle(fontSize: 14.0, fontWeight: FontWeight.bold)),
               ],
             ),
-            SizedBox(height: 16.0),
+            SizedBox(height: 8.0),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[
@@ -260,10 +251,12 @@ class _OtpFormState extends State<OtpForm> {
                 ),
               ],
             ),
-            _otpVerifyButton,
-            _backButton,
           ],
         ),
+        actions: <Widget>[
+          _otpVerifyButton,
+          _backButton,
+        ],
       ),
     );
 

@@ -20,8 +20,8 @@
 import 'package:ccteam/providers/login_provider.dart';
 import 'package:ccteam/providers/passcode_provider.dart';
 import 'package:ccteam/utils/strings.dart';
-import 'package:ccteam/widgets/ccteam_logo.dart';
 import 'package:ccteam/widgets/passcode.dart';
+import 'package:ccteam/widgets/unauthenticated_layout.dart';
 import 'package:flutter/material.dart';
 import 'package:logging/logging.dart';
 import 'package:provider/provider.dart';
@@ -40,40 +40,24 @@ class _PasscodeFormState extends State<PasscodeForm> {
 
     _log.info("Building PasscodeForm...");
 
-    final _passcodeForm = Padding(
-      padding: EdgeInsets.only(left: 16.0, right: 16.0),
-      child: Column(
-        mainAxisSize: MainAxisSize.max,
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: <Widget>[
-          CCTeamLogo(),
-          SizedBox(height: 16.0),
-          Text(
-            AppString.enterPasscode,
-            style: TextStyle(fontSize: 20.0, fontWeight: FontWeight.bold, color: Colors.black87),
-            textAlign: TextAlign.center,
+    return UnauthenticatedLayout(
+      title: AppString.enterPasscode,
+      body: PasscodeWidget(),
+      actions: <Widget>[
+        TextButton(
+          key: Key('useAnotherEmailAddressButton'),
+          onPressed: () {
+            _passcodeProvider.loginPassCode = null;
+            // logout so that the shared preferences are cleared
+            _loginProvider.logoutMember();
+            _loginProvider.goToPreviousLoginStep();
+          },
+          child: Text(
+            AppString.useAnotherEmailAddress,
+            style: TextStyle(color: Colors.black87),
           ),
-          SizedBox(height: 16.0),
-          PasscodeWidget(),
-          SizedBox(height: 16.0),
-          TextButton(
-            key: Key('useAnotherEmailAddressButton'),
-            onPressed: () {
-              _passcodeProvider.loginPassCode = null;
-              // logout so that the shared preferences are cleared
-              _loginProvider.logoutMember();
-              _loginProvider.goToPreviousLoginStep();
-            },
-            child: Text(
-              AppString.useAnotherEmailAddress,
-              style: TextStyle(color: Colors.black87),
-            ),
-          ),
-        ],
-      ),
+        ),
+      ],
     );
-
-    return _passcodeForm;
   }
 }

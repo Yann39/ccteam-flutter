@@ -24,8 +24,8 @@ import 'package:flutter/material.dart';
 import 'package:logging/logging.dart';
 import 'package:provider/provider.dart';
 
-import '../../widgets/ccteam_logo.dart';
 import '../../widgets/passcode.dart';
+import '../../widgets/unauthenticated_layout.dart';
 
 class CreatePasscodeForm extends StatefulWidget {
   @override
@@ -94,34 +94,17 @@ class _CreatePasscodeFormState extends State<CreatePasscodeForm> {
       },
     );
 
-    final _createPasscodeForm = Padding(
-      padding: EdgeInsets.only(left: 16.0, right: 16.0),
-      child: Column(
-        mainAxisSize: MainAxisSize.max,
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: <Widget>[
-          CCTeamLogo(),
-          SizedBox(height: 16.0),
-          Text(
-            AppString.createYourPasscode,
-            style: TextStyle(fontSize: 20.0, fontWeight: FontWeight.bold, color: Colors.black87),
-            textAlign: TextAlign.center,
-          ),
-          SizedBox(height: 8.0),
-          Text(
-            AppString.passcodeInfo,
-            textAlign: TextAlign.center,
-          ),
-          SizedBox(height: 16.0),
-          PasscodeWidget(),
-          SizedBox(height: 16.0),
-          _passcodeValidateButton,
-          _backButton,
-        ],
+    return UnauthenticatedLayout(
+      title: AppString.createYourPasscode,
+      description: Text(
+        AppString.passcodeInfo,
+        textAlign: TextAlign.center,
       ),
+      body: PasscodeWidget(),
+      actions: <Widget>[
+        _passcodeValidateButton,
+        _backButton,
+      ],
     );
-
-    return _createPasscodeForm;
   }
 }

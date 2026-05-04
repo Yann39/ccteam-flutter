@@ -26,6 +26,7 @@ import 'package:provider/provider.dart';
 
 import '../../providers/passcode_provider.dart';
 import '../../widgets/passcode.dart';
+import '../../widgets/unauthenticated_layout.dart';
 
 class ConfirmPasscodeForm extends StatefulWidget {
   @override
@@ -54,14 +55,6 @@ class _ConfirmPasscodeFormState extends State<ConfirmPasscodeForm> {
   _goToPreviousStep() {
     Provider.of<LoginProvider>(context, listen: false).goToPreviousLoginStep();
   }
-
-  final _logo = Container(
-    padding: EdgeInsets.only(top: 36),
-    child: Image.asset(
-      'images/ccteam-banner.png',
-      fit: BoxFit.fitWidth,
-    ),
-  );
 
   Widget build(BuildContext context) {
     final LoginProvider _loginProvider = Provider.of<LoginProvider>(context, listen: false);
@@ -112,34 +105,17 @@ class _ConfirmPasscodeFormState extends State<ConfirmPasscodeForm> {
       },
     );
 
-    final _confirmPasscodeForm = Padding(
-      padding: EdgeInsets.only(left: 16.0, right: 16.0),
-      child: Column(
-        mainAxisSize: MainAxisSize.max,
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: <Widget>[
-          _logo,
-          SizedBox(height: 16.0),
-          Text(
-            "Confirmation de votre passcode",
-            style: TextStyle(fontSize: 20.0, fontWeight: FontWeight.bold),
-            textAlign: TextAlign.center,
-          ),
-          SizedBox(height: 8.0),
-          Text(
-            AppString.confirmPasscodeInfo,
-            textAlign: TextAlign.center,
-          ),
-          SizedBox(height: 16.0),
-          PasscodeWidget(),
-          SizedBox(height: 16.0),
-          _passcodeCreateButton,
-          _backButton,
-        ],
+    return UnauthenticatedLayout(
+      title: "Confirmation de votre passcode",
+      description: Text(
+        AppString.confirmPasscodeInfo,
+        textAlign: TextAlign.center,
       ),
+      body: PasscodeWidget(),
+      actions: <Widget>[
+        _passcodeCreateButton,
+        _backButton,
+      ],
     );
-
-    return _confirmPasscodeForm;
   }
 }

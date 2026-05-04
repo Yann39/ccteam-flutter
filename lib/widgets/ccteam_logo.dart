@@ -21,12 +21,22 @@ import 'package:flutter/material.dart';
 
 /// Loading indicator widget
 class CCTeamLogo extends StatelessWidget {
+  final double? height;
+  final EdgeInsetsGeometry padding;
+
+  const CCTeamLogo({
+    Key? key,
+    this.height,
+    this.padding = const EdgeInsets.fromLTRB(48, 64, 48, 16),
+  }) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.fromLTRB(48, 64, 48, 16),
+      padding: padding,
       child: Image.asset(
         'images/ccteam8.png',
+        height: height,
         fit: BoxFit.fitHeight,
       ),
     );

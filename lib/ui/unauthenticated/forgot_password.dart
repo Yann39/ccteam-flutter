@@ -18,8 +18,10 @@
  */
 
 import 'package:ccteam/providers/login_provider.dart';
+import 'package:ccteam/utils/custom_decorations.dart';
 import 'package:ccteam/utils/string_utils.dart';
 import 'package:ccteam/utils/strings.dart';
+import 'package:ccteam/widgets/unauthenticated_layout.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:logging/logging.dart';
@@ -62,80 +64,28 @@ class _ForgotPassword extends State<ForgotPassword> {
   Widget build(BuildContext context) {
     _log.info("Building ForgotPassword...");
 
-    final _logo = Container(
-      padding: EdgeInsets.only(top: 36),
-      child: Column(
-        children: <Widget>[
-          CircleAvatar(
-            backgroundColor: Colors.transparent,
-            radius: 24.0,
-            child: Image.asset(
-              'images/helmet-face.png',
-            ),
-          ),
-          SizedBox(height: 6.0),
-          Text(
-            AppString.applicationTitle,
-            style: TextStyle(color: Colors.white),
-            textScaler: TextScaler.linear(1.3),
-          ),
-          SizedBox(height: 6.0),
-          Text(
-            AppString.askNewPassword,
-            style: TextStyle(color: Colors.white),
-          ),
-        ],
-      ),
-    );
-
-    final _forgotPasswordInfo = Padding(
-      padding: EdgeInsets.only(left: 16.0, right: 16.0),
-      child: Text(
-        AppString.forgotPasswordInfo,
-        style: TextStyle(color: Colors.white),
-      ),
-    );
-
-    final _emailField = Padding(
-      padding: EdgeInsets.only(left: 16.0, right: 16.0),
-      child: TextFormField(
-        keyboardType: TextInputType.emailAddress,
-        keyboardAppearance: Brightness.dark,
-        autofocus: false,
-        style: TextStyle(color: Colors.white),
-        decoration: InputDecoration(
-          enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.white)),
-          focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.white)),
-          prefixIcon: Icon(Icons.mail, color: Colors.white),
-          hintText: AppString.loginEmailHint,
-          hintStyle: TextStyle(color: Colors.grey[400]),
-          contentPadding: EdgeInsets.fromLTRB(16.0, 12.0, 16.0, 12.0),
+    final _emailField = TextFormField(
+      keyboardType: TextInputType.emailAddress,
+      keyboardAppearance: Brightness.dark,
+      autofocus: false,
+      decoration: InputDecoration(
+        enabledBorder: OutlineInputBorder(),
+        focusedBorder: OutlineInputBorder(),
+        errorBorder: OutlineInputBorder(
+          borderSide: BorderSide(color: Colors.red[700]!),
         ),
-        maxLines: 1,
-        inputFormatters: [LengthLimitingTextInputFormatter(128)],
-        validator: (val) => (val == null || val.isEmpty)
-            ? AppString.memberEmailMandatory
-            : (StringUtils.isValidEmail(val) ? null : AppString.memberEmailNotValid),
-        onSaved: (val) => _email = val!,
-        initialValue: _email,
+        focusedErrorBorder: OutlineInputBorder(),
+        prefixIcon: Icon(Icons.mail, color: Colors.black87),
+        hintText: AppString.loginEmailHint,
+        hintStyle: TextStyle(color: Colors.black54),
+        contentPadding: EdgeInsets.fromLTRB(16.0, 12.0, 16.0, 12.0),
       ),
-    );
-
-    final _cancelButton = ElevatedButton(
-      style: ElevatedButton.styleFrom(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8),
-        ),
-        backgroundColor: Colors.grey[700],
-        padding: EdgeInsets.fromLTRB(16.0, 12.0, 16.0, 12.0),
-      ),
-      onPressed: () {
-        Navigator.pop(context);
-      },
-      child: Text(
-        AppString.cancel,
-        style: TextStyle(color: Colors.white),
-      ),
+      maxLines: 1,
+      inputFormatters: [LengthLimitingTextInputFormatter(128)],
+      validator: (val) => (val == null || val.isEmpty)
+          ? AppString.memberEmailMandatory
+          : (StringUtils.isValidEmail(val) ? null : AppString.memberEmailNotValid),
+      onSaved: (val) => _email = val!,
     );
 
     final _sendButton = Builder(
@@ -143,9 +93,9 @@ class _ForgotPassword extends State<ForgotPassword> {
         return ElevatedButton(
           style: ElevatedButton.styleFrom(
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(4),
             ),
-            backgroundColor: Colors.red[700],
+            backgroundColor: Colors.blue[700],
             padding: EdgeInsets.fromLTRB(16.0, 12.0, 16.0, 12.0),
           ),
           onPressed: () {
@@ -159,64 +109,48 @@ class _ForgotPassword extends State<ForgotPassword> {
       },
     );
 
+    final _cancelButton = TextButton(
+      onPressed: () {
+        Navigator.pop(context);
+      },
+      child: Text(
+        AppString.cancel,
+        style: TextStyle(color: Colors.blue[900]),
+      ),
+    );
+
     return GestureDetector(
       onTap: () {
         // allow to dismiss the keyboard when clicking outside
         FocusScope.of(context).requestFocus(FocusNode());
       },
       child: Container(
-        decoration: BoxDecoration(
-          image: DecorationImage(
-            image: AssetImage("images/motos.jpg"),
-            fit: BoxFit.cover,
-            colorFilter: ColorFilter.mode(
-              Color.fromRGBO(255, 255, 255, 0.3),
-              BlendMode.modulate,
-            ),
-          ),
-        ),
+        decoration: CustomDecorations.bluePurpleGradient,
         child: Scaffold(
           backgroundColor: Colors.transparent,
-          body: Stack(
-            children: <Widget>[
-              Center(
-                child: SingleChildScrollView(
-                  child: Form(
-                    autovalidateMode: AutovalidateMode.disabled,
-                    key: _forgotPasswordFormKey,
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: <Widget>[
-                        _logo,
-                        SizedBox(height: 44.0),
-                        _forgotPasswordInfo,
-                        SizedBox(height: 32.0),
-                        _emailField,
-                        SizedBox(height: 24.0),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: <Widget>[
-                            _cancelButton,
-                            SizedBox(width: 24.0),
-                            _sendButton,
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
+          appBar: AppBar(
+            backgroundColor: Colors.transparent,
+            elevation: 0.0,
+            iconTheme: IconThemeData(color: Colors.black87),
+          ),
+          extendBodyBehindAppBar: true,
+          body: SafeArea(
+            child: Form(
+              autovalidateMode: AutovalidateMode.disabled,
+              key: _forgotPasswordFormKey,
+              child: UnauthenticatedLayout(
+                title: AppString.askNewPassword,
+                description: Text(
+                  AppString.forgotPasswordInfo,
+                  textAlign: TextAlign.center,
                 ),
+                body: _emailField,
+                actions: <Widget>[
+                  _sendButton,
+                  _cancelButton,
+                ],
               ),
-              Positioned(
-                top: 0.0,
-                left: 0.0,
-                right: 0.0,
-                child: AppBar(
-                  backgroundColor: Colors.transparent,
-                  elevation: 0.0, //Shadow gone
-                ),
-              ),
-            ],
+            ),
           ),
         ),
       ),

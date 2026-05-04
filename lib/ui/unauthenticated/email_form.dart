@@ -21,8 +21,8 @@ import 'package:ccteam/providers/login_provider.dart';
 import 'package:ccteam/utils/enums.dart';
 import 'package:ccteam/utils/string_utils.dart';
 import 'package:ccteam/utils/strings.dart';
-import 'package:ccteam/widgets/ccteam_logo.dart';
 import 'package:ccteam/widgets/loading_button_text.dart';
+import 'package:ccteam/widgets/unauthenticated_layout.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:logging/logging.dart';
@@ -129,32 +129,18 @@ class _EmailFormState extends State<EmailForm> {
     return Form(
       autovalidateMode: AutovalidateMode.disabled,
       key: _emailFormKey,
-      child: Padding(
-        padding: EdgeInsets.only(left: 16.0, right: 16.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.start,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: <Widget>[
-            CCTeamLogo(),
-            SizedBox(height: 36.0),
-            Text(
-              AppString.identification,
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.black87),
-              textAlign: TextAlign.center,
-            ),
-            SizedBox(height: 32.0),
-            _emailField,
-            SizedBox(height: 16.0),
-            Text(
-              AppString.infoLoginEmail,
-              style: TextStyle(fontSize: 15.0, fontStyle: FontStyle.italic, color: Colors.black87),
-            ),
-            SizedBox(height: 32.0),
-            _emailContinueButton,
-            _createAccountButton,
-            SizedBox(height: 24.0),
-          ],
+      child: UnauthenticatedLayout(
+        title: AppString.identification,
+        description: Text(
+          AppString.infoLoginEmail,
+          style: TextStyle(fontSize: 15.0, fontStyle: FontStyle.italic, color: Colors.black87),
+          textAlign: TextAlign.center,
         ),
+        body: _emailField,
+        actions: <Widget>[
+          _emailContinueButton,
+          _createAccountButton,
+        ],
       ),
     );
   }

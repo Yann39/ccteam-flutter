@@ -21,8 +21,8 @@ import 'package:ccteam/providers/login_provider.dart';
 import 'package:ccteam/utils/enums.dart';
 import 'package:ccteam/utils/string_utils.dart';
 import 'package:ccteam/utils/strings.dart';
-import 'package:ccteam/widgets/ccteam_logo.dart';
 import 'package:ccteam/widgets/loading_button_text.dart';
+import 'package:ccteam/widgets/unauthenticated_layout.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:logging/logging.dart';
@@ -186,33 +186,27 @@ class _RegisterFormState extends State<RegisterForm> {
     return Form(
       autovalidateMode: AutovalidateMode.disabled,
       key: _preRegisterFormKey,
-      child: Padding(
-        padding: EdgeInsets.only(left: 16.0, right: 16.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.start,
+      child: UnauthenticatedLayout(
+        title: AppString.registration,
+        description: Text(
+          AppString.infoRegister,
+          style: TextStyle(color: Colors.black87),
+          textAlign: TextAlign.center,
+        ),
+        body: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: <Widget>[
-            CCTeamLogo(),
-            SizedBox(height: 36.0),
-            Text(
-              AppString.registration,
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.black87),
-              textAlign: TextAlign.center,
-            ),
-            SizedBox(height: 32.0),
-            Text(AppString.infoRegister, style: TextStyle(color: Colors.black87)),
-            SizedBox(height: 32.0),
             _firstNameField,
             SizedBox(height: 8.0),
             _lastNameField,
             SizedBox(height: 8.0),
             _emailField,
-            SizedBox(height: 16.0),
-            _preRegisterButton,
-            _backButton,
-            SizedBox(height: 24.0),
           ],
         ),
+        actions: <Widget>[
+          _preRegisterButton,
+          _backButton,
+        ],
       ),
     );
   }
