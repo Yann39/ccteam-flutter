@@ -3,7 +3,7 @@
 **Flutter** mobile application for the **CCTeam** motorcycle racing club
 
 ![Version](https://img.shields.io/badge/Version-0.8.2-2AAB92.svg)
-![Static Badge](https://img.shields.io/badge/Last_update-03_May_2026-blue)
+![Static Badge](https://img.shields.io/badge/Last_update-04_May_2026-blue)
 
 ![Version](https://img.shields.io/badge/Flutter-3.41.9-red.svg)
 ![Version](https://img.shields.io/badge/Dart-3.11.5-green.svg)
@@ -26,15 +26,17 @@ For Intellij :
 
 1. Clone the project
 2. Install the Android SDK on your machine (command line tools)
+   ```
    sdkmanager --install "platform-tools" "platforms;android-34" "build-tools;34.0.0"
    sdkmanager "emulator" "system-images;android-34;google_apis;x86_64"
+   ```
 3. Install the flutter SDK on your machine
 4. Install the Flutter plugin in Intellij
 5. In the project settings, set the Flutter SDK path
 6. Create a _local.properties_ files inside the android folder and set :
    ```properties
-    sdk.dir=C:\\Me\\android
-    flutter.sdk=C:\\Me\\flutter
+    sdk.dir=C:\\android
+    flutter.sdk=C:\\flutter
     flutter.buildMode=debug
     ```
 7. Run `flutter pub get`
@@ -43,7 +45,9 @@ For Intellij :
 To deploy the app in release mode in a local device :
 
 ```
-flutter run --release --dart-define=API_BASE_URL=https://ccteam.rockybox.net/ccteam-gql
+flutter run --release 
+--dart-define=API_BASE_URL=https://ccteam.rockybox.net/ccteam-gql
+--dart-define=LYCHEE_BASE_URL=https://lychee.rockybox.net/
 ```
 
 # Play Store

@@ -146,6 +146,13 @@ class _TrackDetailState extends State<TrackDetail> {
     }
   }
 
+  /// Navigate to the detail screen of the specified [event].
+  void _navigateToEventDetailScreen(Event event) {
+    Provider.of<EventDetailProvider>(context, listen: false)
+        .fetchEvent(event)
+        .then((value) => Navigator.pushNamed(context, '/eventDetail'));
+  }
+
   Widget _eventsTable(EventDetailProvider eventDetailProvider) {
     if (eventDetailProvider.allEvents.isNotEmpty) {
       return Container(
@@ -172,18 +179,23 @@ class _TrackDetailState extends State<TrackDetail> {
             for (Event ev in eventDetailProvider.allEvents)
               TableRow(
                 children: [
-                  Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 8.0,
-                      vertical: 12.0,
-                    ),
-                    child: Text(
-                      ev.fullDate,
-                      style: TextStyle(
-                        color: Colors.black.withValues(alpha: 0.8),
+                  InkWell(
+                    onTap: () => _navigateToEventDetailScreen(ev),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8.0,
+                        vertical: 12.0,
                       ),
-                      overflow: TextOverflow.ellipsis,
-                      textAlign: TextAlign.center,
+                      child: Text(
+                        ev.fullDate,
+                        style: TextStyle(
+                          color: Colors.blue,
+                          decoration: TextDecoration.underline,
+                          decorationColor: Colors.blue,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                        textAlign: TextAlign.center,
+                      ),
                     ),
                   ),
                   Text(
