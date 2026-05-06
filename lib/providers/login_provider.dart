@@ -630,6 +630,21 @@ class LoginProvider extends ChangeNotifier {
     _setAuthStatus(AuthStatus.Unauthenticated);
   }
 
+  /// Handle a session expiration: clear the JWT and the in-memory state but
+  /// keep the e-mail in shared preferences, so the user can re-authenticate
+  /// straight from the passcode screen without having to type the e-mail
+  /// again.
+  Future<void> handleSessionExpired() async {
+    _log.info("Session expired for user ${_loggedMember?.email}");
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    prefs.remove('jwt');
+    _loggedMember = null;
+    _jwtToken = null;
+    GraphQLConnection().jwtToken = null;
+    _setLoginStatus(LoginStatus.PasscodeStep);
+    _setAuthStatus(AuthStatus.Unauthenticated);
+  }
+
   /// Ask for a new password.
   Future<void> askPassword(String email) async {
     await _membersService.askPassword(email).then((value) {

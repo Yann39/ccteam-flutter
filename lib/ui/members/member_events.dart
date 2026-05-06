@@ -126,29 +126,42 @@ class _MemberEventsState extends State<MemberEvents> {
               )
               .toList();
 
-      if (upcomingEvents.isEmpty && pastEvents.isEmpty) {
-        content = Center(child: Text(AppString.trackNoEvent));
-      } else {
-        // Sort upcoming events by date ascending (closest first)
-        upcomingEvents.sort((a, b) => a.startDate!.compareTo(b.startDate!));
-        // Sort past events by date descending (most recent first)
-        pastEvents.sort((a, b) => b.startDate!.compareTo(a.startDate!));
+      // Sort upcoming events by date ascending (closest first)
+      upcomingEvents.sort((a, b) => a.startDate!.compareTo(b.startDate!));
+      // Sort past events by date descending (most recent first)
+      pastEvents.sort((a, b) => b.startDate!.compareTo(a.startDate!));
 
-        content = ListView(
-          padding: EdgeInsets.symmetric(vertical: 8.0),
-          children: [
-            if (upcomingEvents.isNotEmpty) ...[
-              _buildSectionHeader(AppString.upcomingEvents),
-              ...upcomingEvents.map((event) => _buildEventItem(context, event)),
-            ],
-            if (pastEvents.isNotEmpty) ...[
-              if (upcomingEvents.isNotEmpty) SizedBox(height: 16),
-              _buildSectionHeader(AppString.pastEvents),
-              ...pastEvents.map((event) => _buildEventItem(context, event)),
-            ],
+      content = ListView(
+        padding: EdgeInsets.symmetric(vertical: 8.0),
+        children: [
+          // upcoming: always show the section, even when empty
+          _CollapsibleSection(
+            title: AppString.upcomingEvents,
+            initiallyExpanded: true,
+            child: upcomingEvents.isEmpty
+                ? _buildEmptyMessage(AppString.noUpcomingEvent)
+                : Column(
+                    children: upcomingEvents
+                        .map((event) => _buildEventItem(context, event))
+                        .toList(),
+                  ),
+          ),
+          // past: only show the section if there is at least one past event;
+          // collapsed by default
+          if (pastEvents.isNotEmpty) ...[
+            const SizedBox(height: 8.0),
+            _CollapsibleSection(
+              title: AppString.pastEvents,
+              initiallyExpanded: false,
+              child: Column(
+                children: pastEvents
+                    .map((event) => _buildEventItem(context, event))
+                    .toList(),
+              ),
+            ),
           ],
-        );
-      }
+        ],
+      );
     }
 
     return Scaffold(
@@ -185,40 +198,6 @@ class _MemberEventsState extends State<MemberEvents> {
     );
   }
 
-  Widget _buildSectionHeader(String title) {
-    return Card(
-      margin: EdgeInsets.symmetric(vertical: 6.0),
-      elevation: 2,
-      child: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Colors.blue[600]!, Colors.blue[800]!],
-            begin: Alignment.centerLeft,
-            end: Alignment.centerRight,
-          ),
-          borderRadius: BorderRadius.circular(4.0),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 16.0),
-          child: Row(
-            children: [
-              Icon(Icons.calendar_today, size: 20, color: Colors.white),
-              SizedBox(width: 12),
-              Text(
-                "$title",
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
   Widget _buildEventItem(BuildContext context, Event event) {
     return GestureDetector(
       onTap: () {
@@ -236,6 +215,122 @@ class _MemberEventsState extends State<MemberEvents> {
         padding: const EdgeInsets.symmetric(vertical: 2.0),
         child: EventCard(event),
       ),
+    );
+  }
+
+  /// Italic placeholder shown inside an empty section (e.g. "Aucun
+  /// événement à venir").
+  Widget _buildEmptyMessage(String message) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 12.0),
+      child: Text(
+        message,
+        style: TextStyle(
+          fontStyle: FontStyle.italic,
+          color: Colors.black.withValues(alpha: 0.7),
+        ),
+      ),
+    );
+  }
+}
+
+/// Collapsible section with a styled gradient header (matching the original
+/// section header) and a chevron indicator. Tapping the header toggles the
+/// visibility of [child].
+class _CollapsibleSection extends StatefulWidget {
+  final String title;
+  final Widget child;
+  final bool initiallyExpanded;
+
+  const _CollapsibleSection({
+    Key? key,
+    required this.title,
+    required this.child,
+    this.initiallyExpanded = true,
+  }) : super(key: key);
+
+  @override
+  State<_CollapsibleSection> createState() => _CollapsibleSectionState();
+}
+
+class _CollapsibleSectionState extends State<_CollapsibleSection> {
+  late bool _expanded;
+
+  @override
+  void initState() {
+    super.initState();
+    _expanded = widget.initiallyExpanded;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: <Widget>[
+        // Header (clickable to toggle)
+        GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTap: () => setState(() => _expanded = !_expanded),
+          child: Card(
+            margin: const EdgeInsets.symmetric(vertical: 6.0),
+            elevation: 2,
+            child: Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [Colors.blue[600]!, Colors.blue[800]!],
+                  begin: Alignment.centerLeft,
+                  end: Alignment.centerRight,
+                ),
+                borderRadius: BorderRadius.circular(4.0),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  vertical: 12.0,
+                  horizontal: 16.0,
+                ),
+                child: Row(
+                  children: <Widget>[
+                    const Icon(
+                      Icons.calendar_today,
+                      size: 20,
+                      color: Colors.white,
+                    ),
+                    const SizedBox(width: 12.0),
+                    Expanded(
+                      child: Text(
+                        widget.title,
+                        style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                    AnimatedRotation(
+                      turns: _expanded ? 0.5 : 0.0,
+                      duration: const Duration(milliseconds: 200),
+                      child: const Icon(
+                        Icons.expand_more,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+        // Body (animated collapse / expand)
+        AnimatedSize(
+          duration: const Duration(milliseconds: 200),
+          curve: Curves.easeInOut,
+          alignment: Alignment.topCenter,
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(minWidth: double.infinity),
+            child: _expanded ? widget.child : const SizedBox.shrink(),
+          ),
+        ),
+      ],
     );
   }
 }

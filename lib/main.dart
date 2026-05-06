@@ -406,7 +406,10 @@ class CCTeamApp extends StatelessWidget {
                             child: Text(AppString.validate),
                             onPressed: () {
                               Navigator.of(activeContext).pop();
-                              loginProvider.logoutMember();
+                              // keep the e-mail in shared preferences so the
+                              // user can re-authenticate from the passcode
+                              // screen without retyping it
+                              loginProvider.handleSessionExpired();
                               messageProvider.clearMessage();
                               navigatorKey.currentState
                                   ?.pushNamedAndRemoveUntil(

@@ -449,6 +449,7 @@ class AppString {
   static const String myChronos = 'Mes chronos';
   static const String upcomingEvents = 'Événements à venir';
   static const String pastEvents = 'Événements passés';
+  static const String noUpcomingEvent = 'Aucun événement à venir';
   static const String notifications = 'Notifications';
   static const String preferences = 'Préférences';
   static const String disconnect = 'Déconnexion';

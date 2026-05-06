@@ -43,6 +43,10 @@ class TrackDetail extends StatefulWidget {
 }
 
 class _TrackDetailState extends State<TrackDetail> {
+  /// Pagination of the events list (5 events per page, newest first).
+  static const int _eventsPageSize = 5;
+  int _eventsPage = 0;
+
   @override
   void initState() {
     super.initState();
@@ -154,83 +158,145 @@ class _TrackDetailState extends State<TrackDetail> {
   }
 
   Widget _eventsTable(EventDetailProvider eventDetailProvider) {
-    if (eventDetailProvider.allEvents.isNotEmpty) {
-      return Container(
-        decoration: CustomDecorations.cardLight,
-        child: Table(
-          columnWidths: {
-            0: FlexColumnWidth(3),
-            1: FlexColumnWidth(2),
-            2: FlexColumnWidth(1),
-            3: FlexColumnWidth(1),
-          },
-          defaultVerticalAlignment: TableCellVerticalAlignment.middle,
-          border: TableBorder(
-            horizontalInside: BorderSide(
-              color: Colors.black.withValues(alpha: 0.3),
-              width: 1,
-            ),
-            verticalInside: BorderSide(
-              color: Colors.black.withValues(alpha: 0.3),
-              width: 1,
-            ),
-          ),
-          children: [
-            for (Event ev in eventDetailProvider.allEvents)
-              TableRow(
-                children: [
-                  InkWell(
-                    onTap: () => _navigateToEventDetailScreen(ev),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 8.0,
-                        vertical: 12.0,
-                      ),
-                      child: Text(
-                        ev.fullDate,
-                        style: TextStyle(
-                          color: Colors.blue,
-                          decoration: TextDecoration.underline,
-                          decorationColor: Colors.blue,
-                        ),
-                        overflow: TextOverflow.ellipsis,
-                        textAlign: TextAlign.center,
-                      ),
-                    ),
-                  ),
-                  Text(
-                    ev.organizer ?? "",
-                    style: TextStyle(
-                      color: Colors.black.withValues(alpha: 0.8),
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                  Text(
-                    "${StringUtils.formatPrice(ev.price ?? 0.0)} €",
-                    style: TextStyle(
-                      color: Colors.black.withValues(alpha: 0.8),
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                  Text(
-                    "${ev.participants?.length ?? 0}",
-                    style: TextStyle(
-                      color: Colors.black.withValues(alpha: 0.8),
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                ],
-              ),
-          ],
-        ),
-      );
-    } else {
+    if (eventDetailProvider.allEvents.isEmpty) {
       return Container(
         padding: EdgeInsets.all(12.0),
         decoration: CustomDecorations.cardLight,
         child: Text(AppString.trackNoEvent),
       );
     }
+
+    // sort events by start date, most recent first (events without a date go last)
+    final List<Event> sortedEvents = List<Event>.of(eventDetailProvider.allEvents)
+      ..sort((a, b) {
+        final DateTime? aDate = a.startDate;
+        final DateTime? bDate = b.startDate;
+        if (aDate == null && bDate == null) return 0;
+        if (aDate == null) return 1;
+        if (bDate == null) return -1;
+        return bDate.compareTo(aDate);
+      });
+
+    // compute pagination, clamping the current page if the list shrank
+    final int totalPages =
+        (sortedEvents.length / _eventsPageSize).ceil().clamp(1, 1 << 30);
+    final int currentPage = _eventsPage.clamp(0, totalPages - 1);
+    final int start = currentPage * _eventsPageSize;
+    final int end =
+        (start + _eventsPageSize).clamp(0, sortedEvents.length);
+    final List<Event> pageEvents = sortedEvents.sublist(start, end);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: <Widget>[
+        Container(
+          decoration: CustomDecorations.cardLight,
+          child: Table(
+            columnWidths: {
+              0: FlexColumnWidth(3),
+              1: FlexColumnWidth(2),
+              2: FlexColumnWidth(1),
+              3: FlexColumnWidth(1),
+            },
+            defaultVerticalAlignment: TableCellVerticalAlignment.middle,
+            border: TableBorder(
+              horizontalInside: BorderSide(
+                color: Colors.black.withValues(alpha: 0.3),
+                width: 1,
+              ),
+              verticalInside: BorderSide(
+                color: Colors.black.withValues(alpha: 0.3),
+                width: 1,
+              ),
+            ),
+            children: [
+              for (Event ev in pageEvents)
+                TableRow(
+                  children: [
+                    InkWell(
+                      onTap: () => _navigateToEventDetailScreen(ev),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8.0,
+                          vertical: 12.0,
+                        ),
+                        child: Text(
+                          ev.fullDate,
+                          style: TextStyle(
+                            color: Colors.blue,
+                            decoration: TextDecoration.underline,
+                            decorationColor: Colors.blue,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                    ),
+                    Text(
+                      ev.organizer ?? "",
+                      style: TextStyle(
+                        color: Colors.black.withValues(alpha: 0.8),
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    Text(
+                      "${StringUtils.formatPrice(ev.price ?? 0.0)} €",
+                      style: TextStyle(
+                        color: Colors.black.withValues(alpha: 0.8),
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    Text(
+                      "${ev.participants?.length ?? 0}",
+                      style: TextStyle(
+                        color: Colors.black.withValues(alpha: 0.8),
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
+                ),
+            ],
+          ),
+        ),
+        if (totalPages > 1)
+          Padding(
+            padding: const EdgeInsets.only(top: 6.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+                IconButton(
+                  icon: const Icon(Icons.chevron_left),
+                  iconSize: 22,
+                  padding: EdgeInsets.zero,
+                  visualDensity: VisualDensity.compact,
+                  color: Colors.black.withValues(alpha: 0.8),
+                  onPressed: currentPage > 0
+                      ? () => setState(() => _eventsPage = currentPage - 1)
+                      : null,
+                ),
+                const SizedBox(width: 8.0),
+                Text(
+                  "${currentPage + 1} / $totalPages",
+                  style: TextStyle(
+                    color: Colors.black.withValues(alpha: 0.8),
+                  ),
+                ),
+                const SizedBox(width: 8.0),
+                IconButton(
+                  icon: const Icon(Icons.chevron_right),
+                  iconSize: 22,
+                  padding: EdgeInsets.zero,
+                  visualDensity: VisualDensity.compact,
+                  color: Colors.black.withValues(alpha: 0.8),
+                  onPressed: currentPage < totalPages - 1
+                      ? () => setState(() => _eventsPage = currentPage + 1)
+                      : null,
+                ),
+              ],
+            ),
+          ),
+      ],
+    );
   }
 
   Widget build(BuildContext context) {
