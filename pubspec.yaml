@@ -109,6 +109,7 @@ flutter:
     - images/tracks/ledenon_cover.jpg
     - images/tracks/magny_cours_cover.jpg
     - images/tracks/vaison_cover.jpg
+    - images/manufacturers/
 
   # Required if your app uses custom fonts
   fonts:

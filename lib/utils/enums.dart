@@ -55,5 +55,6 @@ enum BikeManufacturer {
   bmw,
   ktm,
   triumph,
+  ohvale,
   other
 }

@@ -25,7 +25,53 @@ import 'package:ccteam/utils/strings.dart';
 import 'package:ccteam/utils/custom_decorations.dart';
 import 'package:ccteam/widgets/restricted_content.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:provider/provider.dart';
+
+/// Set of manufacturers we have an SVG logo for in `images/manufacturers/`.
+const Set<String> _knownManufacturers = <String>{
+  'aprilia',
+  'bmw',
+  'ducati',
+  'honda',
+  'kawasaki',
+  'ktm',
+  'suzuki',
+  'triumph',
+  'yamaha',
+  'ohvale'
+};
+
+/// Return the asset path of the manufacturer logo, or null if we don't have
+/// one for that brand.
+String? _manufacturerLogoPath(String? manufacturer) {
+  if (manufacturer == null || manufacturer.isEmpty) return null;
+  final String normalized = manufacturer.toLowerCase().trim();
+  if (!_knownManufacturers.contains(normalized)) return null;
+  return 'images/manufacturers/logo-$normalized.svg';
+}
+
+/// Build the leading manufacturer logo (or a fallback motorbike icon) for a
+/// bike card.
+Widget _buildManufacturerLogo(String? manufacturer) {
+  final String? logoPath = _manufacturerLogoPath(manufacturer);
+  return Container(
+    width: 60,
+    height: 60,
+    padding: const EdgeInsets.all(6.0),
+    decoration: BoxDecoration(
+      color: Colors.transparent,
+      borderRadius: BorderRadius.circular(8.0),
+    ),
+    child: logoPath != null
+        ? SvgPicture.asset(logoPath, fit: BoxFit.contain)
+        : Icon(
+            CustomIcons.motorbike,
+            color: Colors.deepPurple,
+            size: 32,
+          ),
+  );
+}
 
 class MyBikes extends StatelessWidget {
   @override
@@ -80,37 +126,39 @@ class MyBikes extends StatelessWidget {
                     decoration: CustomDecorations.cardFull,
                     height: 91,
                     child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      crossAxisAlignment: CrossAxisAlignment.center,
                       children: <Widget>[
-                        Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: <Widget>[
-                            Row(
-                              children: <Widget>[
-                                Text(
-                                  "${bike.manufacturer?.toUpperCase()} ${bike.modelName}",
-                                  textScaler: TextScaler.linear(1.3),
-                                  style: TextStyle(color: Colors.white),
-                                ),
-                              ],
-                            ),
-                            SizedBox(height: 8.0),
-                            Row(
-                              children: <Widget>[
-                                Icon(
-                                  CustomIcons.motorbike,
-                                  size: 16,
-                                  color: Colors.deepPurple,
-                                ),
-                                SizedBox(width: 5.0),
-                                Text(
-                                  "${bike.engineSize} cc - ${bike.year}",
-                                  style: TextStyle(color: Colors.white),
-                                ),
-                              ],
-                            ),
-                          ],
+                        _buildManufacturerLogo(bike.manufacturer),
+                        SizedBox(width: 12.0),
+                        Expanded(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: <Widget>[
+                              Text(
+                                "${bike.manufacturer?.toUpperCase()} ${bike.modelName}",
+                                textScaler: TextScaler.linear(1.3),
+                                style: TextStyle(color: Colors.white),
+                                overflow: TextOverflow.ellipsis,
+                                maxLines: 1,
+                              ),
+                              SizedBox(height: 8.0),
+                              Row(
+                                children: <Widget>[
+                                  Icon(
+                                    CustomIcons.motorbike,
+                                    size: 16,
+                                    color: Colors.deepPurple,
+                                  ),
+                                  SizedBox(width: 5.0),
+                                  Text(
+                                    "${bike.engineSize} cc - ${bike.year}",
+                                    style: TextStyle(color: Colors.white),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
                         ),
                       ],
                     ),
