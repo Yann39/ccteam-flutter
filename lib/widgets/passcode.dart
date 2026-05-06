@@ -94,7 +94,7 @@ class _PasscodeWidgetState extends State<PasscodeWidget> {
           ),
           child: Text(
             "$digitId",
-            style: TextStyle(fontSize: 24.0),
+            style: TextStyle(fontSize: 18.0),
           ),
         ),
       ),

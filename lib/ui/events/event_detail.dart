@@ -32,6 +32,7 @@ import 'package:ccteam/utils/string_utils.dart';
 import 'package:ccteam/utils/strings.dart';
 import 'package:ccteam/utils/track_utils.dart';
 import 'package:ccteam/widgets/loading_content.dart';
+import 'package:ccteam/widgets/random_pattern_painter.dart';
 import 'package:flutter/material.dart';
 import 'package:logging/logging.dart';
 import 'package:provider/provider.dart';
@@ -210,29 +211,70 @@ class EventDetail extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: <Widget>[
                   Container(
-                    alignment: Alignment.center,
                     height: 100,
-                    padding: EdgeInsets.all(16.0),
                     decoration: BoxDecoration(
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.blue[300]!,
-                          spreadRadius: 1,
-                          blurRadius: 2,
+                          color: Colors.black.withValues(alpha: 0.18),
+                          blurRadius: 12.0,
+                          offset: const Offset(0, 4),
                         ),
                       ],
-                      gradient: LinearGradient(
-                        colors: [Colors.blue[300]!, Colors.blue[500]!],
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                      ),
                     ),
-                    child: Text(
-                      _eventDetailProvider.currentEvent.title ?? "",
-                      textScaler: TextScaler.linear(2),
-                      style: TextStyle(color: Colors.white),
-                      maxLines: 3,
-                      overflow: TextOverflow.ellipsis,
+                    clipBehavior: Clip.antiAlias,
+                    child: Stack(
+                      children: <Widget>[
+                        // procedural pattern background
+                        Positioned.fill(
+                          child: CustomPaint(
+                            painter: RandomPatternPainter(
+                              seed: _eventDetailProvider.currentEvent.id ??
+                                  _eventDetailProvider
+                                          .currentEvent.title?.hashCode ??
+                                  0,
+                            ),
+                          ),
+                        ),
+                        // soft dark overlay at the bottom for text readability
+                        Positioned.fill(
+                          child: DecoratedBox(
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                begin: Alignment.topCenter,
+                                end: Alignment.bottomCenter,
+                                colors: [
+                                  Colors.transparent,
+                                  Colors.black.withValues(alpha: 0.22),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                        // centered title
+                        Padding(
+                          padding: const EdgeInsets.all(16.0),
+                          child: Center(
+                            child: Text(
+                              _eventDetailProvider.currentEvent.title ?? "",
+                              textScaler: const TextScaler.linear(2),
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                                shadows: [
+                                  Shadow(
+                                    color: Colors.black.withValues(alpha: 0.35),
+                                    blurRadius: 4.0,
+                                    offset: const Offset(0, 1),
+                                  ),
+                                ],
+                              ),
+                              textAlign: TextAlign.center,
+                              maxLines: 3,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                   Container(
