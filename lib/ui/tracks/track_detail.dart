@@ -17,6 +17,7 @@
  * along with CCTeam. If not, see <http://www.gnu.org/licenses/>.
  */
 
+import 'package:ccteam/models/bike.dart';
 import 'package:ccteam/models/event.dart';
 import 'package:ccteam/models/record.dart';
 import 'package:ccteam/providers/event_detail_provider.dart';
@@ -27,10 +28,12 @@ import 'package:ccteam/utils/app_utils.dart';
 import 'package:ccteam/utils/custom_decorations.dart';
 import 'package:ccteam/utils/custom_icons.dart';
 import 'package:ccteam/utils/date_utils.dart';
+import 'package:ccteam/utils/enums.dart';
 import 'package:ccteam/utils/string_utils.dart';
 import 'package:ccteam/utils/strings.dart';
 import 'package:ccteam/utils/track_utils.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 class TrackDetail extends StatefulWidget {
@@ -47,9 +50,25 @@ class _TrackDetailState extends State<TrackDetail> {
   static const int _eventsPageSize = 5;
   int _eventsPage = 0;
 
+  /// Pagination of the records list (5 records per page).
+  static const int _recordsPageSize = 5;
+  int _recordsPage = 0;
+
   @override
   void initState() {
     super.initState();
+    // synchronously clear any stale data and mark the lists as "loading"
+    // so the very first frame of this page shows loaders instead of the
+    // previously visited track's events / records
+    Provider.of<EventDetailProvider>(
+      context,
+      listen: false,
+    ).clearAllEvents();
+    Provider.of<RecordListProvider>(
+      context,
+      listen: false,
+    ).clearTrackRecords();
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final TrackDetailProvider trackDetailProvider =
           Provider.of<TrackDetailProvider>(context, listen: false);
@@ -67,87 +86,84 @@ class _TrackDetailState extends State<TrackDetail> {
     });
   }
 
-  Widget _recordsTable(RecordListProvider recordListProvider) {
-    if (recordListProvider.trackRecords.length > 0) {
-      return Container(
-        decoration: CustomDecorations.cardLight,
-        child: Table(
-          columnWidths: {
-            0: FlexColumnWidth(3),
-            1: FlexColumnWidth(2),
-            2: FlexColumnWidth(2),
-            3: FlexColumnWidth(1),
-          },
-          defaultVerticalAlignment: TableCellVerticalAlignment.middle,
-          border: TableBorder(
-            horizontalInside: BorderSide(
-              color: Colors.black.withAlpha(76),
-              width: 1,
-            ),
-            verticalInside: BorderSide(
-              color: Colors.black.withAlpha(76),
-              width: 1,
-            ),
+  /// A small "loading" card that visually replaces the events / records
+  /// table while their data is being fetched.
+  Widget _buildLoadingCard() {
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 28.0),
+      decoration: CustomDecorations.cardLight,
+      child: Center(
+        child: SizedBox(
+          width: 24.0,
+          height: 24.0,
+          child: CircularProgressIndicator(
+            strokeWidth: 2.5,
+            valueColor: AlwaysStoppedAnimation<Color>(Colors.blue[700]!),
           ),
-          children: [
-            for (Record rec in recordListProvider.trackRecords)
-              TableRow(
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 8.0,
-                      vertical: 12.0,
-                    ),
-                    child: Text(
-                      "${rec.member!.firstName} ${rec.member!.lastName}",
-                      style: TextStyle(color: Colors.black.withAlpha(192)),
-                      overflow: TextOverflow.ellipsis,
-                      textAlign: TextAlign.center,
-                    ),
-                  ),
-                  Text(
-                    AppDateUtils.toLapTimeString(rec.lapTime) ?? "",
-                    style: TextStyle(color: Colors.black.withAlpha(192)),
-                    textAlign: TextAlign.center,
-                  ),
-                  Text(
-                    rec.recordDate != null
-                        ? (AppDateUtils.convertToString(
-                              rec.recordDate!,
-                              "dd/MM/yyyy",
-                            ) ??
-                            "")
-                        : "",
-                    style: TextStyle(color: Colors.black.withAlpha(192)),
-                    textAlign: TextAlign.center,
-                  ),
-                  SizedBox(
-                    width: 10,
-                    child:
-                        rec.conditions == "dry"
-                            ? Icon(
-                              Icons.wb_sunny,
-                              color: Colors.black.withAlpha(128),
-                              size: 15,
-                            )
-                            : Icon(
-                              CustomIcons.rain,
-                              color: Colors.black.withAlpha(128),
-                              size: 15,
-                            ),
-                  ),
-                ],
-              ),
-          ],
         ),
-      );
-    } else {
+      ),
+    );
+  }
+
+  Widget _recordsTable(RecordListProvider recordListProvider) {
+    if (recordListProvider.loadingStatus == LoadingStatus.loading) {
+      return _buildLoadingCard();
+    }
+    if (recordListProvider.trackRecords.isEmpty) {
       return Container(
-        padding: EdgeInsets.all(12.0),
+        padding: const EdgeInsets.all(12.0),
         decoration: CustomDecorations.cardLight,
         child: Text(AppString.trackNoChrono),
       );
     }
+
+    // sort by lap time ascending (fastest first); records without a lap
+    // time go last
+    final List<Record> records =
+        List<Record>.of(recordListProvider.trackRecords)
+          ..sort((a, b) {
+            final int? aLap = a.lapTime;
+            final int? bLap = b.lapTime;
+            if (aLap == null && bLap == null) return 0;
+            if (aLap == null) return 1;
+            if (bLap == null) return -1;
+            return aLap.compareTo(bLap);
+          });
+
+    // compute pagination, clamping the current page if the list shrank
+    final int totalPages =
+        (records.length / _recordsPageSize).ceil().clamp(1, 1 << 30);
+    final int currentPage = _recordsPage.clamp(0, totalPages - 1);
+    final int start = currentPage * _recordsPageSize;
+    final int end = (start + _recordsPageSize).clamp(0, records.length);
+    final List<Record> pageRecords = records.sublist(start, end);
+
+    return Container(
+      decoration: CustomDecorations.cardLight,
+      clipBehavior: Clip.antiAlias,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: <Widget>[
+          // record rows
+          for (int i = 0; i < pageRecords.length; i++) ...[
+            if (i > 0)
+              Divider(
+                height: 1,
+                thickness: 1,
+                color: Colors.black.withValues(alpha: 0.10),
+              ),
+            _buildRecordRow(pageRecords[i]),
+          ],
+          // pagination footer (rendered as part of the same card)
+          if (totalPages > 1)
+            _buildPaginationFooter(
+              currentPage: currentPage,
+              totalPages: totalPages,
+              onPageChanged: (p) => setState(() => _recordsPage = p),
+            ),
+        ],
+      ),
+    );
   }
 
   /// Navigate to the detail screen of the specified [event].
@@ -157,7 +173,429 @@ class _TrackDetailState extends State<TrackDetail> {
         .then((value) => Navigator.pushNamed(context, '/eventDetail'));
   }
 
+  /// Build a single track-stat card (lap record, length, GPS) used in the
+  /// row at the top of the track detail page. Reproduces the original card
+  /// look (cardLight decoration, large icon at the top, bold label,
+  /// value below) with the whole content vertically centered.
+  ///
+  /// [iconColor] lets the caller pick a distinct accent color per card.
+  ///
+  /// If [onTap] is provided, the card becomes tappable and a small
+  /// "outward" arrow is shown in the top-right corner to hint at the
+  /// external link.
+  Widget _buildStatCard({
+    required IconData icon,
+    required Color iconColor,
+    required String label,
+    required Widget value,
+    VoidCallback? onTap,
+  }) {
+    final Widget content = Container(
+      height: 110,
+      margin: const EdgeInsets.all(4.0),
+      padding: const EdgeInsets.all(8.0),
+      decoration: CustomDecorations.cardLight,
+      child: Stack(
+        children: <Widget>[
+          // outward arrow in the top-right (only when tappable)
+          if (onTap != null)
+            Positioned(
+              top: 0,
+              right: 0,
+              child: Icon(
+                Icons.arrow_outward,
+                size: 14.0,
+                color: iconColor.withValues(alpha: 0.7),
+              ),
+            ),
+          Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              mainAxisSize: MainAxisSize.min,
+              children: <Widget>[
+                Icon(icon, size: 30, color: iconColor),
+                const SizedBox(height: 4.0),
+                Text(
+                  label,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 4.0),
+                DefaultTextStyle.merge(
+                  style: const TextStyle(color: Colors.black87),
+                  textAlign: TextAlign.center,
+                  child: value,
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+
+    return Expanded(
+      flex: 1,
+      child: onTap != null ? InkWell(onTap: onTap, child: content) : content,
+    );
+  }
+
+  /// Build the pagination footer rendered at the bottom of a paginated
+  /// card (events list, records list, …). Renders a divider, a soft
+  /// grey background and prev / page-indicator / next controls.
+  Widget _buildPaginationFooter({
+    required int currentPage,
+    required int totalPages,
+    required ValueChanged<int> onPageChanged,
+  }) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: <Widget>[
+        Divider(
+          height: 1,
+          thickness: 1,
+          color: Colors.black.withValues(alpha: 0.15),
+        ),
+        Container(
+          color: Colors.black.withValues(alpha: 0.04),
+          padding: const EdgeInsets.symmetric(vertical: 2.0),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              IconButton(
+                icon: const Icon(Icons.chevron_left),
+                iconSize: 22,
+                padding: EdgeInsets.zero,
+                visualDensity: VisualDensity.compact,
+                color: Colors.black.withValues(alpha: 0.8),
+                onPressed: currentPage > 0
+                    ? () => onPageChanged(currentPage - 1)
+                    : null,
+              ),
+              const SizedBox(width: 8.0),
+              Text(
+                "${currentPage + 1} / $totalPages",
+                style: TextStyle(
+                  color: Colors.black.withValues(alpha: 0.8),
+                  fontSize: 13.0,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              const SizedBox(width: 8.0),
+              IconButton(
+                icon: const Icon(Icons.chevron_right),
+                iconSize: 22,
+                padding: EdgeInsets.zero,
+                visualDensity: VisualDensity.compact,
+                color: Colors.black.withValues(alpha: 0.8),
+                onPressed: currentPage < totalPages - 1
+                    ? () => onPageChanged(currentPage + 1)
+                    : null,
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  /// Build a compact colored date "block" displayed on the left of each
+  /// event row.
+  Widget _buildDateBlock(Event event) {
+    final DateTime? date = event.startDate;
+    return Container(
+      width: 46,
+      padding: const EdgeInsets.symmetric(vertical: 4.0),
+      decoration: BoxDecoration(
+        color: Colors.blue[700],
+        borderRadius: BorderRadius.circular(6.0),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: <Widget>[
+          Text(
+            date != null ? DateFormat('dd', 'fr').format(date) : "?",
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 16.0,
+              fontWeight: FontWeight.bold,
+              height: 1.0,
+            ),
+          ),
+          const SizedBox(height: 1.0),
+          Text(
+            date != null
+                ? DateFormat('MMM', 'fr').format(date).toUpperCase()
+                : "—",
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 9.0,
+              fontWeight: FontWeight.w600,
+              height: 1.0,
+              letterSpacing: 0.5,
+            ),
+          ),
+          const SizedBox(height: 1.0),
+          Text(
+            date != null ? DateFormat('yyyy', 'fr').format(date) : "",
+            style: TextStyle(
+              color: Colors.white.withValues(alpha: 0.85),
+              fontSize: 9.0,
+              height: 1.0,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Build a single event row: date block on the left, organizer + price in
+  /// the middle, participants chip on the right. The whole row is tappable
+  /// and navigates to the event detail screen.
+  Widget _buildEventRow(Event event) {
+    final int participantsCount = event.participants?.length ?? 0;
+
+    return InkWell(
+      onTap: () => _navigateToEventDetailScreen(event),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 6.0),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: <Widget>[
+            _buildDateBlock(event),
+            const SizedBox(width: 12.0),
+            // organizer + price
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: <Widget>[
+                  Text(
+                    (event.organizer != null && event.organizer!.isNotEmpty)
+                        ? event.organizer!
+                        : "—",
+                    style: const TextStyle(
+                      color: Colors.black87,
+                      fontWeight: FontWeight.w600,
+                      fontSize: 14.0,
+                      height: 1.2,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 1,
+                  ),
+                  const SizedBox(height: 2.0),
+                  Row(
+                    children: <Widget>[
+                      Icon(
+                        Icons.euro_symbol,
+                        size: 12.0,
+                        color: Colors.purple[700],
+                      ),
+                      const SizedBox(width: 2.0),
+                      Text(
+                        StringUtils.formatPrice(event.price ?? 0.0),
+                        style: TextStyle(
+                          color: Colors.black.withValues(alpha: 0.75),
+                          fontSize: 12.0,
+                          height: 1.1,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 8.0),
+            // participants chip
+            Container(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 7.0,
+                vertical: 3.0,
+              ),
+              decoration: BoxDecoration(
+                color: Colors.blue[50],
+                borderRadius: BorderRadius.circular(12.0),
+                border: Border.all(color: Colors.blue[200]!),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: <Widget>[
+                  Icon(
+                    participantsCount > 1 ? Icons.group : Icons.person,
+                    size: 12.0,
+                    color: Colors.blue[700],
+                  ),
+                  const SizedBox(width: 3.0),
+                  Text(
+                    "$participantsCount",
+                    style: TextStyle(
+                      color: Colors.blue[800],
+                      fontWeight: FontWeight.bold,
+                      fontSize: 12.0,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// Build a single chrono (record) row: member name on top, lap time +
+  /// date below, weather icon on the right.
+  /// Format a [Bike] for display in a chrono row, e.g.
+  /// "KAWASAKI ZX-10R". Returns null if the bike has no manufacturer
+  /// nor model.
+  String? _bikeText(Bike? bike) {
+    if (bike == null) return null;
+    final String manufacturer = (bike.manufacturer ?? "").trim();
+    final String model = (bike.modelName ?? "").trim();
+    final String text = [
+      if (manufacturer.isNotEmpty) manufacturer.toUpperCase(),
+      if (model.isNotEmpty) model,
+    ].join(" ");
+    return text.isEmpty ? null : text;
+  }
+
+  /// Small rider-number badge (e.g. "#46") shown next to the pilot name.
+  Widget _riderNumberBadge(int number) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 5.0, vertical: 1.0),
+      decoration: BoxDecoration(
+        color: Colors.black.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(3.0),
+      ),
+      child: Text(
+        "#$number",
+        style: TextStyle(
+          color: Colors.black.withValues(alpha: 0.75),
+          fontSize: 11.0,
+          fontWeight: FontWeight.bold,
+          height: 1.1,
+          fontFeatures: const <FontFeature>[FontFeature.tabularFigures()],
+        ),
+      ),
+    );
+  }
+
+  /// Small icon + text pair used for chrono row metadata (bike, date).
+  Widget _chronoMetaItem(IconData icon, Color iconColor, String text) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: <Widget>[
+        Icon(icon, size: 11.0, color: iconColor),
+        const SizedBox(width: 3.0),
+        Flexible(
+          child: Text(
+            text,
+            style: TextStyle(
+              color: Colors.black.withValues(alpha: 0.7),
+              fontSize: 12.0,
+              height: 1.1,
+            ),
+            overflow: TextOverflow.ellipsis,
+            maxLines: 1,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildRecordRow(Record record) {
+    final String memberName = record.member != null
+        ? "${record.member!.firstName ?? ""} ${record.member!.lastName ?? ""}"
+            .trim()
+        : "—";
+    final int? riderNumber = record.member?.riderNumber;
+    final String lapTime =
+        AppDateUtils.toLapTimeString(record.lapTime) ?? "";
+    final String? bikeStr = _bikeText(record.bike);
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 5.0),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: <Widget>[
+          // lap time pill (digital/LCD-style font)
+          Container(
+            padding: const EdgeInsets.symmetric(
+              horizontal: 8.0,
+              vertical: 4.0,
+            ),
+            decoration: BoxDecoration(
+              color: Colors.blue[700],
+              borderRadius: BorderRadius.circular(5.0),
+            ),
+            child: Text(
+              lapTime,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 15.0,
+                fontFamily: "AlarmClock",
+                letterSpacing: -1.0,
+                height: 1.0,
+              ),
+            ),
+          ),
+          const SizedBox(width: 10.0),
+          // pilot name (+ rider number) on top, bike below
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: <Widget>[
+                Row(
+                  children: <Widget>[
+                    Flexible(
+                      child: Text(
+                        memberName,
+                        style: const TextStyle(
+                          color: Colors.black87,
+                          fontWeight: FontWeight.w600,
+                          fontSize: 15.0,
+                          height: 1.2,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                        maxLines: 1,
+                      ),
+                    ),
+                    if (riderNumber != null) ...[
+                      const SizedBox(width: 6.0),
+                      _riderNumberBadge(riderNumber),
+                    ],
+                  ],
+                ),
+                if (bikeStr != null) ...[
+                  const SizedBox(height: 2.0),
+                  _chronoMetaItem(
+                    CustomIcons.motorbike,
+                    Colors.deepPurple,
+                    bikeStr,
+                  ),
+                ],
+              ],
+            ),
+          ),
+          const SizedBox(width: 6.0),
+          // weather icon on the right
+          Icon(
+            record.conditions == "dry" ? Icons.wb_sunny : CustomIcons.rain,
+            color: record.conditions == "dry"
+                ? Colors.orange[600]
+                : Colors.blueGrey[400],
+            size: 16.0,
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _eventsTable(EventDetailProvider eventDetailProvider) {
+    if (eventDetailProvider.loadingStatus == LoadingStatus.loading) {
+      return _buildLoadingCard();
+    }
     if (eventDetailProvider.allEvents.isEmpty) {
       return Container(
         padding: EdgeInsets.all(12.0),
@@ -186,116 +624,31 @@ class _TrackDetailState extends State<TrackDetail> {
         (start + _eventsPageSize).clamp(0, sortedEvents.length);
     final List<Event> pageEvents = sortedEvents.sublist(start, end);
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: <Widget>[
-        Container(
-          decoration: CustomDecorations.cardLight,
-          child: Table(
-            columnWidths: {
-              0: FlexColumnWidth(3),
-              1: FlexColumnWidth(2),
-              2: FlexColumnWidth(1),
-              3: FlexColumnWidth(1),
-            },
-            defaultVerticalAlignment: TableCellVerticalAlignment.middle,
-            border: TableBorder(
-              horizontalInside: BorderSide(
-                color: Colors.black.withValues(alpha: 0.3),
-                width: 1,
+    return Container(
+      decoration: CustomDecorations.cardLight,
+      clipBehavior: Clip.antiAlias,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: <Widget>[
+          // event rows
+          for (int i = 0; i < pageEvents.length; i++) ...[
+            if (i > 0)
+              Divider(
+                height: 1,
+                thickness: 1,
+                color: Colors.black.withValues(alpha: 0.10),
               ),
-              verticalInside: BorderSide(
-                color: Colors.black.withValues(alpha: 0.3),
-                width: 1,
-              ),
+            _buildEventRow(pageEvents[i]),
+          ],
+          // pagination footer (rendered as part of the same card)
+          if (totalPages > 1)
+            _buildPaginationFooter(
+              currentPage: currentPage,
+              totalPages: totalPages,
+              onPageChanged: (p) => setState(() => _eventsPage = p),
             ),
-            children: [
-              for (Event ev in pageEvents)
-                TableRow(
-                  children: [
-                    InkWell(
-                      onTap: () => _navigateToEventDetailScreen(ev),
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 8.0,
-                          vertical: 12.0,
-                        ),
-                        child: Text(
-                          ev.fullDate,
-                          style: TextStyle(
-                            color: Colors.blue,
-                            decoration: TextDecoration.underline,
-                            decorationColor: Colors.blue,
-                          ),
-                          overflow: TextOverflow.ellipsis,
-                          textAlign: TextAlign.center,
-                        ),
-                      ),
-                    ),
-                    Text(
-                      ev.organizer ?? "",
-                      style: TextStyle(
-                        color: Colors.black.withValues(alpha: 0.8),
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                    Text(
-                      "${StringUtils.formatPrice(ev.price ?? 0.0)} €",
-                      style: TextStyle(
-                        color: Colors.black.withValues(alpha: 0.8),
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                    Text(
-                      "${ev.participants?.length ?? 0}",
-                      style: TextStyle(
-                        color: Colors.black.withValues(alpha: 0.8),
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                  ],
-                ),
-            ],
-          ),
-        ),
-        if (totalPages > 1)
-          Padding(
-            padding: const EdgeInsets.only(top: 6.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: <Widget>[
-                IconButton(
-                  icon: const Icon(Icons.chevron_left),
-                  iconSize: 22,
-                  padding: EdgeInsets.zero,
-                  visualDensity: VisualDensity.compact,
-                  color: Colors.black.withValues(alpha: 0.8),
-                  onPressed: currentPage > 0
-                      ? () => setState(() => _eventsPage = currentPage - 1)
-                      : null,
-                ),
-                const SizedBox(width: 8.0),
-                Text(
-                  "${currentPage + 1} / $totalPages",
-                  style: TextStyle(
-                    color: Colors.black.withValues(alpha: 0.8),
-                  ),
-                ),
-                const SizedBox(width: 8.0),
-                IconButton(
-                  icon: const Icon(Icons.chevron_right),
-                  iconSize: 22,
-                  padding: EdgeInsets.zero,
-                  visualDensity: VisualDensity.compact,
-                  color: Colors.black.withValues(alpha: 0.8),
-                  onPressed: currentPage < totalPages - 1
-                      ? () => setState(() => _eventsPage = currentPage + 1)
-                      : null,
-                ),
-              ],
-            ),
-          ),
-      ],
+        ],
+      ),
     );
   }
 
@@ -419,117 +772,98 @@ class _TrackDetailState extends State<TrackDetail> {
                           children: <Widget>[
                             Row(
                               children: <Widget>[
-                                Expanded(
-                                  flex: 1,
-                                  child: Container(
-                                    height: 100,
-                                    margin: EdgeInsets.all(4.0),
-                                    padding: EdgeInsets.all(8.0),
-                                    decoration: CustomDecorations.cardLight,
-                                    child: Column(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween,
-                                      children: <Widget>[
-                                        Icon(
-                                          Icons.timer,
-                                          size: 30,
-                                          color: Colors.red[700],
-                                        ),
-                                        Text(
-                                          AppString.lapRecord,
-                                          textAlign: TextAlign.center,
-                                        ),
-                                        _trackDetailProvider.currentTrack !=
-                                                null
-                                            ? Text(
-                                              AppDateUtils.toLapTimeString(
-                                                    _trackDetailProvider
-                                                        .currentTrack!
-                                                        .lapRecord,
-                                                  ) ??
-                                                  "",
-                                              textAlign: TextAlign.center,
-                                              maxLines: 2,
-                                              overflow: TextOverflow.ellipsis,
-                                            )
-                                            : Container(),
-                                      ],
+                                _buildStatCard(
+                                  icon: Icons.timer,
+                                  iconColor: Colors.blue[700]!,
+                                  label: AppString.lapRecord,
+                                  value: Text(
+                                    AppDateUtils.toLapTimeString(
+                                          _trackDetailProvider
+                                              .currentTrack!.lapRecord,
+                                        ) ??
+                                        "—",
+                                    style: const TextStyle(
+                                      fontFamily: "AlarmClock",
+                                      fontSize: 17.0,
+                                      letterSpacing: -1.0,
+                                      height: 1.0,
                                     ),
+                                    textAlign: TextAlign.center,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
                                   ),
                                 ),
-                                Expanded(
-                                  flex: 1,
-                                  child: Container(
-                                    height: 100,
-                                    margin: EdgeInsets.all(4.0),
-                                    padding: EdgeInsets.all(8.0),
-                                    decoration: CustomDecorations.cardLight,
-                                    child: Column(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween,
-                                      children: <Widget>[
-                                        Icon(
-                                          Icons.straighten,
-                                          size: 30,
-                                          color: Colors.red[700],
-                                        ),
-                                        Text(
-                                          AppString.length,
-                                          textAlign: TextAlign.center,
-                                        ),
-                                        _trackDetailProvider.currentTrack !=
-                                                null
-                                            ? Text(
-                                              "${_trackDetailProvider.currentTrack!.distance}",
-                                              textAlign: TextAlign.center,
-                                              maxLines: 2,
-                                              overflow: TextOverflow.ellipsis,
-                                            )
-                                            : Container(),
-                                      ],
-                                    ),
+                                _buildStatCard(
+                                  icon: Icons.straighten,
+                                  iconColor: Colors.teal[600]!,
+                                  label: AppString.length,
+                                  value: Text(
+                                    _trackDetailProvider
+                                                .currentTrack!.distance !=
+                                            null
+                                        ? "${_trackDetailProvider.currentTrack!.distance} m"
+                                        : "—",
+                                    textAlign: TextAlign.center,
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
                                   ),
                                 ),
-                                _trackDetailProvider.currentTrack != null
-                                    ? Expanded(
-                                      flex: 1,
-                                      child: InkWell(
-                                        onTap:
-                                            () => AppUtils.launchURL(
-                                              "geo:${_trackDetailProvider.currentTrack!.latitude},${_trackDetailProvider.currentTrack!.longitude}",
-                                            ),
-                                        child: Container(
-                                          height: 100,
-                                          margin: EdgeInsets.all(4.0),
-                                          padding: EdgeInsets.all(8.0),
-                                          decoration:
-                                              CustomDecorations.cardLight,
-                                          child: Column(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.spaceBetween,
-                                            children: <Widget>[
-                                              Icon(
-                                                Icons.place,
-                                                size: 30,
-                                                color: Colors.red[700],
-                                              ),
-                                              Text(
-                                                "${_trackDetailProvider.currentTrack!.latitude}",
-                                                textAlign: TextAlign.center,
-                                              ),
-                                              Text(
-                                                "${_trackDetailProvider.currentTrack!.longitude}",
-                                                textAlign: TextAlign.center,
-                                              ),
-                                            ],
-                                          ),
+                                _buildStatCard(
+                                  icon: Icons.place,
+                                  iconColor: Colors.red[700]!,
+                                  label: "GPS",
+                                  value: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: <Widget>[
+                                      Text(
+                                        _trackDetailProvider
+                                                    .currentTrack!.latitude !=
+                                                null
+                                            ? _trackDetailProvider
+                                                .currentTrack!.latitude!
+                                                .toStringAsFixed(4)
+                                            : "—",
+                                        textAlign: TextAlign.center,
+                                        style: const TextStyle(
+                                          fontSize: 12.0,
+                                          height: 1.1,
+                                          fontFeatures: <FontFeature>[
+                                            FontFeature.tabularFigures(),
+                                          ],
                                         ),
                                       ),
-                                    )
-                                    : Container(),
+                                      Text(
+                                        _trackDetailProvider
+                                                    .currentTrack!.longitude !=
+                                                null
+                                            ? _trackDetailProvider
+                                                .currentTrack!.longitude!
+                                                .toStringAsFixed(4)
+                                            : "—",
+                                        textAlign: TextAlign.center,
+                                        style: const TextStyle(
+                                          fontSize: 12.0,
+                                          height: 1.1,
+                                          fontFeatures: <FontFeature>[
+                                            FontFeature.tabularFigures(),
+                                          ],
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  onTap: _trackDetailProvider
+                                                  .currentTrack!.latitude !=
+                                              null &&
+                                          _trackDetailProvider
+                                                  .currentTrack!.longitude !=
+                                              null
+                                      ? () => AppUtils.launchURL(
+                                            "https://www.google.com/maps/search/?api=1&query=${_trackDetailProvider.currentTrack!.latitude},${_trackDetailProvider.currentTrack!.longitude}",
+                                          )
+                                      : null,
+                                ),
                               ],
                             ),
-                            Divider(color: Colors.white),
                             SizedBox(height: 10),
                             Row(
                               children: <Widget>[
@@ -553,7 +887,6 @@ class _TrackDetailState extends State<TrackDetail> {
                             _eventsTable(_eventDetailProvider),
                             SizedBox(height: 10),
                             if (_loginProvider.isMember) ...[
-                              Divider(color: Colors.white),
                               SizedBox(height: 10),
                               Row(
                                 children: <Widget>[
@@ -587,186 +920,6 @@ class _TrackDetailState extends State<TrackDetail> {
             ),
           ],
         ),
-
-        /*ListView(
-          children: <Widget>[
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: <Widget>[
-                Container(
-                  //alignment: Alignment.center,
-                  height: 180,
-                  //padding: EdgeInsets.all(16.0),
-                  decoration: BoxDecoration(
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.blue[300],
-                        spreadRadius: 1,
-                        blurRadius: 2,
-                      ),
-                    ],
-                    /*image: DecorationImage(
-                      fit: BoxFit.fill,
-                      image: /*AssetImage("images/finish_flag.png")*/,
-                      colorFilter: ColorFilter.mode(Colors.black.withOpacity(1), BlendMode.dstATop),
-                    ),*/
-                    gradient: LinearGradient(
-                      colors: [Colors.blue[300], Colors.blue[500]],
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                    ),
-                  ),
-                  /*child: Text(
-                    "${widget.track.name}",
-                    textScaler: TextScaler.linear(2),
-                    style: TextStyle(color: Colors.white),
-                    maxLines: 3,
-                    overflow: TextOverflow.ellipsis,
-                  ),*/
-                  child: CachedNetworkImage(
-                    placeholder: (context, url) => Center(
-                      child: SizedBox(
-                        child: CircularProgressIndicator(),
-                        height: 20.0,
-                        width: 20.0,
-                      ),
-                    ),
-                    imageUrl: TrackUtils.trackCoverImageUrlFromName(widget.track.name),
-                    fit: BoxFit.fill,
-                  ),
-                ),
-                Container(
-                  padding: EdgeInsets.all(8.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: <Widget>[
-                      Row(
-                        children: <Widget>[
-                          Expanded(
-                            flex: 1,
-                            child: Container(
-                              height: 100,
-                              margin: EdgeInsets.all(4.0),
-                              padding: EdgeInsets.all(8.0),
-                              decoration: CustomDecorations.cardLight,
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                children: <Widget>[
-                                  Icon(
-                                    Icons.timer,
-                                    size: 30,
-                                    color: Colors.red[700],
-                                  ),
-                                  Text(
-                                    AppString.lapRecord,
-                                    textAlign: TextAlign.center,
-                                  ),
-                                  Text(
-                                    DateUtils.toLapTime(widget.track.lapRecord),
-                                    textAlign: TextAlign.center,
-                                    maxLines: 2,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                          Expanded(
-                            flex: 1,
-                            child: Container(
-                              height: 100,
-                              margin: EdgeInsets.all(4.0),
-                              padding: EdgeInsets.all(8.0),
-                              decoration: CustomDecorations.cardLight,
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                children: <Widget>[
-                                  Icon(
-                                    Icons.straighten,
-                                    size: 30,
-                                    color: Colors.red[700],
-                                  ),
-                                  Text(
-                                    AppString.length,
-                                    textAlign: TextAlign.center,
-                                  ),
-                                  Text(
-                                    "${widget.track.distance}",
-                                    textAlign: TextAlign.center,
-                                    maxLines: 2,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                          Expanded(
-                            flex: 1,
-                            child: Container(
-                              height: 100,
-                              margin: EdgeInsets.all(4.0),
-                              padding: EdgeInsets.all(8.0),
-                              decoration: CustomDecorations.cardLight,
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                children: <Widget>[
-                                  Icon(
-                                    Icons.place,
-                                    size: 30,
-                                    color: Colors.red[700],
-                                  ),
-                                  Text(
-                                    "${widget.track.latitude}",
-                                    textAlign: TextAlign.center,
-                                  ),
-                                  Text(
-                                    "${widget.track.longitude}",
-                                    textAlign: TextAlign.center,
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                      Divider(color: Colors.white),
-                      SizedBox(height: 10),
-                      Row(
-                        children: <Widget>[
-                          Icon(Icons.description, size: 16, color: Colors.black.withOpacity(0.8)),
-                          SizedBox(width: 5.0),
-                          Text(
-                            AppString.trackEvents,
-                            textScaler: TextScaler.linear(1.2),
-                            style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black.withOpacity(0.8)),
-                          ),
-                        ],
-                      ),
-                      SizedBox(height: 10),
-                      _eventsTable(_eventProvider),
-                      SizedBox(height: 10),
-                      Divider(color: Colors.white),
-                      SizedBox(height: 10),
-                      Row(
-                        children: <Widget>[
-                          Icon(Icons.group, size: 18, color: Colors.black.withOpacity(0.64)),
-                          SizedBox(width: 5.0),
-                          Text(
-                            AppString.chronos,
-                            textScaler: TextScaler.linear(1.2),
-                            style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black.withOpacity(0.64)),
-                          ),
-                        ],
-                      ),
-                      SizedBox(height: 10),
-                      _recordsTable(_recordListProvider),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),*/
       ),
     );
   }

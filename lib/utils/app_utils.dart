@@ -32,20 +32,32 @@ import 'package:url_launcher/url_launcher.dart';
 class AppUtils {
   static final Logger _log = new Logger('AppUtils');
 
-  /// Launch the specified [url].
-  static void launchURL(String url) async {
+  /// Launch the specified [url] in an external application (browser, maps,
+  /// etc.). Skips [canLaunchUrl] (unreliable across platforms / package
+  /// visibility) and logs failures instead of throwing silently.
+  static Future<void> launchURL(String url) async {
     final Uri uri = Uri.parse(url);
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri);
-    } else {
-      throw 'Could not launch $url';
+    try {
+      final bool launched = await launchUrl(
+        uri,
+        mode: LaunchMode.externalApplication,
+      );
+      if (!launched) {
+        _log.warning("launchUrl returned false for $url");
+      }
+    } catch (e, stack) {
+      _log.severe("Failed to launch $url", e, stack);
     }
   }
 
   /// Launch mailto link for the specified [email].
-  static void mailTo(String email) async {
+  static Future<void> mailTo(String email) async {
     final Uri uri = Uri(scheme: 'mailto', path: email);
-    launchUrl(uri);
+    try {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    } catch (e, stack) {
+      _log.severe("Failed to launch mailto:$email", e, stack);
+    }
   }
 
   /// Handle exception encountered during a GraphQL request.

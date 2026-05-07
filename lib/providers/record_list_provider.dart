@@ -68,6 +68,9 @@ class RecordListProvider extends ChangeNotifier {
       _updateStatus(LoadingStatus.loaded);
       return;
     }
+    // clear stale data so the UI doesn't briefly show records from a
+    // previous track while the new ones are being fetched
+    _trackRecords = [];
     _updateStatus(LoadingStatus.loading);
     await _recordsService.fetchTrackRecords(trackId).then((value) async {
       _log.fine("Track records list retrieved successfully");
@@ -79,6 +82,16 @@ class RecordListProvider extends ChangeNotifier {
       _updateStatus(LoadingStatus.notLoaded);
       throw (error);
     });
+  }
+
+  /// Reset the track records list and mark it as loading. Useful when
+  /// navigating to a screen whose data depends on a fresh fetch (e.g.
+  /// track detail), so the UI displays a loader instead of the previous
+  /// track's records.
+  void clearTrackRecords() {
+    _trackRecords = [];
+    _loadingStatus = LoadingStatus.loading;
+    notifyListeners();
   }
 
   /// Get the list of all records for the specified [memberId]

@@ -139,6 +139,9 @@ class EventDetailProvider extends ChangeNotifier {
   /// Fetch events for the specified [track] from the database.
   Future<void> fetchEventsByTrack(Track track) async {
     _log.fine("Fetching events for track ${track.name}...");
+    // clear stale data so the UI doesn't briefly show events from a
+    // previous track while the new ones are being fetched
+    _allEvents = [];
     _updateStatus(LoadingStatus.loading);
     await _eventsService
         .fetchEventsByTrack(track.id!)
@@ -161,6 +164,15 @@ class EventDetailProvider extends ChangeNotifier {
             _updateStatus(LoadingStatus.notLoaded);
           },
         );
+  }
+
+  /// Reset the events list and mark it as loading. Useful when navigating
+  /// to a screen whose data depends on a fresh fetch (e.g. track detail),
+  /// so the UI displays a loader instead of the previous track's events.
+  void clearAllEvents() {
+    _allEvents = [];
+    _loadingStatus = LoadingStatus.loading;
+    _notifyListeners();
   }
 
   /// Update the current loading [status].
