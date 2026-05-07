@@ -41,18 +41,34 @@ class Tracks extends StatefulWidget {
 
 class _TracksState extends State<Tracks> {
   /// Build the search field
-  TextField buildSearchField(TrackListProvider _trackListProvider) {
-    return TextField(
-      decoration: InputDecoration(
-        filled: true,
-        fillColor: Colors.blue[100],
-        prefixIcon: Icon(Icons.search),
-        hintText: AppString.tracksSearchHint,
+  Widget buildSearchField(TrackListProvider _trackListProvider) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(8.0, 8.0, 8.0, 4.0),
+      child: TextField(
+        decoration: InputDecoration(
+          prefixIcon: Icon(Icons.search, color: Colors.blue[700]),
+          hintText: AppString.tracksSearchHint,
+          hintStyle: TextStyle(color: Colors.black.withValues(alpha: 0.5)),
+          isDense: true,
+          contentPadding: const EdgeInsets.symmetric(vertical: 12.0),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(6.0),
+            borderSide: BorderSide(color: Colors.blue[300]!),
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(6.0),
+            borderSide: BorderSide(color: Colors.blue[300]!),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(6.0),
+            borderSide: BorderSide(color: Colors.blue[700]!, width: 1.5),
+          ),
+        ),
+        maxLines: 1,
+        onChanged: (String text) {
+          _trackListProvider.searchTracks(text);
+        },
       ),
-      maxLines: 1,
-      onChanged: (String text) {
-        _trackListProvider.searchTracks(text);
-      },
     );
   }
 
@@ -63,6 +79,152 @@ class _TracksState extends State<Tracks> {
       listen: false,
     ).setCurrentTrack(track);
     Navigator.pushNamed(context, '/trackDetail');
+  }
+
+  /// Build a single track card for the grid: cover photo on top half + info
+  /// (name, length, lap record) on a blue gradient on the bottom half. A
+  /// circular track-shape badge sits in the top-right corner of the photo.
+  Widget _buildTrackCard(BuildContext context, Track track) {
+    return Card(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.0)),
+      clipBehavior: Clip.antiAlias,
+      elevation: 3,
+      child: InkWell(
+        onTap: () => _navigateToTrackDetailScreen(context, track),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: <Widget>[
+            // top: cover photo (with track-shape badge)
+            Expanded(
+              flex: 6,
+              child: Stack(
+                fit: StackFit.expand,
+                children: <Widget>[
+                  Image.asset(
+                    TrackUtils.trackCoverImageUrlFromName(track.name),
+                    fit: BoxFit.cover,
+                    errorBuilder: (_, __, ___) => Container(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [Colors.blue[200]!, Colors.blue[400]!],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                      ),
+                    ),
+                  ),
+                  // track-shape silhouette as a circular badge in top-right
+                  Positioned(
+                    top: 6.0,
+                    right: 6.0,
+                    child: Container(
+                      padding: const EdgeInsets.all(6.0),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.75),
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.18),
+                            blurRadius: 4.0,
+                            offset: const Offset(0, 1),
+                          ),
+                        ],
+                      ),
+                      child: SizedBox(
+                        width: 32.0,
+                        height: 32.0,
+                        child: FittedBox(
+                          fit: BoxFit.contain,
+                          child: TrackUtils.getTrackIcon(track.name ?? ""),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            // bottom: name + stats on blue gradient (no inner border-radius
+            // so the top edge is flush with the photo above; the parent
+            // Card clips the visible bottom corners)
+            Expanded(
+              flex: 4,
+              child: Container(
+                padding: const EdgeInsets.fromLTRB(10.0, 6.0, 10.0, 6.0),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [Colors.blue[300]!, Colors.blue[500]!],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisSize: MainAxisSize.min,
+                  children: <Widget>[
+                    Text(
+                      track.name ?? "",
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 15.0,
+                        fontWeight: FontWeight.bold,
+                        height: 1.1,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 3.0),
+                    if (track.distance != null)
+                      Row(
+                        children: <Widget>[
+                          const Icon(
+                            Icons.straighten,
+                            color: Colors.white,
+                            size: 12.0,
+                          ),
+                          const SizedBox(width: 4.0),
+                          Text(
+                            "${(track.distance! / 1000).toStringAsFixed(2)} km",
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 11.0,
+                              height: 1.1,
+                            ),
+                          ),
+                        ],
+                      ),
+                    if (track.lapRecord != null) ...[
+                      const SizedBox(height: 1.0),
+                      Row(
+                        children: <Widget>[
+                          const Icon(
+                            Icons.timer,
+                            color: Colors.white,
+                            size: 12.0,
+                          ),
+                          const SizedBox(width: 4.0),
+                          Text(
+                            AppDateUtils.toLapTimeString(track.lapRecord) ??
+                                "",
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 12.0,
+                              fontFamily: "AlarmClock",
+                              letterSpacing: -1.0,
+                              height: 1.0,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   Widget build(BuildContext context) {
@@ -77,115 +239,40 @@ class _TracksState extends State<Tracks> {
         actions: <Widget>[MainActionMenu()],
       ),
       drawer: MainDrawer(),
-      body: Column(
-        children: <Widget>[
-          buildSearchField(_trackListProvider),
-          Expanded(
-            child: Container(
-              width: MediaQuery.of(context).size.width,
-              alignment: Alignment.topCenter,
-              decoration: CustomDecorations.mainContent,
+      body: Container(
+        decoration: CustomDecorations.mainContent,
+        child: Column(
+          children: <Widget>[
+            buildSearchField(_trackListProvider),
+            Expanded(
               child: LoadingContent(
-                loadingStatus:
-                    _trackListProvider.tracks.isEmpty
-                        ? LoadingStatus.empty
-                        : _trackListProvider.loadingStatus,
+                loadingStatus: _trackListProvider.tracks.isEmpty
+                    ? LoadingStatus.empty
+                    : _trackListProvider.loadingStatus,
                 defaultText: AppString.tracksNotFound,
                 emptyText: AppString.tracksNotFound,
                 child: GridView.builder(
-                  padding: EdgeInsets.all(4.0),
+                  padding: const EdgeInsets.fromLTRB(8.0, 4.0, 8.0, 8.0),
                   gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount:
-                        MediaQuery.of(context).orientation ==
-                                Orientation.portrait
-                            ? 2
-                            : 3,
-                    crossAxisSpacing: 4,
-                    mainAxisSpacing: 4,
+                    crossAxisCount: MediaQuery.of(context).orientation ==
+                            Orientation.portrait
+                        ? 2
+                        : 3,
+                    crossAxisSpacing: 8,
+                    mainAxisSpacing: 8,
                     childAspectRatio: 1,
                   ),
                   itemCount: _trackListProvider.tracks.length,
-                  itemBuilder:
-                      (BuildContext context, int index) => InkWell(
-                        onTap:
-                            () => _navigateToTrackDetailScreen(
-                              context,
-                              _trackListProvider.tracks[index],
-                            ),
-                        child: Card(
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(6.0),
-                          ),
-                          clipBehavior: Clip.antiAlias,
-                          child: Container(
-                            padding: EdgeInsets.all(8.0),
-                            decoration: CustomDecorations.cardFull,
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              mainAxisAlignment: MainAxisAlignment.start,
-                              children: <Widget>[
-                                Padding(
-                                  padding: const EdgeInsets.only(bottom: 5.0),
-                                  child: Text(
-                                    _trackListProvider.tracks[index].name!,
-                                    style: TextStyle(color: Colors.white),
-                                    textScaler: TextScaler.linear(1.1),
-                                  ),
-                                ),
-                                Divider(height: 1.0, color: Colors.white),
-                                Container(
-                                  height: 86.0,
-                                  padding: EdgeInsets.all(0),
-                                  child: TrackUtils.getTrackIcon(
-                                    _trackListProvider.tracks[index].name!,
-                                  ),
-                                ),
-                                Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  mainAxisAlignment: MainAxisAlignment.start,
-                                  children: <Widget>[
-                                    Row(
-                                      children: <Widget>[
-                                        Icon(
-                                          Icons.straighten,
-                                          size: 13,
-                                          color: Colors.white,
-                                        ),
-                                        SizedBox(width: 6.0),
-                                        Text(
-                                          "${AppString.length} : ${(_trackListProvider.tracks[index].distance! / 1000).toStringAsFixed(2)} km",
-                                          style: TextStyle(color: Colors.white),
-                                          textScaler: TextScaler.linear(0.9),
-                                        ),
-                                      ],
-                                    ),
-                                    Row(
-                                      children: <Widget>[
-                                        Icon(
-                                          Icons.timer,
-                                          size: 13,
-                                          color: Colors.white,
-                                        ),
-                                        SizedBox(width: 6.0),
-                                        Text(
-                                          "${AppString.record} : ${AppDateUtils.toLapTimeString(_trackListProvider.tracks[index].lapRecord)}",
-                                          style: TextStyle(color: Colors.white),
-                                          textScaler: TextScaler.linear(0.9),
-                                        ),
-                                      ],
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
+                  itemBuilder: (BuildContext context, int index) =>
+                      _buildTrackCard(
+                    context,
+                    _trackListProvider.tracks[index],
+                  ),
                 ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
