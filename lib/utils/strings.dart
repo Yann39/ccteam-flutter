@@ -425,6 +425,7 @@ class AppString {
 
   static const String participant = 'participant';
   static const String participants = 'participants';
+  static const String events = 'événements';
   static const String moto = 'Moto';
   static const String mobile = 'Mobile';
   static const String email = 'E-mail';

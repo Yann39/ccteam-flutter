@@ -68,6 +68,96 @@ class _EventListState extends State<EventList> {
     }
   }
 
+  /// Build the segmented mode selector (Tous / Année courante / Par date)
+  /// as a modern pill-shaped tab bar with animated selection indicator.
+  Widget _buildModeSelector(EventListProvider provider) {
+    return Container(
+      padding: const EdgeInsets.all(4.0),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.7),
+        borderRadius: BorderRadius.circular(24.0),
+        border: Border.all(color: Colors.blue[200]!, width: 1.0),
+      ),
+      child: Row(
+        children: <Widget>[
+          Expanded(
+            flex: 2,
+            child: _buildModeTab(
+              index: 0,
+              label: AppString.all,
+              provider: provider,
+            ),
+          ),
+          Expanded(
+            flex: 3,
+            child: _buildModeTab(
+              index: 1,
+              label: AppString.currentYear,
+              provider: provider,
+            ),
+          ),
+          Expanded(
+            flex: 2,
+            child: _buildModeTab(
+              index: 2,
+              label: AppString.byDate,
+              provider: provider,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Build a single tab of the mode selector. Applies a smooth color
+  /// animation when the selection changes.
+  Widget _buildModeTab({
+    required int index,
+    required String label,
+    required EventListProvider provider,
+  }) {
+    final bool selected = provider.eventModeSelectorIndex == index;
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: () {
+        if (index == 1) {
+          provider.fetchEventListForYear(DateTime.now().year);
+        }
+        provider.changeEventModeSelectorIndex(index);
+      },
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        curve: Curves.easeInOut,
+        padding:
+            const EdgeInsets.symmetric(vertical: 8.0, horizontal: 8.0),
+        decoration: BoxDecoration(
+          color: selected ? Colors.red[700] : Colors.transparent,
+          borderRadius: BorderRadius.circular(20.0),
+          boxShadow: selected
+              ? [
+                  BoxShadow(
+                    color: Colors.red[700]!.withValues(alpha: 0.3),
+                    blurRadius: 4.0,
+                    offset: const Offset(0, 1),
+                  ),
+                ]
+              : null,
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            color: selected ? Colors.white : Colors.black87,
+            fontSize: 13.0,
+            fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
+          ),
+          textAlign: TextAlign.center,
+          overflow: TextOverflow.ellipsis,
+          maxLines: 1,
+        ),
+      ),
+    );
+  }
+
   /// Navigate to the event creation form screen to create a new event.
   void _navigateToAddEventScreen(BuildContext context) async {
     // set a new event to be created
@@ -173,120 +263,7 @@ class _EventListState extends State<EventList> {
         decoration: CustomDecorations.mainContent,
         child: Column(
           children: <Widget>[
-            Container(
-              decoration: BoxDecoration(
-                border: Border.all(color: Colors.red[700]!, width: 1),
-              ),
-              child: Row(
-                children: <Widget>[
-                  Expanded(
-                    flex: 2,
-                    child: GestureDetector(
-                      onTap: () {
-                        _eventListProvider.changeEventModeSelectorIndex(0);
-                      },
-                      child: Container(
-                        padding: EdgeInsets.symmetric(
-                          horizontal: 6.0,
-                          vertical: 6.0,
-                        ),
-                        decoration: BoxDecoration(
-                          color:
-                              _eventListProvider.eventModeSelectorIndex == 0
-                                  ? Colors.red[700]
-                                  : Colors.white70,
-                          border: Border(
-                            right: BorderSide(
-                              color: Colors.red[700]!,
-                              width: 1,
-                            ),
-                          ),
-                        ),
-                        child: Text(
-                          AppString.all,
-                          style: TextStyle(
-                            color:
-                                _eventListProvider.eventModeSelectorIndex == 0
-                                    ? Colors.white
-                                    : Colors.black87,
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                      ),
-                    ),
-                  ),
-                  Expanded(
-                    flex: 3,
-                    child: GestureDetector(
-                      onTap: () {
-                        _eventListProvider.fetchEventListForYear(
-                          DateTime.now().year,
-                        );
-                        _eventListProvider.changeEventModeSelectorIndex(1);
-                      },
-                      child: Container(
-                        padding: EdgeInsets.symmetric(
-                          horizontal: 6.0,
-                          vertical: 6.0,
-                        ),
-                        decoration: BoxDecoration(
-                          color:
-                              _eventListProvider.eventModeSelectorIndex == 1
-                                  ? Colors.red[700]
-                                  : Colors.white70,
-                          border: Border(
-                            right: BorderSide(
-                              color: Colors.red[700]!,
-                              width: 1,
-                            ),
-                          ),
-                        ),
-                        child: Text(
-                          AppString.currentYear,
-                          style: TextStyle(
-                            color:
-                                _eventListProvider.eventModeSelectorIndex == 1
-                                    ? Colors.white
-                                    : Colors.black87,
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                      ),
-                    ),
-                  ),
-                  Expanded(
-                    flex: 2,
-                    child: GestureDetector(
-                      onTap: () {
-                        _eventListProvider.changeEventModeSelectorIndex(2);
-                      },
-                      child: Container(
-                        padding: EdgeInsets.symmetric(
-                          horizontal: 6.0,
-                          vertical: 6.0,
-                        ),
-                        decoration: BoxDecoration(
-                          color:
-                              _eventListProvider.eventModeSelectorIndex == 2
-                                  ? Colors.red[700]
-                                  : Colors.white70,
-                        ),
-                        child: Text(
-                          AppString.byDate,
-                          style: TextStyle(
-                            color:
-                                _eventListProvider.eventModeSelectorIndex == 2
-                                    ? Colors.white
-                                    : Colors.black87,
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
+            _buildModeSelector(_eventListProvider),
             if (_eventListProvider.eventModeSelectorIndex == 2)
               Column(
                 children: <Widget>[
@@ -328,6 +305,32 @@ class _EventListState extends State<EventList> {
                     itemBuilder: (context, yearIndex) {
                       int year = sortedYears[yearIndex];
                       List<Event> yearEvents = eventsByYear[year]!;
+
+                      // in "current year" mode the year card header is
+                      // redundant (the filter itself already states the
+                      // year), so we skip it and render the events
+                      // directly, always expanded
+                      if (_eventListProvider.eventModeSelectorIndex == 1) {
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: yearEvents
+                              .map(
+                                (event) => Padding(
+                                  padding: const EdgeInsets.only(bottom: 8.0),
+                                  child: InkWell(
+                                    child: EventCard(event),
+                                    onTap: () =>
+                                        _navigateToEventDetailScreen(
+                                      context,
+                                      event,
+                                    ),
+                                  ),
+                                ),
+                              )
+                              .toList(),
+                        );
+                      }
+
                       bool expanded = _expandedYears.contains(year);
                       return Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -384,7 +387,15 @@ class _EventListState extends State<EventList> {
                                         style: TextStyle(
                                           fontSize: 13,
                                           color: Colors.white,
-                                          fontWeight: FontWeight.w500,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                      Text(
+                                        " " + AppString.events,
+                                        style: TextStyle(
+                                          fontSize: 13,
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.normal,
                                         ),
                                       ),
                                       SizedBox(width: 8),

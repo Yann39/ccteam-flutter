@@ -19,6 +19,7 @@
 
 import 'dart:convert';
 
+import 'package:ccteam/models/bike.dart';
 import 'package:ccteam/models/member.dart';
 import 'package:ccteam/providers/login_provider.dart';
 import 'package:ccteam/providers/member_creation_provider.dart';
@@ -27,6 +28,7 @@ import 'package:ccteam/providers/member_list_provider.dart';
 import 'package:ccteam/ui/main/main_action_menu.dart';
 import 'package:ccteam/ui/main/main_drawer.dart';
 import 'package:ccteam/utils/custom_decorations.dart';
+import 'package:ccteam/utils/custom_icons.dart';
 import 'package:ccteam/utils/enums.dart';
 import 'package:ccteam/utils/strings.dart';
 import 'package:ccteam/widgets/loading_content.dart';
@@ -64,19 +66,133 @@ class MemberList extends StatelessWidget {
         );
   }
 
-  /// Build the search field
-  TextField _buildSearchField(MemberListProvider _memberListProvider) {
-    return TextField(
-      decoration: InputDecoration(
-        filled: true,
-        fillColor: Colors.blue[100],
-        prefixIcon: Icon(Icons.search),
-        hintText: AppString.membersSearchHint,
+  /// Build the search field (matches the search bar of the tracks page).
+  Widget _buildSearchField(MemberListProvider _memberListProvider) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(8.0, 8.0, 8.0, 4.0),
+      child: TextField(
+        decoration: InputDecoration(
+          prefixIcon: Icon(Icons.search, color: Colors.blue[700]),
+          hintText: AppString.membersSearchHint,
+          hintStyle: TextStyle(color: Colors.black.withValues(alpha: 0.5)),
+          isDense: true,
+          contentPadding: const EdgeInsets.symmetric(vertical: 12.0),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(6.0),
+            borderSide: BorderSide(color: Colors.blue[300]!),
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(6.0),
+            borderSide: BorderSide(color: Colors.blue[300]!),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(6.0),
+            borderSide: BorderSide(color: Colors.blue[700]!, width: 1.5),
+          ),
+        ),
+        maxLines: 1,
+        onChanged: (String text) {
+          _memberListProvider.fetchMemberList(text);
+        },
       ),
-      maxLines: 1,
-      onChanged: (String text) {
-        _memberListProvider.fetchMemberList(text);
-      },
+    );
+  }
+
+  /// Build the avatar of a [member] — either the decoded image or a blue
+  /// fallback circle with the first-name initial.
+  Widget _buildAvatar(Member member) {
+    if (member.avatar != null) {
+      return CircleAvatar(
+        radius: 28.0,
+        backgroundImage: MemoryImage(base64Decode(member.avatar!)),
+      );
+    }
+    final String initial =
+        (member.firstName != null && member.firstName!.isNotEmpty)
+            ? member.firstName![0].toUpperCase()
+            : "?";
+    return CircleAvatar(
+      radius: 28.0,
+      backgroundColor: Colors.blue[700],
+      child: Text(
+        initial,
+        style: const TextStyle(
+          color: Colors.white,
+          fontSize: 18.0,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+    );
+  }
+
+  /// Discreet rider number "#NN" — blue bold italic text (no background)
+  /// for a racing-plate feel without overpowering the row.
+  Widget _buildRiderNumberBadge(int number) {
+    return Text(
+      "#$number",
+      style: TextStyle(
+        color: Colors.blue[700],
+        fontSize: 17.0,
+        fontWeight: FontWeight.w900,
+        fontStyle: FontStyle.italic,
+        letterSpacing: 0.5,
+        height: 1.0,
+      ),
+    );
+  }
+
+  /// Format the current bike of a [member] for display in the subtitle.
+  /// For now we simply pick the first bike of the list; later this should
+  /// use the bike the member has explicitly marked as "current".
+  String _currentBikeText(Member member) {
+    if (member.bikes == null || member.bikes!.isEmpty) {
+      return AppString.notDefined;
+    }
+    final Bike bike = member.bikes!.first;
+    return "${bike.manufacturer?.toUpperCase() ?? ""} ${bike.modelName ?? ""}"
+        .trim();
+  }
+
+  /// Build a single member tile (list item).
+  Widget _buildMemberTile(BuildContext context, Member member) {
+    final bool hasBike =
+        member.bikes != null && member.bikes!.isNotEmpty;
+
+    return Material(
+      color: Colors.transparent,
+      child: ListTile(
+        leading: _buildAvatar(member),
+        title: Text(
+          "${member.firstName ?? ""} ${member.lastName ?? ""}".trim(),
+          style: const TextStyle(fontWeight: FontWeight.bold),
+        ),
+        subtitle: Row(
+          children: <Widget>[
+            Icon(
+              CustomIcons.motorbike,
+              size: 13.0,
+              color: hasBike
+                  ? Colors.deepPurple
+                  : Colors.black.withValues(alpha: 0.3),
+            ),
+            const SizedBox(width: 5.0),
+            Expanded(
+              child: Text(
+                _currentBikeText(member),
+                style: TextStyle(
+                  fontStyle: hasBike ? FontStyle.normal : FontStyle.italic,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ],
+        ),
+        trailing: member.riderNumber != null
+            ? _buildRiderNumberBadge(member.riderNumber!)
+            : null,
+        onTap: () => _navigateToMemberDetailScreen(context, member),
+      ),
     );
   }
 
@@ -107,94 +223,34 @@ class MemberList extends StatelessWidget {
                 decoration: CustomDecorations.mainContent,
                 child: RestrictedContent(),
               )
-              : Column(
-                children: <Widget>[
-                  _buildSearchField(_memberListProvider),
-                  Expanded(
-                    child: Container(
-                      width: MediaQuery.of(context).size.width,
-                      alignment: Alignment.topCenter,
-                      decoration: CustomDecorations.mainContent,
-                      child: LoadingContent(
-                        loadingStatus:
-                            _memberListProvider.memberList.isEmpty
-                                ? LoadingStatus.empty
-                                : _memberListProvider.loadingStatus,
-                        defaultText: AppString.membersNotFound,
-                        emptyText: AppString.membersNotFound,
-                        child: ListView.separated(
-                          separatorBuilder:
-                              (context, index) =>
-                                  Divider(color: Colors.black, height: 4),
-                          itemCount: _memberListProvider.memberList.length,
-                          itemBuilder: (context, index) {
-                            return Material(
-                              child: InkWell(
-                                child: ListTile(
-                                  title: Text(
-                                    "${_memberListProvider.memberList[index].firstName} ${_memberListProvider.memberList[index].lastName}",
-                                  ),
-                                  subtitle: Text(
-                             _memberListProvider.memberList[index].bikes != null && _memberListProvider.memberList[index].bikes!.isNotEmpty
-                                ? _memberListProvider.memberList[index].bikes!.map((bike) => "${bike.manufacturer?.toUpperCase()} ${bike.modelName}").join(", ")
-                                        : AppString.notDefined,
-                                  ),
-                          trailing: _memberListProvider.memberList[index].riderNumber != null
-                                          ? Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                                            decoration: BoxDecoration(
-                                              color: Colors.red[700],
-                                    borderRadius: BorderRadius.circular(20),
-                                            ),
-                                            child: Text(
-                                              "#${_memberListProvider.memberList[index].riderNumber}",
-                                              style: TextStyle(
-                                                color: Colors.white,
-                                                fontWeight: FontWeight.bold,
-                                                fontSize: 16,
-                                              ),
-                                            ),
-                                          )
-                                          : null,
-                                  leading:
-                              _memberListProvider.memberList[index].avatar !=
-                                              null
-                                          ? CircleAvatar(
-                                            radius: 25,
-                                            backgroundImage: MemoryImage(
-                                              base64Decode(
-                                                _memberListProvider
-                                                    .memberList[index]
-                                                    .avatar!,
-                                              ),
-                                            ),
-                                          )
-                                          : CircleAvatar(
-                                            radius: 25,
-                                            child: Text(
-                                              _memberListProvider
-                                                  .memberList[index]
-                                                  .firstName![0],
-                                      style: TextStyle(color: Colors.white),
-                                            ),
-                                            backgroundColor: Colors.red[700],
-                                          ),
-                                ),
-                                onTap:
-                                    () => _navigateToMemberDetailScreen(
-                                      context,
-                                      _memberListProvider.memberList[index],
-                                    ),
-                              ),
-                              color: Colors.transparent,
-                            );
-                          },
+              : Container(
+                  decoration: CustomDecorations.mainContent,
+                  child: Column(
+                    children: <Widget>[
+                      _buildSearchField(_memberListProvider),
+                      Expanded(
+                        child: LoadingContent(
+                          loadingStatus:
+                              _memberListProvider.memberList.isEmpty
+                                  ? LoadingStatus.empty
+                                  : _memberListProvider.loadingStatus,
+                          defaultText: AppString.membersNotFound,
+                          emptyText: AppString.membersNotFound,
+                          child: ListView.separated(
+                            separatorBuilder: (context, index) =>
+                                Divider(color: Colors.black, height: 4),
+                            itemCount: _memberListProvider.memberList.length,
+                            itemBuilder: (context, index) =>
+                                _buildMemberTile(
+                              context,
+                              _memberListProvider.memberList[index],
+                            ),
+                          ),
                         ),
                       ),
-                    ),
+                    ],
                   ),
-                ],
-              ),
+                ),
     );
   }
 }
