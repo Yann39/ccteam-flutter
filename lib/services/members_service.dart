@@ -135,6 +135,7 @@ class MembersService {
             modelName
             engineSize
             year
+            current
           }
           role
         }
@@ -195,6 +196,7 @@ class MembersService {
             modelName
             engineSize
             year
+            current
           }
           membershipFees {
             id
@@ -277,6 +279,7 @@ class MembersService {
             modelName
             engineSize
             year
+            current
           }
           membershipFees {
             id
@@ -375,6 +378,7 @@ class MembersService {
             modelName
             engineSize
             year
+            current
           }
           active
           role
@@ -451,6 +455,7 @@ class MembersService {
             modelName
             engineSize
             year
+            current
           }
           active
           role
@@ -519,6 +524,7 @@ class MembersService {
             modelName
             engineSize
             year
+            current
           }
           active
           role

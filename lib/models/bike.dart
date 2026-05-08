@@ -24,6 +24,7 @@ class Bike {
   String? modelName;
   int? engineSize;
   int? year;
+  bool? current;
 
   Bike({
     this.id,
@@ -31,6 +32,7 @@ class Bike {
     this.modelName,
     this.engineSize,
     this.year,
+    this.current,
   });
 
   @override
@@ -41,6 +43,7 @@ class Bike {
       modelName: ${this.modelName},
       engineSize: ${this.engineSize},
       year: ${this.year},
+      current: ${this.current},
     }""";
   }
 
@@ -50,7 +53,10 @@ class Bike {
       manufacturer = json['manufacturer'],
       modelName = json['modelName'],
       engineSize = json['engineSize'],
-      year = json['year'];
+      year = json['year'],
+      current = json['current'] != null
+          ? (json['current'] == true || json['current'] == '1')
+          : null;
 
   /// Convert [Bike] object to the corresponding JSON map
   Map<String, dynamic> toJson() => {
@@ -59,6 +65,7 @@ class Bike {
     "modelName": modelName,
     "engineSize": engineSize,
     "year": year,
+    "current": current,
   };
 
   /// Override == operator to compare bikes by id

@@ -142,13 +142,16 @@ class MemberList extends StatelessWidget {
   }
 
   /// Format the current bike of a [member] for display in the subtitle.
-  /// For now we simply pick the first bike of the list; later this should
-  /// use the bike the member has explicitly marked as "current".
+  /// Picks the bike the member has explicitly marked as "current"; falls
+  /// back to the first bike in the list if none is flagged.
   String _currentBikeText(Member member) {
     if (member.bikes == null || member.bikes!.isEmpty) {
       return AppString.notDefined;
     }
-    final Bike bike = member.bikes!.first;
+    final Bike bike = member.bikes!.firstWhere(
+      (b) => b.current ?? false,
+      orElse: () => member.bikes!.first,
+    );
     return "${bike.manufacturer?.toUpperCase() ?? ""} ${bike.modelName ?? ""}"
         .trim();
   }
@@ -238,7 +241,7 @@ class MemberList extends StatelessWidget {
                           emptyText: AppString.membersNotFound,
                           child: ListView.separated(
                             separatorBuilder: (context, index) =>
-                                Divider(color: Colors.black, height: 4),
+                                Divider(color: Colors.black54, height: 4),
                             itemCount: _memberListProvider.memberList.length,
                             itemBuilder: (context, index) =>
                                 _buildMemberTile(

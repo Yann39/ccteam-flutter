@@ -46,6 +46,7 @@ class BikesService {
           modelName
           engineSize
           year
+          current
         }
       }
     """;
@@ -78,19 +79,21 @@ class BikesService {
     _log.info("Updating bike ${bike.id} ...");
 
     final String query = """
-      mutation UpdateBike(\$bikeId: Long!, \$manufacturer: String!, \$modelName: String!, \$engineSize: Int, \$year: Int) {
+      mutation UpdateBike(\$bikeId: Long!, \$manufacturer: String!, \$modelName: String!, \$engineSize: Int, \$year: Int, \$current: Boolean) {
         updateBike(
           bikeId: \$bikeId
           manufacturer: \$manufacturer
           modelName: \$modelName
           engineSize: \$engineSize
           year: \$year
+          current: \$current
         ) {
           id
           manufacturer
           modelName
           engineSize
           year
+          current
         }
       }
     """;
@@ -103,6 +106,7 @@ class BikesService {
         'modelName': bike.modelName,
         'engineSize': bike.engineSize,
         'year': bike.year,
+        'current': bike.current,
       },
       fetchPolicy: FetchPolicy.noCache,
     );
@@ -132,6 +136,7 @@ class BikesService {
           modelName
           engineSize
           year
+          current
         }
       }
     """;

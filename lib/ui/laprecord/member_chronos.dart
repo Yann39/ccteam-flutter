@@ -25,6 +25,7 @@ import 'package:ccteam/utils/custom_decorations.dart';
 import 'package:ccteam/utils/custom_icons.dart';
 import 'package:ccteam/utils/date_utils.dart';
 import 'package:ccteam/utils/strings.dart';
+import 'package:ccteam/utils/track_utils.dart';
 import 'package:ccteam/widgets/loading_content.dart';
 import 'package:ccteam/widgets/restricted_content.dart';
 import 'package:flutter/material.dart';
@@ -163,8 +164,14 @@ class _MemberChronosState extends State<MemberChronos> {
                             children: <Widget>[
                               Row(
                                 children: <Widget>[
-                                  //Icon(Icons.location_on, size: 16, color: Colors.deepPurple),
-                                  //SizedBox(width: 5.0),
+                                  Icon(
+                                    TrackUtils.trackIconFromName(
+                                      record.track!.name,
+                                    ),
+                                    size: 20,
+                                    color: Colors.red[600],
+                                  ),
+                                  SizedBox(width: 8.0),
                                   Text(
                                     record.track!.name!,
                                     textScaler: TextScaler.linear(1.3),

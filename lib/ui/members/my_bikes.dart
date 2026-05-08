@@ -17,6 +17,7 @@
  * along with CCTeam. If not, see <http://www.gnu.org/licenses/>.
  */
 
+import 'package:ccteam/models/bike.dart';
 import 'package:ccteam/providers/bike_list_provider.dart';
 import 'package:ccteam/providers/login_provider.dart';
 import 'package:ccteam/utils/custom_icons.dart';
@@ -108,11 +109,22 @@ class MyBikes extends StatelessWidget {
             );
           }
 
+            // Compute the "effective" current bike: the one explicitly
+            // flagged as current, or — if none — the first bike of the
+            // list (consistent fallback used everywhere else in the app).
+            // The early return above guarantees the list is non-empty
+            // here, so firstWhere/orElse cannot fail.
+            final Bike effectiveCurrent = provider.bikes.firstWhere(
+              (b) => b.current ?? false,
+              orElse: () => provider.bikes.first,
+            );
+
             return ListView.separated(
               separatorBuilder: (context, index) => SizedBox(height: 8.0),
             itemCount: provider.bikes.length,
             itemBuilder: (context, index) {
               final bike = provider.bikes[index];
+                final bool isCurrent = bike.id == effectiveCurrent.id;
                 return InkWell(
                   onTap: () {
                     Navigator.pushNamed(
@@ -159,6 +171,49 @@ class MyBikes extends StatelessWidget {
                               ),
                             ],
                           ),
+                        ),
+                        // Star button to mark this bike as the "current" one.
+                        // Tap a non-current bike to make it current; tapping
+                        // an already-current bike is a no-op (use another
+                        // bike to switch). A tiny "actuel" caption appears
+                        // under the star of the current bike.
+                        Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          mainAxisSize: MainAxisSize.min,
+                          children: <Widget>[
+                            IconButton(
+                              tooltip: isCurrent
+                                  ? "Moto courante"
+                                  : "Définir comme moto courante",
+                              icon: Icon(
+                                isCurrent ? Icons.star : Icons.star_border,
+                                color: isCurrent
+                                    ? Colors.amber
+                                    : Colors.white.withValues(alpha: 0.7),
+                                size: 26,
+                              ),
+                              padding: EdgeInsets.zero,
+                              constraints: const BoxConstraints(
+                                minWidth: 36,
+                                minHeight: 36,
+                              ),
+                              onPressed: isCurrent
+                                  ? null
+                                  : () => provider.setCurrentBike(bike),
+                            ),
+                            if (isCurrent) ...[
+                              const Text(
+                                AppString.currentBike,
+                                style: TextStyle(
+                                  color: Colors.amber,
+                                  fontSize: 9.0,
+                                  fontWeight: FontWeight.bold,
+                                  letterSpacing: 0.5,
+                                  height: 1.0,
+                                ),
+                              ),
+                            ],
+                          ],
                         ),
                       ],
                     ),

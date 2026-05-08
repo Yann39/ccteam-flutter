@@ -463,6 +463,7 @@ class AppString {
   static const String lapRecord = 'Record';
   static const String length = 'Longueur';
   static const String trackEvents = 'Roulages';
+  static const String currentBike = 'Actuelle';
 
   static const String errorEmailNotFoundInDatabase =
       'Aucune donnée n\' a été trouvé pour l\'adresse e-mail {0}';

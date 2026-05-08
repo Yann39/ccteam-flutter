@@ -93,6 +93,43 @@ class BikeListProvider extends ChangeNotifier {
     }
   }
 
+  /// Mark the given [bike] as the member's "current" bike. Any other bike
+  /// that was previously marked as current is unmarked first (only one bike
+  /// can be current at a time).
+  Future<void> setCurrentBike(Bike bike) async {
+    _updateStatus(LoadingStatus.loading);
+    try {
+      // unmark any other bike that is currently flagged as current
+      final List<Bike> previousCurrents =
+          _bikes.where((b) => b.id != bike.id && (b.current ?? false)).toList();
+      for (final Bike previous in previousCurrents) {
+        previous.current = false;
+        final Bike updated = await _bikesService.updateBike(previous);
+        final int idx = _bikes.indexWhere((b) => b.id == updated.id);
+        if (idx != -1) {
+          _bikes[idx] = updated;
+        }
+      }
+
+      // mark the target bike as current
+      bike.current = true;
+      final Bike updatedCurrent = await _bikesService.updateBike(bike);
+      final int targetIdx =
+          _bikes.indexWhere((b) => b.id == updatedCurrent.id);
+      if (targetIdx != -1) {
+        _bikes[targetIdx] = updatedCurrent;
+      }
+
+      _loginProvider.loggedMember!.bikes = _bikes;
+      _updateStatus(LoadingStatus.loaded);
+    } catch (e) {
+      _log.severe("Error setting current bike: $e");
+      _messageProvider.setMessage(AppString.error, MessageType.ERROR);
+      AppUtils.handleServiceException(e, _messageProvider, _loginProvider);
+      _updateStatus(LoadingStatus.loaded);
+    }
+  }
+
   /// Delete the specified [bike].
   Future<void> deleteBike(Bike bike) async {
     _updateStatus(LoadingStatus.loading);

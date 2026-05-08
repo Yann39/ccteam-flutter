@@ -34,112 +34,148 @@ class NewsCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final NewsListProvider _newsListProvider = Provider.of<NewsListProvider>(context, listen: true);
-    final LoginProvider _loginProvider = Provider.of<LoginProvider>(context, listen: false);
+    final NewsListProvider newsListProvider =
+        Provider.of<NewsListProvider>(context, listen: true);
+    final LoginProvider loginProvider =
+        Provider.of<LoginProvider>(context, listen: false);
 
-    // the news to display in this card
-    final News news = _newsListProvider.newsList[index];
-
-    // the icon color
-    final Color _color = index % 3 == 0
-        ? Colors.red[900]!
-        : index % 3 == 1
-            ? Colors.green[600]!
-            : Colors.blue[600]!;
+    final News news = newsListProvider.newsList[index];
+    final Color accentColor = _accentColorFor(index);
+    final bool isLiked = _isLikedByCurrentUser(news, loginProvider);
+    final int likesCount = news.likedNews?.length ?? 0;
 
     return Container(
       height: 84.0,
-      padding: EdgeInsets.symmetric(vertical: 8.0, horizontal: 12.0),
-      margin: EdgeInsets.symmetric(vertical: 4.0, horizontal: 10.0),
+      padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 12.0),
+      margin: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 10.0),
       decoration: CustomDecorations.cardFull,
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: <Widget>[
-          //Image(image: image, height: 30, colorBlendMode: BlendMode.modulate, color: Colors.green),
-          Column(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: <Widget>[
-              //Icon(CustomIcons.helmet, size: 35, color: _color,),
-              ShaderMask(
-                blendMode: BlendMode.srcATop,
-                shaderCallback: (bounds) => LinearGradient(
-                  begin: const FractionalOffset(0.0, 0.0),
-                  end: const FractionalOffset(0.0, 1.0),
-                  stops: [0.0, 1.0],
-                  colors: [_color, Colors.purple[700]!],
-                ).createShader(bounds),
-                child: Icon(
-                  CustomIcons.helmet,
-                  size: 35,
-                  color: _color,
-                ),
-              ),
-              Row(
-                children: <Widget>[
-                  Icon(
-                    news.likedNews != null &&
-                            news.likedNews!.any((element) => element.member!.id == _loginProvider.loggedMember!.id)
-                        ? Icons.favorite
-                        : Icons.favorite_border,
-                    color: Colors.pink,
-                    size: 12.0,
-                  ),
-                  SizedBox(width: 2.0),
-                  Text(
-                    "${news.likedNews != null ? news.likedNews!.length : 0}",
-                    softWrap: false,
-                    textScaler: TextScaler.linear(0.9),
-                    style: TextStyle(color: Colors.white),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ],
-              ),
-            ],
+          _buildLeading(
+            accentColor: accentColor,
+            isLiked: isLiked,
+            likesCount: likesCount,
           ),
-          SizedBox(width: 8.0),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: <Widget>[
-                Text(news.title ?? "",
-                    textScaler: TextScaler.linear(1.2),
-                    style: TextStyle(color: Colors.white),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis),
-                SizedBox(height: 4.0),
-                Text(news.catchLine ?? "",
-                    textScaler: TextScaler.linear(0.9),
-                    style: TextStyle(color: Colors.white),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis),
-                SizedBox(height: 4.0),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: <Widget>[
-                    Icon(Icons.access_time, color: Colors.lime, size: 12.0),
-                    SizedBox(width: 2.0),
-                    Text(
-                      news.newsDate != null ? AppDateUtils.convertToString(news.newsDate!, DATE_FORMAT) ?? "" : "",
-                      softWrap: false,
-                      textScaler: TextScaler.linear(0.9),
-                      style: TextStyle(color: Colors.white),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    SizedBox(width: 8.0),
-                  ],
-                ),
-              ],
-            ),
-          ),
-          SizedBox(width: 8.0),
-          Icon(Icons.chevron_right, color: Colors.white, size: 20.0),
+          const SizedBox(width: 8.0),
+          Expanded(child: _buildContent(news)),
+          const SizedBox(width: 8.0),
+          const Icon(Icons.chevron_right, color: Colors.white, size: 20.0),
         ],
       ),
+    );
+  }
+
+  /// Cycles through three accent colors so each news has a different
+  /// helmet tint than its neighbours.
+  Color _accentColorFor(int index) {
+    switch (index % 3) {
+      case 0:
+        return Colors.red[900]!;
+      case 1:
+        return Colors.green[600]!;
+      default:
+        return Colors.blue[600]!;
+    }
+  }
+
+  bool _isLikedByCurrentUser(News news, LoginProvider loginProvider) {
+    return news.likedNews?.any(
+          (element) => element.member!.id == loginProvider.loggedMember!.id,
+        ) ??
+        false;
+  }
+
+  /// Left column of the card: helmet icon (gradient-tinted) on top, like
+  /// counter at the bottom.
+  Widget _buildLeading({
+    required Color accentColor,
+    required bool isLiked,
+    required int likesCount,
+  }) {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      children: <Widget>[
+        ShaderMask(
+          blendMode: BlendMode.srcATop,
+          shaderCallback: (bounds) => LinearGradient(
+            begin: const FractionalOffset(0.0, 0.0),
+            end: const FractionalOffset(0.0, 1.0),
+            stops: const [0.0, 1.0],
+            colors: [accentColor, Colors.purple[700]!],
+          ).createShader(bounds),
+          child: Icon(
+            CustomIcons.helmet,
+            size: 35,
+            color: accentColor,
+          ),
+        ),
+        _buildMetaItem(
+          icon: isLiked ? Icons.favorite : Icons.favorite_border,
+          iconColor: Colors.pink,
+          text: "$likesCount",
+        ),
+      ],
+    );
+  }
+
+  /// Middle column of the card: bold title, catch line and date.
+  Widget _buildContent(News news) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: <Widget>[
+        Text(
+          news.title ?? "",
+          textScaler: const TextScaler.linear(1.2),
+          style: const TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+          ),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+        ),
+        const SizedBox(height: 4.0),
+        Text(
+          news.catchLine ?? "",
+          textScaler: const TextScaler.linear(0.9),
+          style: TextStyle(color: Colors.white.withValues(alpha: 0.9)),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+        ),
+        const SizedBox(height: 4.0),
+        _buildMetaItem(
+          icon: Icons.access_time,
+          iconColor: Colors.lime,
+          text: news.newsDate != null
+              ? (AppDateUtils.convertToString(news.newsDate!, DATE_FORMAT) ?? "")
+              : "",
+        ),
+      ],
+    );
+  }
+
+  /// Reusable "small icon + caption" pair used for both the like counter
+  /// (left column) and the date (middle column).
+  Widget _buildMetaItem({
+    required IconData icon,
+    required Color iconColor,
+    required String text,
+  }) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: <Widget>[
+        Icon(icon, color: iconColor, size: 12.0),
+        const SizedBox(width: 2.0),
+        Text(
+          text,
+          softWrap: false,
+          textScaler: const TextScaler.linear(0.9),
+          style: const TextStyle(color: Colors.white),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+        ),
+      ],
     );
   }
 }

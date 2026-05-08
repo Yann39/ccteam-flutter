@@ -21,6 +21,7 @@ import 'dart:convert';
 import 'dart:math';
 
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:ccteam/models/bike.dart';
 import 'package:ccteam/models/member.dart';
 import 'package:ccteam/models/membership_fee.dart';
 import 'package:ccteam/models/record.dart';
@@ -494,49 +495,11 @@ class MemberDetail extends StatelessWidget {
       );
     }
 
-    final _motoInfo = MergeSemantics(
-      child: Padding(
-        padding: EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: <Widget>[
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>[
-                  Text(
-                    AppString.moto,
-                    style: TextStyle(color: Colors.red[700]),
-                  ),
-                  Container(
-                    child: _memberDetailProvider.currentMember?.bikes != null && _memberDetailProvider.currentMember!.bikes!.isNotEmpty
-                        ? Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: _memberDetailProvider.currentMember!.bikes!.map((bike) => Text(
-                              "${bike.manufacturer?.toUpperCase()} ${bike.modelName}",
-                              style: TextStyle(color: Colors.black.withAlpha(204)),
-                              textScaler: TextScaler.linear(1.1),
-                            )).toList(),
-                          )
-                        : Text(
-                            AppString.notDefined,
-                            style: TextStyle(color: Colors.black.withAlpha(204)),
-                            textScaler: TextScaler.linear(1.1),
-                          ),
-                  ),
-                ],
-              ),
-            ),
-            SizedBox(
-              width: 72.0,
-              child: Icon(
-                CustomIcons.motorbike,
-                color: Colors.red[700]!.withAlpha(204),
-              ),
-            ),
-          ],
-        ),
-      ),
+    // Moto info: shows the "current" bike with a caret next to it; if the
+    // member has more than one bike, tapping the caret expands the list of
+    // other bikes underneath.
+    final _motoInfo = _BikesInfo(
+      bikes: _memberDetailProvider.currentMember?.bikes ?? <Bike>[],
     );
 
     final _mobileInfo = MergeSemantics(
@@ -925,6 +888,155 @@ class MemberDetail extends StatelessWidget {
               ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Small block that displays a member's bikes in the detail page:
+/// the "current" bike on the first line with a caret if the member has
+/// other bikes, and — when the caret is tapped — the list of other bikes
+/// expanded just below.
+class _BikesInfo extends StatefulWidget {
+  final List<Bike> bikes;
+
+  const _BikesInfo({Key? key, required this.bikes}) : super(key: key);
+
+  @override
+  State<_BikesInfo> createState() => _BikesInfoState();
+}
+
+class _BikesInfoState extends State<_BikesInfo> {
+  bool _expanded = false;
+
+  String _bikeLabel(Bike bike) =>
+      "${bike.manufacturer?.toUpperCase() ?? ""} ${bike.modelName ?? ""}"
+          .trim();
+
+  @override
+  Widget build(BuildContext context) {
+    final List<Bike> bikes = widget.bikes;
+    final Bike? currentBike = bikes.isEmpty
+        ? null
+        : bikes.firstWhere(
+            (b) => b.current ?? false,
+            orElse: () => bikes.first,
+          );
+    final List<Bike> otherBikes =
+        bikes.where((b) => b.id != currentBike?.id).toList();
+
+    return MergeSemantics(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: <Widget>[
+                      Text(
+                        AppString.moto,
+                        style: TextStyle(color: Colors.red[700]),
+                      ),
+                      // current bike + caret on the same line
+                      Row(
+                        children: <Widget>[
+                          Flexible(
+                            child: Text(
+                              currentBike != null
+                                  ? _bikeLabel(currentBike)
+                                  : AppString.notDefined,
+                              style: TextStyle(
+                                color: Colors.black.withAlpha(204),
+                                fontWeight: FontWeight.normal,
+                              ),
+                              textScaler: const TextScaler.linear(1.1),
+                            ),
+                          ),
+                          if (otherBikes.isNotEmpty)
+                            InkWell(
+                              onTap: () => setState(
+                                () => _expanded = !_expanded,
+                              ),
+                              borderRadius: BorderRadius.circular(20.0),
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 4.0,
+                                  vertical: 2.0,
+                                ),
+                                child: AnimatedRotation(
+                                  turns: _expanded ? 0.5 : 0.0,
+                                  duration: const Duration(milliseconds: 200),
+                                  child: Icon(
+                                    Icons.expand_more,
+                                    color: Colors.black.withAlpha(160),
+                                    size: 22.0,
+                                  ),
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                SizedBox(
+                  width: 72.0,
+                  child: Icon(
+                    CustomIcons.motorbike,
+                    color: Colors.red[700]!.withAlpha(204),
+                  ),
+                ),
+              ],
+            ),
+            // animated reveal of the other bikes when expanded
+            AnimatedSize(
+              duration: const Duration(milliseconds: 200),
+              curve: Curves.easeInOut,
+              alignment: Alignment.topLeft,
+              child: (_expanded && otherBikes.isNotEmpty)
+                  ? Padding(
+                      padding: const EdgeInsets.only(top: 4.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: otherBikes
+                            .map(
+                              (bike) => Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 2.0,
+                                ),
+                                child: Row(
+                                  children: <Widget>[
+                                    Icon(
+                                      Icons.circle,
+                                      size: 5.0,
+                                      color: Colors.black.withAlpha(140),
+                                    ),
+                                    const SizedBox(width: 8.0),
+                                    Expanded(
+                                      child: Text(
+                                        _bikeLabel(bike),
+                                        style: TextStyle(
+                                          color: Colors.black.withAlpha(180),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            )
+                            .toList(),
+                      ),
+                    )
+                  : const SizedBox.shrink(),
+            ),
+          ],
         ),
       ),
     );

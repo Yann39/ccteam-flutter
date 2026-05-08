@@ -343,8 +343,8 @@ class _AddEditMemberState extends State<AddEditMember> {
                 _avatarProvider.setCroppedImage(
                   base64Decode(_memberCreationProvider.currentMember.avatar!),
                 );
-                Navigator.of(context).pushNamed('/editAvatar');
               }
+              Navigator.of(context).pushNamed('/editAvatar');
             },
           ),
         ),

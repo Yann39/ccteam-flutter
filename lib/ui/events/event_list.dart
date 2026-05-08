@@ -414,7 +414,7 @@ class _EventListState extends State<EventList> {
                           if (expanded)
                             ...yearEvents.map(
                               (event) => Padding(
-                                padding: const EdgeInsets.only(bottom: 8.0),
+                                padding: const EdgeInsets.only(bottom: 4.0),
                                 child: InkWell(
                                   child: EventCard(event),
                                   onTap:

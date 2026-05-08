@@ -511,7 +511,19 @@ class _TrackDetailState extends State<TrackDetail> {
     final int? riderNumber = record.member?.riderNumber;
     final String lapTime =
         AppDateUtils.toLapTimeString(record.lapTime) ?? "";
-    final String? bikeStr = _bikeText(record.bike);
+    // Display the bike used for this record if available, otherwise fall
+    // back to the member's currently marked bike.
+    Bike? displayBike = record.bike;
+    if (displayBike == null && record.member?.bikes != null) {
+      final List<Bike> memberBikes = record.member!.bikes!;
+      if (memberBikes.isNotEmpty) {
+        displayBike = memberBikes.firstWhere(
+          (b) => b.current ?? false,
+          orElse: () => memberBikes.first,
+        );
+      }
+    }
+    final String? bikeStr = _bikeText(displayBike);
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 5.0),
