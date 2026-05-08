@@ -23,7 +23,6 @@ import 'package:ccteam/providers/track_list_provider.dart';
 import 'package:ccteam/ui/main/main_action_menu.dart';
 import 'package:ccteam/ui/main/main_drawer.dart';
 import 'package:ccteam/utils/custom_decorations.dart';
-import 'package:ccteam/utils/date_utils.dart';
 import 'package:ccteam/utils/enums.dart';
 import 'package:ccteam/utils/strings.dart';
 import 'package:ccteam/utils/track_utils.dart';
@@ -193,25 +192,27 @@ class _TracksState extends State<Tracks> {
                           ),
                         ],
                       ),
-                    if (track.lapRecord != null) ...[
+                    if (track.country != null) ...[
                       const SizedBox(height: 1.0),
                       Row(
                         children: <Widget>[
-                          const Icon(
-                            Icons.timer,
-                            color: Colors.white,
-                            size: 12.0,
+                          Text(
+                            track.country!.flagEmoji,
+                            style: const TextStyle(fontSize: 12.0, height: 1.0),
                           ),
                           const SizedBox(width: 4.0),
-                          Text(
-                            AppDateUtils.toLapTimeString(track.lapRecord) ??
-                                "",
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 12.0,
-                              fontFamily: "AlarmClock",
-                              letterSpacing: -1.0,
-                              height: 1.0,
+                          Flexible(
+                            child: Text(
+                              track.country!.localizedName(
+                                Localizations.localeOf(context).languageCode,
+                              ),
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 11.0,
+                                height: 1.1,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
                             ),
                           ),
                         ],

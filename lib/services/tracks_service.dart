@@ -42,7 +42,12 @@ class TracksService {
           lapRecord
           website
           latitude
-          longitude 
+          longitude
+          country {
+            code
+            nameFr
+            nameEn
+          }
         }
       }
     """;
@@ -96,7 +101,12 @@ class TracksService {
           lapRecord
           website
           latitude
-          longitude 
+          longitude
+          country {
+            code
+            nameFr
+            nameEn
+          }
         }
       }
     """;
@@ -149,7 +159,12 @@ class TracksService {
           lapRecord
           website
           latitude
-          longitude 
+          longitude
+          country {
+            code
+            nameFr
+            nameEn
+          }
         }
       }
     """;

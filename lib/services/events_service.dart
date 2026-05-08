@@ -394,6 +394,11 @@ class EventsService {
             website
             latitude
             longitude
+            country {
+              code
+              nameFr
+              nameEn
+            }
           }
           organizer
           price
@@ -470,6 +475,11 @@ class EventsService {
             website
             latitude
             longitude
+            country {
+              code
+              nameFr
+              nameEn
+            }
           }
           organizer
           price
@@ -539,6 +549,11 @@ class EventsService {
             website
             latitude
             longitude
+            country {
+              code
+              nameFr
+              nameEn
+            }
           }
           organizer
           price

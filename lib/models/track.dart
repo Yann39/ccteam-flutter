@@ -17,6 +17,8 @@
  * along with CCTeam. If not, see <http://www.gnu.org/licenses/>.
  */
 
+import 'package:ccteam/models/country.dart';
+
 /// Class representing a track
 class Track {
   int? id;
@@ -26,6 +28,7 @@ class Track {
   String? website;
   double? latitude;
   double? longitude;
+  Country? country;
 
   Track({
     this.id,
@@ -35,6 +38,7 @@ class Track {
     this.website,
     this.latitude,
     this.longitude,
+    this.country,
   });
 
   @override
@@ -47,6 +51,7 @@ class Track {
       website: ${this.website},
       latitude: ${this.latitude},
       longitude: ${this.longitude},
+      country: ${this.country},
     }""";
   }
 
@@ -58,7 +63,10 @@ class Track {
       lapRecord = json['lapRecord'] != null ? json['lapRecord'] : null,
       website = json['website'],
       latitude = json['latitude'] != null ? json['latitude'] : null,
-      longitude = json['longitude'] != null ? json['longitude'] : null;
+      longitude = json['longitude'] != null ? json['longitude'] : null,
+      country = json['country'] != null
+          ? Country.fromJson(json['country'])
+          : null;
 
   /// Convert [Record] object to the corresponding JSON map
   Map<String, dynamic> toJson() => {
@@ -69,6 +77,7 @@ class Track {
     "website": website,
     "latitude": latitude,
     "longitude": longitude,
+    "country": country?.toJson(),
   };
 
   /// Override == operator to compare tracks by id

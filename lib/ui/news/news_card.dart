@@ -130,7 +130,7 @@ class NewsCard extends StatelessWidget {
           textScaler: const TextScaler.linear(1.2),
           style: const TextStyle(
             color: Colors.white,
-            fontWeight: FontWeight.bold,
+            fontWeight: FontWeight.w500,
           ),
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
