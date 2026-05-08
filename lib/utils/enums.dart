@@ -21,6 +21,46 @@ enum AuthStatus { Initializing, Unauthenticated, Authenticating, Authenticated }
 
 enum MemberRole { ROLE_USER, ROLE_MEMBER, ROLE_ADMIN }
 
+/// Position held by a member in the club's executive board (orthogonal to
+/// the security [MemberRole]). At most one member holds each role at a
+/// time; uniqueness is enforced server-side.
+enum BoardRole { PRESIDENT, VICE_PRESIDENT, SECRETARY, TREASURER }
+
+/// Human-readable French label for a [BoardRole].
+extension BoardRoleLabel on BoardRole {
+  String get labelFr {
+    switch (this) {
+      case BoardRole.PRESIDENT:
+        return "Président";
+      case BoardRole.VICE_PRESIDENT:
+        return "Vice-président";
+      case BoardRole.SECRETARY:
+        return "Secrétaire";
+      case BoardRole.TREASURER:
+        return "Trésorier";
+    }
+  }
+
+  String get labelEn {
+    switch (this) {
+      case BoardRole.PRESIDENT:
+        return "President";
+      case BoardRole.VICE_PRESIDENT:
+        return "Vice-president";
+      case BoardRole.SECRETARY:
+        return "Secretary";
+      case BoardRole.TREASURER:
+        return "Treasurer";
+    }
+  }
+
+  /// Pick the label for the given [languageCode] (`'fr'` / `'en'`),
+  /// defaulting to French.
+  String localizedLabel(String languageCode) {
+    return languageCode == 'en' ? labelEn : labelFr;
+  }
+}
+
 enum LoginStatus {
   Loading,
   EmailStep,

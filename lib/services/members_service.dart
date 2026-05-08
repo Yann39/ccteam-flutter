@@ -25,6 +25,7 @@ import 'package:ccteam/models/membership_fee.dart';
 import 'package:ccteam/utils/app_utils.dart';
 import 'package:ccteam/utils/constants.dart';
 import 'package:ccteam/utils/custom_graphql_exception.dart';
+import 'package:ccteam/utils/enums.dart';
 import 'package:ccteam/utils/graphql_connection.dart';
 import 'package:gql/language.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
@@ -138,6 +139,7 @@ class MembersService {
             current
           }
           role
+          boardRole
         }
       }
     """;
@@ -207,6 +209,7 @@ class MembersService {
             modifiedOn
           }
           role
+          boardRole
           active
           registrationDate
           eventMembers {
@@ -290,6 +293,7 @@ class MembersService {
             modifiedOn
           }
           role
+          boardRole
           registrationDate
           eventMembers {
             id
@@ -382,6 +386,7 @@ class MembersService {
           }
           active
           role
+          boardRole
           registrationDate
           likedNews {
             news {
@@ -459,6 +464,7 @@ class MembersService {
           }
           active
           role
+          boardRole
           registrationDate
           likedNews {
             news {
@@ -528,6 +534,7 @@ class MembersService {
           }
           active
           role
+          boardRole
           registrationDate
           likedNews {
             news {
@@ -555,6 +562,44 @@ class MembersService {
       throw AppUtils.handleGraphQlException(result)!;
     } else {
       return Member.fromJson(result.data!['deleteMember']);
+    }
+  }
+
+  /// Assign (or clear, by passing null) the executive board role of the
+  /// given [member]. Server-side enforces uniqueness of each role.
+  Future<Member> setBoardRole(Member member, BoardRole? boardRole) async {
+    _log.info("Setting board role of member ${member.email} to $boardRole");
+
+    final String query = """
+      mutation SetBoardRole(\$memberId: Long!, \$boardRole: BoardRole) {
+        setBoardRole(memberId: \$memberId, boardRole: \$boardRole) {
+          id
+          firstName
+          lastName
+          email
+          role
+          boardRole
+        }
+      }
+    """;
+
+    final MutationOptions mutationOptions = new MutationOptions(
+      document: parseString(query),
+      variables: {
+        'memberId': member.id,
+        'boardRole': boardRole?.toString().split('.').last,
+      },
+      fetchPolicy: FetchPolicy.noCache,
+    );
+
+    final QueryResult result = await GraphQLConnection().graphQLClient.mutate(
+      mutationOptions,
+    );
+
+    if (result.hasException) {
+      throw AppUtils.handleGraphQlException(result)!;
+    } else {
+      return Member.fromJson(result.data!['setBoardRole']);
     }
   }
 

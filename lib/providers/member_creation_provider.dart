@@ -101,6 +101,27 @@ class MemberCreationProvider extends ChangeNotifier {
     });
   }
 
+  /// Assign (or clear) the executive board role of the current member.
+  /// Uses the dedicated server-side mutation that enforces uniqueness.
+  Future<void> setBoardRole(BoardRole? newBoardRole) async {
+    _updateStatus(LoadingStatus.loading);
+    await _membersService
+        .setBoardRole(_currentMember, newBoardRole)
+        .then((value) {
+      _log.fine("Board role of ${_currentMember.email} set to $newBoardRole");
+      _currentMember.boardRole = value.boardRole;
+      _updateStatus(LoadingStatus.loaded);
+    }, onError: (error) {
+      _log.warning("Error when setting board role ($error)");
+      _messageProvider.setMessage(
+        AppString.memberUpdateFailed,
+        MessageType.ERROR,
+      );
+      AppUtils.handleServiceException(error, _messageProvider, _loginProvider);
+      _updateStatus(LoadingStatus.notLoaded);
+    });
+  }
+
   /// Notify all the registered listeners of this provider.
   void _notifyListeners() {
     _log.info("Notifying listeners of MemberCreationProvider");

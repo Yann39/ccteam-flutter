@@ -156,6 +156,31 @@ class MemberList extends StatelessWidget {
         .trim();
   }
 
+  /// Small chip showing the member's executive board role (Président,
+  /// Trésorier, …). Only displayed when the member holds a board role.
+  Widget _buildBoardRoleBadge(BoardRole role, BuildContext context) {
+    final String label = role.localizedLabel(
+      Localizations.localeOf(context).languageCode,
+    );
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 6.0, vertical: 1.0),
+      decoration: BoxDecoration(
+        color: Colors.amber[700],
+        borderRadius: BorderRadius.circular(4.0),
+      ),
+      child: Text(
+        label,
+        style: const TextStyle(
+          color: Colors.white,
+          fontSize: 10.0,
+          fontWeight: FontWeight.bold,
+          letterSpacing: 0.3,
+          height: 1.2,
+        ),
+      ),
+    );
+  }
+
   /// Build a single member tile (list item).
   Widget _buildMemberTile(BuildContext context, Member member) {
     final bool hasBike =
@@ -165,9 +190,21 @@ class MemberList extends StatelessWidget {
       color: Colors.transparent,
       child: ListTile(
         leading: _buildAvatar(member),
-        title: Text(
-          "${member.firstName ?? ""} ${member.lastName ?? ""}".trim(),
-          style: const TextStyle(fontWeight: FontWeight.bold),
+        title: Row(
+          children: <Widget>[
+            Flexible(
+              child: Text(
+                "${member.firstName ?? ""} ${member.lastName ?? ""}".trim(),
+                style: const TextStyle(fontWeight: FontWeight.bold),
+                overflow: TextOverflow.ellipsis,
+                maxLines: 1,
+              ),
+            ),
+            if (member.boardRole != null) ...[
+              const SizedBox(width: 6.0),
+              _buildBoardRoleBadge(member.boardRole!, context),
+            ],
+          ],
         ),
         subtitle: Row(
           children: <Widget>[

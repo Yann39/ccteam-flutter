@@ -37,6 +37,7 @@ class Member {
   bool? active;
   bool? verified;
   MemberRole? role;
+  BoardRole? boardRole;
   String? otp;
   DateTime? otpDate;
   DateTime? registrationDate;
@@ -59,6 +60,7 @@ class Member {
     this.active = false,
     this.verified = false,
     this.role = MemberRole.ROLE_USER,
+    this.boardRole,
     this.otp,
     this.otpDate,
     this.registrationDate,
@@ -84,6 +86,7 @@ class Member {
       active: ${this.active},
       verified: ${this.verified},
       role: ${this.role},
+      boardRole: ${this.boardRole},
       otp: ${this.otp},
       otpDate: ${this.otpDate?.toIso8601String()},
       registrationDate: ${this.registrationDate?.toIso8601String()},
@@ -114,6 +117,12 @@ class Member {
       active = json['active'] != null && (json['active'] == '1' || json['active'] == true),
       verified = json['verified'] != null && (json['verified'] == '1' || json['verified'] == true),
       role = json['role'] != null ? MemberRole.values.firstWhere((e) => e.toString().split('.').last == json['role'], orElse: () => MemberRole.ROLE_USER) : MemberRole.ROLE_USER,
+      boardRole = json['boardRole'] != null
+          ? BoardRole.values.firstWhere(
+              (e) => e.toString().split('.').last == json['boardRole'],
+              orElse: () => BoardRole.PRESIDENT,
+            )
+          : null,
       otp = json['otp'],
       otpDate = json['otpDate'] != null ? DateTime.parse(json['otpDate']) : null,
       registrationDate = json['registrationDate'] != null ? DateTime.parse(json['registrationDate']) : null,
@@ -137,6 +146,7 @@ class Member {
     "active": active,
     "verified": verified,
     "role": role?.toString().split('.').last,
+    "boardRole": boardRole?.toString().split('.').last,
     "otp": otp,
     "otpDate": otpDate?.toIso8601String(),
     "registrationDate": registrationDate?.toIso8601String(),

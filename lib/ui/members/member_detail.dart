@@ -502,6 +502,54 @@ class MemberDetail extends StatelessWidget {
       bikes: _memberDetailProvider.currentMember?.bikes ?? <Bike>[],
     );
 
+    // Board role info: only shown when the member holds an executive
+    // board position (Président, Trésorier, …).
+    final BoardRole? _boardRole =
+        _memberDetailProvider.currentMember?.boardRole;
+    final Widget? _boardRoleInfo = _boardRole == null
+        ? null
+        : MergeSemantics(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 8.0,
+                vertical: 8.0,
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: <Widget>[
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: <Widget>[
+                        Text(
+                          "Rôle au bureau",
+                          style: TextStyle(color: Colors.red[700]),
+                        ),
+                        Text(
+                          _boardRole.localizedLabel(
+                            Localizations.localeOf(context).languageCode,
+                          ),
+                          style: TextStyle(
+                            color: Colors.black.withAlpha(204),
+                            fontWeight: FontWeight.w600,
+                          ),
+                          textScaler: const TextScaler.linear(1.1),
+                        ),
+                      ],
+                    ),
+                  ),
+                  SizedBox(
+                    width: 72.0,
+                    child: Icon(
+                      Icons.workspace_premium,
+                      color: Colors.amber[700],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+
     final _mobileInfo = MergeSemantics(
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 0.0),
@@ -803,6 +851,13 @@ class MemberDetail extends StatelessWidget {
                             decoration: CustomDecorations.cardLight,
                             child: Column(
                               children: <Widget>[
+                                if (_boardRoleInfo != null) ...[
+                                  _boardRoleInfo,
+                                  Divider(
+                                    color: Colors.black.withAlpha(204),
+                                    height: 5,
+                                  ),
+                                ],
                                 _motoInfo,
                                 Divider(
                                   color: Colors.black.withAlpha(204),

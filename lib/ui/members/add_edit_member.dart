@@ -79,8 +79,19 @@ class AddEditMember extends StatefulWidget {
 class _AddEditMemberState extends State<AddEditMember> {
   final GlobalKey<FormState> _formKey = new GlobalKey<FormState>();
 
-  initState() {
-    return super.initState();
+  /// Snapshot of the board role the member had when the form was opened,
+  /// so we can detect a change on save and call the dedicated server-side
+  /// mutation only when needed.
+  BoardRole? _initialBoardRole;
+  BoardRole? _selectedBoardRole;
+
+  @override
+  void initState() {
+    super.initState();
+    final MemberCreationProvider provider =
+        Provider.of<MemberCreationProvider>(context, listen: false);
+    _initialBoardRole = provider.currentMember.boardRole;
+    _selectedBoardRole = _initialBoardRole;
   }
 
   /// Validate the form then submit data to backend
@@ -103,9 +114,16 @@ class _AddEditMemberState extends State<AddEditMember> {
       final MemberDetailProvider _memberDetailProvider =
           Provider.of<MemberDetailProvider>(context, listen: false);
 
+      final bool boardRoleChanged = _selectedBoardRole != _initialBoardRole;
+
       // submit data to backend, if id is set this is an update, else a creation
       if (memberCreationProvider.currentMember.id != null) {
-        memberCreationProvider.updateMember().then((value) {
+        memberCreationProvider.updateMember().then((value) async {
+          // board role is persisted via a dedicated mutation; only call
+          // it if the value actually changed
+          if (boardRoleChanged) {
+            await memberCreationProvider.setBoardRole(_selectedBoardRole);
+          }
           _memberListProvider.updateMemberInList(
             memberCreationProvider.currentMember,
           );
@@ -114,7 +132,12 @@ class _AddEditMemberState extends State<AddEditMember> {
           );
         });
       } else {
-        memberCreationProvider.createMember().then((value) {
+        memberCreationProvider.createMember().then((value) async {
+          // when creating a new member, optionally apply the chosen
+          // board role right after creation
+          if (_selectedBoardRole != null) {
+            await memberCreationProvider.setBoardRole(_selectedBoardRole);
+          }
           _memberListProvider.addMemberInList(
             memberCreationProvider.currentMember,
           );
@@ -277,6 +300,49 @@ class _AddEditMemberState extends State<AddEditMember> {
       ],
     );
 
+    // Board role dropdown — admin-only. Includes a "—" entry to clear the
+    // role. The change is persisted via the dedicated `setBoardRole`
+    // mutation in submitForm.
+    final String _languageCode = Localizations.localeOf(context).languageCode;
+    final boardRoleField = Row(
+      children: [
+        Icon(Icons.workspace_premium, color: Colors.black45),
+        const SizedBox(width: 16),
+        Expanded(
+          child: DropdownButtonFormField<BoardRole?>(
+            decoration: const InputDecoration(labelText: "Rôle au bureau"),
+            initialValue: _selectedBoardRole,
+            items: <DropdownMenuItem<BoardRole?>>[
+              const DropdownMenuItem<BoardRole?>(
+                value: null,
+                child: Text(
+                  "— Aucun —",
+                  style: TextStyle(
+                    color: Colors.black54,
+                    fontStyle: FontStyle.italic,
+                  ),
+                ),
+              ),
+              ...BoardRole.values.map(
+                (BoardRole role) => DropdownMenuItem<BoardRole?>(
+                  value: role,
+                  child: Text(
+                    role.localizedLabel(_languageCode),
+                    style: const TextStyle(color: Colors.black87),
+                  ),
+                ),
+              ),
+            ],
+            onChanged: (BoardRole? newValue) {
+              setState(() {
+                _selectedBoardRole = newValue;
+              });
+            },
+          ),
+        ),
+      ],
+    );
+
     final editableAvatar = Stack(
       children: <Widget>[
         InkWell(
@@ -408,6 +474,7 @@ class _AddEditMemberState extends State<AddEditMember> {
                 if (_loginProvider.loggedMember?.role ==
                     MemberRole.ROLE_ADMIN) ...[
                   roleField,
+                  boardRoleField,
                 ],
               ],
             ),
