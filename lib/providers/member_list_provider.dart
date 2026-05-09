@@ -98,7 +98,7 @@ class MemberListProvider extends ChangeNotifier {
   }
 
   /// Fetch the list of all members according to the specified [text] filter.
-  void fetchMemberList(String? text) async {
+  Future<void> fetchMemberList(String? text) async {
     // guard against unauthorized access
     if (!_loginProvider.isMember) {
       _log.info("User not member, skipping member list fetch");

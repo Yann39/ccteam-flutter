@@ -115,7 +115,16 @@ class EventDetail extends StatelessWidget {
     );
   }
 
-  Widget _registrationButton(
+  /// Build the registration "card": a horizontal panel that shows the
+  /// current participation state (icon + label) on the left and the
+  /// appropriate toggle action on the right. Visually integrated with
+  /// the stat cards (date / price / track / organiser) of the page.
+  ///
+  /// Asymmetric on purpose:
+  ///  - not registered → filled green CTA "Je participe" (encourages action)
+  ///  - registered     → outlined red "Se désister" (remains available but
+  ///    doesn't shout; reduces the chance of an accidental cancellation)
+  Widget _registrationCard(
     Event event,
     int memberId,
     EventDetailProvider provider,
@@ -123,30 +132,126 @@ class EventDetail extends StatelessWidget {
     final bool isRegistered =
         event.participants?.any((p) => p.member?.id == memberId) ?? false;
 
-    return Center(
-      child: ElevatedButton(
-        style: ElevatedButton.styleFrom(
-          backgroundColor: isRegistered ? Colors.green[700] : Colors.red[700],
-          padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-        ),
-        onPressed: () {
-          if (isRegistered) {
-            provider.unregisterFromEvent(event, memberId);
-          } else {
-            provider.registerToEvent(event, memberId);
-          }
-        },
-        child: Text(
-          isRegistered
-              ? AppString.eventUnregister
-              : AppString.eventParticipated,
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
+    final Color statusColor =
+        isRegistered ? Colors.green[700]! : Colors.blueGrey[500]!;
+    final IconData statusIcon = isRegistered
+        ? Icons.check_circle_rounded
+        : Icons.help_outline_rounded;
+    final String statusTitle = isRegistered
+        ? "Vous participez"
+        : "Vous ne participez pas encore";
+    final String statusSubtitle = isRegistered
+        ? "Inscrit à cet événement"
+        : "Inscrivez-vous pour rejoindre l'événement";
+
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 4.0),
+      padding: const EdgeInsets.fromLTRB(12.0, 10.0, 10.0, 10.0),
+      decoration: BoxDecoration(
+        border: Border.all(color: Colors.white, width: 1.0),
+        borderRadius: BorderRadius.circular(8.0),
+        color: isRegistered ? Colors.green[50] : Colors.blue[100],
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withAlpha(25),
+            spreadRadius: 0.5,
+            blurRadius: 0.5,
+            offset: const Offset(2, 2),
           ),
-        ),
+        ],
+      ),
+      child: Row(
+        children: <Widget>[
+          // status indicator (icon in a soft circular halo)
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: statusColor.withValues(alpha: 0.15),
+            ),
+            child: Icon(statusIcon, color: statusColor, size: 24.0),
+          ),
+          const SizedBox(width: 10.0),
+          // status text (title + small explanatory subtitle)
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: <Widget>[
+                Text(
+                  statusTitle,
+                  style: TextStyle(
+                    color: Colors.black.withAlpha(204),
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14.0,
+                    height: 1.2,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 2.0),
+                Text(
+                  statusSubtitle,
+                  style: TextStyle(
+                    color: Colors.black.withAlpha(140),
+                    fontSize: 11.0,
+                    height: 1.2,
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 8.0),
+          // action button — filled CTA when not registered, outlined
+          // (less aggressive) when already registered
+          isRegistered
+              ? OutlinedButton.icon(
+                  onPressed: () =>
+                      provider.unregisterFromEvent(event, memberId),
+                  icon: const Icon(Icons.event_busy, size: 16.0),
+                  label: Text(AppString.eventUnregister),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: Colors.red[700],
+                    side: BorderSide(color: Colors.red[700]!, width: 1.2),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12.0,
+                      vertical: 10.0,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(6.0),
+                    ),
+                    textStyle: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 13.0,
+                    ),
+                  ),
+                )
+              : ElevatedButton.icon(
+                  onPressed: () =>
+                      provider.registerToEvent(event, memberId),
+                  icon: const Icon(Icons.event_available, size: 16.0),
+                  label: Text(AppString.eventParticipated),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.green[700],
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 14.0,
+                      vertical: 10.0,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(6.0),
+                    ),
+                    textStyle: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 13.0,
+                    ),
+                    elevation: 1,
+                  ),
+                ),
+        ],
       ),
     );
   }
@@ -637,14 +742,13 @@ class EventDetail extends StatelessWidget {
                                 ),
                               )
                               : Text(AppString.noParticipant),
-                          SizedBox(height: 20),
-                          _loginProvider.loggedMember != null
-                              ? _registrationButton(
-                                _eventDetailProvider.currentEvent,
-                                _loginProvider.loggedMember!.id!,
-                                _eventDetailProvider,
-                              )
-                              : Container(),
+                          SizedBox(height: 16),
+                          if (_loginProvider.loggedMember != null)
+                            _registrationCard(
+                              _eventDetailProvider.currentEvent,
+                              _loginProvider.loggedMember!.id!,
+                              _eventDetailProvider,
+                            ),
                           SizedBox(height: 10),
                           Divider(color: Colors.white),
                         ],

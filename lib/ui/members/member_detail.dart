@@ -133,91 +133,237 @@ class MemberDetail extends StatelessWidget {
     );
   }
 
-  Widget _recordsTable(RecordListProvider recordListProvider) {
-    if (recordListProvider.memberRecords.length > 0) {
-      return Container(
-        decoration: CustomDecorations.cardLight,
-        child: Table(
-          columnWidths: {
-            0: FlexColumnWidth(3),
-            1: FlexColumnWidth(2),
-            2: FlexColumnWidth(2),
-            3: FlexColumnWidth(1),
-          },
-          defaultVerticalAlignment: TableCellVerticalAlignment.middle,
-          border: TableBorder(
-            horizontalInside: BorderSide(
-              color: Colors.black.withAlpha(76),
-              width: 1,
+  /// Race-plate-style badge for the rider number, adapted for the dark
+  /// detail-page header: white border + white italic digits with a soft
+  /// dark shadow so the number stays readable on top of the photo.
+  Widget _buildRiderNumberPlate(int number) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 6.0, vertical: 1.5),
+      child: Text(
+        "#$number",
+        style: TextStyle(
+          color: Colors.white,
+          fontSize: 13.0,
+          fontWeight: FontWeight.w900,
+          fontStyle: FontStyle.italic,
+          letterSpacing: 0.3,
+          height: 1.0,
+          shadows: [
+            Shadow(
+              offset: const Offset(1.0, 1.0),
+              blurRadius: 3.0,
+              color: Colors.black.withValues(alpha: 0.6),
             ),
-            verticalInside: BorderSide(
-              color: Colors.black.withAlpha(76),
-              width: 1,
-            ),
-          ),
-          children: [
-            for (Record rec in recordListProvider.memberRecords)
-              TableRow(
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 8.0,
-                      vertical: 12.0,
-                    ),
-                    child: Text(
-                      rec.track!.name ?? "",
-                      style: TextStyle(color: Colors.black.withAlpha(204)),
-                      overflow: TextOverflow.ellipsis,
-                      textAlign: TextAlign.center,
-                    ),
-                  ),
-                  Text(
-                    rec.recordDate != null
-                        ? AppDateUtils.convertToString(
-                          rec.recordDate!,
-                          "dd/MM/yyyy",
-                        )!
-                        : "",
-                    style: TextStyle(color: Colors.black.withAlpha(204)),
-                    textAlign: TextAlign.center,
-                  ),
-                  Text(
-                    AppDateUtils.toLapTimeString(rec.lapTime) ?? "",
-                    style: TextStyle(
-                      color: Colors.black.withAlpha(255),
-                      fontFamily: "AlarmClock",
-                      letterSpacing: -1,
-                    ),
-                    textScaler: TextScaler.linear(1),
-                    textAlign: TextAlign.center,
-                  ),
-                  SizedBox(
-                    width: 10,
-                    child:
-                        rec.conditions == "dry"
-                            ? Icon(
-                              Icons.wb_sunny,
-                              color: Colors.black.withAlpha(153),
-                              size: 15,
-                            )
-                            : Icon(
-                              CustomIcons.rain,
-                              color: Colors.black.withAlpha(153),
-                              size: 15,
-                            ),
-                  ),
-                ],
-              ),
           ],
         ),
-      );
-    } else {
+      ),
+    );
+  }
+
+  /// A small "loading" card that visually replaces the records table
+  /// while the data is being fetched.
+  Widget _buildLoadingCard() {
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 28.0),
+      decoration: CustomDecorations.cardLight,
+      child: Center(
+        child: SizedBox(
+          width: 24.0,
+          height: 24.0,
+          child: CircularProgressIndicator(
+            strokeWidth: 2.5,
+            valueColor: AlwaysStoppedAnimation<Color>(Colors.blue[700]!),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _recordsTable(RecordListProvider recordListProvider) {
+    if (recordListProvider.loadingStatus == LoadingStatus.loading) {
+      return _buildLoadingCard();
+    }
+    if (recordListProvider.memberRecords.isEmpty) {
       return Container(
-        padding: EdgeInsets.all(12.0),
+        padding: const EdgeInsets.all(12.0),
         decoration: CustomDecorations.cardLight,
         child: Text(AppString.memberNoChrono),
       );
     }
+
+    // sort by record date desc (most recent first); records without a date go last
+    final List<Record> records =
+        List<Record>.of(recordListProvider.memberRecords)
+          ..sort((a, b) {
+            final DateTime? aDate = a.recordDate;
+            final DateTime? bDate = b.recordDate;
+            if (aDate == null && bDate == null) return 0;
+            if (aDate == null) return 1;
+            if (bDate == null) return -1;
+            return bDate.compareTo(aDate);
+          });
+
+    return Container(
+      decoration: CustomDecorations.cardLight,
+      clipBehavior: Clip.antiAlias,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: <Widget>[
+          for (int i = 0; i < records.length; i++) ...[
+            if (i > 0)
+              Divider(
+                height: 1,
+                thickness: 1,
+                color: Colors.black.withValues(alpha: 0.10),
+              ),
+            _buildMemberRecordRow(records[i]),
+          ],
+        ],
+      ),
+    );
+  }
+
+  /// Format a [Bike] for display in a chrono row, e.g.
+  /// "KAWASAKI ZX-10R". Returns null if neither manufacturer nor model is known.
+  String? _recordBikeText(Bike? bike) {
+    if (bike == null) return null;
+    final String manufacturer = (bike.manufacturer ?? "").trim();
+    final String model = (bike.modelName ?? "").trim();
+    final String text = [
+      if (manufacturer.isNotEmpty) manufacturer.toUpperCase(),
+      if (model.isNotEmpty) model,
+    ].join(" ");
+    return text.isEmpty ? null : text;
+  }
+
+  /// Small icon + text pair used for chrono row metadata (bike, date).
+  Widget _recordMetaItem(IconData icon, Color iconColor, String text) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: <Widget>[
+        Icon(icon, size: 11.0, color: iconColor),
+        const SizedBox(width: 3.0),
+        Flexible(
+          child: Text(
+            text,
+            style: TextStyle(
+              color: Colors.black.withValues(alpha: 0.7),
+              fontSize: 12.0,
+              height: 1.1,
+            ),
+            overflow: TextOverflow.ellipsis,
+            maxLines: 1,
+          ),
+        ),
+      ],
+    );
+  }
+
+  /// Build a single chrono row in the same style as the track-detail
+  /// chronos list: blue lap-time pill on the left (digital font), track
+  /// name + bike + date in the middle, weather icon on the right.
+  Widget _buildMemberRecordRow(Record record) {
+    final String lapTime =
+        AppDateUtils.toLapTimeString(record.lapTime) ?? "";
+    final String trackName = record.track?.name ?? "—";
+    final String dateStr = record.recordDate != null
+        ? (AppDateUtils.convertToString(record.recordDate!, "dd/MM/yyyy") ?? "")
+        : "";
+    final String? bikeStr = _recordBikeText(record.bike);
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 5.0),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: <Widget>[
+          // lap time pill (digital/LCD-style font)
+          Container(
+            padding: const EdgeInsets.symmetric(
+              horizontal: 8.0,
+              vertical: 4.0,
+            ),
+            decoration: BoxDecoration(
+              color: Colors.blue[700],
+              borderRadius: BorderRadius.circular(5.0),
+            ),
+            child: Text(
+              lapTime,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 15.0,
+                fontFamily: "AlarmClock",
+                letterSpacing: -1.0,
+                height: 1.0,
+              ),
+            ),
+          ),
+          const SizedBox(width: 10.0),
+          // track name (with shape icon) on top, bike + date below
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: <Widget>[
+                Row(
+                  children: <Widget>[
+                    Icon(
+                      TrackUtils.trackIconFromName(trackName),
+                      size: 16.0,
+                      color: Colors.red[700],
+                    ),
+                    const SizedBox(width: 6.0),
+                    Flexible(
+                      child: Text(
+                        trackName,
+                        style: const TextStyle(
+                          color: Colors.black87,
+                          fontWeight: FontWeight.w600,
+                          fontSize: 14.0,
+                          height: 1.2,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                        maxLines: 1,
+                      ),
+                    ),
+                  ],
+                ),
+                if (bikeStr != null || dateStr.isNotEmpty) ...[
+                  const SizedBox(height: 2.0),
+                  Wrap(
+                    spacing: 10.0,
+                    runSpacing: 2.0,
+                    crossAxisAlignment: WrapCrossAlignment.center,
+                    children: <Widget>[
+                      if (bikeStr != null)
+                        _recordMetaItem(
+                          CustomIcons.motorbike,
+                          Colors.deepPurple,
+                          bikeStr,
+                        ),
+                      if (dateStr.isNotEmpty)
+                        _recordMetaItem(
+                          Icons.calendar_today,
+                          Colors.purple[700]!,
+                          dateStr,
+                        ),
+                    ],
+                  ),
+                ],
+              ],
+            ),
+          ),
+          const SizedBox(width: 6.0),
+          // weather icon on the right
+          Icon(
+            record.conditions == "dry" ? Icons.wb_sunny : CustomIcons.rain,
+            color: record.conditions == "dry"
+                ? Colors.orange[600]
+                : Colors.blueGrey[400],
+            size: 16.0,
+          ),
+        ],
+      ),
+    );
   }
 
   Widget _feesTable(BuildContext context, MemberDetailProvider memberDetailProvider, bool isAdmin) {
@@ -684,27 +830,61 @@ class MemberDetail extends StatelessWidget {
                                 deltaExtent)
                         .clamp(0.0, 1.0);
 
+                    // Vertical lift that peaks at the middle of the
+                    // collapse animation: the title arcs UPWARD over the
+                    // avatar circle instead of cutting straight through
+                    // it. With a lift of 50, the trajectory stays outside
+                    // the 50-px avatar radius for the entire transition.
+                    final double arcLift = sin(t * pi) * 50;
+
                     return FlexibleSpaceBar(
                       titlePadding: EdgeInsets.only(
                         left: 144.0 - t * 88,
-                        bottom: 16.0,
+                        bottom: 16.0 + arcLift,
                       ),
-                      title: Text(
-                        "${_memberDetailProvider.currentMember!.firstName} ${_memberDetailProvider.currentMember!.lastName}",
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                          shadows:
-                              t < 0.5
-                                  ? [
-                                    Shadow(
-                                      offset: Offset(1.0, 1.0),
-                                      blurRadius: 3.0,
-                                      color: Colors.black,
+                      title: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: <Widget>[
+                          Text(
+                            "${_memberDetailProvider.currentMember!.firstName} ${_memberDetailProvider.currentMember!.lastName}",
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              shadows:
+                                  t < 0.5
+                                      ? [
+                                        Shadow(
+                                          offset: Offset(1.0, 1.0),
+                                          blurRadius: 3.0,
+                                          color: Colors.black,
+                                        ),
+                                      ]
+                                      : null,
+                            ),
+                          ),
+                          if (_memberDetailProvider
+                                  .currentMember!.riderNumber !=
+                              null)
+                            ClipRect(
+                              child: Align(
+                                alignment: Alignment.topLeft,
+                                heightFactor:
+                                    (1.0 - t * 2).clamp(0.0, 1.0),
+                                child: Opacity(
+                                  opacity: (1.0 - t * 2).clamp(0.0, 1.0),
+                                  child: Padding(
+                                    padding:
+                                        const EdgeInsets.only(top: 4.0),
+                                    child: _buildRiderNumberPlate(
+                                      _memberDetailProvider
+                                          .currentMember!.riderNumber!,
                                     ),
-                                  ]
-                                  : null,
-                        ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                        ],
                       ),
                       background: Stack(
                         alignment: Alignment.bottomLeft,

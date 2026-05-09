@@ -138,6 +138,7 @@ class MembersService {
             year
             current
           }
+          active
           role
           boardRole
         }
@@ -149,6 +150,7 @@ class MembersService {
           QueryOptions(
             document: parseString(query),
             variables: {'text': filter},
+            fetchPolicy: FetchPolicy.noCache,
           ),
         )
         .then(
@@ -238,7 +240,7 @@ class MembersService {
           QueryOptions(
             document: parseString(query),
             variables: {'id': id},
-            fetchPolicy: FetchPolicy.networkOnly,
+            fetchPolicy: FetchPolicy.noCache,
           ),
         )
         .then(
@@ -292,6 +294,7 @@ class MembersService {
             createdOn
             modifiedOn
           }
+          active
           role
           boardRole
           registrationDate
@@ -328,6 +331,7 @@ class MembersService {
           QueryOptions(
             document: parseString(query),
             variables: {'email': email},
+            fetchPolicy: FetchPolicy.noCache,
           ),
         )
         .then(

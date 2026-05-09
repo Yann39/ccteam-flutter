@@ -618,6 +618,19 @@ class LoginProvider extends ChangeNotifier {
     });
   }
 
+  /// Sync the in-memory logged member with the version returned from a
+  /// profile edit (called from add_edit_member.submitForm). Only applies
+  /// when the edited member matches the logged-in user — i.e. when a
+  /// member edits their own profile — so widgets bound to the logged
+  /// member (drawer header, etc.) reflect the latest avatar / fields.
+  void updateLoggedMember(Member updatedMember) {
+    if (_loggedMember?.id != null &&
+        _loggedMember!.id == updatedMember.id) {
+      _loggedMember = updatedMember;
+      _notifyListeners();
+    }
+  }
+
   /// Log out the current member.
   Future<void> logoutMember() async {
     _log.info("Logging out user ${_loggedMember?.email}");

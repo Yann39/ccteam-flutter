@@ -138,6 +138,16 @@ class _TrackDetailState extends State<TrackDetail> {
     final int end = (start + _recordsPageSize).clamp(0, records.length);
     final List<Record> pageRecords = records.sublist(start, end);
 
+    // fastest lap time used as the reference to compute the gap displayed
+    // on every other row (records are sorted ascending so it's the first
+    // record with a non-null lap time, regardless of pagination)
+    final int? fastestLapTime = records
+        .firstWhere(
+          (r) => r.lapTime != null,
+          orElse: () => records.first,
+        )
+        .lapTime;
+
     return Container(
       decoration: CustomDecorations.cardLight,
       clipBehavior: Clip.antiAlias,
@@ -152,7 +162,7 @@ class _TrackDetailState extends State<TrackDetail> {
                 thickness: 1,
                 color: Colors.black.withValues(alpha: 0.10),
               ),
-            _buildRecordRow(pageRecords[i]),
+            _buildRecordRow(pageRecords[i], fastestLapTime),
           ],
           // pagination footer (rendered as part of the same card)
           if (totalPages > 1)
@@ -503,7 +513,13 @@ class _TrackDetailState extends State<TrackDetail> {
     );
   }
 
-  Widget _buildRecordRow(Record record) {
+  /// Format a lap-time gap (in milliseconds) as e.g. "+1.234".
+  String _formatGap(int gapMs) {
+    final double seconds = gapMs / 1000.0;
+    return "+${seconds.toStringAsFixed(3)}";
+  }
+
+  Widget _buildRecordRow(Record record, int? fastestLapTime) {
     final String memberName = record.member != null
         ? "${record.member!.firstName ?? ""} ${record.member!.lastName ?? ""}"
             .trim()
@@ -525,31 +541,62 @@ class _TrackDetailState extends State<TrackDetail> {
     }
     final String? bikeStr = _bikeText(displayBike);
 
+    // gap with the fastest record (only shown when this record is not the
+    // fastest itself and both lap times are known)
+    final bool isFastest = record.lapTime != null &&
+        fastestLapTime != null &&
+        record.lapTime == fastestLapTime;
+    final int? gapMs =
+        (record.lapTime != null && fastestLapTime != null && !isFastest)
+            ? record.lapTime! - fastestLapTime
+            : null;
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 5.0),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: <Widget>[
-          // lap time pill (digital/LCD-style font)
-          Container(
-            padding: const EdgeInsets.symmetric(
-              horizontal: 8.0,
-              vertical: 4.0,
-            ),
-            decoration: BoxDecoration(
-              color: Colors.blue[700],
-              borderRadius: BorderRadius.circular(5.0),
-            ),
-            child: Text(
-              lapTime,
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 15.0,
-                fontFamily: "AlarmClock",
-                letterSpacing: -1.0,
-                height: 1.0,
+          // lap time pill + gap-with-leader caption underneath
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 8.0,
+                  vertical: 4.0,
+                ),
+                decoration: BoxDecoration(
+                  color: Colors.blue[700],
+                  borderRadius: BorderRadius.circular(5.0),
+                ),
+                child: Text(
+                  lapTime,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 15.0,
+                    fontFamily: "AlarmClock",
+                    letterSpacing: -1.0,
+                    height: 1.0,
+                  ),
+                ),
               ),
-            ),
+              if (gapMs != null) ...[
+                const SizedBox(height: 2.0),
+                Text(
+                  _formatGap(gapMs),
+                  style: TextStyle(
+                    color: Colors.red[700],
+                    fontSize: 10.5,
+                    fontWeight: FontWeight.w600,
+                    height: 1.0,
+                    fontFeatures: const <FontFeature>[
+                      FontFeature.tabularFigures(),
+                    ],
+                  ),
+                ),
+              ],
+            ],
           ),
           const SizedBox(width: 10.0),
           // pilot name (+ rider number) on top, bike below
@@ -682,21 +729,6 @@ class _TrackDetailState extends State<TrackDetail> {
     }
 
     return Scaffold(
-      /*appBar: AppBar(
-        actions: <Widget>[
-          Builder(
-            builder: (context) => IconButton(
-              icon: Icon(Icons.edit),
-              onPressed: () => _navigateToEditTrackScreen(context, widget.track),
-            ),
-          ),
-        ],
-        title: Text(widget.track.name),
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back),
-          onPressed: () => Navigator.pop(context),
-        ),
-      ),*/
       body: Container(
         decoration: CustomDecorations.mainContent,
         child: CustomScrollView(
@@ -704,6 +736,18 @@ class _TrackDetailState extends State<TrackDetail> {
             SliverAppBar(
               pinned: true,
               expandedHeight: 200,
+              actions: <Widget>[
+                if (_trackDetailProvider.currentTrack?.website != null &&
+                    _trackDetailProvider
+                        .currentTrack!.website!.isNotEmpty)
+                  IconButton(
+                    tooltip: "Site web",
+                    icon: const Icon(Icons.public, color: Colors.white),
+                    onPressed: () => AppUtils.launchURL(
+                      _trackDetailProvider.currentTrack!.website!,
+                    ),
+                  ),
+              ],
               flexibleSpace: LayoutBuilder(
                 builder: (BuildContext context, BoxConstraints constraints) {
                   final FlexibleSpaceBarSettings settings =
@@ -719,25 +763,65 @@ class _TrackDetailState extends State<TrackDetail> {
                       .clamp(0.0, 1.0);
 
                   // t est 0.0 quand complètement déployé, 1.0 quand complètement replié
+                  // smoothly fade the country line out as the header collapses,
+                  // so it never overlaps the standard AppBar title
+                  final double countryOpacity =
+                      ((1.0 - t * 2.0).clamp(0.0, 1.0)).toDouble();
+                  final track = _trackDetailProvider.currentTrack;
+                  final bool showCountry = track?.country != null &&
+                      countryOpacity > 0.0;
                   return FlexibleSpaceBar(
-                    title: Text(
-                      _trackDetailProvider.currentTrack != null
-                          ? _trackDetailProvider.currentTrack!.name!
-                          : "",
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                        shadows:
-                            t < 0.5
-                                ? [
-                                  Shadow(
-                                    offset: Offset(1.0, 1.0),
-                                    blurRadius: 3.0,
-                                    color: Colors.black,
-                                  ),
-                                ]
+                    // shift the title to the right of the circular badge
+                    // when expanded; slide it back to the standard AppBar
+                    // position as the header collapses
+                    titlePadding: EdgeInsetsDirectional.only(
+                      start: 90.0 - t * 30.0,
+                      bottom: 16.0,
+                    ),
+                    title: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: <Widget>[
+                        Text(
+                          track != null ? (track.name ?? "") : "",
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            shadows: t < 0.5
+                                ? const [
+                                    Shadow(
+                                      offset: Offset(1.0, 1.0),
+                                      blurRadius: 3.0,
+                                      color: Colors.black,
+                                    ),
+                                  ]
                                 : null,
-                      ),
+                          ),
+                        ),
+                        if (showCountry)
+                          Opacity(
+                            opacity: countryOpacity,
+                            child: Padding(
+                              padding: const EdgeInsets.only(top: 2.0),
+                              child: Text(
+                                "${track!.country!.flagEmoji}  ${track.country!.localizedName(Localizations.localeOf(context).languageCode)}",
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 12.0,
+                                  fontWeight: FontWeight.normal,
+                                  height: 1.1,
+                                  shadows: [
+                                    Shadow(
+                                      offset: Offset(1.0, 1.0),
+                                      blurRadius: 3.0,
+                                      color: Colors.black,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                      ],
                     ),
                     background: Stack(
                       alignment: Alignment.bottomLeft,
@@ -764,6 +848,48 @@ class _TrackDetailState extends State<TrackDetail> {
                             ),
                           ),
                         ),
+                        // circular badge with the track-shape silhouette,
+                        // anchored to the bottom-left, fading out as the
+                        // header collapses
+                        if (_trackDetailProvider.currentTrack != null)
+                          Positioned(
+                            bottom: 12.0,
+                            left: 12.0,
+                            child: Opacity(
+                              opacity:
+                                  (1.0 - t * 1.5).clamp(0.0, 1.0).toDouble(),
+                              child: Container(
+                                width: 64.0,
+                                height: 64.0,
+                                padding: const EdgeInsets.all(8.0),
+                                decoration: ShapeDecoration(
+                                  color: Colors.white,
+                                  shape: CircleBorder(
+                                    side: BorderSide(
+                                      color:
+                                          Colors.white.withValues(alpha: 0.9),
+                                      width: 2.0,
+                                    ),
+                                  ),
+                                  shadows: <BoxShadow>[
+                                    BoxShadow(
+                                      color: Colors.black
+                                          .withValues(alpha: 0.25),
+                                      blurRadius: 6.0,
+                                      offset: const Offset(0, 2),
+                                    ),
+                                  ],
+                                ),
+                                child: FittedBox(
+                                  fit: BoxFit.contain,
+                                  child: TrackUtils.getTrackIcon(
+                                    _trackDetailProvider.currentTrack!.name ??
+                                        "",
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
                       ],
                     ),
                   );

@@ -68,6 +68,19 @@ class MemberCreationProvider extends ChangeNotifier {
     _updateStatus(LoadingStatus.loaded);
   }
 
+  /// Update the avatar of the current member being edited and notify
+  /// listeners so widgets watching this provider (e.g. the profile edit
+  /// page) refresh after the user picks / resets a photo.
+  ///
+  /// Both fields are updated together because they are always set in
+  /// pairs (a non-null avatar without an avatarName, or vice-versa, is
+  /// not a valid state).
+  void setCurrentMemberAvatar(String? avatar, String? avatarName) {
+    _currentMember.avatar = avatar;
+    _currentMember.avatarName = avatarName;
+    _notifyListeners();
+  }
+
   /// Create the current member being edited.
   Future<void> createMember() async {
     _updateStatus(LoadingStatus.loading);

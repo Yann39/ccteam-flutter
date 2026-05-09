@@ -25,6 +25,7 @@ import 'package:ccteam/providers/login_provider.dart';
 import 'package:ccteam/providers/member_creation_provider.dart';
 import 'package:ccteam/providers/member_detail_provider.dart';
 import 'package:ccteam/providers/member_list_provider.dart';
+import 'package:ccteam/providers/record_list_provider.dart';
 import 'package:ccteam/ui/main/main_action_menu.dart';
 import 'package:ccteam/ui/main/main_drawer.dart';
 import 'package:ccteam/utils/custom_decorations.dart';
@@ -55,6 +56,13 @@ class MemberList extends StatelessWidget {
     BuildContext context,
     Member member,
   ) async {
+    if (member.id != null) {
+      Provider.of<RecordListProvider>(
+        context,
+        listen: false,
+      ).fetchMemberRecords(member.id!);
+    }
+
     // fetch the member to get complete data
     Provider.of<MemberDetailProvider>(context, listen: false)
         .fetchMember(member)
@@ -125,18 +133,28 @@ class MemberList extends StatelessWidget {
     );
   }
 
-  /// Discreet rider number "#NN" — blue bold italic text (no background)
-  /// for a racing-plate feel without overpowering the row.
+  /// Small race-plate-style badge for the rider number: white rounded
+  /// rectangle with a thin colored border and bold italic digits — reads
+  /// instantly as a number plate without overpowering the row.
   Widget _buildRiderNumberBadge(int number) {
-    return Text(
-      "#$number",
-      style: TextStyle(
-        color: Colors.blue[700],
-        fontSize: 17.0,
-        fontWeight: FontWeight.w900,
-        fontStyle: FontStyle.italic,
-        letterSpacing: 0.5,
-        height: 1.0,
+    final Color plateColor = Colors.blue[700]!;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 5.0, vertical: 1.0),
+      decoration: BoxDecoration(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(3.0),
+        border: Border.all(color: plateColor, width: 1.5),
+      ),
+      child: Text(
+        "#$number",
+        style: TextStyle(
+          color: plateColor,
+          fontSize: 13.0,
+          fontWeight: FontWeight.w900,
+          fontStyle: FontStyle.italic,
+          letterSpacing: 0.3,
+          height: 1.0,
+        ),
       ),
     );
   }
@@ -163,9 +181,10 @@ class MemberList extends StatelessWidget {
       Localizations.localeOf(context).languageCode,
     );
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 6.0, vertical: 1.0),
+      padding: const EdgeInsets.symmetric(horizontal: 6.0, vertical: 3.0),
+      margin: const EdgeInsets.all(4.0),
       decoration: BoxDecoration(
-        color: Colors.amber[700],
+        color: Colors.indigo[400],
         borderRadius: BorderRadius.circular(4.0),
       ),
       child: Text(
@@ -200,9 +219,9 @@ class MemberList extends StatelessWidget {
                 maxLines: 1,
               ),
             ),
-            if (member.boardRole != null) ...[
-              const SizedBox(width: 6.0),
-              _buildBoardRoleBadge(member.boardRole!, context),
+            if (member.riderNumber != null) ...[
+              const SizedBox(width: 8.0),
+              _buildRiderNumberBadge(member.riderNumber!),
             ],
           ],
         ),
@@ -228,8 +247,8 @@ class MemberList extends StatelessWidget {
             ),
           ],
         ),
-        trailing: member.riderNumber != null
-            ? _buildRiderNumberBadge(member.riderNumber!)
+        trailing: member.boardRole != null
+            ? _buildBoardRoleBadge(member.boardRole!, context)
             : null,
         onTap: () => _navigateToMemberDetailScreen(context, member),
       ),
@@ -269,21 +288,28 @@ class MemberList extends StatelessWidget {
                     children: <Widget>[
                       _buildSearchField(_memberListProvider),
                       Expanded(
-                        child: LoadingContent(
-                          loadingStatus:
-                              _memberListProvider.memberList.isEmpty
-                                  ? LoadingStatus.empty
-                                  : _memberListProvider.loadingStatus,
-                          defaultText: AppString.membersNotFound,
-                          emptyText: AppString.membersNotFound,
-                          child: ListView.separated(
-                            separatorBuilder: (context, index) =>
-                                Divider(color: Colors.black54, height: 4),
-                            itemCount: _memberListProvider.memberList.length,
-                            itemBuilder: (context, index) =>
-                                _buildMemberTile(
-                              context,
-                              _memberListProvider.memberList[index],
+                        child: RefreshIndicator(
+                          onRefresh: () =>
+                              _memberListProvider.fetchMemberList(null),
+                          child: LoadingContent(
+                            loadingStatus:
+                                _memberListProvider.memberList.isEmpty
+                                    ? LoadingStatus.empty
+                                    : _memberListProvider.loadingStatus,
+                            defaultText: AppString.membersNotFound,
+                            emptyText: AppString.membersNotFound,
+                            child: ListView.separated(
+                              physics:
+                                  const AlwaysScrollableScrollPhysics(),
+                              separatorBuilder: (context, index) =>
+                                  Divider(color: Colors.black54, height: 4),
+                              itemCount:
+                                  _memberListProvider.memberList.length,
+                              itemBuilder: (context, index) =>
+                                  _buildMemberTile(
+                                context,
+                                _memberListProvider.memberList[index],
+                              ),
                             ),
                           ),
                         ),

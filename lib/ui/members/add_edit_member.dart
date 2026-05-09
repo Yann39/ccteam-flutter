@@ -113,6 +113,8 @@ class _AddEditMemberState extends State<AddEditMember> {
           Provider.of<MemberListProvider>(context, listen: false);
       final MemberDetailProvider _memberDetailProvider =
           Provider.of<MemberDetailProvider>(context, listen: false);
+      final LoginProvider _loginProvider =
+          Provider.of<LoginProvider>(context, listen: false);
 
       final bool boardRoleChanged = _selectedBoardRole != _initialBoardRole;
 
@@ -128,6 +130,12 @@ class _AddEditMemberState extends State<AddEditMember> {
             memberCreationProvider.currentMember,
           );
           _memberDetailProvider.setCurrentMember(
+            memberCreationProvider.currentMember,
+          );
+          // keep LoginProvider in sync when the user edits their own
+          // profile so the drawer header (and anything else bound to
+          // loggedMember) reflects the new avatar / fields immediately
+          _loginProvider.updateLoggedMember(
             memberCreationProvider.currentMember,
           );
         });

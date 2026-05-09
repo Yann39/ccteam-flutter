@@ -94,6 +94,15 @@ class RecordListProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Reset the member records list and mark it as loading. Used when
+  /// navigating to a member detail screen so the UI doesn't briefly
+  /// show the previous member's records.
+  void clearMemberRecords() {
+    _memberRecords = [];
+    _loadingStatus = LoadingStatus.loading;
+    notifyListeners();
+  }
+
   /// Get the list of all records for the specified [memberId]
   Future<void> fetchMemberRecords(int memberId) async {
     // guard against unauthorized access
@@ -103,6 +112,9 @@ class RecordListProvider extends ChangeNotifier {
       _updateStatus(LoadingStatus.loaded);
       return;
     }
+    // clear stale data so the UI doesn't briefly show records from a
+    // previous member while the new ones are being fetched
+    _memberRecords = [];
     _updateStatus(LoadingStatus.loading);
     await _recordsService.fetchMemberRecords(memberId).then((value) async {
       _log.fine("Member records list retrieved successfully");

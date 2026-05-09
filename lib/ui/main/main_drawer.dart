@@ -52,7 +52,7 @@ class MainDrawer extends StatelessWidget {
   Widget build(BuildContext context) {
     final LoginProvider _loginProvider = Provider.of<LoginProvider>(
       context,
-      listen: false,
+      listen: true,
     );
 
     return Drawer(

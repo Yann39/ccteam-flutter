@@ -246,28 +246,32 @@ class _TracksState extends State<Tracks> {
           children: <Widget>[
             buildSearchField(_trackListProvider),
             Expanded(
-              child: LoadingContent(
-                loadingStatus: _trackListProvider.tracks.isEmpty
-                    ? LoadingStatus.empty
-                    : _trackListProvider.loadingStatus,
-                defaultText: AppString.tracksNotFound,
-                emptyText: AppString.tracksNotFound,
-                child: GridView.builder(
-                  padding: const EdgeInsets.fromLTRB(8.0, 4.0, 8.0, 8.0),
-                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: MediaQuery.of(context).orientation ==
-                            Orientation.portrait
-                        ? 2
-                        : 3,
-                    crossAxisSpacing: 8,
-                    mainAxisSpacing: 8,
-                    childAspectRatio: 1,
-                  ),
-                  itemCount: _trackListProvider.tracks.length,
-                  itemBuilder: (BuildContext context, int index) =>
-                      _buildTrackCard(
-                    context,
-                    _trackListProvider.tracks[index],
+              child: RefreshIndicator(
+                onRefresh: () => _trackListProvider.fetchTracks(),
+                child: LoadingContent(
+                  loadingStatus: _trackListProvider.tracks.isEmpty
+                      ? LoadingStatus.empty
+                      : _trackListProvider.loadingStatus,
+                  defaultText: AppString.tracksNotFound,
+                  emptyText: AppString.tracksNotFound,
+                  child: GridView.builder(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    padding: const EdgeInsets.fromLTRB(8.0, 4.0, 8.0, 8.0),
+                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: MediaQuery.of(context).orientation ==
+                              Orientation.portrait
+                          ? 2
+                          : 3,
+                      crossAxisSpacing: 8,
+                      mainAxisSpacing: 8,
+                      childAspectRatio: 1,
+                    ),
+                    itemCount: _trackListProvider.tracks.length,
+                    itemBuilder: (BuildContext context, int index) =>
+                        _buildTrackCard(
+                      context,
+                      _trackListProvider.tracks[index],
+                    ),
                   ),
                 ),
               ),
