@@ -249,9 +249,12 @@ class _TracksState extends State<Tracks> {
               child: RefreshIndicator(
                 onRefresh: () => _trackListProvider.fetchTracks(),
                 child: LoadingContent(
-                  loadingStatus: _trackListProvider.tracks.isEmpty
-                      ? LoadingStatus.empty
-                      : _trackListProvider.loadingStatus,
+                  loadingStatus: _trackListProvider.loadingStatus ==
+                          LoadingStatus.loading
+                      ? LoadingStatus.loading
+                      : (_trackListProvider.tracks.isEmpty
+                          ? LoadingStatus.empty
+                          : _trackListProvider.loadingStatus),
                   defaultText: AppString.tracksNotFound,
                   emptyText: AppString.tracksNotFound,
                   child: GridView.builder(

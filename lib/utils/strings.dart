@@ -444,6 +444,8 @@ class AppString {
   static const String camera = 'Appareil photo';
   static const String initProfilePhoto = 'Réinitialiser la photo de profil';
   static const String confirmSelection = 'Confirmer la sélection';
+  static const String cancelSelection = 'Annuler la sélection';
+  static const String removePhoto = 'Retirer la photo';
   static const String zoomAndCrop = 'Zoom et recadrage';
   static const String profile = 'Profil';
   static const String myTrackEvents = 'Mes roulages';

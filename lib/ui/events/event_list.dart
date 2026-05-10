@@ -296,10 +296,12 @@ class _EventListState extends State<EventList> {
                           : _eventListProvider.eventModeSelectorIndex == 1
                           ? AppString.eventsNotFoundForYear
                           : AppString.eventsNotFoundForDate,
-                  loadingStatus:
-                      _events.isEmpty
+                  loadingStatus: _eventListProvider.loadingStatus ==
+                          LoadingStatus.loading
+                      ? LoadingStatus.loading
+                      : (_events.isEmpty
                           ? LoadingStatus.empty
-                          : _eventListProvider.loadingStatus,
+                          : _eventListProvider.loadingStatus),
                   child: ListView.builder(
                     itemCount: sortedYears.length,
                     itemBuilder: (context, yearIndex) {

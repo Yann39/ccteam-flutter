@@ -223,56 +223,71 @@ class MemberDetail extends StatelessWidget {
     );
   }
 
-  /// Format a [Bike] for display in a chrono row, e.g.
-  /// "KAWASAKI ZX-10R". Returns null if neither manufacturer nor model is known.
-  String? _recordBikeText(Bike? bike) {
-    if (bike == null) return null;
+  /// Two-line bike label (manufacturer above, model below) used in a
+  /// chrono row. Returns an empty SizedBox if neither field is known —
+  /// callers can pass it directly to the row without an explicit null
+  /// check.
+  Widget _buildBikeBlock(Bike? bike) {
+    if (bike == null) return const SizedBox.shrink();
     final String manufacturer = (bike.manufacturer ?? "").trim();
     final String model = (bike.modelName ?? "").trim();
-    final String text = [
-      if (manufacturer.isNotEmpty) manufacturer.toUpperCase(),
-      if (model.isNotEmpty) model,
-    ].join(" ");
-    return text.isEmpty ? null : text;
-  }
+    if (manufacturer.isEmpty && model.isEmpty) return const SizedBox.shrink();
 
-  /// Small icon + text pair used for chrono row metadata (bike, date).
-  Widget _recordMetaItem(IconData icon, Color iconColor, String text) {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: <Widget>[
-        Icon(icon, size: 11.0, color: iconColor),
-        const SizedBox(width: 3.0),
+        Icon(CustomIcons.motorbike, size: 13.0, color: Colors.deepPurple),
+        const SizedBox(width: 4.0),
         Flexible(
-          child: Text(
-            text,
-            style: TextStyle(
-              color: Colors.black.withValues(alpha: 0.7),
-              fontSize: 12.0,
-              height: 1.1,
-            ),
-            overflow: TextOverflow.ellipsis,
-            maxLines: 1,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              if (manufacturer.isNotEmpty)
+                Text(
+                  manufacturer.toUpperCase(),
+                  style: TextStyle(
+                    color: Colors.black.withValues(alpha: 0.75),
+                    fontSize: 11.5,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 0.2,
+                    height: 1.15,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 1,
+                ),
+              if (model.isNotEmpty)
+                Text(
+                  model,
+                  style: TextStyle(
+                    color: Colors.black.withValues(alpha: 0.6),
+                    fontSize: 11.5,
+                    height: 1.15,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 1,
+                ),
+            ],
           ),
         ),
       ],
     );
   }
 
-  /// Build a single chrono row in the same style as the track-detail
-  /// chronos list: blue lap-time pill on the left (digital font), track
-  /// name + bike + date in the middle, weather icon on the right.
+  /// Build a single chrono row, all on one line: the blue lap-time pill,
+  /// the track icon + name, the bike (manufacturer / model stacked), and
+  /// the weather icon. The date is intentionally omitted to keep the
+  /// row compact.
   Widget _buildMemberRecordRow(Record record) {
     final String lapTime =
         AppDateUtils.toLapTimeString(record.lapTime) ?? "";
     final String trackName = record.track?.name ?? "—";
-    final String dateStr = record.recordDate != null
-        ? (AppDateUtils.convertToString(record.recordDate!, "dd/MM/yyyy") ?? "")
-        : "";
-    final String? bikeStr = _recordBikeText(record.bike);
+    final bool hasBike = record.bike != null &&
+        (((record.bike!.manufacturer ?? "").trim().isNotEmpty) ||
+            ((record.bike!.modelName ?? "").trim().isNotEmpty));
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 5.0),
+      padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 6.0),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: <Widget>[
@@ -298,60 +313,39 @@ class MemberDetail extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 10.0),
-          // track name (with shape icon) on top, bike + date below
           Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
+            flex: 3,
+            child: Row(
               children: <Widget>[
-                Row(
-                  children: <Widget>[
-                    Icon(
-                      TrackUtils.trackIconFromName(trackName),
-                      size: 16.0,
-                      color: Colors.red[700],
-                    ),
-                    const SizedBox(width: 6.0),
-                    Flexible(
-                      child: Text(
-                        trackName,
-                        style: const TextStyle(
-                          color: Colors.black87,
-                          fontWeight: FontWeight.w600,
-                          fontSize: 14.0,
-                          height: 1.2,
-                        ),
-                        overflow: TextOverflow.ellipsis,
-                        maxLines: 1,
-                      ),
-                    ),
-                  ],
+                Icon(
+                  TrackUtils.trackIconFromName(trackName),
+                  size: 16.0,
+                  color: Colors.red[700],
                 ),
-                if (bikeStr != null || dateStr.isNotEmpty) ...[
-                  const SizedBox(height: 2.0),
-                  Wrap(
-                    spacing: 10.0,
-                    runSpacing: 2.0,
-                    crossAxisAlignment: WrapCrossAlignment.center,
-                    children: <Widget>[
-                      if (bikeStr != null)
-                        _recordMetaItem(
-                          CustomIcons.motorbike,
-                          Colors.deepPurple,
-                          bikeStr,
-                        ),
-                      if (dateStr.isNotEmpty)
-                        _recordMetaItem(
-                          Icons.calendar_today,
-                          Colors.purple[700]!,
-                          dateStr,
-                        ),
-                    ],
+                const SizedBox(width: 6.0),
+                Flexible(
+                  child: Text(
+                    trackName,
+                    style: const TextStyle(
+                      color: Colors.black87,
+                      fontWeight: FontWeight.w600,
+                      fontSize: 14.0,
+                      height: 1.2,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 1,
                   ),
-                ],
+                ),
               ],
             ),
           ),
+          if (hasBike) ...[
+            const SizedBox(width: 8.0),
+            Expanded(
+              flex: 2,
+              child: _buildBikeBlock(record.bike),
+            ),
+          ],
           const SizedBox(width: 6.0),
           // weather icon on the right
           Icon(

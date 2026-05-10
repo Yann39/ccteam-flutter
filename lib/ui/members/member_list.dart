@@ -293,9 +293,13 @@ class MemberList extends StatelessWidget {
                               _memberListProvider.fetchMemberList(null),
                           child: LoadingContent(
                             loadingStatus:
-                                _memberListProvider.memberList.isEmpty
-                                    ? LoadingStatus.empty
-                                    : _memberListProvider.loadingStatus,
+                                _memberListProvider.loadingStatus ==
+                                        LoadingStatus.loading
+                                    ? LoadingStatus.loading
+                                    : (_memberListProvider
+                                            .memberList.isEmpty
+                                        ? LoadingStatus.empty
+                                        : _memberListProvider.loadingStatus),
                             defaultText: AppString.membersNotFound,
                             emptyText: AppString.membersNotFound,
                             child: ListView.separated(

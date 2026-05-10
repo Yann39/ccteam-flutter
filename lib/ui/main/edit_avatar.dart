@@ -19,23 +19,64 @@
 
 import 'dart:convert';
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:ccteam/providers/avatar_provider.dart';
 import 'package:ccteam/providers/member_creation_provider.dart';
 import 'package:ccteam/utils/custom_decorations.dart';
 import 'package:ccteam/utils/custom_icons.dart';
-import 'package:ccteam/utils/enums.dart';
 import 'package:ccteam/utils/strings.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 
-class EditAvatar extends StatelessWidget {
+/// Internal state of the avatar editor: what the user has staged but
+/// not yet confirmed.
+enum _PendingChange {
+  /// no in-progress change — the preview shows the saved avatar
+  none,
+
+  /// user picked & cropped a new photo (held in AvatarProvider) — the
+  /// preview shows the new cropped image
+  newImage,
+
+  /// user explicitly chose to remove the existing avatar — the preview
+  /// shows the default placeholder
+  removal,
+}
+
+class EditAvatar extends StatefulWidget {
   const EditAvatar({Key? key}) : super(key: key);
 
-  /// Allow user to select an image from the gallery
-  Future _selectImageFromGallery(
-      BuildContext context, AvatarProvider avatarProvider) async {
+  @override
+  State<EditAvatar> createState() => _EditAvatarState();
+}
+
+class _EditAvatarState extends State<EditAvatar> {
+  /// Snapshot of the avatar at page entry. Used as the "before" reference
+  /// to revert to when the user taps "Annuler la sélection", and to
+  /// decide whether the "Retirer la photo" affordance should be shown.
+  String? _originalAvatar;
+
+  /// What the user has staged but not yet confirmed.
+  _PendingChange _pendingChange = _PendingChange.none;
+
+  @override
+  void initState() {
+    super.initState();
+    // Capture the original avatar from the in-progress edit copy so we
+    // can revert to it on cancel and decide whether removal is offered.
+    final memberCreationProvider =
+        Provider.of<MemberCreationProvider>(context, listen: false);
+    _originalAvatar = memberCreationProvider.currentMember.avatar;
+  }
+
+  /// Pick an image from the gallery, crop it, and stage it as the new
+  /// pending avatar. Sets [_pendingChange] to [_PendingChange.newImage]
+  /// only if the user actually completes the crop step.
+  Future _selectImageFromGallery() async {
+    final avatarProvider =
+        Provider.of<AvatarProvider>(context, listen: false);
     final XFile? image = await ImagePicker().pickImage(
         source: ImageSource.gallery,
         maxWidth: 512,
@@ -44,13 +85,23 @@ class EditAvatar extends StatelessWidget {
     if (image != null) {
       avatarProvider.setPickedImage(File(image.path));
       avatarProvider.setPickedImageName(image.name);
-      Navigator.of(context).pushNamed('/imageCrop');
+      // ensure we don't carry over a stale cropped image from a
+      // previous pick — if the user backs out of ImageCrop without
+      // cropping, the pending state must NOT flip to newImage
+      avatarProvider.setCroppedImage(null);
+      await Navigator.of(context).pushNamed('/imageCrop');
+      if (avatarProvider.croppedImage != null) {
+        setState(() => _pendingChange = _PendingChange.newImage);
+      }
     }
   }
 
-  /// Allow user to select an image from the camera
-  Future _selectImageFromCamera(
-      BuildContext context, AvatarProvider avatarProvider) async {
+  /// Pick an image from the camera, crop it, and stage it as the new
+  /// pending avatar. Same flow as [_selectImageFromGallery] but with
+  /// the camera as the source.
+  Future _selectImageFromCamera() async {
+    final avatarProvider =
+        Provider.of<AvatarProvider>(context, listen: false);
     final XFile? image = await ImagePicker().pickImage(
         source: ImageSource.camera,
         maxWidth: 512,
@@ -59,51 +110,60 @@ class EditAvatar extends StatelessWidget {
     if (image != null) {
       avatarProvider.setPickedImage(File(image.path));
       avatarProvider.setPickedImageName(image.name);
-      Navigator.of(context).pushNamed('/imageCrop');
-    }
-  }
-
-  /// Display a confirmation popup when trying to reset an avatar
-  void _showConfirmation(
-      BuildContext context, AvatarProvider avatarProvider, String value) {
-    showDialog(
-      context: context,
-      builder: (_) => AlertDialog(
-        title: Text(AppString.confirmation),
-        content: Text(value),
-        actions: <Widget>[
-          TextButton(
-            onPressed: () {
-              _dialogueResult(context, avatarProvider, ConfirmDialogAction.yes);
-            },
-            child: Text(AppString.confirm),
-          ),
-          TextButton(
-            onPressed: () {
-              _dialogueResult(context, avatarProvider, ConfirmDialogAction.no);
-            },
-            child: Text(AppString.cancel),
-          ),
-        ],
-      ),
-    );
-  }
-
-  /// Handle result of the avatar reset confirmation dialog
-  void _dialogueResult(BuildContext context, AvatarProvider avatarProvider,
-      ConfirmDialogAction value) {
-    if (value == ConfirmDialogAction.yes) {
-      avatarProvider.setPickedImage(null);
-      avatarProvider.setPickedImageName(null);
       avatarProvider.setCroppedImage(null);
-      Navigator.pop(context);
-    } else {
-      Navigator.pop(context);
+      await Navigator.of(context).pushNamed('/imageCrop');
+      if (avatarProvider.croppedImage != null) {
+        setState(() => _pendingChange = _PendingChange.newImage);
+      }
     }
   }
 
-  /// Strip the leading "Formats " prefix to keep the constraints subtitle
-  /// compact (e.g. "Max. 500 Ko · JPG, GIF, PNG").
+  /// Discard the pending change — the preview snaps back to the saved
+  /// avatar that was on screen when the page opened.
+  void _cancelPendingChange() {
+    final avatarProvider =
+        Provider.of<AvatarProvider>(context, listen: false);
+    avatarProvider.setPickedImage(null);
+    avatarProvider.setPickedImageName(null);
+    avatarProvider.setCroppedImage(null);
+    setState(() => _pendingChange = _PendingChange.none);
+  }
+
+  /// Stage avatar removal — the preview switches to the default
+  /// placeholder; the change is only persisted to the edit copy when
+  /// the user taps "Confirmer la sélection".
+  void _stageAvatarRemoval() {
+    final avatarProvider =
+        Provider.of<AvatarProvider>(context, listen: false);
+    avatarProvider.setPickedImage(null);
+    avatarProvider.setPickedImageName(null);
+    avatarProvider.setCroppedImage(null);
+    setState(() => _pendingChange = _PendingChange.removal);
+  }
+
+  /// Commit the pending change to the in-progress edit copy
+  /// (MemberCreationProvider.currentMember). The drawer and the rest
+  /// of the app are NOT updated yet — that happens when the user
+  /// presses "Save" on the profile form.
+  void _confirm() {
+    final avatarProvider =
+        Provider.of<AvatarProvider>(context, listen: false);
+    final memberCreationProvider =
+        Provider.of<MemberCreationProvider>(context, listen: false);
+    if (_pendingChange == _PendingChange.newImage &&
+        avatarProvider.croppedImage != null) {
+      memberCreationProvider.setCurrentMemberAvatar(
+        base64Encode(avatarProvider.croppedImage!),
+        avatarProvider.pickedImageName,
+      );
+    } else if (_pendingChange == _PendingChange.removal) {
+      memberCreationProvider.setCurrentMemberAvatar(null, null);
+    }
+    Navigator.pop(context);
+  }
+
+  /// Compact subtitle ("Max. 500 Ko · JPG, GIF, PNG") — strips the
+  /// leading "Formats " prefix so the line stays on a single row.
   String _formatsShort() {
     final String formats = AppString.avatarFormats;
     return formats.startsWith("Formats ")
@@ -113,32 +173,17 @@ class EditAvatar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final _avatarProvider =
+    final avatarProvider =
         Provider.of<AvatarProvider>(context, listen: true);
-    final _memberCreationProvider =
-        Provider.of<MemberCreationProvider>(context, listen: false);
 
-    final bool _hasImage = _avatarProvider.croppedImage != null ||
-        _avatarProvider.pickedImage != null;
+    final bool hasOriginal = _originalAvatar != null;
+    final bool hasPendingChange = _pendingChange != _PendingChange.none;
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(AppString.profilePhoto),
-        actions: <Widget>[
-          if (_hasImage)
-            IconButton(
-              icon: const Icon(Icons.refresh),
-              tooltip: AppString.initProfilePhoto,
-              onPressed: () => _showConfirmation(
-                  context, _avatarProvider, AppString.avatarResetAreYouSure),
-            ),
-        ],
-      ),
+      appBar: AppBar(title: Text(AppString.profilePhoto)),
       body: Container(
         // explicit infinity so the gradient covers the full body height
         // even when the scrollview's content is shorter than the screen
-        // (otherwise the Container shrinks to its child and a white
-        // strip shows at the bottom)
         width: double.infinity,
         height: double.infinity,
         decoration: CustomDecorations.mainContent,
@@ -150,7 +195,11 @@ class EditAvatar extends StatelessWidget {
               children: <Widget>[
                 // Circular avatar preview
                 Center(
-                  child: _AvatarPreview(provider: _avatarProvider),
+                  child: _AvatarPreview(
+                    pendingChange: _pendingChange,
+                    croppedImage: avatarProvider.croppedImage,
+                    originalAvatar: _originalAvatar,
+                  ),
                 ),
                 const SizedBox(height: 24.0),
 
@@ -175,7 +224,7 @@ class EditAvatar extends StatelessWidget {
                 ),
                 const SizedBox(height: 24.0),
 
-                // Source picker cards
+                // Source picker cards (always available)
                 Row(
                   children: <Widget>[
                     Expanded(
@@ -183,8 +232,7 @@ class EditAvatar extends StatelessWidget {
                         icon: Icons.photo_library_rounded,
                         label: AppString.gallery,
                         color: Colors.blue[700]!,
-                        onTap: () => _selectImageFromGallery(
-                            context, _avatarProvider),
+                        onTap: _selectImageFromGallery,
                       ),
                     ),
                     const SizedBox(width: 12.0),
@@ -193,52 +241,77 @@ class EditAvatar extends StatelessWidget {
                         icon: Icons.photo_camera_rounded,
                         label: AppString.camera,
                         color: Colors.deepPurple[600]!,
-                        onTap: () => _selectImageFromCamera(
-                            context, _avatarProvider),
+                        onTap: _selectImageFromCamera,
                       ),
                     ),
                   ],
                 ),
 
-                const SizedBox(height: 28.0),
-
-                // Confirm button (full-width primary action)
-                ElevatedButton.icon(
-                  onPressed: () {
-                    final String? newAvatar =
-                        _avatarProvider.croppedImage != null
-                            ? base64Encode(_avatarProvider.croppedImage!)
-                            : null;
-                    final String? newAvatarName =
-                        _avatarProvider.croppedImage != null
-                            ? _avatarProvider.pickedImageName
-                            : null;
-
-                    _memberCreationProvider.setCurrentMemberAvatar(
-                      newAvatar,
-                      newAvatarName,
-                    );
-
-                    Navigator.pop(context);
-                  },
-                  icon: const Icon(Icons.check, size: 18, color: Colors.white),
-                  label: Text(
-                    AppString.confirmSelection,
-                    style: const TextStyle(color: Colors.white),
-                  ),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.green[700],
-                    padding: const EdgeInsets.symmetric(vertical: 14.0),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
+                // "Retirer la photo" — only when there's a saved avatar
+                // to remove AND no pending change yet (otherwise the
+                // user must first cancel before they can stage removal)
+                if (hasOriginal && !hasPendingChange) ...[
+                  const SizedBox(height: 12.0),
+                  Center(
+                    child: TextButton.icon(
+                      onPressed: _stageAvatarRemoval,
+                      icon: Icon(Icons.delete_outline,
+                          size: 18, color: Colors.red[700]),
+                      label: Text(
+                        AppString.removePhoto,
+                        style: TextStyle(
+                          color: Colors.red[700],
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
                     ),
-                    textStyle: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 14.0,
-                    ),
-                    elevation: 1,
                   ),
-                ),
+                ],
+
+                // Cancel + Confirm pair — only when there's a pending
+                // change to act on
+                if (hasPendingChange) ...[
+                  const SizedBox(height: 12.0),
+                  Center(
+                    child: TextButton.icon(
+                      onPressed: _cancelPendingChange,
+                      icon: Icon(Icons.close,
+                          size: 18, color: Colors.black.withAlpha(160)),
+                      label: Text(
+                        AppString.cancelSelection,
+                        style: TextStyle(
+                          color: Colors.black.withAlpha(180),
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 8.0),
+                  ElevatedButton.icon(
+                    onPressed: _confirm,
+                    icon: const Icon(Icons.check,
+                        size: 18, color: Colors.white),
+                    label: Text(
+                      AppString.confirmSelection,
+                      style: const TextStyle(color: Colors.white),
+                    ),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.green[700],
+                      padding: const EdgeInsets.symmetric(vertical: 14.0),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      textStyle: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 14.0,
+                      ),
+                      elevation: 1,
+                    ),
+                  ),
+                ] else
+                  // keep some bottom padding even with no pending change
+                  // so the source cards aren't flush against the bottom
+                  const SizedBox(height: 16.0),
               ],
             ),
           ),
@@ -248,31 +321,36 @@ class EditAvatar extends StatelessWidget {
   }
 }
 
-/// Circular avatar preview shown at the top of the page. Renders, in order
-/// of priority: the cropped image (final result), the freshly-picked image
-/// (intermediate state before crop), or a pilot-icon placeholder. Frame:
-/// white border + soft drop shadow so it visually pops on the blue
-/// gradient background.
+/// Circular avatar preview at the top of the page. Shown content
+/// depends on the editor's pending state:
+///   - newImage  → the freshly cropped image
+///   - removal   → the default pilot placeholder
+///   - none      → the saved avatar (or default if none was saved)
 class _AvatarPreview extends StatelessWidget {
-  final AvatarProvider provider;
-  const _AvatarPreview({Key? key, required this.provider}) : super(key: key);
+  final _PendingChange pendingChange;
+  final Uint8List? croppedImage;
+  final String? originalAvatar;
+
+  const _AvatarPreview({
+    Key? key,
+    required this.pendingChange,
+    required this.croppedImage,
+    required this.originalAvatar,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     const double size = 200.0;
 
     Widget content;
-    if (provider.croppedImage != null) {
-      content = Image.memory(
-        provider.croppedImage!,
-        fit: BoxFit.cover,
-      );
-    } else if (provider.pickedImage != null) {
-      content = Image.memory(
-        provider.pickedImage!.readAsBytesSync(),
-        fit: BoxFit.cover,
-      );
+    if (pendingChange == _PendingChange.newImage && croppedImage != null) {
+      content = Image.memory(croppedImage!, fit: BoxFit.cover);
+    } else if (pendingChange == _PendingChange.none &&
+        originalAvatar != null) {
+      content = Image.memory(base64Decode(originalAvatar!), fit: BoxFit.cover);
     } else {
+      // pendingChange == removal, OR pendingChange == none with no
+      // original avatar — show the default pilot placeholder
       content = Container(
         color: Colors.blue[100],
         alignment: Alignment.center,
