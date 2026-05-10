@@ -21,6 +21,7 @@ import 'package:ccteam/models/bike.dart';
 import 'package:ccteam/providers/login_provider.dart';
 import 'package:ccteam/providers/message_provider.dart';
 import 'package:ccteam/services/bikes_service.dart';
+import 'package:ccteam/services/members_service.dart';
 import 'package:ccteam/utils/app_utils.dart';
 import 'package:ccteam/utils/enums.dart';
 import 'package:ccteam/utils/strings.dart';
@@ -30,6 +31,7 @@ import 'package:logging/logging.dart';
 class BikeListProvider extends ChangeNotifier {
   final Logger _log = new Logger('BikeListProvider');
   final BikesService _bikesService = new BikesService();
+  final MembersService _membersService = new MembersService();
 
   late MessageProvider _messageProvider;
   late LoginProvider _loginProvider;
@@ -38,6 +40,7 @@ class BikeListProvider extends ChangeNotifier {
   LoadingStatus _loadingStatus = LoadingStatus.notLoaded;
 
   List<Bike> get bikes => _bikes;
+
   LoadingStatus get loadingStatus => _loadingStatus;
 
   /// Update message provider.
@@ -48,10 +51,33 @@ class BikeListProvider extends ChangeNotifier {
   /// Update login provider.
   void updateLoginProvider(LoginProvider loginProvider) {
     _loginProvider = loginProvider;
-    if (_loginProvider.authStatus == AuthStatus.Authenticated &&
-        _loginProvider.loggedMember != null) {
+    if (_loginProvider.authStatus == AuthStatus.Authenticated && _loginProvider.loggedMember != null) {
       _bikes = _loginProvider.loggedMember!.bikes ?? [];
       _loadingStatus = LoadingStatus.loaded;
+    }
+  }
+
+  /// Pull the latest list of bikes from the backend by re-fetching the
+  /// logged member. The bikes collection lives on the Member entity, so
+  /// the easiest way to refresh it is to re-query the whole member and
+  /// pick up the [bikes] field from the response.
+  ///
+  /// Note: deliberately does NOT flip [_loadingStatus] to `loading` —
+  /// the caller (e.g. a [RefreshIndicator]) provides its own visual
+  /// feedback, and we want the existing list to stay visible during
+  /// the refresh rather than be replaced by a centred spinner.
+  Future<void> refreshBikes() async {
+    if (_loginProvider.loggedMember == null || _loginProvider.loggedMember!.email == null) {
+      return;
+    }
+    try {
+      final updatedMember = await _membersService.getMemberByEmail(_loginProvider.loggedMember!.email!);
+      _bikes = updatedMember.bikes ?? [];
+      _loginProvider.loggedMember!.bikes = _bikes;
+      notifyListeners();
+    } catch (e) {
+      _log.severe("Error refreshing bikes: $e");
+      AppUtils.handleServiceException(e, _messageProvider, _loginProvider);
     }
   }
 
@@ -100,8 +126,7 @@ class BikeListProvider extends ChangeNotifier {
     _updateStatus(LoadingStatus.loading);
     try {
       // unmark any other bike that is currently flagged as current
-      final List<Bike> previousCurrents =
-          _bikes.where((b) => b.id != bike.id && (b.current ?? false)).toList();
+      final List<Bike> previousCurrents = _bikes.where((b) => b.id != bike.id && (b.current ?? false)).toList();
       for (final Bike previous in previousCurrents) {
         previous.current = false;
         final Bike updated = await _bikesService.updateBike(previous);
@@ -114,8 +139,7 @@ class BikeListProvider extends ChangeNotifier {
       // mark the target bike as current
       bike.current = true;
       final Bike updatedCurrent = await _bikesService.updateBike(bike);
-      final int targetIdx =
-          _bikes.indexWhere((b) => b.id == updatedCurrent.id);
+      final int targetIdx = _bikes.indexWhere((b) => b.id == updatedCurrent.id);
       if (targetIdx != -1) {
         _bikes[targetIdx] = updatedCurrent;
       }

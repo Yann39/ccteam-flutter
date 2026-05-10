@@ -25,6 +25,7 @@ import 'package:ccteam/ui/events/event_card.dart';
 import 'package:ccteam/utils/custom_decorations.dart';
 import 'package:ccteam/utils/enums.dart';
 import 'package:ccteam/utils/strings.dart';
+import 'package:ccteam/widgets/info_banner.dart';
 import 'package:ccteam/widgets/restricted_content.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -43,25 +44,20 @@ class _MemberEventsState extends State<MemberEvents> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final LoginProvider loginProvider = Provider.of<LoginProvider>(
-        context,
-        listen: false,
-      );
+      final LoginProvider loginProvider = Provider.of<LoginProvider>(context, listen: false);
       if (loginProvider.isMember && loginProvider.loggedMember != null) {
-        Provider.of<MemberDetailProvider>(
-          context,
-          listen: false,
-        ).fetchMember(loginProvider.loggedMember!);
+        Provider.of<MemberDetailProvider>(context, listen: false).fetchMember(loginProvider.loggedMember!);
       }
     });
   }
 
-  /// Method that launches the Add Event screen and awaits the result from Navigator.pop
-  _navigateToAddEventScreen(BuildContext context) async {
-    // Navigator.push returns a Future that will complete after we call Navigator.pop on the target screen
-    final _result = await Navigator.pushNamed(context, '/addEditEvent');
-
-    // after the target screen returns a result, hide any previous snack bars and show the new result
+  /// Open the "S'inscrire à un roulage" screen, which lets the user
+  /// register as a participant on an existing upcoming event. The
+  /// SelectEventToJoin screen takes care of refreshing the logged
+  /// member's data on success, so when we return here the events list
+  /// already reflects the newly joined event.
+  void _navigateToJoinEventScreen(BuildContext context) async {
+    final _result = await Navigator.pushNamed(context, '/selectEventToJoin');
     if (_result != null) {
       ScaffoldMessenger.of(context)
         ..removeCurrentSnackBar()
@@ -71,29 +67,19 @@ class _MemberEventsState extends State<MemberEvents> {
 
   @override
   Widget build(BuildContext context) {
-    final LoginProvider loginProvider = Provider.of<LoginProvider>(
-      context,
-      listen: true,
-    );
+    final LoginProvider loginProvider = Provider.of<LoginProvider>(context, listen: true);
 
     if (!loginProvider.isMember) {
       return Scaffold(
         appBar: AppBar(
           title: Text(AppString.myTrackEvents),
-          leading: IconButton(
-            icon: Icon(Icons.arrow_back),
-            onPressed: () => Navigator.pop(context),
-          ),
+          leading: IconButton(icon: Icon(Icons.arrow_back), onPressed: () => Navigator.pop(context)),
         ),
-        body: Container(
-          decoration: CustomDecorations.mainContent,
-          child: RestrictedContent(),
-        ),
+        body: Container(decoration: CustomDecorations.mainContent, child: RestrictedContent()),
       );
     }
 
-    final MemberDetailProvider _memberDetailProvider =
-        Provider.of<MemberDetailProvider>(context, listen: true);
+    final MemberDetailProvider _memberDetailProvider = Provider.of<MemberDetailProvider>(context, listen: true);
 
     Widget content;
 
@@ -103,96 +89,72 @@ class _MemberEventsState extends State<MemberEvents> {
       content = Center(child: Text(AppString.contentNotLoaded));
     } else {
       final List<Event> memberEvents =
-          _memberDetailProvider.currentMember?.eventMembers
-              ?.map((em) => em.event!)
-              .toList() ??
-          [];
+          _memberDetailProvider.currentMember?.eventMembers?.map((em) => em.event!).toList() ?? [];
 
       final now = DateTime.now();
-      final upcomingEvents =
-          memberEvents
-              .where(
-                (e) =>
-                    e.startDate!.isAfter(now) ||
-                    DateUtils.isSameDay(e.startDate!, now),
-              )
-              .toList();
-      final pastEvents =
-          memberEvents
-              .where(
-                (e) =>
-                    e.startDate!.isBefore(now) &&
-                    !DateUtils.isSameDay(e.startDate!, now),
-              )
-              .toList();
+      final upcomingEvents = memberEvents
+          .where((e) => e.startDate!.isAfter(now) || DateUtils.isSameDay(e.startDate!, now))
+          .toList();
+      final pastEvents = memberEvents
+          .where((e) => e.startDate!.isBefore(now) && !DateUtils.isSameDay(e.startDate!, now))
+          .toList();
 
       // Sort upcoming events by date ascending (closest first)
       upcomingEvents.sort((a, b) => a.startDate!.compareTo(b.startDate!));
       // Sort past events by date descending (most recent first)
       pastEvents.sort((a, b) => b.startDate!.compareTo(a.startDate!));
 
-      content = ListView(
-        padding: EdgeInsets.symmetric(vertical: 8.0),
-        children: [
-          // upcoming: always show the section, even when empty
-          _CollapsibleSection(
-            title: AppString.upcomingEvents,
-            initiallyExpanded: true,
-            child: upcomingEvents.isEmpty
-                ? _buildEmptyMessage(AppString.noUpcomingEvent)
-                : Column(
-                    children: upcomingEvents
-                        .map((event) => _buildEventItem(context, event))
-                        .toList(),
-                  ),
-          ),
-          // past: only show the section if there is at least one past event;
-          // collapsed by default
-          if (pastEvents.isNotEmpty) ...[
+      if (upcomingEvents.isEmpty && pastEvents.isEmpty) {
+        // member is registered to no event at all
+        content = _buildGlobalEmptyState();
+      } else {
+        // build the visible sections — each one is omitted when its list is empty
+        content = ListView(
+          padding: EdgeInsets.symmetric(vertical: 8.0),
+          children: <Widget>[
+            const InfoBanner(message: AppString.myEventsHelp),
             const SizedBox(height: 8.0),
-            _CollapsibleSection(
-              title: AppString.pastEvents,
-              initiallyExpanded: false,
-              child: Column(
-                children: pastEvents
-                    .map((event) => _buildEventItem(context, event))
-                    .toList(),
+            if (upcomingEvents.isNotEmpty)
+              _CollapsibleSection(
+                title: AppString.upcomingEvents,
+                initiallyExpanded: true,
+                child: Column(children: upcomingEvents.map((event) => _buildEventItem(context, event)).toList()),
               ),
-            ),
+            if (upcomingEvents.isNotEmpty && pastEvents.isNotEmpty) const SizedBox(height: 8.0),
+            if (pastEvents.isNotEmpty)
+              _CollapsibleSection(
+                title: AppString.pastEvents,
+                // expand by default when this is the only visible
+                // section; otherwise stay collapsed so the user focuses
+                // on upcoming events first
+                initiallyExpanded: upcomingEvents.isEmpty,
+                child: Column(children: pastEvents.map((event) => _buildEventItem(context, event)).toList()),
+              ),
           ],
-        ],
-      );
+        );
+      }
     }
 
     return Scaffold(
       appBar: AppBar(
         title: Text(AppString.myTrackEvents),
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back),
-          onPressed: () => Navigator.pop(context),
-        ),
+        leading: IconButton(icon: Icon(Icons.arrow_back), onPressed: () => Navigator.pop(context)),
       ),
       body: RefreshIndicator(
         onRefresh: () async {
           if (loginProvider.loggedMember != null) {
-            await Provider.of<MemberDetailProvider>(
-              context,
-              listen: false,
-            ).fetchMember(loginProvider.loggedMember!);
+            await Provider.of<MemberDetailProvider>(context, listen: false).fetchMember(loginProvider.loggedMember!);
           }
         },
-        child: Container(
-          padding: const EdgeInsets.all(8.0),
-          decoration: CustomDecorations.mainContent,
-          child: content,
-        ),
+        child: Container(padding: const EdgeInsets.all(8.0), decoration: CustomDecorations.mainContent, child: content),
       ),
       floatingActionButton: FloatingActionButton(
         elevation: 0.0,
         child: Icon(Icons.add, color: Colors.white),
         backgroundColor: Colors.red[700],
+        tooltip: AppString.joinEvent,
         onPressed: () {
-          _navigateToAddEventScreen(context);
+          _navigateToJoinEventScreen(context);
         },
       ),
     );
@@ -201,35 +163,59 @@ class _MemberEventsState extends State<MemberEvents> {
   Widget _buildEventItem(BuildContext context, Event event) {
     return GestureDetector(
       onTap: () {
-        Provider.of<EventDetailProvider>(
-          context,
-          listen: false,
-        ).setCurrentEvent(event);
-        Provider.of<EventDetailProvider>(
-          context,
-          listen: false,
-        ).fetchEvent(event);
+        Provider.of<EventDetailProvider>(context, listen: false).setCurrentEvent(event);
+        Provider.of<EventDetailProvider>(context, listen: false).fetchEvent(event);
         Navigator.pushNamed(context, '/eventDetail');
       },
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 2.0),
-        child: EventCard(event),
-      ),
+      child: Padding(padding: const EdgeInsets.symmetric(vertical: 2.0), child: EventCard(event)),
     );
   }
 
-  /// Italic placeholder shown inside an empty section (e.g. "Aucun
-  /// événement à venir").
-  Widget _buildEmptyMessage(String message) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 12.0),
-      child: Text(
-        message,
-        style: TextStyle(
-          fontStyle: FontStyle.italic,
-          color: Colors.black.withValues(alpha: 0.7),
+  /// Full-page empty state shown when the member is registered to no
+  /// event at all (neither upcoming nor past). Friendlier than two empty
+  /// section headers stacked on top of each other, and points the user
+  /// at the FAB to register to one. Wrapped in a scrollable column so
+  /// the parent RefreshIndicator stays usable on this state too.
+  Widget _buildGlobalEmptyState() {
+    return ListView(
+      // AlwaysScrollableScrollPhysics + ListView so the surrounding
+      // RefreshIndicator still triggers from a pull-down here, even
+      // though the content fits in one screen
+      physics: const AlwaysScrollableScrollPhysics(),
+      children: <Widget>[
+        SizedBox(height: 80.0),
+        Center(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 32.0),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: <Widget>[
+                Icon(Icons.event_note, size: 72.0, color: Colors.black.withValues(alpha: 0.30)),
+                const SizedBox(height: 16.0),
+                Text(
+                  AppString.noRegisteredEvent,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 16.0,
+                    color: Colors.black.withValues(alpha: 0.65),
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: 8.0),
+                Text(
+                  AppString.tapPlusToJoinEvent,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 13.0,
+                    color: Colors.black.withValues(alpha: 0.45),
+                    fontStyle: FontStyle.italic,
+                  ),
+                ),
+              ],
+            ),
+          ),
         ),
-      ),
+      ],
     );
   }
 }
@@ -242,12 +228,8 @@ class _CollapsibleSection extends StatefulWidget {
   final Widget child;
   final bool initiallyExpanded;
 
-  const _CollapsibleSection({
-    Key? key,
-    required this.title,
-    required this.child,
-    this.initiallyExpanded = true,
-  }) : super(key: key);
+  const _CollapsibleSection({Key? key, required this.title, required this.child, this.initiallyExpanded = true})
+    : super(key: key);
 
   @override
   State<_CollapsibleSection> createState() => _CollapsibleSectionState();
@@ -284,35 +266,21 @@ class _CollapsibleSectionState extends State<_CollapsibleSection> {
                 borderRadius: BorderRadius.circular(4.0),
               ),
               child: Padding(
-                padding: const EdgeInsets.symmetric(
-                  vertical: 12.0,
-                  horizontal: 16.0,
-                ),
+                padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 16.0),
                 child: Row(
                   children: <Widget>[
-                    const Icon(
-                      Icons.calendar_today,
-                      size: 20,
-                      color: Colors.white,
-                    ),
+                    const Icon(Icons.calendar_today, size: 20, color: Colors.white),
                     const SizedBox(width: 12.0),
                     Expanded(
                       child: Text(
                         widget.title,
-                        style: const TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
+                        style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
                       ),
                     ),
                     AnimatedRotation(
                       turns: _expanded ? 0.5 : 0.0,
                       duration: const Duration(milliseconds: 200),
-                      child: const Icon(
-                        Icons.expand_more,
-                        color: Colors.white,
-                      ),
+                      child: const Icon(Icons.expand_more, color: Colors.white),
                     ),
                   ],
                 ),

@@ -17,8 +17,8 @@
  * along with CCTeam. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import 'package:ccteam/providers/bike_list_provider.dart';
 import 'package:ccteam/providers/avatar_provider.dart';
+import 'package:ccteam/providers/bike_list_provider.dart';
 import 'package:ccteam/providers/event_creation_provider.dart';
 import 'package:ccteam/providers/event_detail_provider.dart';
 import 'package:ccteam/providers/event_list_provider.dart';
@@ -49,12 +49,13 @@ import 'package:ccteam/ui/main/edit_avatar.dart';
 import 'package:ccteam/ui/main/home.dart';
 import 'package:ccteam/ui/main/image_crop.dart';
 import 'package:ccteam/ui/members/add_edit_bike.dart';
-import 'package:ccteam/ui/members/member_list.dart';
-import 'package:ccteam/ui/members/my_bikes.dart';
 import 'package:ccteam/ui/members/add_edit_member.dart';
+import 'package:ccteam/ui/members/add_edit_membership_fee.dart';
 import 'package:ccteam/ui/members/member_detail.dart';
 import 'package:ccteam/ui/members/member_events.dart';
-import 'package:ccteam/ui/members/add_edit_membership_fee.dart';
+import 'package:ccteam/ui/members/member_list.dart';
+import 'package:ccteam/ui/members/my_bikes.dart';
+import 'package:ccteam/ui/members/select_event_to_join.dart';
 import 'package:ccteam/ui/news/add_edit_news.dart';
 import 'package:ccteam/ui/news/news_detail.dart';
 import 'package:ccteam/ui/news/news_list.dart';
@@ -80,9 +81,7 @@ void main() {
   // logging configuration
   Logger.root.level = Level.ALL;
   Logger.root.onRecord.listen((LogRecord rec) {
-    debugPrint(
-      '${rec.loggerName.padRight(18)} - ${rec.level.name}: ${rec.time}: ${rec.message}',
-    );
+    debugPrint('${rec.loggerName.padRight(18)} - ${rec.level.name}: ${rec.time}: ${rec.message}');
   });
 
   runApp(
@@ -97,243 +96,124 @@ void main() {
         // so that we can set messages from login provider
         ChangeNotifierProxyProvider<MessageProvider, LoginProvider>(
           create: (context) => LoginProvider(),
-          update:
-              (context, messageProvider, loginProvider) =>
-                  loginProvider!..updateMessageProvider(messageProvider),
+          update: (context, messageProvider, loginProvider) => loginProvider!..updateMessageProvider(messageProvider),
         ),
         // so that we can check member role from RecordListProvider
         ChangeNotifierProxyProvider<LoginProvider, RecordListProvider>(
           create: (context) => RecordListProvider(),
-          update:
-              (context, loginProvider, recordListProvider) =>
-                  recordListProvider!..updateLoginProvider(loginProvider),
+          update: (context, loginProvider, recordListProvider) =>
+              recordListProvider!..updateLoginProvider(loginProvider),
         ),
         // so that we can set messages and logout user from NewsListProvider
-        ChangeNotifierProxyProvider2<
-          MessageProvider,
-          LoginProvider,
-          NewsListProvider
-        >(
+        ChangeNotifierProxyProvider2<MessageProvider, LoginProvider, NewsListProvider>(
           create: (context) => NewsListProvider(),
-          update:
-              (context, messageProvider, loginProvider, newsListProvider) =>
-                  newsListProvider!
-                    ..updateMessageProvider(messageProvider)
-                    ..updateLoginProvider(loginProvider),
+          update: (context, messageProvider, loginProvider, newsListProvider) => newsListProvider!
+            ..updateMessageProvider(messageProvider)
+            ..updateLoginProvider(loginProvider),
         ),
         // so that we can set messages and logout user from NewsDetailProvider
-        ChangeNotifierProxyProvider2<
-          MessageProvider,
-          LoginProvider,
-          NewsDetailProvider
-        >(
+        ChangeNotifierProxyProvider2<MessageProvider, LoginProvider, NewsDetailProvider>(
           create: (context) => NewsDetailProvider(),
-          update:
-              (context, messageProvider, loginProvider, newsDetailProvider) =>
-                  newsDetailProvider!
-                    ..updateMessageProvider(messageProvider)
-                    ..updateLoginProvider(loginProvider),
+          update: (context, messageProvider, loginProvider, newsDetailProvider) => newsDetailProvider!
+            ..updateMessageProvider(messageProvider)
+            ..updateLoginProvider(loginProvider),
         ),
         // so that we can set messages and logout user from NewsCreationProvider
-        ChangeNotifierProxyProvider2<
-          MessageProvider,
-          LoginProvider,
-          NewsCreationProvider
-        >(
+        ChangeNotifierProxyProvider2<MessageProvider, LoginProvider, NewsCreationProvider>(
           create: (context) => NewsCreationProvider(),
-          update:
-              (context, messageProvider, loginProvider, newsCreationProvider) =>
-                  newsCreationProvider!
-                    ..updateMessageProvider(messageProvider)
-                    ..updateLoginProvider(loginProvider),
+          update: (context, messageProvider, loginProvider, newsCreationProvider) => newsCreationProvider!
+            ..updateMessageProvider(messageProvider)
+            ..updateLoginProvider(loginProvider),
         ),
-        ChangeNotifierProxyProvider2<
-          MessageProvider,
-          LoginProvider,
-          BikeListProvider
-        >(
+        ChangeNotifierProxyProvider2<MessageProvider, LoginProvider, BikeListProvider>(
           create: (context) => BikeListProvider(),
-          update:
-              (context, messageProvider, loginProvider, bikeListProvider) =>
-                  bikeListProvider!
-                    ..updateMessageProvider(messageProvider)
-                    ..updateLoginProvider(loginProvider),
+          update: (context, messageProvider, loginProvider, bikeListProvider) => bikeListProvider!
+            ..updateMessageProvider(messageProvider)
+            ..updateLoginProvider(loginProvider),
         ),
         // so that we can set messages and logout user from EventListProvider
-        ChangeNotifierProxyProvider2<
-          MessageProvider,
-          LoginProvider,
-          EventListProvider
-        >(
+        ChangeNotifierProxyProvider2<MessageProvider, LoginProvider, EventListProvider>(
           create: (context) => EventListProvider(),
-          update:
-              (context, messageProvider, loginProvider, eventListProvider) =>
-                  eventListProvider!
-                    ..updateMessageProvider(messageProvider)
-                    ..updateLoginProvider(loginProvider),
+          update: (context, messageProvider, loginProvider, eventListProvider) => eventListProvider!
+            ..updateMessageProvider(messageProvider)
+            ..updateLoginProvider(loginProvider),
         ),
         // so that we can set messages and logout user from EventDetailProvider
-        ChangeNotifierProxyProvider2<
-          MessageProvider,
-          LoginProvider,
-          EventDetailProvider
-        >(
+        ChangeNotifierProxyProvider2<MessageProvider, LoginProvider, EventDetailProvider>(
           create: (context) => EventDetailProvider(),
-          update:
-              (context, messageProvider, loginProvider, eventDetailProvider) =>
-                  eventDetailProvider!
-                    ..updateMessageProvider(messageProvider)
-                    ..updateLoginProvider(loginProvider),
+          update: (context, messageProvider, loginProvider, eventDetailProvider) => eventDetailProvider!
+            ..updateMessageProvider(messageProvider)
+            ..updateLoginProvider(loginProvider),
         ),
         // so that we can set messages and logout user from EventCreationProvider
-        ChangeNotifierProxyProvider2<
-          MessageProvider,
-          LoginProvider,
-          EventCreationProvider
-        >(
+        ChangeNotifierProxyProvider2<MessageProvider, LoginProvider, EventCreationProvider>(
           create: (context) => EventCreationProvider(),
-          update:
-              (
-                context,
-                messageProvider,
-                loginProvider,
-                eventCreationProvider,
-              ) =>
-                  eventCreationProvider!
-                    ..updateMessageProvider(messageProvider)
-                    ..updateLoginProvider(loginProvider),
+          update: (context, messageProvider, loginProvider, eventCreationProvider) => eventCreationProvider!
+            ..updateMessageProvider(messageProvider)
+            ..updateLoginProvider(loginProvider),
         ),
         // so that we can set messages and logout user from MemberListProvider
-        ChangeNotifierProxyProvider2<
-          MessageProvider,
-          LoginProvider,
-          MemberListProvider
-        >(
+        ChangeNotifierProxyProvider2<MessageProvider, LoginProvider, MemberListProvider>(
           create: (context) => MemberListProvider(),
-          update:
-              (context, messageProvider, loginProvider, memberListProvider) =>
-                  memberListProvider!
-                    ..updateMessageProvider(messageProvider)
-                    ..updateLoginProvider(loginProvider),
+          update: (context, messageProvider, loginProvider, memberListProvider) => memberListProvider!
+            ..updateMessageProvider(messageProvider)
+            ..updateLoginProvider(loginProvider),
         ),
         // so that we can set messages and logout user from MemberDetailProvider
-        ChangeNotifierProxyProvider2<
-          MessageProvider,
-          LoginProvider,
-          MemberDetailProvider
-        >(
+        ChangeNotifierProxyProvider2<MessageProvider, LoginProvider, MemberDetailProvider>(
           create: (context) => MemberDetailProvider(),
-          update:
-              (context, messageProvider, loginProvider, memberDetailProvider) =>
-                  memberDetailProvider!
-                    ..updateMessageProvider(messageProvider)
-                    ..updateLoginProvider(loginProvider),
+          update: (context, messageProvider, loginProvider, memberDetailProvider) => memberDetailProvider!
+            ..updateMessageProvider(messageProvider)
+            ..updateLoginProvider(loginProvider),
         ),
         // so that we can set messages and logout user from MemberCreationProvider
-        ChangeNotifierProxyProvider2<
-          MessageProvider,
-          LoginProvider,
-          MemberCreationProvider
-        >(
+        ChangeNotifierProxyProvider2<MessageProvider, LoginProvider, MemberCreationProvider>(
           create: (context) => MemberCreationProvider(),
-          update:
-              (
-                context,
-                messageProvider,
-                loginProvider,
-                memberCreationProvider,
-              ) =>
-                  memberCreationProvider!
-                    ..updateMessageProvider(messageProvider)
-                    ..updateLoginProvider(loginProvider),
+          update: (context, messageProvider, loginProvider, memberCreationProvider) => memberCreationProvider!
+            ..updateMessageProvider(messageProvider)
+            ..updateLoginProvider(loginProvider),
         ),
         // so that we can set messages and logout user from AvatarProvider
-        ChangeNotifierProxyProvider2<
-          MessageProvider,
-          LoginProvider,
-          AvatarProvider
-        >(
+        ChangeNotifierProxyProvider2<MessageProvider, LoginProvider, AvatarProvider>(
           create: (context) => AvatarProvider(),
-          update:
-              (context, messageProvider, loginProvider, avatarProvider) =>
-                  avatarProvider!
-                    ..updateMessageProvider(messageProvider)
-                    ..updateLoginProvider(loginProvider),
+          update: (context, messageProvider, loginProvider, avatarProvider) => avatarProvider!
+            ..updateMessageProvider(messageProvider)
+            ..updateLoginProvider(loginProvider),
         ),
         // so that we can set messages and logout user from TrackListProvider
-        ChangeNotifierProxyProvider2<
-          MessageProvider,
-          LoginProvider,
-          TrackListProvider
-        >(
+        ChangeNotifierProxyProvider2<MessageProvider, LoginProvider, TrackListProvider>(
           create: (context) => TrackListProvider(),
-          update:
-              (context, messageProvider, loginProvider, trackListProvider) =>
-                  trackListProvider!
-                    ..updateMessageProvider(messageProvider)
-                    ..updateLoginProvider(loginProvider),
+          update: (context, messageProvider, loginProvider, trackListProvider) => trackListProvider!
+            ..updateMessageProvider(messageProvider)
+            ..updateLoginProvider(loginProvider),
         ),
         // so that we can set messages and logout user from TrackDetailProvider
-        ChangeNotifierProxyProvider2<
-          MessageProvider,
-          LoginProvider,
-          TrackDetailProvider
-        >(
+        ChangeNotifierProxyProvider2<MessageProvider, LoginProvider, TrackDetailProvider>(
           create: (context) => TrackDetailProvider(),
-          update:
-              (context, messageProvider, loginProvider, trackDetailProvider) =>
-                  trackDetailProvider!
-                    ..updateMessageProvider(messageProvider)
-                    ..updateLoginProvider(loginProvider),
+          update: (context, messageProvider, loginProvider, trackDetailProvider) => trackDetailProvider!
+            ..updateMessageProvider(messageProvider)
+            ..updateLoginProvider(loginProvider),
         ),
         // so that we can set messages and logout user from RecordCreationProvider
-        ChangeNotifierProxyProvider2<
-          MessageProvider,
-          LoginProvider,
-          RecordCreationProvider
-        >(
+        ChangeNotifierProxyProvider2<MessageProvider, LoginProvider, RecordCreationProvider>(
           create: (context) => RecordCreationProvider(),
-          update:
-              (
-                context,
-                messageProvider,
-                loginProvider,
-                recordCreationProvider,
-              ) =>
-                  recordCreationProvider!
-                    ..updateMessageProvider(messageProvider)
-                    ..updateLoginProvider(loginProvider),
+          update: (context, messageProvider, loginProvider, recordCreationProvider) => recordCreationProvider!
+            ..updateMessageProvider(messageProvider)
+            ..updateLoginProvider(loginProvider),
         ),
         // so that we can set messages and logout user from PhotoCreationProvider
-        ChangeNotifierProxyProvider2<
-          MessageProvider,
-          LoginProvider,
-          PhotoCreationProvider
-        >(
+        ChangeNotifierProxyProvider2<MessageProvider, LoginProvider, PhotoCreationProvider>(
           create: (context) => PhotoCreationProvider(),
-          update:
-              (
-                context,
-                messageProvider,
-                loginProvider,
-                photoCreationProvider,
-              ) =>
-                  photoCreationProvider!
-                    ..updateMessageProvider(messageProvider)
-                    ..updateLoginProvider(loginProvider),
+          update: (context, messageProvider, loginProvider, photoCreationProvider) => photoCreationProvider!
+            ..updateMessageProvider(messageProvider)
+            ..updateLoginProvider(loginProvider),
         ),
         // so that we can set messages and logout user from PhotoDetailProvider
-        ChangeNotifierProxyProvider2<
-          MessageProvider,
-          LoginProvider,
-          PhotoDetailProvider
-        >(
+        ChangeNotifierProxyProvider2<MessageProvider, LoginProvider, PhotoDetailProvider>(
           create: (context) => PhotoDetailProvider(),
-          update:
-              (context, messageProvider, loginProvider, photoDetailProvider) =>
-                  photoDetailProvider!
-                    ..updateMessageProvider(messageProvider)
-                    ..updateLoginProvider(loginProvider),
+          update: (context, messageProvider, loginProvider, photoDetailProvider) => photoDetailProvider!
+            ..updateMessageProvider(messageProvider)
+            ..updateLoginProvider(loginProvider),
         ),
       ],
       child: CCTeamApp(),
@@ -374,6 +254,7 @@ class CCTeamApp extends StatelessWidget {
           '/addEditBike': (context) => AddEditBike(),
           '/members': (context) => MemberList(),
           '/memberEvents': (context) => MemberEvents(),
+          '/selectEventToJoin': (context) => SelectEventToJoin(),
           '/memberChronos': (context) => MemberChronos(),
           '/addEditMembershipFee': (context) => AddEditMembershipFee(),
           '/photoDetail': (context) => PhotoDetail(),
@@ -386,13 +267,9 @@ class CCTeamApp extends StatelessWidget {
               // to prevent calling setState() during build
               WidgetsBinding.instance.addPostFrameCallback((_) {
                 // handle session expired with a dialog
-                if (messageProvider.messageType ==
-                    MessageType.SESSION_EXPIRED) {
-                  _log.info(
-                    "Session expired message detected in main.dart, showing dialog",
-                  );
-                  final BuildContext? activeContext =
-                      navigatorKey.currentContext;
+                if (messageProvider.messageType == MessageType.SESSION_EXPIRED) {
+                  _log.info("Session expired message detected in main.dart, showing dialog");
+                  final BuildContext? activeContext = navigatorKey.currentContext;
                   if (activeContext == null) return;
                   showDialog(
                     context: activeContext,
@@ -411,11 +288,7 @@ class CCTeamApp extends StatelessWidget {
                               // screen without retyping it
                               loginProvider.handleSessionExpired();
                               messageProvider.clearMessage();
-                              navigatorKey.currentState
-                                  ?.pushNamedAndRemoveUntil(
-                                    '/',
-                                    (Route<dynamic> route) => false,
-                                  );
+                              navigatorKey.currentState?.pushNamedAndRemoveUntil('/', (Route<dynamic> route) => false);
                             },
                           ),
                         ],
@@ -426,35 +299,30 @@ class CCTeamApp extends StatelessWidget {
                 }
 
                 // global application success/warning/error snack bar messages
-                final Color notificationColor =
-                    messageProvider.messageType == MessageType.ERROR
-                        ? Color(0xFFB43636)
-                        : messageProvider.messageType == MessageType.WARNING
-                        ? Color(0xFFC9922D)
-                        : messageProvider.messageType == MessageType.SUCCESS
-                        ? Color(0xFF42914A)
-                        : Color(0xFF2368AF);
-                final String notificationTitle =
-                    messageProvider.messageType == MessageType.ERROR
-                        ? AppString.error
-                        : messageProvider.messageType == MessageType.WARNING
-                        ? AppString.warning
-                        : messageProvider.messageType == MessageType.SUCCESS
-                        ? AppString.success
-                        : AppString.info;
-                final IconData notificationIcon =
-                    messageProvider.messageType == MessageType.ERROR
-                        ? Icons.error_outline
-                        : messageProvider.messageType == MessageType.WARNING
-                        ? Icons.warning_amber_rounded
-                        : messageProvider.messageType == MessageType.SUCCESS
-                        ? Icons.check_circle_outline
-                        : Icons.info_outline;
+                final Color notificationColor = messageProvider.messageType == MessageType.ERROR
+                    ? Color(0xFFB43636)
+                    : messageProvider.messageType == MessageType.WARNING
+                    ? Color(0xFFC9922D)
+                    : messageProvider.messageType == MessageType.SUCCESS
+                    ? Color(0xFF42914A)
+                    : Color(0xFF2368AF);
+                final String notificationTitle = messageProvider.messageType == MessageType.ERROR
+                    ? AppString.error
+                    : messageProvider.messageType == MessageType.WARNING
+                    ? AppString.warning
+                    : messageProvider.messageType == MessageType.SUCCESS
+                    ? AppString.success
+                    : AppString.info;
+                final IconData notificationIcon = messageProvider.messageType == MessageType.ERROR
+                    ? Icons.error_outline
+                    : messageProvider.messageType == MessageType.WARNING
+                    ? Icons.warning_amber_rounded
+                    : messageProvider.messageType == MessageType.SUCCESS
+                    ? Icons.check_circle_outline
+                    : Icons.info_outline;
                 final snackBar = SnackBar(
                   behavior: SnackBarBehavior.floating,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(32),
-                  ),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(32)),
                   showCloseIcon: true,
                   closeIconColor: Colors.white,
                   backgroundColor: notificationColor,
@@ -511,24 +379,6 @@ class CCTeamApp extends StatelessWidget {
             iconTheme: IconThemeData(color: Colors.white),
             titleTextStyle: TextStyle(color: Colors.white, fontSize: 18),
           ),
-
-          /*colorScheme: ColorScheme(
-            brightness: Brightness.dark,
-            surface: Colors.red[700]!,
-            // header
-            onSurface: Colors.white,
-            // text
-            primary: Colors.red[700]!,
-            // drawer header background, reload icon color
-            onPrimary: Colors.grey,
-            secondary: Colors.grey,
-            onSecondary: Colors.grey,
-            background: Colors.blue[100]!,
-            // reload icon background
-            onBackground: Colors.red[200]!,
-            error: Colors.grey,
-            onError: Colors.grey,
-          ),*/
         ),
         supportedLocales: [const Locale('en', 'US'), const Locale('fr', 'FR')],
         localizationsDelegates: [

@@ -26,6 +26,7 @@ import 'package:ccteam/utils/custom_icons.dart';
 import 'package:ccteam/utils/date_utils.dart';
 import 'package:ccteam/utils/strings.dart';
 import 'package:ccteam/utils/track_utils.dart';
+import 'package:ccteam/widgets/info_banner.dart';
 import 'package:ccteam/widgets/loading_content.dart';
 import 'package:ccteam/widgets/restricted_content.dart';
 import 'package:flutter/material.dart';
@@ -51,23 +52,12 @@ class _MemberChronosState extends State<MemberChronos> {
   /// Method that launches the Add Record screen and awaits the result from Navigator.pop
   _navigateToAddRecordScreen(BuildContext context) async {
     // set a new record to be created
-    Provider.of<RecordCreationProvider>(
-      context,
-      listen: false,
-    ).setRecordToEdit(new Record());
+    Provider.of<RecordCreationProvider>(context, listen: false).setRecordToEdit(new Record());
     final result = await Navigator.pushNamed(context, '/addEditRecord');
     if (result != null) {
-      final _recordListProvider = Provider.of<RecordListProvider>(
-        context,
-        listen: false,
-      );
-      final _memberDetailProvider = Provider.of<MemberDetailProvider>(
-        context,
-        listen: false,
-      );
-      _recordListProvider.fetchMemberRecords(
-        _memberDetailProvider.currentMember!.id!,
-      );
+      final _recordListProvider = Provider.of<RecordListProvider>(context, listen: false);
+      final _memberDetailProvider = Provider.of<MemberDetailProvider>(context, listen: false);
+      _recordListProvider.fetchMemberRecords(_memberDetailProvider.currentMember!.id!);
     }
   }
 
@@ -82,168 +72,129 @@ class _MemberChronosState extends State<MemberChronos> {
   }
 
   Widget build(BuildContext context) {
-    final LoginProvider _loginProvider = Provider.of<LoginProvider>(
-      context,
-      listen: false,
-    );
+    final LoginProvider _loginProvider = Provider.of<LoginProvider>(context, listen: false);
 
     if (!_loginProvider.isMember) {
       return Scaffold(
         appBar: AppBar(
           title: Text(AppString.myChronos),
-          leading: IconButton(
-            icon: Icon(Icons.arrow_back),
-            onPressed: () => Navigator.pop(context),
-          ),
+          leading: IconButton(icon: Icon(Icons.arrow_back), onPressed: () => Navigator.pop(context)),
         ),
-        body: Container(
-          decoration: CustomDecorations.mainContent,
-          child: RestrictedContent(),
-        ),
+        body: Container(decoration: CustomDecorations.mainContent, child: RestrictedContent()),
       );
     }
 
-    final RecordListProvider _recordListProvider =
-        Provider.of<RecordListProvider>(context, listen: true);
-    final MemberDetailProvider _memberDetailProvider =
-        Provider.of<MemberDetailProvider>(context, listen: true);
+    final RecordListProvider _recordListProvider = Provider.of<RecordListProvider>(context, listen: true);
+    final MemberDetailProvider _memberDetailProvider = Provider.of<MemberDetailProvider>(context, listen: true);
 
     return Scaffold(
       appBar: AppBar(
         title: Text(AppString.myChronos),
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back),
-          onPressed: () => Navigator.pop(context),
-        ),
+        leading: IconButton(icon: Icon(Icons.arrow_back), onPressed: () => Navigator.pop(context)),
       ),
       body: Container(
         padding: const EdgeInsets.all(8.0),
         decoration: CustomDecorations.mainContent,
-        child: Expanded(
-          child: RefreshIndicator(
-            onRefresh:
-                () => _recordListProvider.fetchMemberRecords(
-                  _memberDetailProvider.currentMember!.id!,
-                ),
-            child: LoadingContent(
-              defaultText: AppString.eventsNotFound,
-              emptyText: AppString.eventsNotFound,
-              loadingStatus: _recordListProvider.loadingStatus,
-              child: ListView.separated(
-                separatorBuilder: (context, index) => SizedBox(height: 8.0),
-                itemCount: _recordListProvider.memberRecords.length,
-                itemBuilder: (context, index) {
-                  final record = _recordListProvider.memberRecords[index];
-                  return InkWell(
-                    onTap: () async {
-                      Provider.of<RecordCreationProvider>(
-                        context,
-                        listen: false,
-                      ).setRecordToEdit(record);
-                      final result = await Navigator.pushNamed(
-                        context,
-                        '/addEditRecord',
-                      );
-                      if (result != null) {
-                        _recordListProvider.fetchMemberRecords(
-                          _memberDetailProvider.currentMember!.id!,
-                        );
-                      }
-                    },
-                    child: Container(
-                      padding: EdgeInsets.all(8.0),
-                      decoration: CustomDecorations.cardFull,
-                      height: 91,
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: <Widget>[
-                          //Icon(TrackUtils.trackIconFromName(_recordListProvider.memberRecords[index].track.name), size: 38, color: Colors.red[700]),
-                          Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            crossAxisAlignment: CrossAxisAlignment.start,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: <Widget>[
+            const InfoBanner(message: AppString.myChronosHelp),
+            const SizedBox(height: 8.0),
+            Expanded(
+              child: RefreshIndicator(
+                onRefresh: () => _recordListProvider.fetchMemberRecords(_memberDetailProvider.currentMember!.id!),
+                child: LoadingContent(
+                  defaultText: AppString.eventsNotFound,
+                  emptyText: AppString.eventsNotFound,
+                  loadingStatus: _recordListProvider.loadingStatus,
+                  child: ListView.separated(
+                    separatorBuilder: (context, index) => SizedBox(height: 8.0),
+                    itemCount: _recordListProvider.memberRecords.length,
+                    itemBuilder: (context, index) {
+                      final record = _recordListProvider.memberRecords[index];
+                      return InkWell(
+                        onTap: () async {
+                          Provider.of<RecordCreationProvider>(context, listen: false).setRecordToEdit(record);
+                          final result = await Navigator.pushNamed(context, '/addEditRecord');
+                          if (result != null) {
+                            _recordListProvider.fetchMemberRecords(_memberDetailProvider.currentMember!.id!);
+                          }
+                        },
+                        child: Container(
+                          padding: EdgeInsets.all(8.0),
+                          decoration: CustomDecorations.cardFull,
+                          height: 91,
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: <Widget>[
-                              Row(
+                              //Icon(TrackUtils.trackIconFromName(_recordListProvider.memberRecords[index].track.name), size: 38, color: Colors.red[700]),
+                              Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                crossAxisAlignment: CrossAxisAlignment.start,
                                 children: <Widget>[
-                                  Icon(
-                                    TrackUtils.trackIconFromName(
-                                      record.track!.name,
-                                    ),
-                                    size: 20,
-                                    color: Colors.red[600],
+                                  Row(
+                                    children: <Widget>[
+                                      Icon(
+                                        TrackUtils.trackIconFromName(record.track!.name),
+                                        size: 20,
+                                        color: Colors.red[600],
+                                      ),
+                                      SizedBox(width: 8.0),
+                                      Text(
+                                        record.track!.name!,
+                                        textScaler: TextScaler.linear(1.3),
+                                        style: TextStyle(color: Colors.white),
+                                      ),
+                                    ],
                                   ),
-                                  SizedBox(width: 8.0),
-                                  Text(
-                                    record.track!.name!,
-                                    textScaler: TextScaler.linear(1.3),
-                                    style: TextStyle(color: Colors.white),
+                                  SizedBox(height: 8.0),
+                                  Row(
+                                    children: <Widget>[
+                                      Icon(Icons.event, size: 16, color: Colors.teal[700]),
+                                      SizedBox(width: 5.0),
+                                      Text(
+                                        AppDateUtils.convertToString(record.recordDate!, 'dd MMM yyyy') ?? "",
+                                        style: TextStyle(color: Colors.white),
+                                      ),
+                                    ],
+                                  ),
+                                  Row(
+                                    children: <Widget>[
+                                      Icon(CustomIcons.motorbike, size: 16, color: Colors.deepPurple),
+                                      SizedBox(width: 5.0),
+                                      Text(
+                                        record.bike != null
+                                            ? "${record.bike!.manufacturer} ${record.bike!.modelName}"
+                                            : AppString.notDefined,
+                                        style: TextStyle(color: Colors.white),
+                                      ),
+                                    ],
                                   ),
                                 ],
                               ),
-                              SizedBox(height: 8.0),
-                              Row(
-                                children: <Widget>[
-                                  Icon(
-                                    Icons.event,
-                                    size: 16,
-                                    color: Colors.teal[700],
-                                  ),
-                                  SizedBox(width: 5.0),
-                                  Text(
-                                    AppDateUtils.convertToString(
-                                          record.recordDate!,
-                                          'dd MMM yyyy',
-                                        ) ??
-                                        "",
-                                    style: TextStyle(color: Colors.white),
-                                  ),
-                                ],
-                              ),
-                              Row(
-                                children: <Widget>[
-                                  Icon(
-                                    CustomIcons.motorbike,
-                                    size: 16,
-                                    color: Colors.deepPurple,
-                                  ),
-                                  SizedBox(width: 5.0),
-                                  Text(
-                                    record.bike != null
-                                        ? "${record.bike!.manufacturer} ${record.bike!.modelName}"
-                                        : AppString.notDefined,
-                                    style: TextStyle(color: Colors.white),
-                                  ),
-                                ],
+                              Container(
+                                padding: EdgeInsets.symmetric(horizontal: 4.0, vertical: 0.0),
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.rectangle,
+                                  borderRadius: BorderRadius.circular(4.0),
+                                  border: Border.all(color: Colors.white),
+                                ),
+                                child: Text(
+                                  AppDateUtils.toLapTimeString(record.lapTime) ?? "",
+                                  style: TextStyle(fontFamily: "AlarmClock", color: Colors.white),
+                                  textScaler: TextScaler.linear(1.6),
+                                ),
                               ),
                             ],
                           ),
-                          Container(
-                            padding: EdgeInsets.symmetric(
-                              horizontal: 4.0,
-                              vertical: 0.0,
-                            ),
-                            decoration: BoxDecoration(
-                              shape: BoxShape.rectangle,
-                              borderRadius: BorderRadius.circular(4.0),
-                              border: Border.all(color: Colors.white),
-                            ),
-                            child: Text(
-                              AppDateUtils.toLapTimeString(record.lapTime) ??
-                                  "",
-                              style: TextStyle(
-                                fontFamily: "AlarmClock",
-                                color: Colors.white,
-                              ),
-                              textScaler: TextScaler.linear(1.6),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  );
-                },
+                        ),
+                      );
+                    },
+                  ),
+                ),
               ),
             ),
-          ),
+          ],
         ),
       ),
       floatingActionButton: FloatingActionButton(

@@ -66,8 +66,7 @@ class _EditAvatarState extends State<EditAvatar> {
     super.initState();
     // Capture the original avatar from the in-progress edit copy so we
     // can revert to it on cancel and decide whether removal is offered.
-    final memberCreationProvider =
-        Provider.of<MemberCreationProvider>(context, listen: false);
+    final memberCreationProvider = Provider.of<MemberCreationProvider>(context, listen: false);
     _originalAvatar = memberCreationProvider.currentMember.avatar;
   }
 
@@ -75,13 +74,13 @@ class _EditAvatarState extends State<EditAvatar> {
   /// pending avatar. Sets [_pendingChange] to [_PendingChange.newImage]
   /// only if the user actually completes the crop step.
   Future _selectImageFromGallery() async {
-    final avatarProvider =
-        Provider.of<AvatarProvider>(context, listen: false);
+    final avatarProvider = Provider.of<AvatarProvider>(context, listen: false);
     final XFile? image = await ImagePicker().pickImage(
-        source: ImageSource.gallery,
-        maxWidth: 512,
-        maxHeight: 512,
-        imageQuality: 50);
+      source: ImageSource.gallery,
+      maxWidth: 768,
+      maxHeight: 768,
+      imageQuality: 60,
+    );
     if (image != null) {
       avatarProvider.setPickedImage(File(image.path));
       avatarProvider.setPickedImageName(image.name);
@@ -100,13 +99,13 @@ class _EditAvatarState extends State<EditAvatar> {
   /// pending avatar. Same flow as [_selectImageFromGallery] but with
   /// the camera as the source.
   Future _selectImageFromCamera() async {
-    final avatarProvider =
-        Provider.of<AvatarProvider>(context, listen: false);
+    final avatarProvider = Provider.of<AvatarProvider>(context, listen: false);
     final XFile? image = await ImagePicker().pickImage(
-        source: ImageSource.camera,
-        maxWidth: 512,
-        maxHeight: 512,
-        imageQuality: 50);
+      source: ImageSource.camera,
+      maxWidth: 768,
+      maxHeight: 768,
+      imageQuality: 60,
+    );
     if (image != null) {
       avatarProvider.setPickedImage(File(image.path));
       avatarProvider.setPickedImageName(image.name);
@@ -121,8 +120,7 @@ class _EditAvatarState extends State<EditAvatar> {
   /// Discard the pending change — the preview snaps back to the saved
   /// avatar that was on screen when the page opened.
   void _cancelPendingChange() {
-    final avatarProvider =
-        Provider.of<AvatarProvider>(context, listen: false);
+    final avatarProvider = Provider.of<AvatarProvider>(context, listen: false);
     avatarProvider.setPickedImage(null);
     avatarProvider.setPickedImageName(null);
     avatarProvider.setCroppedImage(null);
@@ -133,8 +131,7 @@ class _EditAvatarState extends State<EditAvatar> {
   /// placeholder; the change is only persisted to the edit copy when
   /// the user taps "Confirmer la sélection".
   void _stageAvatarRemoval() {
-    final avatarProvider =
-        Provider.of<AvatarProvider>(context, listen: false);
+    final avatarProvider = Provider.of<AvatarProvider>(context, listen: false);
     avatarProvider.setPickedImage(null);
     avatarProvider.setPickedImageName(null);
     avatarProvider.setCroppedImage(null);
@@ -146,12 +143,9 @@ class _EditAvatarState extends State<EditAvatar> {
   /// of the app are NOT updated yet — that happens when the user
   /// presses "Save" on the profile form.
   void _confirm() {
-    final avatarProvider =
-        Provider.of<AvatarProvider>(context, listen: false);
-    final memberCreationProvider =
-        Provider.of<MemberCreationProvider>(context, listen: false);
-    if (_pendingChange == _PendingChange.newImage &&
-        avatarProvider.croppedImage != null) {
+    final avatarProvider = Provider.of<AvatarProvider>(context, listen: false);
+    final memberCreationProvider = Provider.of<MemberCreationProvider>(context, listen: false);
+    if (_pendingChange == _PendingChange.newImage && avatarProvider.croppedImage != null) {
       memberCreationProvider.setCurrentMemberAvatar(
         base64Encode(avatarProvider.croppedImage!),
         avatarProvider.pickedImageName,
@@ -166,15 +160,12 @@ class _EditAvatarState extends State<EditAvatar> {
   /// leading "Formats " prefix so the line stays on a single row.
   String _formatsShort() {
     final String formats = AppString.avatarFormats;
-    return formats.startsWith("Formats ")
-        ? formats.substring("Formats ".length)
-        : formats;
+    return formats.startsWith("Formats ") ? formats.substring("Formats ".length) : formats;
   }
 
   @override
   Widget build(BuildContext context) {
-    final avatarProvider =
-        Provider.of<AvatarProvider>(context, listen: true);
+    final avatarProvider = Provider.of<AvatarProvider>(context, listen: true);
 
     final bool hasOriginal = _originalAvatar != null;
     final bool hasPendingChange = _pendingChange != _PendingChange.none;
@@ -182,8 +173,6 @@ class _EditAvatarState extends State<EditAvatar> {
     return Scaffold(
       appBar: AppBar(title: Text(AppString.profilePhoto)),
       body: Container(
-        // explicit infinity so the gradient covers the full body height
-        // even when the scrollview's content is shorter than the screen
         width: double.infinity,
         height: double.infinity,
         decoration: CustomDecorations.mainContent,
@@ -207,24 +196,16 @@ class _EditAvatarState extends State<EditAvatar> {
                 Text(
                   AppString.selectPhoto,
                   textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 18.0,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black.withAlpha(204),
-                  ),
+                  style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold, color: Colors.black.withAlpha(204)),
                 ),
                 const SizedBox(height: 4.0),
                 Text(
                   "${AppString.maxAvatarSize} · ${_formatsShort()}",
                   textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 12.5,
-                    color: Colors.black.withAlpha(140),
-                  ),
+                  style: TextStyle(fontSize: 12.5, color: Colors.black.withAlpha(140)),
                 ),
                 const SizedBox(height: 24.0),
 
-                // Source picker cards (always available)
                 Row(
                   children: <Widget>[
                     Expanded(
@@ -247,70 +228,46 @@ class _EditAvatarState extends State<EditAvatar> {
                   ],
                 ),
 
-                // "Retirer la photo" — only when there's a saved avatar
-                // to remove AND no pending change yet (otherwise the
-                // user must first cancel before they can stage removal)
                 if (hasOriginal && !hasPendingChange) ...[
                   const SizedBox(height: 12.0),
                   Center(
                     child: TextButton.icon(
                       onPressed: _stageAvatarRemoval,
-                      icon: Icon(Icons.delete_outline,
-                          size: 18, color: Colors.red[700]),
+                      icon: Icon(Icons.delete_outline, size: 18, color: Colors.red[700]),
                       label: Text(
                         AppString.removePhoto,
-                        style: TextStyle(
-                          color: Colors.red[700],
-                          fontWeight: FontWeight.w600,
-                        ),
+                        style: TextStyle(color: Colors.red[700], fontWeight: FontWeight.w600),
                       ),
                     ),
                   ),
                 ],
 
-                // Cancel + Confirm pair — only when there's a pending
-                // change to act on
                 if (hasPendingChange) ...[
                   const SizedBox(height: 12.0),
                   Center(
                     child: TextButton.icon(
                       onPressed: _cancelPendingChange,
-                      icon: Icon(Icons.close,
-                          size: 18, color: Colors.black.withAlpha(160)),
+                      icon: Icon(Icons.close, size: 18, color: Colors.black.withAlpha(160)),
                       label: Text(
                         AppString.cancelSelection,
-                        style: TextStyle(
-                          color: Colors.black.withAlpha(180),
-                          fontWeight: FontWeight.w600,
-                        ),
+                        style: TextStyle(color: Colors.black.withAlpha(180), fontWeight: FontWeight.w600),
                       ),
                     ),
                   ),
                   const SizedBox(height: 8.0),
                   ElevatedButton.icon(
                     onPressed: _confirm,
-                    icon: const Icon(Icons.check,
-                        size: 18, color: Colors.white),
-                    label: Text(
-                      AppString.confirmSelection,
-                      style: const TextStyle(color: Colors.white),
-                    ),
+                    icon: const Icon(Icons.check, size: 18, color: Colors.white),
+                    label: Text(AppString.confirmSelection, style: const TextStyle(color: Colors.white)),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.green[700],
                       padding: const EdgeInsets.symmetric(vertical: 14.0),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      textStyle: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 14.0,
-                      ),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                      textStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14.0),
                       elevation: 1,
                     ),
                   ),
                 ] else
-                  // keep some bottom padding even with no pending change
-                  // so the source cards aren't flush against the bottom
                   const SizedBox(height: 16.0),
               ],
             ),
@@ -345,8 +302,7 @@ class _AvatarPreview extends StatelessWidget {
     Widget content;
     if (pendingChange == _PendingChange.newImage && croppedImage != null) {
       content = Image.memory(croppedImage!, fit: BoxFit.cover);
-    } else if (pendingChange == _PendingChange.none &&
-        originalAvatar != null) {
+    } else if (pendingChange == _PendingChange.none && originalAvatar != null) {
       content = Image.memory(base64Decode(originalAvatar!), fit: BoxFit.cover);
     } else {
       // pendingChange == removal, OR pendingChange == none with no
@@ -362,11 +318,7 @@ class _AvatarPreview extends StatelessWidget {
             stops: const [0.0, 1.0],
             colors: [Colors.red[700]!, Colors.blue[700]!],
           ).createShader(bounds),
-          child: const Icon(
-            CustomIcons.pilot,
-            size: size * 0.7,
-            color: Colors.white,
-          ),
+          child: const Icon(CustomIcons.pilot, size: size * 0.7, color: Colors.white),
         ),
       );
     }
@@ -379,11 +331,7 @@ class _AvatarPreview extends StatelessWidget {
         color: Colors.white,
         border: Border.all(color: Colors.white, width: 4.0),
         boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.18),
-            blurRadius: 14.0,
-            offset: const Offset(0, 4),
-          ),
+          BoxShadow(color: Colors.black.withValues(alpha: 0.18), blurRadius: 14.0, offset: const Offset(0, 4)),
         ],
       ),
       child: ClipOval(child: content),
@@ -402,13 +350,8 @@ class _SourceCard extends StatelessWidget {
   final Color color;
   final VoidCallback onTap;
 
-  const _SourceCard({
-    Key? key,
-    required this.icon,
-    required this.label,
-    required this.color,
-    required this.onTap,
-  }) : super(key: key);
+  const _SourceCard({Key? key, required this.icon, required this.label, required this.color, required this.onTap})
+    : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -419,8 +362,7 @@ class _SourceCard extends StatelessWidget {
         onTap: onTap,
         borderRadius: BorderRadius.circular(8.0),
         child: Container(
-          padding:
-              const EdgeInsets.symmetric(vertical: 18.0, horizontal: 12.0),
+          padding: const EdgeInsets.symmetric(vertical: 18.0, horizontal: 12.0),
           decoration: CustomDecorations.cardLight,
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -432,11 +374,7 @@ class _SourceCard extends StatelessWidget {
                   shape: BoxShape.circle,
                   color: color.withValues(alpha: 0.18),
                   boxShadow: [
-                    BoxShadow(
-                      color: color.withValues(alpha: 0.20),
-                      blurRadius: 8.0,
-                      offset: const Offset(0, 2),
-                    ),
+                    BoxShadow(color: color.withValues(alpha: 0.20), blurRadius: 8.0, offset: const Offset(0, 2)),
                   ],
                 ),
                 child: Icon(icon, color: color, size: 28.0),
@@ -444,11 +382,7 @@ class _SourceCard extends StatelessWidget {
               const SizedBox(height: 10.0),
               Text(
                 label,
-                style: TextStyle(
-                  color: color,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 14.0,
-                ),
+                style: TextStyle(color: color, fontWeight: FontWeight.bold, fontSize: 14.0),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),

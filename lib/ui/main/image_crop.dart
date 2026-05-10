@@ -45,46 +45,30 @@ class ImageCrop extends StatelessWidget {
               case CropFailure(:final cause):
                 showDialog(
                   context: context,
-                  builder:
-                      (context) => AlertDialog(
-                        title: Text('Error'),
-                        content: Text(
-                          'Failed to crop image: ${cause.toString()}',
-                        ),
-                        actions: [
-                          TextButton(
-                            onPressed: () => Navigator.pop(context),
-                            child: Text('OK'),
-                          ),
-                        ],
-                      ),
+                  builder: (context) => AlertDialog(
+                    title: Text('Error'),
+                    content: Text('Failed to crop image: ${cause.toString()}'),
+                    actions: [TextButton(onPressed: () => Navigator.pop(context), child: Text('OK'))],
+                  ),
                 );
             }
           },
           withCircleUi: true,
           radius: 20,
-          initialRectBuilder: InitialRectBuilder.withBuilder((
-            viewportRect,
-            imageRect,
-          ) {
-            return Rect.fromLTRB(
-              viewportRect.left + 50,
-              viewportRect.top + 100,
-              viewportRect.right - 50,
-              viewportRect.bottom - 150,
-            );
+          initialRectBuilder: InitialRectBuilder.withBuilder((viewportRect, imageRect) {
+            final double side = imageRect.shortestSide;
+            return Rect.fromCenter(center: imageRect.center, width: side, height: side);
           }),
           baseColor: Colors.black54,
           clipBehavior: Clip.none,
           interactive: true,
-          cornerDotBuilder:
-              (size, edgeAlignment) => const DotControl(color: Colors.blue),
+          cornerDotBuilder: (size, edgeAlignment) => const DotControl(color: Colors.blue),
         ),
       ),
       floatingActionButton: FloatingActionButton(
         backgroundColor: Colors.red[700],
         onPressed: () => _controller.cropCircle(),
-        child: Icon(Icons.check),
+        child: Icon(Icons.check, color: Colors.white),
       ),
     );
   }
