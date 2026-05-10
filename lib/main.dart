@@ -67,15 +67,13 @@ import 'package:ccteam/ui/unauthenticated/loading.dart';
 import 'package:ccteam/ui/unauthenticated/login.dart';
 import 'package:ccteam/utils/enums.dart';
 import 'package:ccteam/utils/graphql_connection.dart';
+import 'package:ccteam/utils/navigator_key.dart';
 import 'package:ccteam/utils/strings.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:logging/logging.dart';
 import 'package:provider/provider.dart';
-
-/// Global navigator key to allow showing dialogs on top of any active route.
-final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
 void main() {
   // logging configuration

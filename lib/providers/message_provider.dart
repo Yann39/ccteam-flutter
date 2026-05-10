@@ -36,6 +36,7 @@ class MessageProvider extends ChangeNotifier {
 
   /// Set the current message.
   void setMessage(String message, MessageType messageType) {
+    if (_message == message && _messageType == messageType) return;
     _message = message;
     _messageType = messageType;
     _log.info("Notifying listeners of MessageProvider");

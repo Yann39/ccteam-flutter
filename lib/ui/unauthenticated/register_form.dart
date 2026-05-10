@@ -69,16 +69,14 @@ class _RegisterFormState extends State<RegisterForm> {
       keyboardType: TextInputType.text,
       keyboardAppearance: Brightness.dark,
       autofocus: false,
+      // add extra padding to ensure the field is not hidden by the keyboard when it appears, especially on smaller screens
+      scrollPadding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom + 4 * 80),
       decoration: InputDecoration(
         enabledBorder: OutlineInputBorder(),
         focusedBorder: OutlineInputBorder(),
-        errorBorder: OutlineInputBorder(
-          borderSide: BorderSide(color: Colors.red[700]!),
-        ),
+        errorBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.red[700]!)),
         focusedErrorBorder: OutlineInputBorder(),
-        disabledBorder: OutlineInputBorder(
-          borderSide: BorderSide(color: Colors.black26),
-        ),
+        disabledBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.black26)),
         prefixIcon: Icon(Icons.person, color: Colors.black87),
         hintText: AppString.memberFirstNameHint,
         hintStyle: TextStyle(color: Colors.black54),
@@ -96,16 +94,14 @@ class _RegisterFormState extends State<RegisterForm> {
       keyboardType: TextInputType.text,
       keyboardAppearance: Brightness.dark,
       autofocus: false,
+      // add extra padding to ensure the field is not hidden by the keyboard when it appears, especially on smaller screens
+      scrollPadding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom + 3 * 80),
       decoration: InputDecoration(
         enabledBorder: OutlineInputBorder(),
         focusedBorder: OutlineInputBorder(),
-        errorBorder: OutlineInputBorder(
-          borderSide: BorderSide(color: Colors.red[700]!),
-        ),
+        errorBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.red[700]!)),
         focusedErrorBorder: OutlineInputBorder(),
-        disabledBorder: OutlineInputBorder(
-          borderSide: BorderSide(color: Colors.black26),
-        ),
+        disabledBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.black26)),
         prefixIcon: Icon(Icons.person, color: Colors.black87),
         hintText: AppString.memberLastNameHint,
         hintStyle: TextStyle(color: Colors.black54),
@@ -123,16 +119,14 @@ class _RegisterFormState extends State<RegisterForm> {
       keyboardType: TextInputType.emailAddress,
       keyboardAppearance: Brightness.dark,
       autofocus: false,
+      // add extra padding to ensure the field is not hidden by the keyboard when it appears, especially on smaller screens
+      scrollPadding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom + 2 * 80),
       decoration: InputDecoration(
         enabledBorder: OutlineInputBorder(),
         focusedBorder: OutlineInputBorder(),
-        errorBorder: OutlineInputBorder(
-          borderSide: BorderSide(color: Colors.red[700]!),
-        ),
+        errorBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.red[700]!)),
         focusedErrorBorder: OutlineInputBorder(),
-        disabledBorder: OutlineInputBorder(
-          borderSide: BorderSide(color: Colors.black26),
-        ),
+        disabledBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.black26)),
         prefixIcon: Icon(Icons.mail, color: Colors.black87),
         hintText: AppString.loginEmailHint,
         hintStyle: TextStyle(color: Colors.black54),
@@ -155,9 +149,7 @@ class _RegisterFormState extends State<RegisterForm> {
     final _preRegisterButton = ElevatedButton(
       key: Key('registerFormRegisterButton'),
       style: ElevatedButton.styleFrom(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(4),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
         padding: EdgeInsets.fromLTRB(16.0, 12.0, 16.0, 12.0),
         backgroundColor: Colors.blue[700],
       ),
@@ -166,10 +158,7 @@ class _RegisterFormState extends State<RegisterForm> {
       },
       child: LoadingButtonText(
         loaderCondition: _loginProvider.loginStatus == LoginStatus.Loading,
-        text: Text(
-          AppString.register,
-          style: TextStyle(color: Colors.white),
-        ),
+        text: Text(AppString.register, style: TextStyle(color: Colors.white)),
       ),
     );
 
@@ -177,10 +166,7 @@ class _RegisterFormState extends State<RegisterForm> {
       onPressed: () {
         _goToPreviousStep();
       },
-      child: Text(
-        AppString.back,
-        style: TextStyle(color: Colors.blue[900]),
-      ),
+      child: Text(AppString.back, style: TextStyle(color: Colors.blue[900])),
     );
 
     return Form(
@@ -203,10 +189,7 @@ class _RegisterFormState extends State<RegisterForm> {
             _emailField,
           ],
         ),
-        actions: <Widget>[
-          _preRegisterButton,
-          _backButton,
-        ],
+        actions: <Widget>[_preRegisterButton, _backButton],
       ),
     );
   }

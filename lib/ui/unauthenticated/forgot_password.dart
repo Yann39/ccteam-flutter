@@ -46,18 +46,24 @@ class _ForgotPassword extends State<ForgotPassword> {
 
     // validate the form
     if (!_form.validate()) {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(backgroundColor: Colors.red, content: Text(AppString.formNotValid)));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(backgroundColor: Colors.red, content: Text(AppString.formNotValid)));
     } else {
       // this invokes each onSaved event
       _form.save();
 
       // submit data to backend then display a message
-      Provider.of<LoginProvider>(context, listen: false).askPassword(_email).then((value) {
-        Navigator.pop(context, "");
-      }, onError: (error) {
-        Navigator.pop(context, "");
-      });
+      Provider.of<LoginProvider>(context, listen: false)
+          .askPassword(_email)
+          .then(
+            (value) {
+              Navigator.pop(context, "");
+            },
+            onError: (error) {
+              Navigator.pop(context, "");
+            },
+          );
     }
   }
 
@@ -68,12 +74,12 @@ class _ForgotPassword extends State<ForgotPassword> {
       keyboardType: TextInputType.emailAddress,
       keyboardAppearance: Brightness.dark,
       autofocus: false,
+      // add extra padding to ensure the field is not hidden by the keyboard when it appears, especially on smaller screens
+      scrollPadding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom + 2 * 80),
       decoration: InputDecoration(
         enabledBorder: OutlineInputBorder(),
         focusedBorder: OutlineInputBorder(),
-        errorBorder: OutlineInputBorder(
-          borderSide: BorderSide(color: Colors.red[700]!),
-        ),
+        errorBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.red[700]!)),
         focusedErrorBorder: OutlineInputBorder(),
         prefixIcon: Icon(Icons.mail, color: Colors.black87),
         hintText: AppString.loginEmailHint,
@@ -92,19 +98,14 @@ class _ForgotPassword extends State<ForgotPassword> {
       builder: (BuildContext context) {
         return ElevatedButton(
           style: ElevatedButton.styleFrom(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(4),
-            ),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
             backgroundColor: Colors.blue[700],
             padding: EdgeInsets.fromLTRB(16.0, 12.0, 16.0, 12.0),
           ),
           onPressed: () {
             _doResetPassword(context);
           },
-          child: Text(
-            AppString.send,
-            style: TextStyle(color: Colors.white),
-          ),
+          child: Text(AppString.send, style: TextStyle(color: Colors.white)),
         );
       },
     );
@@ -113,10 +114,7 @@ class _ForgotPassword extends State<ForgotPassword> {
       onPressed: () {
         Navigator.pop(context);
       },
-      child: Text(
-        AppString.cancel,
-        style: TextStyle(color: Colors.blue[900]),
-      ),
+      child: Text(AppString.cancel, style: TextStyle(color: Colors.blue[900])),
     );
 
     return GestureDetector(
@@ -140,15 +138,9 @@ class _ForgotPassword extends State<ForgotPassword> {
               key: _forgotPasswordFormKey,
               child: UnauthenticatedLayout(
                 title: AppString.askNewPassword,
-                description: Text(
-                  AppString.forgotPasswordInfo,
-                  textAlign: TextAlign.center,
-                ),
+                description: Text(AppString.forgotPasswordInfo, textAlign: TextAlign.center),
                 body: _emailField,
-                actions: <Widget>[
-                  _sendButton,
-                  _cancelButton,
-                ],
+                actions: <Widget>[_sendButton, _cancelButton],
               ),
             ),
           ),

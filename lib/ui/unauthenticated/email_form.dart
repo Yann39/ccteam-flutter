@@ -65,16 +65,14 @@ class _EmailFormState extends State<EmailForm> {
       keyboardType: TextInputType.emailAddress,
       keyboardAppearance: Brightness.dark,
       autofocus: false,
+      // add extra padding to ensure the field is not hidden by the keyboard when it appears, especially on smaller screens
+      scrollPadding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom + 2 * 80),
       decoration: InputDecoration(
         enabledBorder: OutlineInputBorder(),
         focusedBorder: OutlineInputBorder(),
-        errorBorder: OutlineInputBorder(
-          borderSide: BorderSide(color: Colors.red[700]!),
-        ),
+        errorBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.red[700]!)),
         focusedErrorBorder: OutlineInputBorder(),
-        disabledBorder: OutlineInputBorder(
-          borderSide: BorderSide(color: Colors.black26),
-        ),
+        disabledBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.black26)),
         prefixIcon: Icon(Icons.mail, color: Colors.black87),
         hintText: AppString.loginEmailHint,
         hintStyle: TextStyle(color: Colors.black54),
@@ -97,9 +95,7 @@ class _EmailFormState extends State<EmailForm> {
     final _emailContinueButton = ElevatedButton(
       key: Key('emailContinueButton'),
       style: ElevatedButton.styleFrom(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(4),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
         padding: EdgeInsets.fromLTRB(16.0, 12.0, 16.0, 12.0),
         backgroundColor: Colors.blue[700],
       ),
@@ -108,10 +104,7 @@ class _EmailFormState extends State<EmailForm> {
       },
       child: LoadingButtonText(
         loaderCondition: _loginProvider.loginStatus == LoginStatus.Loading,
-        text: Text(
-          AppString.continue1,
-          style: TextStyle(color: Colors.white),
-        ),
+        text: Text(AppString.continue1, style: TextStyle(color: Colors.white)),
       ),
     );
 
@@ -120,10 +113,7 @@ class _EmailFormState extends State<EmailForm> {
       onPressed: () {
         _loginProvider.goToRegister();
       },
-      child: Text(
-        AppString.createAccount,
-        style: TextStyle(color: Colors.blue[900]),
-      ),
+      child: Text(AppString.createAccount, style: TextStyle(color: Colors.blue[900])),
     );
 
     return Form(
@@ -137,10 +127,7 @@ class _EmailFormState extends State<EmailForm> {
           textAlign: TextAlign.center,
         ),
         body: _emailField,
-        actions: <Widget>[
-          _emailContinueButton,
-          _createAccountButton,
-        ],
+        actions: <Widget>[_emailContinueButton, _createAccountButton],
       ),
     );
   }
