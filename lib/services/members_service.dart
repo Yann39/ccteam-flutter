@@ -199,6 +199,8 @@ class MembersService {
               track {
                 id
                 name
+                distance
+                lapRecord
               }
               organizer
               price
@@ -277,6 +279,8 @@ class MembersService {
               track {
                 id
                 name
+                distance
+                lapRecord
               }
               organizer
               price

@@ -91,6 +91,9 @@ class BikeListProvider extends ChangeNotifier {
       _loginProvider.loggedMember!.bikes = _bikes;
       _messageProvider.setMessage(AppString.bikeAdded, MessageType.SUCCESS);
       _updateStatus(LoadingStatus.loaded);
+      // refresh the logged member so listeners bound to LoginProvider
+      // (notably the home stats panel) rebuild with the new bike count
+      await _loginProvider.refreshLoggedMember();
     } catch (e) {
       _log.severe("Error adding bike: $e");
       _messageProvider.setMessage(AppString.error, MessageType.ERROR);
@@ -111,6 +114,7 @@ class BikeListProvider extends ChangeNotifier {
       _loginProvider.loggedMember!.bikes = _bikes;
       _messageProvider.setMessage(AppString.bikeUpdated, MessageType.SUCCESS);
       _updateStatus(LoadingStatus.loaded);
+      await _loginProvider.refreshLoggedMember();
     } catch (e) {
       _log.severe("Error updating bike: $e");
       _messageProvider.setMessage(AppString.error, MessageType.ERROR);
@@ -146,6 +150,7 @@ class BikeListProvider extends ChangeNotifier {
 
       _loginProvider.loggedMember!.bikes = _bikes;
       _updateStatus(LoadingStatus.loaded);
+      await _loginProvider.refreshLoggedMember();
     } catch (e) {
       _log.severe("Error setting current bike: $e");
       _messageProvider.setMessage(AppString.error, MessageType.ERROR);
@@ -163,6 +168,7 @@ class BikeListProvider extends ChangeNotifier {
       _loginProvider.loggedMember!.bikes = _bikes;
       _messageProvider.setMessage(AppString.bikeDeleted, MessageType.SUCCESS);
       _updateStatus(LoadingStatus.loaded);
+      await _loginProvider.refreshLoggedMember();
     } catch (e) {
       _log.severe("Error deleting bike: $e");
       _messageProvider.setMessage(AppString.error, MessageType.ERROR);

@@ -54,8 +54,25 @@ class RecordListProvider extends ChangeNotifier {
   }
 
   /// Update login provider with the specified [loginProvider].
+  ///
+  /// Auto-fetches the logged member's records the first time the
+  /// provider sees an authenticated user. The records are needed by
+  /// the home stats panel (km estimate) before the user has navigated
+  /// to "Mes chronos", and pre-loading them also makes the records
+  /// page instant on later visits. Mirrors the pattern used by
+  /// NewsListProvider / MemberListProvider.
   void updateLoginProvider(LoginProvider loginProvider) {
     _loginProvider = loginProvider;
+    if (_loginProvider.isMember &&
+        _loginProvider.loggedMember?.id != null &&
+        _loadingStatus == LoadingStatus.notLoaded) {
+      fetchMemberRecords(_loginProvider.loggedMember!.id!);
+    } else if (!_loginProvider.isMember) {
+      // clear the cached records on logout so the next user doesn't
+      // see stale data
+      _memberRecords = [];
+      _loadingStatus = LoadingStatus.notLoaded;
+    }
     _log.info("LoginProvider injected into RecordListProvider");
   }
 

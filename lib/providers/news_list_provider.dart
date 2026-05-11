@@ -64,6 +64,19 @@ class NewsListProvider extends ChangeNotifier {
   /// Update login provider with the specified [loginProvider].
   void updateLoginProvider(LoginProvider loginProvider) {
     _loginProvider = loginProvider;
+    // re-triggers a news fetch as soon as a member is authenticated and
+    // we haven't successfully loaded the list yet. The provider's
+    // constructor also fires a fetch, but at that point the JWT
+    // interceptor isn't necessarily wired up — so any constructor-time
+    // failure (auth missing, etc.) used to leave the list stuck at
+    // `notLoaded` forever. Mirrors what [MemberListProvider] already does
+    if (_loginProvider.isMember && _loadingStatus == LoadingStatus.notLoaded) {
+      fetchNewsList();
+    } else if (!_loginProvider.isMember) {
+      // clear the list on logout so the next user doesn't see stale data
+      _newsList = [];
+      _loadingStatus = LoadingStatus.notLoaded;
+    }
     _notifyListeners();
   }
 
@@ -95,16 +108,19 @@ class NewsListProvider extends ChangeNotifier {
   /// Fetch the list of all news.
   Future<void> fetchNewsList() async {
     _updateLoadingStatus(LoadingStatus.loading);
-    await _newsService.fetchNews().then((value) async {
-      _log.fine("News list of ${value.length} news retrieved successfully");
-      _newsList = value;
-      _updateLoadingStatus(LoadingStatus.loaded);
-    }, onError: (error) {
-      _log.warning("Error when retrieving news list ($error)");
-      _newsList = [];
-      AppUtils.handleServiceException(error, _messageProvider, _loginProvider);
-      _updateLoadingStatus(LoadingStatus.notLoaded);
-    });
+    await _newsService.fetchNews().then(
+      (value) async {
+        _log.fine("News list of ${value.length} news retrieved successfully");
+        _newsList = value;
+        _updateLoadingStatus(LoadingStatus.loaded);
+      },
+      onError: (error) {
+        _log.warning("Error when retrieving news list ($error)");
+        _newsList = [];
+        AppUtils.handleServiceException(error, _messageProvider, _loginProvider);
+        _updateLoadingStatus(LoadingStatus.notLoaded);
+      },
+    );
   }
 
   /// Notify all the registered listeners of this provider.

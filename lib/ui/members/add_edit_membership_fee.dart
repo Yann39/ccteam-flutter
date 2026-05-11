@@ -19,6 +19,7 @@
 
 import 'package:ccteam/models/member.dart';
 import 'package:ccteam/models/membership_fee.dart';
+import 'package:ccteam/providers/login_provider.dart';
 import 'package:ccteam/providers/member_detail_provider.dart';
 import 'package:ccteam/providers/message_provider.dart';
 import 'package:ccteam/services/members_service.dart';
@@ -132,6 +133,9 @@ class _AddEditMembershipFeeState extends State<AddEditMembershipFee> {
         await _membersService.updateMembershipFee(_fee!.id!, _year!, _amount!, _paid);
       }
       await Provider.of<MemberDetailProvider>(context, listen: false).refreshCurrentMember();
+      // also refresh the logged member if the fee belongs to them,
+      // so the home stats "Cotisation" pill updates without a manual reload
+      await _syncLoggedMemberIfSelf();
       Navigator.of(context).pop(AppString.membershipFeeSaved);
     } catch (e) {
       Provider.of<MessageProvider>(
@@ -139,6 +143,16 @@ class _AddEditMembershipFeeState extends State<AddEditMembershipFee> {
         listen: false,
       ).setMessage("${AppString.membershipFeeSaveFailed}: $e", MessageType.ERROR);
       setState(() => _loadingStatus = LoadingStatus.loaded);
+    }
+  }
+
+  /// If the membership fee being edited belongs to the logged-in user,
+  /// re-fetch their member record so providers depending on
+  /// `loggedMember.membershipFees` (home stats…) refresh.
+  Future<void> _syncLoggedMemberIfSelf() async {
+    final loginProvider = Provider.of<LoginProvider>(context, listen: false);
+    if (_member?.id != null && _member!.id == loginProvider.loggedMember?.id) {
+      await loginProvider.refreshLoggedMember();
     }
   }
 
@@ -159,6 +173,7 @@ class _AddEditMembershipFeeState extends State<AddEditMembershipFee> {
                 try {
                   await _membersService.deleteMembershipFee(_fee!.id!);
                   await Provider.of<MemberDetailProvider>(context, listen: false).refreshCurrentMember();
+                  await _syncLoggedMemberIfSelf();
                   Navigator.of(context).pop(AppString.membershipFeeDeleted);
                 } catch (e) {
                   Provider.of<MessageProvider>(

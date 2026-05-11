@@ -296,11 +296,6 @@ class AppString {
   static const String eventStartDateMandatory = 'La date de début est obligatoire';
   static const String eventEndDateMandatory = 'La date de fin est obligatoire';
   static const String eventDateNotValid = 'La date indiquée n\'est pas valide';
-  static const String eventDisplay1ItemTooltip = 'Afficher 1 seul événement par ligne';
-  static const String eventDisplay2ItemsTooltip = 'Afficher 2 événements par ligne';
-  static const String eventDisplay3ItemsTooltip = 'Afficher 3 événements par ligne';
-  static const String eventDisplay4ItemsTooltip = 'Afficher 4 événements par ligne';
-  static const String eventDisplay6ItemsTooltip = 'Afficher 6 événements par ligne';
   static const String eventDetailScreenTitle = 'Roulage';
   static const String eventsNotFound = 'Aucun événement trouvé';
   static const String eventsNotFoundForYear = 'Aucun événement trouvé pour cette année';
@@ -391,6 +386,23 @@ class AppString {
   static const String showAllForMonth = 'Voir tout le mois';
   static const String showAllForYear = 'Voir toute l\'année';
   static const String changePeriod = 'Changer de période';
+
+  // Home stats panel
+  static const String statsClub = 'Le club';
+  static const String statsProfile = 'Mon profil';
+  static const String statsMembers = 'membres';
+  static const String statsTracks = 'circuits';
+  static const String statsMyEvents = 'roulages';
+  static const String statsMyBikes = 'motos';
+  static const String statsMembershipFee = 'cotisation';
+  static const String statsMembershipPaid = 'Payée';
+  static const String statsMembershipUnpaid = 'À payer';
+  static const String statsMyKm = 'km estimés';
+  static const String statsNextRide = 'Prochain roulage';
+  static const String statsNextRideToday = 'C\'est aujourd\'hui !';
+  static const String statsNextRideTomorrow = 'Demain';
+  static const String statsNextRideInDays = 'Dans {0} jours';
+  static const String statsNoUpcomingRide = 'Aucun roulage prévu — inscrivez-vous !';
   static const String description = 'Description';
   static const String noParticipant = 'Aucun participant';
   static const String profilePhoto = 'Photo de profil';

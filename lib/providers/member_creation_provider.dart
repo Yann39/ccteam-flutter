@@ -84,34 +84,44 @@ class MemberCreationProvider extends ChangeNotifier {
   /// Create the current member being edited.
   Future<void> createMember() async {
     _updateStatus(LoadingStatus.loading);
-    await _membersService.createMember(_currentMember).then((value) async {
-      _log.fine("Member ${_currentMember.email} created successfully");
-      _currentMember = value;
-      _updateStatus(LoadingStatus.loaded);
-      _messageProvider.setMessage(AppString.memberCreated, MessageType.SUCCESS);
-    }, onError: (error) {
-      _log.warning("Error when creating member ($error)");
-      _messageProvider.setMessage(AppString.memberCreationFailed, MessageType.ERROR);
-      AppUtils.handleServiceException(error, _messageProvider, _loginProvider);
-      _updateStatus(LoadingStatus.notLoaded);
-    });
+    await _membersService
+        .createMember(_currentMember)
+        .then(
+          (value) async {
+            _log.fine("Member ${_currentMember.email} created successfully");
+            _currentMember = value;
+            _updateStatus(LoadingStatus.loaded);
+            _messageProvider.setMessage(AppString.memberCreated, MessageType.SUCCESS);
+          },
+          onError: (error) {
+            _log.warning("Error when creating member ($error)");
+            _messageProvider.setMessage(AppString.memberCreationFailed, MessageType.ERROR);
+            AppUtils.handleServiceException(error, _messageProvider, _loginProvider);
+            _updateStatus(LoadingStatus.notLoaded);
+          },
+        );
   }
 
   /// Create the current member being edited.
   Future<void> updateMember() async {
     _updateStatus(LoadingStatus.loading);
-    await _membersService.updateMember(_currentMember).then((value) {
-      _log.fine("Member successfully updated : ${_currentMember.email}");
-      _currentMember = value;
-      _updateStatus(LoadingStatus.loaded);
-      _messageProvider.setMessage(AppString.memberUpdated, MessageType.SUCCESS);
-    }, onError: (error) {
-      // todo here we should reload the member as it has not been updated in db ?
-      _log.warning("Error when updating member ($error)");
-      _messageProvider.setMessage(AppString.memberUpdateFailed, MessageType.ERROR);
-      AppUtils.handleServiceException(error, _messageProvider, _loginProvider);
-      _updateStatus(LoadingStatus.notLoaded);
-    });
+    await _membersService
+        .updateMember(_currentMember)
+        .then(
+          (value) {
+            _log.fine("Member successfully updated : ${_currentMember.email}");
+            _currentMember = value;
+            _updateStatus(LoadingStatus.loaded);
+            _messageProvider.setMessage(AppString.memberUpdated, MessageType.SUCCESS);
+          },
+          onError: (error) {
+            // todo here we should reload the member as it has not been updated in db ?
+            _log.warning("Error when updating member ($error)");
+            _messageProvider.setMessage(AppString.memberUpdateFailed, MessageType.ERROR);
+            AppUtils.handleServiceException(error, _messageProvider, _loginProvider);
+            _updateStatus(LoadingStatus.notLoaded);
+          },
+        );
   }
 
   /// Assign (or clear) the executive board role of the current member.
@@ -120,19 +130,24 @@ class MemberCreationProvider extends ChangeNotifier {
     _updateStatus(LoadingStatus.loading);
     await _membersService
         .setBoardRole(_currentMember, newBoardRole)
-        .then((value) {
-      _log.fine("Board role of ${_currentMember.email} set to $newBoardRole");
-      _currentMember.boardRole = value.boardRole;
-      _updateStatus(LoadingStatus.loaded);
-    }, onError: (error) {
-      _log.warning("Error when setting board role ($error)");
-      _messageProvider.setMessage(
-        AppString.memberUpdateFailed,
-        MessageType.ERROR,
-      );
-      AppUtils.handleServiceException(error, _messageProvider, _loginProvider);
-      _updateStatus(LoadingStatus.notLoaded);
-    });
+        .then(
+          (value) async {
+            _log.fine("Board role of ${_currentMember.email} set to $newBoardRole");
+            _currentMember.boardRole = value.boardRole;
+            _updateStatus(LoadingStatus.loaded);
+            // if the admin just changed their own board role, refresh
+            // LoginProvider so the cached loggedMember reflects it
+            if (_currentMember.id == _loginProvider.loggedMember?.id) {
+              await _loginProvider.refreshLoggedMember();
+            }
+          },
+          onError: (error) {
+            _log.warning("Error when setting board role ($error)");
+            _messageProvider.setMessage(AppString.memberUpdateFailed, MessageType.ERROR);
+            AppUtils.handleServiceException(error, _messageProvider, _loginProvider);
+            _updateStatus(LoadingStatus.notLoaded);
+          },
+        );
   }
 
   /// Notify all the registered listeners of this provider.

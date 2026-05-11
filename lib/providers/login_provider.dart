@@ -673,6 +673,31 @@ class LoginProvider extends ChangeNotifier {
     }
   }
 
+  /// Re-fetch the logged member from the backend and rebind it.
+  ///
+  /// Used as a "refresh everything that hangs off the user" hook
+  /// after any mutation that affects the member's associated data —
+  /// event registrations, membership fees, bikes, board role, etc.
+  /// Widgets bound to [LoginProvider] (notably the home stats panel)
+  /// then rebuild with the fresh `loggedMember`, and proxy providers
+  /// downstream of `LoginProvider` also re-pull their state via their
+  /// `updateLoginProvider` hook.
+  ///
+  /// Safe to await: silently no-ops when no member is currently
+  /// logged in, and swallows fetch failures (we don't want a flaky
+  /// refresh to bubble up over a successful mutation).
+  Future<void> refreshLoggedMember() async {
+    final String? email = _loggedMember?.email;
+    if (email == null) return;
+    try {
+      final Member updated = await _membersService.getMemberByEmail(email);
+      _loggedMember = updated;
+      _notifyListeners();
+    } catch (e, st) {
+      _log.warning("Failed to refresh logged member: $e", e, st);
+    }
+  }
+
   /// Log out the current member.
   Future<void> logoutMember() async {
     _log.info("Logging out user ${_loggedMember?.email}");

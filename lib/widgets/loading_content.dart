@@ -35,22 +35,30 @@ class LoadingContent extends StatelessWidget {
   final Widget child;
   final LoadingStatus loadingStatus;
 
-  static final Widget _loader = Center(
-    child: SizedBox(
-      child: CircularProgressIndicator(),
-      height: 20.0,
-      width: 20.0,
-    ),
-  );
+  static final Widget _loader = Center(child: SizedBox(child: CircularProgressIndicator(), height: 20.0, width: 20.0));
+
+  /// Centered, padded text used for the `notLoaded` and `empty` states.
+  Widget _centeredMessage(String message) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(24.0),
+        child: Text(
+          message,
+          textAlign: TextAlign.center,
+          style: const TextStyle(color: Colors.black87),
+        ),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     if (loadingStatus == LoadingStatus.notLoaded) {
-      return Text(defaultText);
+      return _centeredMessage(defaultText);
     } else if (loadingStatus == LoadingStatus.loading) {
       return _loader;
     } else if (loadingStatus == LoadingStatus.empty) {
-      return Text(emptyText);
+      return _centeredMessage(emptyText);
     } else {
       return child;
     }

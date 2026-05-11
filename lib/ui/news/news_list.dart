@@ -18,15 +18,16 @@
  */
 
 import 'package:ccteam/models/news.dart';
+import 'package:ccteam/providers/login_provider.dart';
 import 'package:ccteam/providers/news_creation_provider.dart';
 import 'package:ccteam/providers/news_detail_provider.dart';
 import 'package:ccteam/providers/news_list_provider.dart';
-import 'package:ccteam/providers/login_provider.dart';
 import 'package:ccteam/ui/main/main_action_menu.dart';
 import 'package:ccteam/ui/main/main_drawer.dart';
 import 'package:ccteam/ui/news/news_card.dart';
 import 'package:ccteam/utils/custom_decorations.dart';
 import 'package:ccteam/utils/strings.dart';
+import 'package:ccteam/widgets/home_stats.dart';
 import 'package:ccteam/widgets/loading_content.dart';
 import 'package:flutter/material.dart';
 import 'package:logging/logging.dart';
@@ -38,10 +39,7 @@ class NewsList extends StatelessWidget {
   /// Navigate to the news creation form screen to create a new news.
   _navigateToAddNewsScreen(BuildContext context) async {
     // set a new news to be created
-    Provider.of<NewsCreationProvider>(
-      context,
-      listen: false,
-    ).setNewsToEdit(new News());
+    Provider.of<NewsCreationProvider>(context, listen: false).setNewsToEdit(new News());
 
     // navigate to the news creation form screen
     Navigator.pushNamed(context, '/addEditNews');
@@ -62,14 +60,8 @@ class NewsList extends StatelessWidget {
 
   Widget build(BuildContext context) {
     _log.info("Building News list...");
-    final NewsListProvider _newsListProvider = Provider.of<NewsListProvider>(
-      context,
-      listen: true,
-    );
-    final LoginProvider _loginProvider = Provider.of<LoginProvider>(
-      context,
-      listen: false,
-    );
+    final NewsListProvider _newsListProvider = Provider.of<NewsListProvider>(context, listen: true);
+    final LoginProvider _loginProvider = Provider.of<LoginProvider>(context, listen: false);
 
     return Scaffold(
       appBar: AppBar(
@@ -96,21 +88,18 @@ class NewsList extends StatelessWidget {
                 backgroundColor: Colors.transparent,
                 pinned: false,
                 flexibleSpace: Container(
-                  child: FlexibleSpaceBar(
-                    background: Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Image.asset(
-                        'images/ccteam6.png',
-                        fit: BoxFit.contain,
-                      ),
-                    ),
-                  ),
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
                       colors: [Colors.white, Colors.blue[100]!],
                       begin: FractionalOffset(0.0, 0.0),
                       end: FractionalOffset(0.0, 1.0),
                       stops: [0.0, 1.0],
+                    ),
+                  ),
+                  child: FlexibleSpaceBar(
+                    background: Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Image.asset('images/ccteam6.png', fit: BoxFit.contain),
                     ),
                   ),
                 ),
@@ -121,16 +110,12 @@ class NewsList extends StatelessWidget {
             decoration: CustomDecorations.mainContent,
             child: Column(
               children: <Widget>[
+                const HomeStats(),
                 Container(
                   padding: EdgeInsets.all(8),
                   child: Text(
                     AppString.news,
-                    style: TextStyle(
-                      color: Colors.black87,
-                      fontSize: 16,
-                      fontFamily: 'Barbatrick',
-                      letterSpacing: 2,
-                    ),
+                    style: TextStyle(color: Colors.black87, fontSize: 16, fontFamily: 'Barbatrick', letterSpacing: 2),
                   ),
                 ),
                 Expanded(
@@ -145,11 +130,7 @@ class NewsList extends StatelessWidget {
                         itemBuilder: (context, index) {
                           return InkWell(
                             child: NewsCard(index),
-                            onTap:
-                                () => _navigateToNewsDetailScreen(
-                                  context,
-                                  _newsListProvider.newsList[index],
-                                ),
+                            onTap: () => _navigateToNewsDetailScreen(context, _newsListProvider.newsList[index]),
                           );
                         },
                       ),

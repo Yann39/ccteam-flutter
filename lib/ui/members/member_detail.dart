@@ -54,11 +54,6 @@ class MemberDetail extends StatelessWidget {
   // size (width and height) of an event timeline card
   final double _eventCardSize = 90;
 
-  /// Display or hide the Sliver app bar title depending on the scroll offset
-  bool get _showTitle {
-    return _scrollController.hasClients && _scrollController.offset > _expandedHeight - kToolbarHeight;
-  }
-
   /// Navigate to the news creation form screen to edit the specified [member].
   void _navigateToEditMemberScreen(BuildContext context, Member member) async {
     // set the member to be edited
@@ -683,14 +678,6 @@ class MemberDetail extends StatelessWidget {
                     SliverAppBar(
                       pinned: true,
                       expandedHeight: _expandedHeight,
-                      title: _showTitle
-                          ? Text(
-                              _memberDetailProvider.currentMember!.firstName! +
-                                  ' ' +
-                                  _memberDetailProvider.currentMember!.lastName!,
-                              overflow: TextOverflow.ellipsis,
-                            )
-                          : null,
                       flexibleSpace: LayoutBuilder(
                         builder: (BuildContext context, BoxConstraints constraints) {
                           final FlexibleSpaceBarSettings settings = context

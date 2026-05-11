@@ -87,11 +87,7 @@ class EventDetailProvider extends ChangeNotifier {
           },
           onError: (error) {
             _log.warning("Error when retrieving event ($error)");
-            AppUtils.handleServiceException(
-              error,
-              _messageProvider,
-              _loginProvider,
-            );
+            AppUtils.handleServiceException(error, _messageProvider, _loginProvider);
             _updateStatus(LoadingStatus.notLoaded);
           },
         );
@@ -108,23 +104,13 @@ class EventDetailProvider extends ChangeNotifier {
             // because _currentEvent is initialized before each display of the EventDetail view,
             // setting _currentEvent to null would require EventDetail view to handle a null event
             _currentEvent = value;
-            _messageProvider.setMessage(
-              AppString.eventDeleted,
-              MessageType.SUCCESS,
-            );
+            _messageProvider.setMessage(AppString.eventDeleted, MessageType.SUCCESS);
             _notifyListeners();
           },
           onError: (error) {
             _log.warning("Failed to delete event ($error)");
-            _messageProvider.setMessage(
-              AppString.eventDeletionFailed,
-              MessageType.ERROR,
-            );
-            AppUtils.handleServiceException(
-              error,
-              _messageProvider,
-              _loginProvider,
-            );
+            _messageProvider.setMessage(AppString.eventDeletionFailed, MessageType.ERROR);
+            AppUtils.handleServiceException(error, _messageProvider, _loginProvider);
             _notifyListeners();
           },
         );
@@ -147,20 +133,14 @@ class EventDetailProvider extends ChangeNotifier {
         .fetchEventsByTrack(track.id!)
         .then(
           (value) async {
-            _log.fine(
-              "${value.length} events for track ${track.id} retrieved successfully",
-            );
+            _log.fine("${value.length} events for track ${track.id} retrieved successfully");
             _allEvents = value;
             _updateStatus(LoadingStatus.loaded);
           },
           onError: (error) {
             _log.warning("Error when retrieving track events ($error)");
             _allEvents = [];
-            AppUtils.handleServiceException(
-              error,
-              _messageProvider,
-              _loginProvider,
-            );
+            AppUtils.handleServiceException(error, _messageProvider, _loginProvider);
             _updateStatus(LoadingStatus.notLoaded);
           },
         );
@@ -182,51 +162,48 @@ class EventDetailProvider extends ChangeNotifier {
   }
 
   /// Register the specified [member] to the specified [event].
+  /// On success we also refresh the logged member so any UI bound to
+  /// logged member events (notably the home stats panel) picks
+  /// up the new registration without a manual reload.
   Future<void> registerToEvent(Event event, int memberId) async {
     _log.fine("Registering member $memberId to event ${event.title}...");
     await _eventsService
         .registerToEvent(event.id!, memberId)
         .then(
-          (value) {
+          (value) async {
             _log.fine("Registered successfully to event : ${event.title}");
             _updateEventInList(value);
-            _messageProvider.setMessage(
-              AppString.eventRegistered,
-              MessageType.SUCCESS,
-            );
+            if (_loginProvider.loggedMember?.id == memberId) {
+              await _loginProvider.refreshLoggedMember();
+            }
+            _messageProvider.setMessage(AppString.eventRegistered, MessageType.SUCCESS);
           },
           onError: (error) {
             _log.warning("Failed to register to event ($error)");
-            AppUtils.handleServiceException(
-              error,
-              _messageProvider,
-              _loginProvider,
-            );
+            AppUtils.handleServiceException(error, _messageProvider, _loginProvider);
           },
         );
   }
 
   /// Unregister the specified [member] from the specified [event].
+  /// Mirrors [registerToEvent] — refreshes the logged member so the
+  /// stats panel reflects the drop immediately.
   Future<void> unregisterFromEvent(Event event, int memberId) async {
     _log.fine("Unregistering member $memberId from event ${event.title}...");
     await _eventsService
         .unregisterFromEvent(event.id!, memberId)
         .then(
-          (value) {
+          (value) async {
             _log.fine("Unregistered successfully from event : ${event.title}");
             _updateEventInList(value);
-            _messageProvider.setMessage(
-              AppString.eventUnregistered,
-              MessageType.SUCCESS,
-            );
+            if (_loginProvider.loggedMember?.id == memberId) {
+              await _loginProvider.refreshLoggedMember();
+            }
+            _messageProvider.setMessage(AppString.eventUnregistered, MessageType.SUCCESS);
           },
           onError: (error) {
             _log.warning("Failed to unregister from event ($error)");
-            AppUtils.handleServiceException(
-              error,
-              _messageProvider,
-              _loginProvider,
-            );
+            AppUtils.handleServiceException(error, _messageProvider, _loginProvider);
           },
         );
   }
