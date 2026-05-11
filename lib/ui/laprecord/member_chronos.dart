@@ -24,6 +24,7 @@ import 'package:ccteam/providers/record_list_provider.dart';
 import 'package:ccteam/utils/custom_decorations.dart';
 import 'package:ccteam/utils/custom_icons.dart';
 import 'package:ccteam/utils/date_utils.dart';
+import 'package:ccteam/utils/string_utils.dart';
 import 'package:ccteam/utils/strings.dart';
 import 'package:ccteam/utils/track_utils.dart';
 import 'package:ccteam/widgets/info_banner.dart';
@@ -166,7 +167,7 @@ class _MemberChronosState extends State<MemberChronos> {
                                         Expanded(
                                           child: Text(
                                             record.bike != null
-                                                ? "${record.bike!.manufacturer} ${record.bike!.modelName}"
+                                                ? "${StringUtils.capitalize(record.bike!.manufacturer ?? '')} ${record.bike!.modelName ?? ''}"
                                                 : AppString.notDefined,
                                             style: TextStyle(color: Colors.white),
                                             maxLines: 1,

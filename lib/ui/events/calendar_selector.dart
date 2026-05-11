@@ -17,6 +17,7 @@
  * along with CCTeam. If not, see <http://www.gnu.org/licenses/>.
  */
 
+import 'package:ccteam/utils/strings.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
@@ -56,6 +57,17 @@ class CalendarSelectorState extends State<CalendarSelector> with TickerProviderS
   DateTime? _selectedDate; // the current selected date (default current date)
   DateTime? _initDate; // to remember the initial date
 
+  /// When set to `month` or `year`, the user activated the matching
+  /// "Voir tout..." chip and the filter applies to the whole period
+  /// (rather than to a single day / month). In that state:
+  ///  - no individual cell is rendered as "selected" (which would be
+  ///    misleading since the events list shows everything for the
+  ///    period, not a specific cell),
+  ///  - the chip itself is rendered in an "active" filled style.
+  /// Cleared as soon as the user taps a regular cell or navigates
+  /// (page, chevrons, drill-up / drill-down).
+  CalendarMode? _periodFilterMode;
+
   // hack so we can use paging in both directions
   final PageController _pageController = new PageController(initialPage: 5000);
 
@@ -86,7 +98,15 @@ class CalendarSelectorState extends State<CalendarSelector> with TickerProviderS
   /// Capitalize the specified [string]
   String capitalize(String string) => string[0].toUpperCase() + string.substring(1);
 
-  /// Build the top bar content widget according to the current display mode
+  /// Returns true if [a] and [b] fall on the same calendar day.
+  bool _isSameDay(DateTime a, DateTime b) => a.year == b.year && a.month == b.month && a.day == b.day;
+
+  /// Returns true if [a] and [b] fall in the same calendar month.
+  bool _isSameMonth(DateTime a, DateTime b) => a.year == b.year && a.month == b.month;
+
+  /// Build the top bar content widget according to the current display mode.
+  /// In modes that allow drilling up (month/week → year → decade), the
+  /// title is tappable and gets a small caret + tooltip to advertise it.
   Widget getTopWidget() {
     switch (_calendarMode) {
       case CalendarMode.decade:
@@ -96,33 +116,48 @@ class CalendarSelectorState extends State<CalendarSelector> with TickerProviderS
           style: TextStyle(color: Colors.black87),
         );
       case CalendarMode.year:
-        return InkWell(
+        return _buildDrillUpTitle(
+          label: DateFormat('yyyy', widget.locale).format(_centerDate!),
           onTap: () => setCalendarMode(CalendarMode.decade, _centerDate!),
-          child: Text(
-            DateFormat('yyyy', widget.locale).format(_centerDate!),
-            textScaler: TextScaler.linear(1.2),
-            style: TextStyle(color: Colors.black87),
-          ),
         );
       case CalendarMode.month:
-        return InkWell(
+        return _buildDrillUpTitle(
+          label: capitalize(DateFormat('MMMM yyyy', widget.locale).format(_centerDate!)),
           onTap: () => setCalendarMode(CalendarMode.year, _centerDate!),
-          child: Text(
-            capitalize(DateFormat('MMMM yyyy', widget.locale).format(_centerDate!)),
-            textScaler: TextScaler.linear(1.2),
-            style: TextStyle(color: Colors.black87),
-          ),
         );
       case CalendarMode.week:
-        return InkWell(
+        return _buildDrillUpTitle(
+          label: capitalize(DateFormat('MMMM yyyy', widget.locale).format(_centerDate!)),
           onTap: () => setCalendarMode(CalendarMode.year, _centerDate!),
-          child: Text(
-            capitalize(DateFormat('MMMM yyyy', widget.locale).format(_centerDate!)),
-            textScaler: TextScaler.linear(1.2),
-            style: TextStyle(color: Colors.black87),
-          ),
         );
     }
+  }
+
+  /// Tappable title with a caret to make the "tap to zoom out" affordance
+  /// discoverable (was previously a hidden gesture).
+  Widget _buildDrillUpTitle({required String label, required VoidCallback onTap}) {
+    return Tooltip(
+      message: AppString.changePeriod,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(4.0),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 6.0, vertical: 2.0),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              Text(
+                label,
+                textScaler: TextScaler.linear(1.2),
+                style: const TextStyle(color: Colors.black87),
+              ),
+              const SizedBox(width: 2),
+              const Icon(Icons.arrow_drop_down, size: 22, color: Colors.black54),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 
   /// Get calendar bottom content depending on current calendar mode and expandable option
@@ -130,13 +165,88 @@ class CalendarSelectorState extends State<CalendarSelector> with TickerProviderS
     if (widget.expandable) {
       if (_calendarMode == CalendarMode.week) {
         return InkWell(
-            onTap: () => setCalendarMode(CalendarMode.month, _centerDate!), child: Icon(Icons.keyboard_arrow_down));
+          onTap: () => setCalendarMode(CalendarMode.month, _centerDate!),
+          child: Icon(Icons.keyboard_arrow_down),
+        );
       } else if (_calendarMode == CalendarMode.month) {
         return InkWell(
-            onTap: () => setCalendarMode(CalendarMode.week, _centerDate!), child: Icon(Icons.keyboard_arrow_up));
+          onTap: () => setCalendarMode(CalendarMode.week, _centerDate!),
+          child: Icon(Icons.keyboard_arrow_up),
+        );
       }
     }
     return SizedBox();
+  }
+
+  /// "Show all events of the current period" action chip — only shown in
+  /// modes where filtering by the whole period makes sense (month/year).
+  /// Fires [widget.onDateSelected] with the matching [CalendarMode] so
+  /// the host page can call the correct backend method.
+  ///
+  /// When tapped we also clear the single-cell selection and switch the
+  /// chip to its "active" state, so the user gets immediate confirmation
+  /// that the filter is on the whole period — without a stray cell
+  /// highlight giving the false impression that only that cell is
+  /// filtered.
+  Widget _buildShowAllChip() {
+    if (_calendarMode == CalendarMode.month) {
+      return _ShowAllChip(
+        label: AppString.showAllForMonth,
+        icon: Icons.calendar_view_month,
+        active: _periodFilterMode == CalendarMode.month,
+        onTap: () {
+          setState(() {
+            _periodFilterMode = CalendarMode.month;
+            _selectedDate = null;
+          });
+          widget.onDateSelected(_centerDate, CalendarMode.month);
+        },
+      );
+    }
+    if (_calendarMode == CalendarMode.year) {
+      return _ShowAllChip(
+        label: AppString.showAllForYear,
+        icon: Icons.calendar_today,
+        active: _periodFilterMode == CalendarMode.year,
+        onTap: () {
+          setState(() {
+            _periodFilterMode = CalendarMode.year;
+            _selectedDate = null;
+          });
+          widget.onDateSelected(_centerDate, CalendarMode.year);
+        },
+      );
+    }
+    return const SizedBox.shrink();
+  }
+
+  /// "Aujourd'hui" chip — a one-tap shortcut that both recenters the
+  /// calendar on today AND filters events to today. Hidden only when
+  /// today is already the currently-selected day on the currently-
+  /// visible month, so the chip would otherwise be a no-op.
+  Widget _buildTodayChip() {
+    final DateTime now = DateTime.now();
+    final bool alreadyOnToday =
+        _selectedDate != null && _isSameDay(_selectedDate!, now) && _isSameMonth(_centerDate!, now);
+    if (alreadyOnToday) return const SizedBox.shrink();
+    return _ShowAllChip(
+      label: AppString.today,
+      icon: Icons.today,
+      onTap: () {
+        // recenter, select today, drop any active period filter, and
+        // fire the day-level filter so the events list narrows down to today's events
+        setState(() {
+          _pageController.jumpToPage(5000);
+          _initDate = now;
+          _centerDate = now;
+          _selectedDate = now;
+          _periodFilterMode = null;
+          _animationController.reset();
+          _animationController.forward();
+        });
+        widget.onDateSelected(now, CalendarMode.week);
+      },
+    );
   }
 
   /// Get calendar content depending on current calendar mode
@@ -148,7 +258,9 @@ class CalendarSelectorState extends State<CalendarSelector> with TickerProviderS
         return SingleChildScrollView(physics: NeverScrollableScrollPhysics(), child: getYearWidgets(_centerDate!.year));
       case CalendarMode.month:
         return SingleChildScrollView(
-            physics: NeverScrollableScrollPhysics(), child: getMonthWidgets(_centerDate!.year, _centerDate!.month));
+          physics: NeverScrollableScrollPhysics(),
+          child: getMonthWidgets(_centerDate!.year, _centerDate!.month),
+        );
       case CalendarMode.week:
         return getWeekWidgets(_centerDate!);
     }
@@ -158,6 +270,7 @@ class CalendarSelectorState extends State<CalendarSelector> with TickerProviderS
   Widget getDecadeWidgets(int year) {
     final List<Widget> list = [];
     final DateFormat df = DateFormat('y', widget.locale);
+    final DateTime now = DateTime.now();
 
     // for next 10 years
     for (int i = 0; i < 12; i++) {
@@ -167,6 +280,8 @@ class CalendarSelectorState extends State<CalendarSelector> with TickerProviderS
       final int nbEvents = widget.eventsDates != null
           ? widget.eventsDates!.values.where((ed) => df.format(ed) == df.format(dt)).length
           : 0;
+      final bool isSelected = _selectedDate != null && df.format(_selectedDate!) == df.format(dt);
+      final bool isCurrent = dt.year == now.year;
 
       list.add(
         InkWell(
@@ -175,27 +290,17 @@ class CalendarSelectorState extends State<CalendarSelector> with TickerProviderS
             height: 48,
             width: 45,
             padding: EdgeInsets.symmetric(vertical: 9.0, horizontal: 2.0),
-            decoration: (df.format(_selectedDate!) == df.format(dt))
-                ? BoxDecoration(color: Colors.white54, borderRadius: BorderRadius.circular(4.0))
-                : null,
+            decoration: _cellDecoration(isSelected: isSelected, isCurrent: isCurrent),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.start,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: <Widget>[
-                Text(df.format(dt),
-                    textScaler: TextScaler.linear(0.9),
-                    style: TextStyle(color: i < 10 ? Colors.black87 : Colors.black45)),
-                nbEvents > 0
-                    ? Container(
-                        padding: EdgeInsets.symmetric(horizontal: 1.0),
-                        decoration: BoxDecoration(color: Colors.red[700], borderRadius: BorderRadius.circular(2.0)),
-                        child: Text(
-                          "$nbEvents",
-                          textScaler: TextScaler.linear(0.6),
-                          style: TextStyle(fontWeight: FontWeight.bold),
-                        ),
-                      )
-                    : Container(),
+                Text(
+                  df.format(dt),
+                  textScaler: TextScaler.linear(0.9),
+                  style: TextStyle(color: i < 10 ? Colors.black87 : Colors.black45),
+                ),
+                if (nbEvents > 0) _eventCountBadge(nbEvents),
               ],
             ),
           ),
@@ -206,21 +311,25 @@ class CalendarSelectorState extends State<CalendarSelector> with TickerProviderS
     return Column(
       children: <Widget>[
         Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: list.getRange(0, 3).toList()),
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: list.getRange(0, 3).toList(),
+        ),
         Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: list.getRange(3, 6).toList()),
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: list.getRange(3, 6).toList(),
+        ),
         Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: list.getRange(6, 9).toList()),
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: list.getRange(6, 9).toList(),
+        ),
         Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: list.getRange(9, 12).toList()),
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: list.getRange(9, 12).toList(),
+        ),
       ],
     );
   }
@@ -229,6 +338,7 @@ class CalendarSelectorState extends State<CalendarSelector> with TickerProviderS
   Widget getYearWidgets(int year) {
     final List<Widget> list = [];
     final DateFormat df = DateFormat('My', widget.locale);
+    final DateTime now = DateTime.now();
 
     // for each month of the year
     for (int i = 1; i < 13; i++) {
@@ -238,6 +348,8 @@ class CalendarSelectorState extends State<CalendarSelector> with TickerProviderS
       final int nbEvents = widget.eventsDates != null
           ? widget.eventsDates!.values.where((ed) => df.format(ed) == df.format(dt)).length
           : 0;
+      final bool isSelected = _selectedDate != null && df.format(_selectedDate!) == df.format(dt);
+      final bool isCurrent = _isSameMonth(dt, now);
 
       list.add(
         InkWell(
@@ -246,26 +358,17 @@ class CalendarSelectorState extends State<CalendarSelector> with TickerProviderS
             height: 48,
             width: 45,
             padding: EdgeInsets.symmetric(vertical: 8.0, horizontal: 2.0),
-            decoration: (df.format(_selectedDate!) == df.format(dt))
-                ? BoxDecoration(color: Colors.white54, borderRadius: BorderRadius.circular(4.0))
-                : null,
+            decoration: _cellDecoration(isSelected: isSelected, isCurrent: isCurrent),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.start,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: <Widget>[
-                Text(DateFormat('MMM', widget.locale).format(dt),
-                    textScaler: TextScaler.linear(0.9), style: TextStyle(color: Colors.black87)),
-                nbEvents > 0
-                    ? Container(
-                        padding: EdgeInsets.symmetric(horizontal: 1.0),
-                        decoration: BoxDecoration(color: Colors.red[700], borderRadius: BorderRadius.circular(2.0)),
-                        child: Text(
-                          "$nbEvents",
-                          textScaler: TextScaler.linear(0.6),
-                          style: TextStyle(fontWeight: FontWeight.bold),
-                        ),
-                      )
-                    : Container(),
+                Text(
+                  DateFormat('MMM', widget.locale).format(dt),
+                  textScaler: TextScaler.linear(0.9),
+                  style: TextStyle(color: Colors.black87),
+                ),
+                if (nbEvents > 0) _eventCountBadge(nbEvents),
               ],
             ),
           ),
@@ -276,17 +379,20 @@ class CalendarSelectorState extends State<CalendarSelector> with TickerProviderS
     return Column(
       children: <Widget>[
         Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: list.getRange(0, 4).toList()),
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: list.getRange(0, 4).toList(),
+        ),
         Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: list.getRange(4, 8).toList()),
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: list.getRange(4, 8).toList(),
+        ),
         Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: list.getRange(8, 12).toList()),
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: list.getRange(8, 12).toList(),
+        ),
       ],
     );
   }
@@ -295,6 +401,7 @@ class CalendarSelectorState extends State<CalendarSelector> with TickerProviderS
   Widget getMonthWidgets(int year, int month) {
     final List<DateTime?> dates = [];
     final DateFormat df = DateFormat('dMy', widget.locale);
+    final DateTime now = DateTime.now();
 
     // add days from previous month
     final DateTime firstDayCurrMonth = new DateTime(year, month, 1);
@@ -336,6 +443,8 @@ class CalendarSelectorState extends State<CalendarSelector> with TickerProviderS
       final int nbEvents = widget.eventsDates != null
           ? widget.eventsDates!.values.where((ed) => dt != null && df.format(ed) == df.format(dt)).length
           : 0;
+      final bool isSelected = dt != null && _selectedDate != null && df.format(_selectedDate!) == df.format(dt);
+      final bool isCurrent = dt != null && _isSameDay(dt, now);
 
       list.add(
         dt == null
@@ -346,26 +455,13 @@ class CalendarSelectorState extends State<CalendarSelector> with TickerProviderS
                   width: 34,
                   height: 38,
                   padding: EdgeInsets.symmetric(vertical: 3.0, horizontal: 2.0),
-                  decoration: (df.format(_selectedDate!) == df.format(dt))
-                      ? BoxDecoration(color: Colors.white54, borderRadius: BorderRadius.circular(4.0))
-                      : null,
+                  decoration: _cellDecoration(isSelected: isSelected, isCurrent: isCurrent),
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.start,
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: <Widget>[
                       Text(DateFormat('dd', widget.locale).format(dt), style: TextStyle(color: getDayColor(dt, false))),
-                      nbEvents > 0
-                          ? Container(
-                              padding: EdgeInsets.symmetric(horizontal: 1.0),
-                              decoration:
-                                  BoxDecoration(color: Colors.red[700], borderRadius: BorderRadius.circular(2.0)),
-                              child: Text(
-                                "$nbEvents",
-                                textScaler: TextScaler.linear(0.6),
-                                style: TextStyle(fontWeight: FontWeight.bold),
-                              ),
-                            )
-                          : Container(),
+                      if (nbEvents > 0) _eventCountBadge(nbEvents),
                     ],
                   ),
                 ),
@@ -392,28 +488,33 @@ class CalendarSelectorState extends State<CalendarSelector> with TickerProviderS
     }
 
     final List<Widget> rows = [];
-    rows.add(Row(
+    rows.add(
+      Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         crossAxisAlignment: CrossAxisAlignment.start,
-        children: cols));
+        children: cols,
+      ),
+    );
 
     // days number rows
     for (int i = 0; i < list.length ~/ 7; i++) {
-      rows.add(Row(
+      rows.add(
+        Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           crossAxisAlignment: CrossAxisAlignment.start,
-          children: list.getRange(i * 7, i * 7 + 7).toList()));
+          children: list.getRange(i * 7, i * 7 + 7).toList(),
+        ),
+      );
     }
 
-    return Column(
-      children: rows,
-    );
+    return Column(children: rows);
   }
 
   /// Build the widget representing the 7 days around the specified [date]
   Widget getWeekWidgets(DateTime date) {
     final List<Widget> list = [];
     final DateFormat df = DateFormat('dMy', widget.locale);
+    final DateTime now = DateTime.now();
 
     // add day and each 3 days around it
     final List<DateTime> dates = [];
@@ -430,6 +531,8 @@ class CalendarSelectorState extends State<CalendarSelector> with TickerProviderS
       final int nbEvents = widget.eventsDates != null
           ? widget.eventsDates!.values.where((ed) => df.format(ed) == df.format(dt)).length
           : 0;
+      final bool isSelected = _selectedDate != null && df.format(_selectedDate!) == df.format(dt);
+      final bool isCurrent = _isSameDay(dt, now);
 
       list.add(
         InkWell(
@@ -437,13 +540,7 @@ class CalendarSelectorState extends State<CalendarSelector> with TickerProviderS
           child: Container(
             height: 45,
             width: 45,
-            //padding: EdgeInsets.symmetric(vertical: 3.0, horizontal: 1.0),
-            decoration: (df.format(_selectedDate!) == df.format(dt))
-                ? BoxDecoration(
-                    /*border: Border.all(color: Colors.red[700])*/
-                    color: Colors.white54,
-                    borderRadius: BorderRadius.circular(4.0))
-                : null,
+            decoration: _cellDecoration(isSelected: isSelected, isCurrent: isCurrent),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.start,
               crossAxisAlignment: CrossAxisAlignment.center,
@@ -457,17 +554,7 @@ class CalendarSelectorState extends State<CalendarSelector> with TickerProviderS
                   DateFormat('dd', widget.locale).format(dt),
                   style: TextStyle(fontWeight: FontWeight.bold, color: getDayColor(dt, false)),
                 ),
-                nbEvents > 0
-                    ? Container(
-                        padding: EdgeInsets.symmetric(horizontal: 1.0),
-                        decoration: BoxDecoration(color: Colors.red[700], borderRadius: BorderRadius.circular(2.0)),
-                        child: Text(
-                          "$nbEvents",
-                          textScaler: TextScaler.linear(0.6),
-                          style: TextStyle(fontWeight: FontWeight.bold),
-                        ),
-                      )
-                    : Container(),
+                if (nbEvents > 0) _eventCountBadge(nbEvents),
               ],
             ),
           ),
@@ -476,7 +563,10 @@ class CalendarSelectorState extends State<CalendarSelector> with TickerProviderS
     }
 
     return Row(
-        mainAxisAlignment: MainAxisAlignment.center, crossAxisAlignment: CrossAxisAlignment.start, children: list);
+      mainAxisAlignment: MainAxisAlignment.center,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: list,
+    );
   }
 
   /// Update the current center date according to paging [position]
@@ -505,6 +595,7 @@ class CalendarSelectorState extends State<CalendarSelector> with TickerProviderS
       _initDate = date;
       _centerDate = date;
       _calendarMode = calendarMode;
+      _periodFilterMode = null;
       _animationController.reset();
       _animationController.forward();
     });
@@ -524,8 +615,10 @@ class CalendarSelectorState extends State<CalendarSelector> with TickerProviderS
   onSelectDate(date) {
     setState(() {
       _centerDate = date;
-      _selectedDate = _selectedDate!.compareTo(date) == 0 ? null : date;
-      widget.onDateSelected(_selectedDate, _calendarMode);
+      final bool sameAsBefore = _selectedDate != null && _selectedDate!.compareTo(date) == 0;
+      _selectedDate = sameAsBefore ? null : date;
+      _periodFilterMode = null;
+      widget.onDateSelected(_selectedDate, CalendarMode.week);
     });
   }
 
@@ -542,82 +635,208 @@ class CalendarSelectorState extends State<CalendarSelector> with TickerProviderS
     }
   }
 
+  /// Cell decoration that combines "selected" and "today" visual cues.
+  /// Selected wins on background; "today" adds a coloured border so the
+  /// current day stays distinguishable even when another cell is selected.
+  BoxDecoration? _cellDecoration({required bool isSelected, required bool isCurrent}) {
+    if (!isSelected && !isCurrent) return null;
+    return BoxDecoration(
+      color: isSelected ? Colors.white.withAlpha(200) : null,
+      borderRadius: BorderRadius.circular(6.0),
+      border: Border.all(color: isCurrent ? Colors.red[700]! : Colors.transparent, width: isCurrent ? 1.5 : 0),
+      boxShadow: isSelected
+          ? [BoxShadow(color: Colors.black.withValues(alpha: 0.12), blurRadius: 3.0, offset: const Offset(0, 1))]
+          : null,
+    );
+  }
+
+  /// Compact "this cell has events" indicator: a small red dot, with
+  /// the count discreetly written next to it when there is more than
+  /// one event. The whole thing is only ~5 px tall, so it never
+  /// pressures the height of any cell — in particular the 45 px-tall
+  /// week cells where the previous chip-style badge was overflowing.
+  Widget _eventCountBadge(int count) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: <Widget>[
+        Container(
+          width: 5,
+          height: 5,
+          decoration: BoxDecoration(color: Colors.red[700], shape: BoxShape.circle),
+        ),
+        if (count > 1) ...[
+          const SizedBox(width: 2),
+          Text(
+            "$count",
+            textScaler: TextScaler.linear(0.55),
+            style: TextStyle(fontWeight: FontWeight.bold, color: Colors.red[700], height: 1.0),
+          ),
+        ],
+      ],
+    );
+  }
+
   /// Get the calendar height according to current mode
   double getCalendarHeight() {
+    // extra room reserved for the action chip row (Today + Show-all)
+    const double chipRow = 36.0;
     switch (_calendarMode) {
       case CalendarMode.decade:
-        return 240;
+        return 240 + chipRow;
       case CalendarMode.year:
-        return 195;
+        return 195 + chipRow;
       case CalendarMode.month:
-        return widget.expandable ? 345 : 310;
+        return (widget.expandable ? 345 : 310) + chipRow;
       case CalendarMode.week:
-        return widget.expandable ? 130 : 105;
+        return (widget.expandable ? 130 : 105) + chipRow;
+    }
+  }
+
+  /// Velocity threshold (px/s) below which a vertical drag is ignored.
+  /// Filters out accidental nudges while still triggering on a casual
+  /// swipe gesture.
+  static const double _swipeVelocityThreshold = 200.0;
+
+  /// Handle a vertical fling on the calendar surface — swipe down to
+  /// expand from week → month view, swipe up to collapse the other way.
+  /// Mirrors what the chevron at the bottom already does, just with
+  /// a more direct interaction. No-op outside week / month views or
+  /// when [CalendarSelector.expandable] is false.
+  void _onVerticalDragEnd(DragEndDetails details) {
+    if (!widget.expandable) return;
+    final double? v = details.primaryVelocity;
+    if (v == null) return;
+    if (v > _swipeVelocityThreshold && _calendarMode == CalendarMode.week) {
+      setCalendarMode(CalendarMode.month, _centerDate!);
+    } else if (v < -_swipeVelocityThreshold && _calendarMode == CalendarMode.month) {
+      setCalendarMode(CalendarMode.week, _centerDate!);
     }
   }
 
   build(BuildContext context) {
-    return AnimatedContainer(
-      duration: Duration(milliseconds: 250),
-      padding: EdgeInsets.symmetric(vertical: 8.0, horizontal: 2.0),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [Colors.blue[200]!, Colors.blue[300]!],
-          begin: FractionalOffset(0.0, 0.0),
-          end: FractionalOffset(0.0, 1.0),
-          stops: [0.0, 1.0],
-          tileMode: TileMode.clamp,
-        ),
-        borderRadius: BorderRadius.circular(4.0),
-      ),
-      height: getCalendarHeight(),
-      child: Column(
-        children: <Widget>[
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: <Widget>[
-              InkWell(onTap: onPrevDate, child: Icon(Icons.chevron_left)),
-              Container(height: 30, alignment: Alignment.center, child: getTopWidget()),
-              InkWell(onTap: onNextDate, child: Icon(Icons.chevron_right)),
-            ],
+    return GestureDetector(
+      behavior: HitTestBehavior.translucent,
+      onVerticalDragEnd: _onVerticalDragEnd,
+      child: AnimatedContainer(
+        duration: Duration(milliseconds: 250),
+        padding: EdgeInsets.symmetric(vertical: 8.0, horizontal: 2.0),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Colors.blue[200]!, Colors.blue[300]!],
+            begin: FractionalOffset(0.0, 0.0),
+            end: FractionalOffset(0.0, 1.0),
+            stops: [0.0, 1.0],
+            tileMode: TileMode.clamp,
           ),
-          SizedBox(height: 8.0),
-          Expanded(
-            child: ShaderMask(
-              blendMode: BlendMode.dstIn,
-              shaderCallback: (Rect bounds) {
-                return LinearGradient(
-                  begin: FractionalOffset(0.0, 1.0),
-                  end: FractionalOffset(1.0, 1.0),
-                  colors: <Color>[Colors.transparent, Colors.black, Colors.black, Colors.transparent],
-                  tileMode: TileMode.clamp,
-                  stops: [0.0, 0.04, 0.96, 1.0],
-                ).createShader(Offset.zero & bounds.size);
-              },
-              child: ScaleTransition(
-                scale: _animation,
-                child: PageView.builder(
-                  itemBuilder: (context, position) {
-                    updateCenterDate(position);
-                    return SingleChildScrollView(
-                      physics: NeverScrollableScrollPhysics(),
-                      child: getContentWidget(),
-                    );
-                  },
-                  controller: _pageController,
-                  onPageChanged: (pageId) {
-                    // to update month name
-                    setState(() {
-                      updateCenterDate(pageId);
-                    });
-                  },
+          borderRadius: BorderRadius.circular(4.0),
+        ),
+        height: getCalendarHeight(),
+        child: Column(
+          children: <Widget>[
+            // top header: prev / title (drill-up) / next
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: <Widget>[
+                InkWell(onTap: onPrevDate, child: Icon(Icons.chevron_left)),
+                Container(height: 30, alignment: Alignment.center, child: getTopWidget()),
+                InkWell(onTap: onNextDate, child: Icon(Icons.chevron_right)),
+              ],
+            ),
+            // action chips row: "Today" shortcut + period-wide filter
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 8.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: <Widget>[
+                  _buildTodayChip(),
+                  if (_calendarMode == CalendarMode.month || _calendarMode == CalendarMode.year) ...[
+                    const SizedBox(width: 6.0),
+                    _buildShowAllChip(),
+                  ],
+                ],
+              ),
+            ),
+            Expanded(
+              child: ShaderMask(
+                blendMode: BlendMode.dstIn,
+                shaderCallback: (Rect bounds) {
+                  return LinearGradient(
+                    begin: FractionalOffset(0.0, 1.0),
+                    end: FractionalOffset(1.0, 1.0),
+                    colors: <Color>[Colors.transparent, Colors.black, Colors.black, Colors.transparent],
+                    tileMode: TileMode.clamp,
+                    stops: [0.0, 0.04, 0.96, 1.0],
+                  ).createShader(Offset.zero & bounds.size);
+                },
+                child: ScaleTransition(
+                  scale: _animation,
+                  child: PageView.builder(
+                    itemBuilder: (context, position) {
+                      updateCenterDate(position);
+                      return SingleChildScrollView(physics: NeverScrollableScrollPhysics(), child: getContentWidget());
+                    },
+                    controller: _pageController,
+                    onPageChanged: (pageId) {
+                      setState(() {
+                        updateCenterDate(pageId);
+                        _periodFilterMode = null;
+                      });
+                    },
+                  ),
                 ),
               ),
             ),
-          ),
-          getBottomWidget(),
-        ],
+            getBottomWidget(),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Pill-style action chip used by the calendar selector for "Aujourd'hui"
+/// and "Voir tout le mois/année". Sits in the header chip row and
+/// triggers an immediate filter without any drill-down ambiguity.
+class _ShowAllChip extends StatelessWidget {
+  const _ShowAllChip({Key? key, required this.label, required this.icon, required this.onTap, this.active = false})
+    : super(key: key);
+
+  final String label;
+  final IconData icon;
+  final VoidCallback onTap;
+
+  /// When true, the chip switches to a filled style (red background,
+  /// white text/icon) to make it obvious that the matching filter is
+  /// currently in effect.
+  final bool active;
+
+  @override
+  Widget build(BuildContext context) {
+    final Color background = active ? Colors.red[700]! : Colors.white.withValues(alpha: 0.75);
+    final Color foreground = active ? Colors.white : Colors.red[700]!;
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(14.0),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 4.0),
+        decoration: BoxDecoration(
+          color: background,
+          borderRadius: BorderRadius.circular(14.0),
+          border: Border.all(color: Colors.red[700]!, width: 1.0),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            Icon(icon, size: 13, color: foreground),
+            const SizedBox(width: 4.0),
+            Text(
+              label,
+              style: TextStyle(color: foreground, fontSize: 11.5, fontWeight: FontWeight.w600),
+            ),
+          ],
+        ),
       ),
     );
   }

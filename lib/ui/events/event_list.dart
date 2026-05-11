@@ -46,17 +46,19 @@ class _EventListState extends State<EventList> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    final _eventListProvider = Provider.of<EventListProvider>(
-      context,
-      listen: false,
-    );
-    List<Event> _events = List<Event>.from(
-      _eventListProvider.eventModeSelectorIndex == 0
-          ? _eventListProvider.allEvents
-          : _eventListProvider.eventModeSelectorIndex == 1
-          ? _eventListProvider.yearEvents
-          : _eventListProvider.dayEvents,
-    );
+    final _eventListProvider = Provider.of<EventListProvider>(context, listen: false);
+    List<Event> _events;
+    if (_eventListProvider.eventModeSelectorIndex == 0) {
+      _events = List<Event>.from(_eventListProvider.allEvents);
+    } else if (_eventListProvider.eventModeSelectorIndex == 1) {
+      _events = List<Event>.from(_eventListProvider.yearEvents);
+    } else {
+      _events = List<Event>.from(
+        _eventListProvider.selectedCalendarMode == CalendarMode.year
+            ? _eventListProvider.yearEvents
+            : _eventListProvider.dayEvents,
+      );
+    }
     _events.sort((a, b) => b.startDate!.compareTo(a.startDate!));
     if (_events.isNotEmpty) {
       int lastYear = _events.first.startDate!.year;
@@ -82,27 +84,15 @@ class _EventListState extends State<EventList> {
         children: <Widget>[
           Expanded(
             flex: 2,
-            child: _buildModeTab(
-              index: 0,
-              label: AppString.all,
-              provider: provider,
-            ),
+            child: _buildModeTab(index: 0, label: AppString.all, provider: provider),
           ),
           Expanded(
             flex: 3,
-            child: _buildModeTab(
-              index: 1,
-              label: AppString.currentYear,
-              provider: provider,
-            ),
+            child: _buildModeTab(index: 1, label: AppString.currentYear, provider: provider),
           ),
           Expanded(
             flex: 2,
-            child: _buildModeTab(
-              index: 2,
-              label: AppString.byDate,
-              provider: provider,
-            ),
+            child: _buildModeTab(index: 2, label: AppString.byDate, provider: provider),
           ),
         ],
       ),
@@ -111,11 +101,7 @@ class _EventListState extends State<EventList> {
 
   /// Build a single tab of the mode selector. Applies a smooth color
   /// animation when the selection changes.
-  Widget _buildModeTab({
-    required int index,
-    required String label,
-    required EventListProvider provider,
-  }) {
+  Widget _buildModeTab({required int index, required String label, required EventListProvider provider}) {
     final bool selected = provider.eventModeSelectorIndex == index;
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
@@ -128,19 +114,12 @@ class _EventListState extends State<EventList> {
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
         curve: Curves.easeInOut,
-        padding:
-            const EdgeInsets.symmetric(vertical: 8.0, horizontal: 8.0),
+        padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 8.0),
         decoration: BoxDecoration(
           color: selected ? Colors.red[700] : Colors.transparent,
           borderRadius: BorderRadius.circular(20.0),
           boxShadow: selected
-              ? [
-                  BoxShadow(
-                    color: Colors.red[700]!.withValues(alpha: 0.3),
-                    blurRadius: 4.0,
-                    offset: const Offset(0, 1),
-                  ),
-                ]
+              ? [BoxShadow(color: Colors.red[700]!.withValues(alpha: 0.3), blurRadius: 4.0, offset: const Offset(0, 1))]
               : null,
         ),
         child: Text(
@@ -161,10 +140,7 @@ class _EventListState extends State<EventList> {
   /// Navigate to the event creation form screen to create a new event.
   void _navigateToAddEventScreen(BuildContext context) async {
     // set a new event to be created
-    Provider.of<EventCreationProvider>(
-      context,
-      listen: false,
-    ).setEventToEdit(new Event());
+    Provider.of<EventCreationProvider>(context, listen: false).setEventToEdit(new Event());
 
     // navigate to the event creation form screen
     Navigator.pushNamed(context, '/addEditEvent');
@@ -173,65 +149,81 @@ class _EventListState extends State<EventList> {
   /// Navigate to the detail screen of the specified [event].
   void _navigateToEventDetailScreen(BuildContext context, Event event) async {
     // fetch the event to get complete data then navigate to event detail screen
-    Provider.of<EventDetailProvider>(context, listen: false)
-        .fetchEvent(event)
-        .then((value) => Navigator.pushNamed(context, '/eventDetail'));
+    Provider.of<EventDetailProvider>(
+      context,
+      listen: false,
+    ).fetchEvent(event).then((value) => Navigator.pushNamed(context, '/eventDetail'));
   }
 
   @override
   Widget build(BuildContext context) {
     _log.info("Building Event list");
-    final _eventListProvider = Provider.of<EventListProvider>(
-      context,
-      listen: true,
-    );
-    final LoginProvider _loginProvider = Provider.of<LoginProvider>(
-      context,
-      listen: false,
-    );
+    final _eventListProvider = Provider.of<EventListProvider>(context, listen: true);
+    final LoginProvider _loginProvider = Provider.of<LoginProvider>(context, listen: false);
 
-    // on date selection in calendar, fetch events for that date
+    // on date selection in calendar, fetch the right slice of events for the picked period
     void onSelect(DateTime date, CalendarMode calendarMode) {
       _eventListProvider.setSelectedDate(date);
-      calendarMode == CalendarMode.year
-          ? _eventListProvider.fetchEventListForYear(date.year)
-          : _eventListProvider.fetchEventListForDayAndMonthAndYear(
-            date.day,
-            date.month,
-            date.year,
-          );
+      _eventListProvider.setSelectedCalendarMode(calendarMode);
+      switch (calendarMode) {
+        case CalendarMode.year:
+          _eventListProvider.fetchEventListForYear(date.year);
+          break;
+        case CalendarMode.month:
+          _eventListProvider.fetchEventListForMonthAndYear(date.month, date.year);
+          break;
+        case CalendarMode.week:
+        case CalendarMode.decade:
+          _eventListProvider.fetchEventListForDayAndMonthAndYear(date.day, date.month, date.year);
+          break;
+      }
     }
 
-    // on refresh, fetch events depending on display mode
+    // on refresh, replay whatever filter is currently active so the user gets a fresh copy of the same slice
     Future<void> onRefresh() {
-      if (_eventListProvider.eventModeSelectorIndex == 0) {
-        return _eventListProvider.fetchEventList();
-      } else if (_eventListProvider.eventModeSelectorIndex == 1) {
-        return _eventListProvider.fetchEventListForYear(DateTime.now().year);
-      } else if (_eventListProvider.eventModeSelectorIndex == 2) {
-        return _eventListProvider.fetchEventListForDayAndMonthAndYear(
-          _eventListProvider.selectedDate.day,
-          _eventListProvider.selectedDate.month,
-          _eventListProvider.selectedDate.year,
-        );
-      } else {
-        return _eventListProvider.fetchEventList();
+      final DateTime selected = _eventListProvider.selectedDate;
+      switch (_eventListProvider.eventModeSelectorIndex) {
+        case 0:
+          return _eventListProvider.fetchEventList();
+        case 1:
+          return _eventListProvider.fetchEventListForYear(DateTime.now().year);
+        case 2:
+          switch (_eventListProvider.selectedCalendarMode) {
+            case CalendarMode.year:
+              return _eventListProvider.fetchEventListForYear(selected.year);
+            case CalendarMode.month:
+              return _eventListProvider.fetchEventListForMonthAndYear(selected.month, selected.year);
+            case CalendarMode.week:
+            case CalendarMode.decade:
+              return _eventListProvider.fetchEventListForDayAndMonthAndYear(
+                selected.day,
+                selected.month,
+                selected.year,
+              );
+          }
+        default:
+          return _eventListProvider.fetchEventList();
       }
     }
 
     // assign fetched events depending on display mode and sort them
-    List<Event> _events = List<Event>.from(
-      _eventListProvider.eventModeSelectorIndex == 0
-          ? _eventListProvider.allEvents
-          : _eventListProvider.eventModeSelectorIndex == 1
-          ? _eventListProvider.yearEvents
-          : _eventListProvider.dayEvents,
-    );
+    List<Event> _events;
+    if (_eventListProvider.eventModeSelectorIndex == 0) {
+      _events = List<Event>.from(_eventListProvider.allEvents);
+    } else if (_eventListProvider.eventModeSelectorIndex == 1) {
+      _events = List<Event>.from(_eventListProvider.yearEvents);
+    } else {
+      _events = List<Event>.from(
+        _eventListProvider.selectedCalendarMode == CalendarMode.year
+            ? _eventListProvider.yearEvents
+            : _eventListProvider.dayEvents,
+      );
+    }
 
-    // Sort events by date in descending order
+    // sort events by date in descending order
     _events.sort((a, b) => b.startDate!.compareTo(a.startDate!));
 
-    // Group events by year
+    // group events by year
     Map<int, List<Event>> eventsByYear = {};
     for (var event in _events) {
       int year = event.startDate!.year;
@@ -240,20 +232,19 @@ class _EventListState extends State<EventList> {
       }
       eventsByYear[year]!.add(event);
     }
-    List<int> sortedYears =
-        eventsByYear.keys.toList()..sort((a, b) => b.compareTo(a));
+    List<int> sortedYears = eventsByYear.keys.toList()..sort((a, b) => b.compareTo(a));
 
     return Scaffold(
       appBar: AppBar(
         title: Text(AppString.tabCalendar),
         actions: <Widget>[
           if (_loginProvider.isAdmin)
-          IconButton(
-            icon: Icon(Icons.add),
-            onPressed: () {
-              _navigateToAddEventScreen(context);
-            },
-          ),
+            IconButton(
+              icon: Icon(Icons.add),
+              onPressed: () {
+                _navigateToAddEventScreen(context);
+              },
+            ),
           MainActionMenu(),
         ],
       ),
@@ -290,28 +281,20 @@ class _EventListState extends State<EventList> {
                 onRefresh: onRefresh,
                 child: LoadingContent(
                   defaultText: AppString.eventsNotFound,
-                  emptyText:
-                      _eventListProvider.eventModeSelectorIndex == 0
-                          ? AppString.eventsNotFound
-                          : _eventListProvider.eventModeSelectorIndex == 1
-                          ? AppString.eventsNotFoundForYear
-                          : AppString.eventsNotFoundForDate,
-                  loadingStatus: _eventListProvider.loadingStatus ==
-                          LoadingStatus.loading
+                  emptyText: _eventListProvider.eventModeSelectorIndex == 0
+                      ? AppString.eventsNotFound
+                      : _eventListProvider.eventModeSelectorIndex == 1
+                      ? AppString.eventsNotFoundForYear
+                      : AppString.eventsNotFoundForDate,
+                  loadingStatus: _eventListProvider.loadingStatus == LoadingStatus.loading
                       ? LoadingStatus.loading
-                      : (_events.isEmpty
-                          ? LoadingStatus.empty
-                          : _eventListProvider.loadingStatus),
+                      : (_events.isEmpty ? LoadingStatus.empty : _eventListProvider.loadingStatus),
                   child: ListView.builder(
                     itemCount: sortedYears.length,
                     itemBuilder: (context, yearIndex) {
                       int year = sortedYears[yearIndex];
                       List<Event> yearEvents = eventsByYear[year]!;
 
-                      // in "current year" mode the year card header is
-                      // redundant (the filter itself already states the
-                      // year), so we skip it and render the events
-                      // directly, always expanded
                       if (_eventListProvider.eventModeSelectorIndex == 1) {
                         return Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -321,11 +304,7 @@ class _EventListState extends State<EventList> {
                                   padding: const EdgeInsets.only(bottom: 8.0),
                                   child: InkWell(
                                     child: EventCard(event),
-                                    onTap: () =>
-                                        _navigateToEventDetailScreen(
-                                      context,
-                                      event,
-                                    ),
+                                    onTap: () => _navigateToEventDetailScreen(context, event),
                                   ),
                                 ),
                               )
@@ -353,27 +332,17 @@ class _EventListState extends State<EventList> {
                               child: Container(
                                 decoration: BoxDecoration(
                                   gradient: LinearGradient(
-                                    colors: [
-                                      Colors.blue[600]!,
-                                      Colors.blue[800]!,
-                                    ],
+                                    colors: [Colors.blue[600]!, Colors.blue[800]!],
                                     begin: Alignment.centerLeft,
                                     end: Alignment.centerRight,
                                   ),
                                   borderRadius: BorderRadius.circular(4.0),
                                 ),
                                 child: Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                    vertical: 12.0,
-                                    horizontal: 16.0,
-                                  ),
+                                  padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 16.0),
                                   child: Row(
                                     children: [
-                                      Icon(
-                                        Icons.calendar_today,
-                                        size: 20,
-                                        color: Colors.white,
-                                      ),
+                                      Icon(Icons.calendar_today, size: 20, color: Colors.white),
                                       SizedBox(width: 12),
                                       Text(
                                         "$year",
@@ -401,12 +370,7 @@ class _EventListState extends State<EventList> {
                                         ),
                                       ),
                                       SizedBox(width: 8),
-                                      Icon(
-                                        expanded
-                                            ? Icons.expand_less
-                                            : Icons.expand_more,
-                                        color: Colors.white,
-                                      ),
+                                      Icon(expanded ? Icons.expand_less : Icons.expand_more, color: Colors.white),
                                     ],
                                   ),
                                 ),
@@ -419,11 +383,7 @@ class _EventListState extends State<EventList> {
                                 padding: const EdgeInsets.only(bottom: 4.0),
                                 child: InkWell(
                                   child: EventCard(event),
-                                  onTap:
-                                      () => _navigateToEventDetailScreen(
-                                        context,
-                                        event,
-                                      ),
+                                  onTap: () => _navigateToEventDetailScreen(context, event),
                                 ),
                               ),
                             ),

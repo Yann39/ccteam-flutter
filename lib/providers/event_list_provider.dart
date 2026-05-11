@@ -24,6 +24,7 @@ import 'package:ccteam/models/event.dart';
 import 'package:ccteam/providers/login_provider.dart';
 import 'package:ccteam/providers/message_provider.dart';
 import 'package:ccteam/services/events_service.dart';
+import 'package:ccteam/ui/events/calendar_selector.dart';
 import 'package:ccteam/utils/app_utils.dart';
 import 'package:ccteam/utils/enums.dart';
 import 'package:flutter/foundation.dart';
@@ -51,6 +52,9 @@ class EventListProvider extends ChangeNotifier {
   // current selected date in the calendar selector
   DateTime _selectedDate = DateTime.now();
 
+  // current selected calendar mode
+  CalendarMode _selectedCalendarMode = CalendarMode.month;
+
   // index of the selected top filter, to display events for current year or per date
   int _eventModeSelectorIndex = 0;
 
@@ -71,6 +75,8 @@ class EventListProvider extends ChangeNotifier {
 
   DateTime get selectedDate => _selectedDate;
 
+  CalendarMode get selectedCalendarMode => _selectedCalendarMode;
+
   int get eventModeSelectorIndex => _eventModeSelectorIndex;
 
   LoadingStatus get loadingStatus => _loadingStatus;
@@ -90,6 +96,14 @@ class EventListProvider extends ChangeNotifier {
   /// Update the current selected date to the specified [date].
   void setSelectedDate(DateTime date) {
     _selectedDate = date;
+    _notifyListeners();
+  }
+
+  /// Remember which calendar granularity the user just picked (day,
+  /// month or year). Called by the host page on every calendar tap so
+  /// the refresh handler can replay the matching query.
+  void setSelectedCalendarMode(CalendarMode mode) {
+    _selectedCalendarMode = mode;
     _notifyListeners();
   }
 
@@ -127,61 +141,79 @@ class EventListProvider extends ChangeNotifier {
   /// Fetch the list of all events.
   Future<void> fetchEventList() async {
     _updateLoadingStatus(LoadingStatus.loading);
-    await _eventsService.fetchEvents().then((value) async {
-      _log.fine("Events list of ${value.length} events retrieved successfully");
-      _allEvents = value;
-      _updateLoadingStatus(LoadingStatus.loaded);
-    }, onError: (error) {
-      _log.warning("Error when retrieving events list ($error)");
-      _allEvents = [];
-      AppUtils.handleServiceException(error, _messageProvider, _loginProvider);
-      _updateLoadingStatus(LoadingStatus.notLoaded);
-    });
+    await _eventsService.fetchEvents().then(
+      (value) async {
+        _log.fine("Events list of ${value.length} events retrieved successfully");
+        _allEvents = value;
+        _updateLoadingStatus(LoadingStatus.loaded);
+      },
+      onError: (error) {
+        _log.warning("Error when retrieving events list ($error)");
+        _allEvents = [];
+        AppUtils.handleServiceException(error, _messageProvider, _loginProvider);
+        _updateLoadingStatus(LoadingStatus.notLoaded);
+      },
+    );
   }
 
   /// Filter current events list to retrieve only event of the specified [year].
   Future<void> fetchEventListForYear(int year) async {
     _updateLoadingStatus(LoadingStatus.loading);
-    await _eventsService.fetchEventsForYear(year).then((value) async {
-      _log.fine("Events list for year $year retrieved successfully");
-      _yearEvents = value;
-      _updateLoadingStatus(LoadingStatus.loaded);
-    }, onError: (error) {
-      _log.warning("Error when retrieving events list for year $year ($error)");
-      _yearEvents = [];
-      AppUtils.handleServiceException(error, _messageProvider, _loginProvider);
-      _updateLoadingStatus(LoadingStatus.notLoaded);
-    });
+    await _eventsService
+        .fetchEventsForYear(year)
+        .then(
+          (value) async {
+            _log.fine("Events list for year $year retrieved successfully");
+            _yearEvents = value;
+            _updateLoadingStatus(LoadingStatus.loaded);
+          },
+          onError: (error) {
+            _log.warning("Error when retrieving events list for year $year ($error)");
+            _yearEvents = [];
+            AppUtils.handleServiceException(error, _messageProvider, _loginProvider);
+            _updateLoadingStatus(LoadingStatus.notLoaded);
+          },
+        );
   }
 
   /// Filter current events list to retrieve only event of the specified [month] and [year].
   Future<void> fetchEventListForMonthAndYear(int month, int year) async {
     _updateLoadingStatus(LoadingStatus.loading);
-    await _eventsService.fetchEventsForMonthAndYear(month, year).then((value) async {
-      _log.fine("Events list for month $month and year $year retrieved successfully");
-      _dayEvents = value;
-      _updateLoadingStatus(LoadingStatus.loaded);
-    }, onError: (error) {
-      _log.warning("Error when retrieving events list for month $month and year $year ($error)");
-      _dayEvents = [];
-      AppUtils.handleServiceException(error, _messageProvider, _loginProvider);
-      _updateLoadingStatus(LoadingStatus.notLoaded);
-    });
+    await _eventsService
+        .fetchEventsForMonthAndYear(month, year)
+        .then(
+          (value) async {
+            _log.fine("Events list for month $month and year $year retrieved successfully");
+            _dayEvents = value;
+            _updateLoadingStatus(LoadingStatus.loaded);
+          },
+          onError: (error) {
+            _log.warning("Error when retrieving events list for month $month and year $year ($error)");
+            _dayEvents = [];
+            AppUtils.handleServiceException(error, _messageProvider, _loginProvider);
+            _updateLoadingStatus(LoadingStatus.notLoaded);
+          },
+        );
   }
 
   /// Filter current events list to retrieve only event of the specified [day], [month] and [year].
   Future<void> fetchEventListForDayAndMonthAndYear(int day, int month, int year) async {
     _updateLoadingStatus(LoadingStatus.loading);
-    await _eventsService.fetchEventsForDayAndMonthAndYear(day, month, year).then((value) async {
-      _log.fine("Events list for day $day, month $month and year $year retrieved successfully");
-      _dayEvents = value;
-      _updateLoadingStatus(LoadingStatus.loaded);
-    }, onError: (error) {
-      _log.warning("Error when retrieving events list for day $day, month $month and year $year ($error)");
-      _dayEvents = [];
-      AppUtils.handleServiceException(error, _messageProvider, _loginProvider);
-      _updateLoadingStatus(LoadingStatus.notLoaded);
-    });
+    await _eventsService
+        .fetchEventsForDayAndMonthAndYear(day, month, year)
+        .then(
+          (value) async {
+            _log.fine("Events list for day $day, month $month and year $year retrieved successfully");
+            _dayEvents = value;
+            _updateLoadingStatus(LoadingStatus.loaded);
+          },
+          onError: (error) {
+            _log.warning("Error when retrieving events list for day $day, month $month and year $year ($error)");
+            _dayEvents = [];
+            AppUtils.handleServiceException(error, _messageProvider, _loginProvider);
+            _updateLoadingStatus(LoadingStatus.notLoaded);
+          },
+        );
   }
 
   /// Notify all the registered listeners of this provider.

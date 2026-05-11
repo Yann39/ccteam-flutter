@@ -385,6 +385,12 @@ class AppString {
   static const String chronos = 'Chronos';
   static const String currentYear = 'Année courante';
   static const String byDate = 'Par date';
+
+  // Calendar selector
+  static const String today = 'Aujourd\'hui';
+  static const String showAllForMonth = 'Voir tout le mois';
+  static const String showAllForYear = 'Voir toute l\'année';
+  static const String changePeriod = 'Changer de période';
   static const String description = 'Description';
   static const String noParticipant = 'Aucun participant';
   static const String profilePhoto = 'Photo de profil';
