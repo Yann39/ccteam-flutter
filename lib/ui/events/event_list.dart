@@ -27,9 +27,9 @@ import 'package:ccteam/ui/events/event_card.dart';
 import 'package:ccteam/ui/main/main_action_menu.dart';
 import 'package:ccteam/ui/main/main_drawer.dart';
 import 'package:ccteam/utils/custom_decorations.dart';
+import 'package:ccteam/utils/enums.dart';
 import 'package:ccteam/utils/strings.dart';
 import 'package:ccteam/widgets/loading_content.dart';
-import 'package:ccteam/utils/enums.dart';
 import 'package:flutter/material.dart';
 import 'package:logging/logging.dart';
 import 'package:provider/provider.dart';
@@ -250,151 +250,148 @@ class _EventListState extends State<EventList> {
       ),
       drawer: MainDrawer(),
       body: Container(
-        padding: const EdgeInsets.all(8.0),
         decoration: CustomDecorations.mainContent,
-        child: Column(
-          children: <Widget>[
-            _buildModeSelector(_eventListProvider),
-            if (_eventListProvider.eventModeSelectorIndex == 2)
-              Column(
-                children: <Widget>[
-                  SizedBox(height: 8.0),
-                  CalendarSelector(
-                    onDateSelected: onSelect,
-                    eventsDates: Map.fromIterable(
-                      _eventListProvider.allEvents,
-                      key: (v) => v.title,
-                      value: (v) => v.startDate,
-                    ),
-                    onlyMonthDays: false,
-                    locale: "fr",
-                    weekEndDayColor: Colors.blue[700]!,
-                    mode: CalendarMode.month,
-                    expandable: true,
-                    firstWeekDay: DateTime.monday,
-                  ),
-                ],
+        child: NestedScrollView(
+          headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
+            return <Widget>[
+              SliverPadding(
+                padding: const EdgeInsets.fromLTRB(8.0, 8.0, 8.0, 0),
+                sliver: SliverToBoxAdapter(child: _buildModeSelector(_eventListProvider)),
               ),
-            SizedBox(height: 8.0),
-            Expanded(
-              child: RefreshIndicator(
-                onRefresh: onRefresh,
-                child: LoadingContent(
-                  defaultText: AppString.eventsNotFound,
-                  emptyText: _eventListProvider.eventModeSelectorIndex == 0
-                      ? AppString.eventsNotFound
-                      : _eventListProvider.eventModeSelectorIndex == 1
-                      ? AppString.eventsNotFoundForYear
-                      : AppString.eventsNotFoundForDate,
-                  loadingStatus: _eventListProvider.loadingStatus == LoadingStatus.loading
-                      ? LoadingStatus.loading
-                      : (_events.isEmpty ? LoadingStatus.empty : _eventListProvider.loadingStatus),
-                  child: ListView.builder(
-                    itemCount: sortedYears.length,
-                    itemBuilder: (context, yearIndex) {
-                      int year = sortedYears[yearIndex];
-                      List<Event> yearEvents = eventsByYear[year]!;
+              if (_eventListProvider.eventModeSelectorIndex == 2)
+                SliverPadding(
+                  padding: const EdgeInsets.fromLTRB(8.0, 8.0, 8.0, 0),
+                  sliver: SliverToBoxAdapter(
+                    child: CalendarSelector(
+                      onDateSelected: onSelect,
+                      eventsDates: Map.fromIterable(
+                        _eventListProvider.allEvents,
+                        key: (v) => v.title,
+                        value: (v) => v.startDate,
+                      ),
+                      onlyMonthDays: false,
+                      locale: "fr",
+                      weekEndDayColor: Colors.blue[700]!,
+                      mode: CalendarMode.month,
+                      expandable: true,
+                      firstWeekDay: DateTime.monday,
+                    ),
+                  ),
+                ),
+              const SliverToBoxAdapter(child: SizedBox(height: 8.0)),
+            ];
+          },
+          body: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8.0),
+            child: RefreshIndicator(
+              onRefresh: onRefresh,
+              child: LoadingContent(
+                defaultText: AppString.eventsNotFound,
+                emptyText: _eventListProvider.eventModeSelectorIndex == 0
+                    ? AppString.eventsNotFound
+                    : _eventListProvider.eventModeSelectorIndex == 1
+                    ? AppString.eventsNotFoundForYear
+                    : AppString.eventsNotFoundForDate,
+                loadingStatus: _eventListProvider.loadingStatus == LoadingStatus.loading
+                    ? LoadingStatus.loading
+                    : (_events.isEmpty ? LoadingStatus.empty : _eventListProvider.loadingStatus),
+                child: ListView.builder(
+                  itemCount: sortedYears.length,
+                  itemBuilder: (context, yearIndex) {
+                    int year = sortedYears[yearIndex];
+                    List<Event> yearEvents = eventsByYear[year]!;
 
-                      if (_eventListProvider.eventModeSelectorIndex == 1) {
-                        return Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: yearEvents
-                              .map(
-                                (event) => Padding(
-                                  padding: const EdgeInsets.only(bottom: 8.0),
-                                  child: InkWell(
-                                    child: EventCard(event),
-                                    onTap: () => _navigateToEventDetailScreen(context, event),
-                                  ),
-                                ),
-                              )
-                              .toList(),
-                        );
-                      }
-
-                      bool expanded = _expandedYears.contains(year);
+                    if (_eventListProvider.eventModeSelectorIndex == 1) {
                       return Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          GestureDetector(
-                            onTap: () {
-                              setState(() {
-                                if (expanded) {
-                                  _expandedYears.remove(year);
-                                } else {
-                                  _expandedYears.add(year);
-                                }
-                              });
-                            },
-                            child: Card(
-                              margin: EdgeInsets.symmetric(vertical: 6.0),
-                              elevation: 2,
-                              child: Container(
-                                decoration: BoxDecoration(
-                                  gradient: LinearGradient(
-                                    colors: [Colors.blue[600]!, Colors.blue[800]!],
-                                    begin: Alignment.centerLeft,
-                                    end: Alignment.centerRight,
-                                  ),
-                                  borderRadius: BorderRadius.circular(4.0),
-                                ),
-                                child: Padding(
-                                  padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 16.0),
-                                  child: Row(
-                                    children: [
-                                      Icon(Icons.calendar_today, size: 20, color: Colors.white),
-                                      SizedBox(width: 12),
-                                      Text(
-                                        "$year",
-                                        style: TextStyle(
-                                          fontSize: 18,
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.white,
-                                        ),
-                                      ),
-                                      Spacer(),
-                                      Text(
-                                        yearEvents.length.toString(),
-                                        style: TextStyle(
-                                          fontSize: 13,
-                                          color: Colors.white,
-                                          fontWeight: FontWeight.w600,
-                                        ),
-                                      ),
-                                      Text(
-                                        " " + AppString.events,
-                                        style: TextStyle(
-                                          fontSize: 13,
-                                          color: Colors.white,
-                                          fontWeight: FontWeight.normal,
-                                        ),
-                                      ),
-                                      SizedBox(width: 8),
-                                      Icon(expanded ? Icons.expand_less : Icons.expand_more, color: Colors.white),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                          if (expanded)
-                            ...yearEvents.map(
+                        children: yearEvents
+                            .map(
                               (event) => Padding(
-                                padding: const EdgeInsets.only(bottom: 4.0),
+                                padding: const EdgeInsets.only(bottom: 8.0),
                                 child: InkWell(
                                   child: EventCard(event),
                                   onTap: () => _navigateToEventDetailScreen(context, event),
                                 ),
                               ),
-                            ),
-                        ],
+                            )
+                            .toList(),
                       );
-                    },
-                  ),
+                    }
+
+                    bool expanded = _expandedYears.contains(year);
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        GestureDetector(
+                          onTap: () {
+                            setState(() {
+                              if (expanded) {
+                                _expandedYears.remove(year);
+                              } else {
+                                _expandedYears.add(year);
+                              }
+                            });
+                          },
+                          child: Card(
+                            margin: EdgeInsets.symmetric(vertical: 6.0),
+                            elevation: 2,
+                            child: Container(
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  colors: [Colors.blue[600]!, Colors.blue[800]!],
+                                  begin: Alignment.centerLeft,
+                                  end: Alignment.centerRight,
+                                ),
+                                borderRadius: BorderRadius.circular(4.0),
+                              ),
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 16.0),
+                                child: Row(
+                                  children: [
+                                    Icon(Icons.calendar_today, size: 20, color: Colors.white),
+                                    SizedBox(width: 12),
+                                    Text(
+                                      "$year",
+                                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
+                                    ),
+                                    Spacer(),
+                                    Text(
+                                      yearEvents.length.toString(),
+                                      style: TextStyle(fontSize: 13, color: Colors.white, fontWeight: FontWeight.w600),
+                                    ),
+                                    Text(
+                                      " " + AppString.events,
+                                      style: TextStyle(
+                                        fontSize: 13,
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.normal,
+                                      ),
+                                    ),
+                                    SizedBox(width: 8),
+                                    Icon(expanded ? Icons.expand_less : Icons.expand_more, color: Colors.white),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                        if (expanded)
+                          ...yearEvents.map(
+                            (event) => Padding(
+                              padding: const EdgeInsets.only(bottom: 4.0),
+                              child: InkWell(
+                                child: EventCard(event),
+                                onTap: () => _navigateToEventDetailScreen(context, event),
+                              ),
+                            ),
+                          ),
+                      ],
+                    );
+                  },
                 ),
               ),
             ),
-          ],
+          ),
         ),
       ),
     );

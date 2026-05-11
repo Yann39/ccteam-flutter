@@ -116,6 +116,9 @@ class FormScaffold extends StatelessWidget {
                 child: Form(key: formKey, child: formBody),
               ),
               SafeArea(
+                top: false,
+                left: false,
+                right: false,
                 child: SaveCancelBar(saveFunction: onSave, cancelFunction: onCancel ?? () => Navigator.pop(context)),
               ),
             ],

@@ -348,6 +348,8 @@ class AppString {
   static const String membershipFeeAmountMandatory = 'Veuillez entrer un montant';
   static const String membershipFeeAmountNotValid = 'Veuillez entrer un montant valide';
   static const String membershipFeePaid = 'Payée ?';
+  static const String membershipFeePaidLabel = 'Payée';
+  static const String membershipFeeUnpaidLabel = 'Non payée';
 
   static const String photoScreenTitle = 'Gallerie';
   static const String photoCreate = 'Ajouter une photo';
@@ -389,7 +391,7 @@ class AppString {
 
   // Home stats panel
   static const String statsClub = 'Le club';
-  static const String statsProfile = 'Mon profil';
+  static const String statsProfile = 'Moi';
   static const String statsMembers = 'membres';
   static const String statsTracks = 'circuits';
   static const String statsMyEvents = 'roulages';

@@ -22,6 +22,8 @@ import 'dart:math';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:ccteam/models/bike.dart';
+import 'package:ccteam/models/event.dart';
+import 'package:ccteam/models/event_member.dart';
 import 'package:ccteam/models/member.dart';
 import 'package:ccteam/models/membership_fee.dart';
 import 'package:ccteam/models/record.dart';
@@ -47,6 +49,16 @@ import '../../utils/track_utils.dart';
 
 class MemberDetail extends StatelessWidget {
   final ScrollController _scrollController = new ScrollController();
+
+  /// Dedicated controller for the horizontal events timeline — so we
+  /// can drive it imperatively (auto-scroll to the first upcoming
+  /// event on initial render).
+  final ScrollController _eventsTimelineController = new ScrollController();
+
+  /// One-shot guard: we only auto-scroll the timeline once per widget
+  /// instance, otherwise every provider rebuild would yank the user
+  /// back to the transition point.
+  bool _eventsTimelineAutoScrolled = false;
 
   // height of the Sliver app bar
   final double _expandedHeight = 202;
@@ -348,10 +360,25 @@ class MemberDetail extends StatelessWidget {
                         style: TextStyle(color: Colors.black.withAlpha(204)),
                         textAlign: TextAlign.center,
                       ),
-                      Icon(
-                        fee.paid == true ? Icons.check_circle : Icons.cancel,
-                        color: fee.paid == true ? Colors.green : Colors.red,
-                        size: 20,
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        mainAxisSize: MainAxisSize.min,
+                        children: <Widget>[
+                          Icon(
+                            fee.paid == true ? Icons.check_circle : Icons.cancel,
+                            color: fee.paid == true ? Colors.green : Colors.red,
+                            size: 18,
+                          ),
+                          const SizedBox(width: 4.0),
+                          Text(
+                            fee.paid == true ? AppString.membershipFeePaidLabel : AppString.membershipFeeUnpaidLabel,
+                            style: TextStyle(
+                              color: fee.paid == true ? Colors.green[800] : Colors.red[800],
+                              fontWeight: FontWeight.w600,
+                              fontSize: 12.5,
+                            ),
+                          ),
+                        ],
                       ),
                       if (isAdmin)
                         IconButton(
@@ -395,142 +422,246 @@ class MemberDetail extends StatelessWidget {
     );
   }
 
-  Widget _eventsTimeline(MemberDetailProvider memberDetailProvider) {
-    if (memberDetailProvider.currentMember!.eventMembers != null &&
-        memberDetailProvider.currentMember!.eventMembers!.length > 0) {
-      return SizedBox(
-        height: 142,
-        child: ListView.builder(
-          scrollDirection: Axis.horizontal,
-          itemCount: memberDetailProvider.currentMember!.eventMembers!.length,
-          itemBuilder: (BuildContext context, int index) {
-            // if list view is not large enough, add padding so it fills the whole screen width
-            final double pad = index >= memberDetailProvider.currentMember!.eventMembers!.length - 1
-                ? max(
-                    MediaQuery.of(context).size.width -
-                        ((_eventCardSize + 16) * memberDetailProvider.currentMember!.eventMembers!.length) -
-                        16,
-                    0,
-                  )
-                : 0.0;
-            return Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                Stack(
-                  children: <Widget>[
-                    Container(
-                      padding: EdgeInsets.only(top: 36.0),
-                      margin: EdgeInsets.only(right: pad),
-                      child: InkWell(
-                        onTap: () => _navigateToTrackDetailScreen(
-                          context,
-                          memberDetailProvider.currentMember!.eventMembers![index].event!.track!,
-                        ),
-                        child: Container(
-                          decoration: CustomDecorations.cardLight,
-                          width: _eventCardSize,
-                          height: _eventCardSize,
-                          padding: EdgeInsets.all(2.0),
-                          margin: EdgeInsets.all(8.0),
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                            children: <Widget>[
-                              Icon(
-                                TrackUtils.trackIconFromName(
-                                  memberDetailProvider.currentMember!.eventMembers![index].event!.track!.name,
-                                ),
-                                size: 30,
-                                color: Colors.red[700],
-                              ),
-                              Text(
-                                "${memberDetailProvider.currentMember!.eventMembers![index].event!.track!.name}",
-                                textAlign: TextAlign.center,
-                                overflow: TextOverflow.ellipsis,
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.black.withAlpha(204),
-                                  height: 1,
-                                ),
-                                maxLines: 2,
-                              ),
-                              Text(
-                                "${memberDetailProvider.currentMember!.eventMembers![index].event!.organizer}",
-                                textScaler: TextScaler.linear(0.7),
-                                textAlign: TextAlign.center,
-                                overflow: TextOverflow.ellipsis,
-                                maxLines: 2,
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                    Positioned(top: 17.0, left: 0.0, right: 0.0, child: Container(height: 2, color: Colors.red[700])),
-                    if (memberDetailProvider.currentMember!.eventMembers!.length > 1 &&
-                        index != memberDetailProvider.currentMember!.eventMembers!.length - 1)
-                      Positioned(
-                        top: 6.0,
-                        left: _eventCardSize,
-                        child: Icon(Icons.arrow_left, color: Colors.red[700]),
-                      ),
-                    Positioned(
-                      top: 0.0,
-                      left: 0.0,
-                      right: pad,
-                      child: Center(
-                        child: Container(
-                          width: 42,
-                          height: 36,
-                          child: Column(
-                            children: <Widget>[
-                              Container(
-                                height: 14,
-                                decoration: BoxDecoration(
-                                  color: Colors.red[700],
-                                  shape: BoxShape.rectangle,
-                                  borderRadius: BorderRadius.only(
-                                    topLeft: Radius.circular(6.0),
-                                    topRight: Radius.circular(6.0),
-                                  ),
-                                ),
-                                child: Center(
-                                  child: Text(
-                                    "${AppDateUtils.convertToString(memberDetailProvider.currentMember!.eventMembers![index].event!.startDate!, "MMM yy")}",
-                                    textScaler: TextScaler.linear(0.75),
-                                    style: TextStyle(color: Colors.white),
-                                  ),
-                                ),
-                              ),
-                              Expanded(
-                                child: Container(
-                                  decoration: CustomDecorations.cardBody,
-                                  child: Center(
-                                    child: Text(
-                                      "${AppDateUtils.convertToString(memberDetailProvider.currentMember!.eventMembers![index].event!.startDate!, "dd")}",
-                                      style: TextStyle(color: Colors.white),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            );
-          },
-        ),
-      );
-    } else {
+  Widget _eventsTimeline(BuildContext context, MemberDetailProvider memberDetailProvider) {
+    final List<EventMember>? eventMembers = memberDetailProvider.currentMember!.eventMembers;
+    if (eventMembers == null || eventMembers.isEmpty) {
       return Container(
         padding: EdgeInsets.all(12.0),
         decoration: CustomDecorations.cardLight,
         child: Text(AppString.memberNoEvent),
       );
     }
+
+    // Sort chronologically: oldest event on the left, newest on the
+    // right — that's the natural reading order for a timeline and the
+    // direction the gray-then-red line below will follow.
+    final List<EventMember> sorted = List<EventMember>.of(eventMembers)
+      ..sort((a, b) {
+        final DateTime aDate = a.event?.startDate ?? DateTime(2100);
+        final DateTime bDate = b.event?.startDate ?? DateTime(2100);
+        return aDate.compareTo(bDate);
+      });
+
+    final DateTime now = DateTime.now();
+    final DateTime today = DateTime(now.year, now.month, now.day);
+
+    // Index of the first event that is NOT in the past — used to
+    // colour each card AND to drive the initial auto-scroll target so
+    // the user lands directly on their first upcoming roulage.
+    int? transitionIndex;
+    for (int i = 0; i < sorted.length; i++) {
+      final DateTime? start = sorted[i].event?.startDate;
+      if (start == null || !start.isBefore(today)) {
+        transitionIndex = i;
+        break;
+      }
+    }
+    // total width of one card slot, including the 8 px margin on each
+    // side baked into _buildTimelineEventItem
+    final double cardSlotWidth = _eventCardSize + 16;
+    final double totalWidth = cardSlotWidth * sorted.length;
+
+    // Build the list of timeline items.
+    final List<Widget> items = <Widget>[];
+    for (int i = 0; i < sorted.length; i++) {
+      items.add(
+        _buildTimelineEventItem(
+          context: context,
+          em: sorted[i],
+          today: today,
+          isLast: i == sorted.length - 1,
+          totalWidth: totalWidth,
+        ),
+      );
+    }
+
+    // Auto-scroll once per widget instance:
+    //  - mixed past + future → land just before the first upcoming
+    //    event so the user immediately sees what's next
+    //  - all past, no upcoming → scroll to the end (most recent event
+    //    is the rightmost one)
+    //  - all upcoming → no scroll, the closest one is already first
+    if (!_eventsTimelineAutoScrolled) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!_eventsTimelineController.hasClients) return;
+        if (_eventsTimelineAutoScrolled) return;
+        _eventsTimelineAutoScrolled = true;
+        final double maxScroll = _eventsTimelineController.position.maxScrollExtent;
+        double? target;
+        if (transitionIndex == null) {
+          // every event is past — show the most recent one (end)
+          target = maxScroll;
+        } else if (transitionIndex > 0) {
+          // mix — show the first upcoming with a small peek of the
+          // last past on the left
+          target = (transitionIndex * cardSlotWidth - 30).clamp(0.0, maxScroll);
+        }
+        if (target != null && target > 0) {
+          _eventsTimelineController.animateTo(
+            target,
+            duration: const Duration(milliseconds: 400),
+            curve: Curves.easeOut,
+          );
+        }
+      });
+    }
+
+    return SizedBox(
+      height: 142,
+      child: ListView(controller: _eventsTimelineController, scrollDirection: Axis.horizontal, children: items),
+    );
+  }
+
+  /// Render a single event card on the timeline. Extracted so the
+  /// surrounding `_eventsTimeline` method can stay readable while
+  /// inserting non-event markers (e.g. today) at the right indices.
+  Widget _buildTimelineEventItem({
+    required BuildContext context,
+    required EventMember em,
+    required DateTime today,
+    required bool isLast,
+    required double totalWidth,
+  }) {
+    final Event event = em.event!;
+    // An event counts as "past" when its start date is strictly
+    // before today (0h00). Events happening today render with the
+    // upcoming/red style.
+    final bool isPast = event.startDate != null && event.startDate!.isBefore(today);
+    final Color accent = isPast ? Colors.grey[500]! : Colors.red[700]!;
+
+    // if list view is not large enough, add padding so the last item
+    // pushes everything to fill the whole screen width
+    final double pad = isLast ? max(MediaQuery.of(context).size.width - totalWidth - 16, 0).toDouble() : 0.0;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        Stack(
+          children: <Widget>[
+            Container(
+              padding: EdgeInsets.only(top: 36.0),
+              margin: EdgeInsets.only(right: pad),
+              child: InkWell(
+                onTap: () => _navigateToTrackDetailScreen(context, event.track!),
+                child: Container(
+                  decoration: isPast
+                      ? BoxDecoration(
+                          color: Colors.grey[200]!.withValues(alpha: 0.6),
+                          borderRadius: BorderRadius.circular(4.0),
+                          border: Border.all(color: Colors.white, width: 1.0),
+                        )
+                      : CustomDecorations.cardLight,
+                  width: _eventCardSize,
+                  height: _eventCardSize,
+                  padding: EdgeInsets.all(2.0),
+                  margin: EdgeInsets.all(8.0),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: <Widget>[
+                      Icon(TrackUtils.trackIconFromName(event.track!.name), size: 30, color: accent),
+                      Text(
+                        "${event.track!.name}",
+                        textAlign: TextAlign.center,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black.withAlpha(204), height: 1),
+                        maxLines: 2,
+                      ),
+                      Text(
+                        "${event.organizer}",
+                        textScaler: TextScaler.linear(0.7),
+                        textAlign: TextAlign.center,
+                        overflow: TextOverflow.ellipsis,
+                        maxLines: 2,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            // Timeline backbone — coloured per segment so past
+            // events sit on a gray line and upcoming ones on a
+            // red one. The transition spot on the screen is the
+            // "now" marker (no separate label needed).
+            Positioned(top: 17.0, left: 0.0, right: 0.0, child: Container(height: 2, color: accent)),
+            // Pin on the line, right at the centre of the date
+            // badge — gives a clear "node" feel like on a real
+            // timeline, without enlarging the layout.
+            Positioned(
+              top: 13.0,
+              left: 0.0,
+              right: pad,
+              child: Center(
+                child: Container(
+                  width: 10,
+                  height: 10,
+                  decoration: BoxDecoration(
+                    color: accent,
+                    shape: BoxShape.circle,
+                    border: Border.all(color: Colors.white, width: 2),
+                  ),
+                ),
+              ),
+            ),
+            Positioned(
+              top: 0.0,
+              left: 0.0,
+              right: pad,
+              child: Center(
+                child: Container(
+                  width: 42,
+                  height: 36,
+                  child: Column(
+                    children: <Widget>[
+                      Container(
+                        height: 14,
+                        decoration: BoxDecoration(
+                          color: accent,
+                          shape: BoxShape.rectangle,
+                          borderRadius: BorderRadius.only(
+                            topLeft: Radius.circular(6.0),
+                            topRight: Radius.circular(6.0),
+                          ),
+                        ),
+                        child: Center(
+                          child: Text(
+                            "${AppDateUtils.convertToString(event.startDate!, "MMM yy")}",
+                            textScaler: TextScaler.linear(0.75),
+                            style: TextStyle(color: Colors.white),
+                          ),
+                        ),
+                      ),
+                      Expanded(
+                        child: Container(
+                          decoration: isPast
+                              ? BoxDecoration(
+                                  gradient: LinearGradient(
+                                    colors: [Colors.grey[400]!, Colors.grey[600]!],
+                                    begin: Alignment.topLeft,
+                                    end: Alignment.bottomRight,
+                                  ),
+                                  borderRadius: BorderRadius.only(
+                                    bottomLeft: Radius.circular(6.0),
+                                    bottomRight: Radius.circular(6.0),
+                                  ),
+                                )
+                              : CustomDecorations.cardBody,
+                          child: Center(
+                            child: Text(
+                              "${AppDateUtils.convertToString(event.startDate!, "dd")}",
+                              style: TextStyle(color: Colors.white),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
   }
 
   Widget build(BuildContext context) {
@@ -856,7 +987,7 @@ class MemberDetail extends StatelessWidget {
                                   ],
                                 ),
                                 SizedBox(height: 10),
-                                _eventsTimeline(_memberDetailProvider),
+                                _eventsTimeline(context, _memberDetailProvider),
                                 SizedBox(height: 10),
                                 Row(
                                   children: <Widget>[

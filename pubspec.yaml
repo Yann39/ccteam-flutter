@@ -113,9 +113,6 @@ flutter:
 
   # Required if your app uses custom fonts
   fonts:
-    - family: Barbatrick
-      fonts:
-        - asset: fonts/barbatrick.regular.ttf
     - family: AlarmClock
       fonts:
         - asset: fonts/alarmclock.ttf

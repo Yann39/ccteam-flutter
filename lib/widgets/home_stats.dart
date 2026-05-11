@@ -25,6 +25,7 @@ import 'package:ccteam/providers/event_detail_provider.dart';
 import 'package:ccteam/providers/event_list_provider.dart';
 import 'package:ccteam/providers/home_provider.dart';
 import 'package:ccteam/providers/login_provider.dart';
+import 'package:ccteam/providers/member_creation_provider.dart';
 import 'package:ccteam/providers/member_list_provider.dart';
 import 'package:ccteam/providers/record_list_provider.dart';
 import 'package:ccteam/providers/track_list_provider.dart';
@@ -125,8 +126,8 @@ class HomeStats extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: <Widget>[
           // hero: next ride countdown
-          _NextRideHero(nextEvent: nextEvent, now: now),
-          const SizedBox(height: 8.0),
+          //_NextRideHero(nextEvent: nextEvent, now: now),
+          //const SizedBox(height: 8.0),
 
           // two side-by-side grouped cards
           IntrinsicHeight(
@@ -165,11 +166,8 @@ class HomeStats extends StatelessWidget {
                 Expanded(
                   child: _GroupCard(
                     title: AppString.statsProfile,
-                    // cotisation status promoted to the header so the
-                    // most critical bit of personal info stays
-                    // glanceable, regardless of how many regular rows
-                    // are visible
                     headerTrailing: _FeeStatusPill(paid: feePaid),
+                    onHeaderTap: () => _navigateToEditProfile(context),
                     rows: <_GroupCardRow>[
                       _GroupCardRow(
                         icon: Icons.flag,
@@ -204,6 +202,18 @@ class HomeStats extends StatelessWidget {
 
   void _switchTab(BuildContext context, int index) {
     Provider.of<HomeProvider>(context, listen: false).setCurrentIndex(index);
+  }
+
+  /// Open the profile edit screen for the currently logged-in member.
+  /// Mirrors what `member_detail._navigateToEditMemberScreen` does:
+  /// inject the member into MemberCreationProvider, then push the
+  /// shared `/addEditMember` route.
+  void _navigateToEditProfile(BuildContext context) {
+    final loginProvider = Provider.of<LoginProvider>(context, listen: false);
+    final member = loginProvider.loggedMember;
+    if (member == null) return;
+    Provider.of<MemberCreationProvider>(context, listen: false).setMemberToEdit(member);
+    Navigator.pushNamed(context, '/addEditMember');
   }
 
   static DateTime _dayOnly(DateTime d) => DateTime(d.year, d.month, d.day);
@@ -437,6 +447,7 @@ class _GroupCard extends StatefulWidget {
     required this.rows,
     this.maxVisibleRows = 3,
     this.headerTrailing,
+    this.onHeaderTap,
   }) : super(key: key);
 
   final String title;
@@ -453,6 +464,12 @@ class _GroupCard extends StatefulWidget {
   /// pill, so the critical info stays glanceable while regular rows
   /// remain available for routine stats.
   final Widget? headerTrailing;
+
+  /// Optional tap handler on the card header. When set, the header
+  /// becomes interactive (InkWell ripple + a small chevron next to
+  /// the title to advertise the affordance). Used by "Mon profil" to
+  /// jump to the profile edit screen.
+  final VoidCallback? onHeaderTap;
 
   @override
   State<_GroupCard> createState() => _GroupCardState();
@@ -487,24 +504,7 @@ class _GroupCardState extends State<_GroupCard> {
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: <Widget>[
-              Row(
-                children: <Widget>[
-                  Expanded(
-                    child: Text(
-                      widget.title.toUpperCase(),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        color: Colors.white.withValues(alpha: 0.95),
-                        fontSize: 11.0,
-                        fontWeight: FontWeight.w700,
-                        letterSpacing: 1.0,
-                      ),
-                    ),
-                  ),
-                  if (widget.headerTrailing != null) widget.headerTrailing!,
-                ],
-              ),
+              _buildHeader(),
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 4.0),
                 child: Container(height: 1, color: Colors.white.withValues(alpha: 0.25)),
@@ -526,6 +526,44 @@ class _GroupCardState extends State<_GroupCard> {
           ),
         ),
       ),
+    );
+  }
+
+  /// Header row builder — extracted so we can either render a plain
+  /// Row or wrap it in an [InkWell] when [_GroupCard.onHeaderTap] is
+  /// set. The chevron is only rendered in the tappable case so the
+  /// non-interactive cards stay visually unchanged.
+  Widget _buildHeader() {
+    final bool tappable = widget.onHeaderTap != null;
+    final Row content = Row(
+      children: <Widget>[
+        Expanded(
+          child: Text(
+            widget.title.toUpperCase(),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              color: Colors.white.withValues(alpha: 0.95),
+              fontSize: 11.0,
+              fontWeight: FontWeight.w700,
+              letterSpacing: 1.0,
+            ),
+          ),
+        ),
+        if (tappable) ...[
+          const SizedBox(width: 2.0),
+          Icon(Icons.chevron_right, size: 16, color: Colors.white.withValues(alpha: 0.85)),
+          const SizedBox(width: 2.0),
+        ],
+        if (widget.headerTrailing != null) widget.headerTrailing!,
+      ],
+    );
+
+    if (!tappable) return content;
+    return InkWell(
+      onTap: widget.onHeaderTap,
+      borderRadius: BorderRadius.circular(6.0),
+      child: content,
     );
   }
 

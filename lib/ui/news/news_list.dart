@@ -25,7 +25,6 @@ import 'package:ccteam/providers/news_list_provider.dart';
 import 'package:ccteam/ui/main/main_action_menu.dart';
 import 'package:ccteam/ui/main/main_drawer.dart';
 import 'package:ccteam/ui/news/news_card.dart';
-import 'package:ccteam/utils/custom_decorations.dart';
 import 'package:ccteam/utils/strings.dart';
 import 'package:ccteam/widgets/home_stats.dart';
 import 'package:ccteam/widgets/loading_content.dart';
@@ -78,69 +77,80 @@ class NewsList extends StatelessWidget {
         ],
       ),
       drawer: MainDrawer(),
-      body: Scaffold(
-        body: NestedScrollView(
-          headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
-            return <Widget>[
-              SliverAppBar(
-                expandedHeight: 150.0,
-                floating: true,
-                backgroundColor: Colors.transparent,
-                pinned: false,
-                flexibleSpace: Container(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [Colors.white, Colors.blue[100]!],
-                      begin: FractionalOffset(0.0, 0.0),
-                      end: FractionalOffset(0.0, 1.0),
-                      stops: [0.0, 1.0],
-                    ),
-                  ),
-                  child: FlexibleSpaceBar(
-                    background: Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Image.asset('images/ccteam6.png', fit: BoxFit.contain),
-                    ),
-                  ),
-                ),
+      body: LayoutBuilder(
+        builder: (BuildContext context, BoxConstraints constraints) {
+          const double logoHeight = 150.0;
+          final double bodyHeight = constraints.maxHeight;
+          // clamp to keep a valid stop ordering even on tiny screens
+          final double logoFraction = bodyHeight > 0 ? (logoHeight / bodyHeight).clamp(0.0, 1.0) : 0.5;
+          return Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [Colors.white, Colors.blue[100]!, Colors.blue[200]!],
+                stops: [0.0, logoFraction, 1.0],
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
               ),
-            ];
-          },
-          body: Container(
-            decoration: CustomDecorations.mainContent,
-            child: Column(
-              children: <Widget>[
-                const HomeStats(),
-                Container(
-                  padding: EdgeInsets.all(8),
-                  child: Text(
-                    AppString.news,
-                    style: TextStyle(color: Colors.black87, fontSize: 16, fontFamily: 'Barbatrick', letterSpacing: 2),
-                  ),
-                ),
-                Expanded(
-                  child: RefreshIndicator(
-                    onRefresh: () => _newsListProvider.fetchNewsList(),
-                    child: LoadingContent(
-                      loadingStatus: _newsListProvider.loadingStatus,
-                      defaultText: AppString.newsEmpty,
-                      emptyText: AppString.newsEmpty,
-                      child: ListView.builder(
-                        itemCount: _newsListProvider.newsList.length,
-                        itemBuilder: (context, index) {
-                          return InkWell(
-                            child: NewsCard(index),
-                            onTap: () => _navigateToNewsDetailScreen(context, _newsListProvider.newsList[index]),
-                          );
-                        },
+            ),
+            child: NestedScrollView(
+              headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
+                return <Widget>[
+                  SliverAppBar(
+                    expandedHeight: logoHeight,
+                    floating: true,
+                    backgroundColor: Colors.transparent,
+                    pinned: false,
+                    automaticallyImplyLeading: false,
+                    elevation: 0,
+                    scrolledUnderElevation: 0,
+                    shadowColor: Colors.transparent,
+                    surfaceTintColor: Colors.transparent,
+                    flexibleSpace: FlexibleSpaceBar(
+                      background: Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Image.asset('images/ccteam6.png', fit: BoxFit.contain),
                       ),
                     ),
                   ),
+                  const SliverToBoxAdapter(child: HomeStats()),
+                  SliverToBoxAdapter(
+                    child: Container(
+                      padding: EdgeInsets.only(left: 8.0, right: 8.0, top: 10.0, bottom: 2.0),
+                      alignment: Alignment.center,
+                      child: Text(
+                        AppString.news.toUpperCase(),
+                        style: TextStyle(
+                          color: Colors.black87,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w800,
+                          fontStyle: FontStyle.italic,
+                          letterSpacing: 1.5,
+                        ),
+                      ),
+                    ),
+                  ),
+                ];
+              },
+              body: RefreshIndicator(
+                onRefresh: () => _newsListProvider.fetchNewsList(),
+                child: LoadingContent(
+                  loadingStatus: _newsListProvider.loadingStatus,
+                  defaultText: AppString.newsEmpty,
+                  emptyText: AppString.newsEmpty,
+                  child: ListView.builder(
+                    itemCount: _newsListProvider.newsList.length,
+                    itemBuilder: (context, index) {
+                      return InkWell(
+                        child: NewsCard(index),
+                        onTap: () => _navigateToNewsDetailScreen(context, _newsListProvider.newsList[index]),
+                      );
+                    },
+                  ),
                 ),
-              ],
+              ),
             ),
-          ),
-        ),
+          );
+        },
       ),
     );
   }
