@@ -76,6 +76,40 @@ class TrackUtils {
     }
   }
 
+  /// Map a [TrackCondition] enum name (as stored on `Record.conditions`)
+  /// to a representative weather icon. Returns `null` when the condition
+  /// is unknown / not set — callers should treat that as "don't render
+  /// anything" rather than fall back to a default, so missing data
+  /// stays visibly missing.
+  static IconData? trackConditionIconData(String? condition) {
+    switch (condition) {
+      case 'dry':
+        return Icons.wb_sunny;
+      case 'drying':
+        return Icons.wb_cloudy;
+      case 'wet':
+        return Icons.water_drop;
+      default:
+        return null;
+    }
+  }
+
+  /// Companion color for the icon returned by [trackConditionIconData].
+  /// Picks a tone that matches the weather metaphor (warm for dry, cool
+  /// for wet, neutral for drying).
+  static Color trackConditionColor(String? condition) {
+    switch (condition) {
+      case 'dry':
+        return Colors.amber;
+      case 'drying':
+        return Colors.blueGrey[300]!;
+      case 'wet':
+        return Colors.lightBlue[300]!;
+      default:
+        return Colors.white;
+    }
+  }
+
   /// Get the right track cover image according to the specified [trackName]
   static String trackCoverImageUrlFromName(String? trackName) {
     if (trackName == 'Alès') {

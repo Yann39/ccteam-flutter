@@ -23,12 +23,10 @@ import 'package:ccteam/providers/login_provider.dart';
 import 'package:ccteam/providers/record_creation_provider.dart';
 import 'package:ccteam/services/tracks_service.dart';
 import 'package:ccteam/utils/constants.dart';
-import 'package:ccteam/utils/custom_decorations.dart';
 import 'package:ccteam/utils/custom_icons.dart';
 import 'package:ccteam/utils/date_utils.dart';
 import 'package:ccteam/utils/strings.dart';
-import 'package:ccteam/widgets/loading_content.dart';
-import 'package:ccteam/widgets/save_cancel_bar.dart';
+import 'package:ccteam/widgets/form_scaffold.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
@@ -47,9 +45,7 @@ class AddEditRecord extends StatefulWidget {
 
 class _AddEditRecordState extends State<AddEditRecord> {
   final GlobalKey<FormState> _formKey = new GlobalKey<FormState>();
-  final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
-  final TextEditingController _datePickerController =
-      new TextEditingController();
+  final TextEditingController _datePickerController = new TextEditingController();
   final TracksService _tracksService = new TracksService();
 
   Future<List<Track>>? _futureTracks;
@@ -60,30 +56,20 @@ class _AddEditRecordState extends State<AddEditRecord> {
     super.initState();
     _futureTracks = _tracksService.fetchTracks();
 
-    final record =
-        Provider.of<RecordCreationProvider>(context, listen: false).record;
+    final record = Provider.of<RecordCreationProvider>(context, listen: false).record;
     if (record.recordDate != null) {
-      _datePickerController.text = DateFormat(
-        DATE_FORMAT,
-      ).format(record.recordDate!);
+      _datePickerController.text = DateFormat(DATE_FORMAT).format(record.recordDate!);
     }
   }
 
   /// Initialize and display a Date picker related to the specified [controller] in the specified [context]
-  Future _chooseDate(
-    BuildContext context,
-    TextEditingController controller,
-    DateTime? defaultValue,
-  ) async {
+  Future _chooseDate(BuildContext context, TextEditingController controller, DateTime? defaultValue) async {
     final DateTime currentDate = DateTime.now();
     final TimeOfDay currentTime = TimeOfDay.now();
 
     // define initial date and time from the specified default DateTime value if set
     final DateTime initialDate = defaultValue ?? currentDate;
-    final TimeOfDay initialTime =
-        defaultValue != null
-            ? TimeOfDay.fromDateTime(defaultValue)
-            : currentTime;
+    final TimeOfDay initialTime = defaultValue != null ? TimeOfDay.fromDateTime(defaultValue) : currentTime;
 
     // show the date picker and await for the chosen date
     final DateTime? dateResult = await showDatePicker(
@@ -94,10 +80,7 @@ class _AddEditRecordState extends State<AddEditRecord> {
     );
 
     // show the time picker and await for the chosen time
-    final TimeOfDay? timeResult = await showTimePicker(
-      context: context,
-      initialTime: initialTime,
-    );
+    final TimeOfDay? timeResult = await showTimePicker(context: context, initialTime: initialTime);
 
     if (dateResult != null && timeResult != null) {
       // build final date with time
@@ -121,33 +104,22 @@ class _AddEditRecordState extends State<AddEditRecord> {
     final FormState form = _formKey.currentState!;
 
     if (!form.validate()) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          backgroundColor: Colors.red,
-          content: Text(AppString.formNotValid),
-        ),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(backgroundColor: Colors.red, content: Text(AppString.formNotValid)));
     } else {
       // this invokes each onSaved event
       form.save();
 
-      Provider.of<RecordCreationProvider>(
-            context,
-            listen: false,
-          ).record.member =
-          Provider.of<LoginProvider>(context, listen: false).loggedMember;
+      Provider.of<RecordCreationProvider>(context, listen: false).record.member = Provider.of<LoginProvider>(
+        context,
+        listen: false,
+      ).loggedMember;
 
       // submit data to backend, if id is set this is an update, else a creation
-      if (Provider.of<RecordCreationProvider>(
-            context,
-            listen: false,
-          ).record.id !=
-          null) {
+      if (Provider.of<RecordCreationProvider>(context, listen: false).record.id != null) {
         // update the news go back with a message, the result is awaited in caller
-        Provider.of<RecordCreationProvider>(
-          context,
-          listen: false,
-        ).updateRecord().then(
+        Provider.of<RecordCreationProvider>(context, listen: false).updateRecord().then(
           (value) {
             Navigator.pop(context, AppString.recordUpdated);
           },
@@ -157,10 +129,7 @@ class _AddEditRecordState extends State<AddEditRecord> {
         );
       } else {
         // create the record go back with a message, the result is awaited in caller
-        Provider.of<RecordCreationProvider>(
-          context,
-          listen: false,
-        ).createRecord().then(
+        Provider.of<RecordCreationProvider>(context, listen: false).createRecord().then(
           (value) {
             Navigator.pop(context, AppString.recordCreated);
           },
@@ -191,10 +160,7 @@ class _AddEditRecordState extends State<AddEditRecord> {
               child: Text(AppString.confirm),
               onPressed: () {
                 Navigator.of(context).pop(); // close the dialog
-                Provider.of<RecordCreationProvider>(
-                  context,
-                  listen: false,
-                ).deleteRecord().then((value) {
+                Provider.of<RecordCreationProvider>(context, listen: false).deleteRecord().then((value) {
                   Navigator.pop(context, AppString.recordDeleted); // close the page
                 });
               },
@@ -206,16 +172,10 @@ class _AddEditRecordState extends State<AddEditRecord> {
   }
 
   Widget build(BuildContext context) {
-    RecordCreationProvider _recordCreationProvider =
-        Provider.of<RecordCreationProvider>(context, listen: true);
+    RecordCreationProvider _recordCreationProvider = Provider.of<RecordCreationProvider>(context, listen: true);
 
     final _dateField = GestureDetector(
-      onTap:
-          () => _chooseDate(
-            context,
-            _datePickerController,
-            _recordCreationProvider.record.recordDate,
-          ),
+      onTap: () => _chooseDate(context, _datePickerController, _recordCreationProvider.record.recordDate),
       child: AbsorbPointer(
         child: TextFormField(
           decoration: InputDecoration(
@@ -225,18 +185,10 @@ class _AddEditRecordState extends State<AddEditRecord> {
           ),
           controller: _datePickerController,
           keyboardType: TextInputType.datetime,
-          validator:
-              (val) =>
-                  (val == null || val.isEmpty)
-                      ? AppString.recordDateMandatory
-                      : (AppDateUtils.isAfterNow(val, DATE_FORMAT)
-                          ? AppString.recordDateNotValid
-                          : null),
-          onSaved:
-              (val) =>
-                  _recordCreationProvider.record.recordDate = DateFormat(
-                    DATE_FORMAT,
-                  ).parseStrict(val!),
+          validator: (val) => (val == null || val.isEmpty)
+              ? AppString.recordDateMandatory
+              : (AppDateUtils.isAfterNow(val, DATE_FORMAT) ? AppString.recordDateNotValid : null),
+          onSaved: (val) => _recordCreationProvider.record.recordDate = DateFormat(DATE_FORMAT).parseStrict(val!),
         ),
       ),
     );
@@ -248,39 +200,31 @@ class _AddEditRecordState extends State<AddEditRecord> {
           return Column(
             children: <Widget>[
               DropdownButtonFormField<Track>(
-                initialValue:
-                    _selectedTrack != null
-                        ? _selectedTrack
-                        : _recordCreationProvider.record.id != null
-                        ? snapshot.data!.firstWhere(
-                          (Track t) =>
-                              t.id == _recordCreationProvider.record.track!.id,
-                          orElse: () => snapshot.data!.first,
-                        )
-                        : snapshot.data!.isNotEmpty
-                        ? snapshot.data!.first
-                        : null,
+                initialValue: _selectedTrack != null
+                    ? _selectedTrack
+                    : _recordCreationProvider.record.id != null
+                    ? snapshot.data!.firstWhere(
+                        (Track t) => t.id == _recordCreationProvider.record.track!.id,
+                        orElse: () => snapshot.data!.first,
+                      )
+                    : snapshot.data!.isNotEmpty
+                    ? snapshot.data!.first
+                    : null,
                 decoration: const InputDecoration(
                   icon: const Icon(CustomIcons.track_sample),
                   hintText: AppString.eventTrackIdHint,
                   labelText: AppString.eventTrackId,
                 ),
-                items:
-                    snapshot.data!.map((Track val) {
-                      return DropdownMenuItem<Track>(
-                        value: val,
-                        child: Text(val.name!),
-                      );
-                    }).toList(),
+                items: snapshot.data!.map((Track val) {
+                  return DropdownMenuItem<Track>(value: val, child: Text(val.name!));
+                }).toList(),
                 onChanged: (Track? val) {
                   setState(() {
                     _selectedTrack = val;
                   });
                 },
                 onSaved: (val) => _recordCreationProvider.record.track = val,
-                validator:
-                    (val) =>
-                        val == null ? AppString.eventTrackIdMandatory : null,
+                validator: (val) => val == null ? AppString.eventTrackIdMandatory : null,
               ),
             ],
           );
@@ -300,24 +244,17 @@ class _AddEditRecordState extends State<AddEditRecord> {
       ),
       keyboardType: TextInputType.number,
       maxLines: 1,
-      inputFormatters: <TextInputFormatter>[
-        LengthLimitingTextInputFormatter(9),
-        FilteringTextInputFormatter.digitsOnly,
-        LapTimeTextInputFormatter(),
-      ],
-      validator:
-          (val) =>
-              (val == null || val.isEmpty)
-                  ? AppString.recordLapTimeMandatory
-                  : null,
-      onSaved:
-          (val) =>
-              _recordCreationProvider
-                  .record
-                  .lapTime = AppDateUtils.toLapTimeDuration(val),
-      initialValue: AppDateUtils.toLapTimeString(
-        _recordCreationProvider.record.lapTime,
-      ),
+      inputFormatters: <TextInputFormatter>[LapTimeTextInputFormatter()],
+      validator: (val) {
+        if (val == null || val.isEmpty) return AppString.recordLapTimeMandatory;
+        final RegExpMatch? m = RegExp("^(\\d{2})'(\\d{2})\"(\\d{1,3})\$").firstMatch(val);
+        if (m == null) return AppString.recordLapTimeNotValid;
+        final int seconds = int.parse(m.group(2)!);
+        if (seconds >= 60) return AppString.recordLapTimeNotValid;
+        return null;
+      },
+      onSaved: (val) => _recordCreationProvider.record.lapTime = AppDateUtils.toLapTimeDuration(val),
+      initialValue: AppDateUtils.toLapTimeString(_recordCreationProvider.record.lapTime),
     );
 
     final _conditions = DropdownButtonFormField<TrackCondition>(
@@ -327,155 +264,133 @@ class _AddEditRecordState extends State<AddEditRecord> {
         hintText: AppString.recordConditionHint,
         labelText: AppString.recordConditionLabel,
       ),
-      items:
-          TrackCondition.values.map((TrackCondition value) {
-            return DropdownMenuItem<TrackCondition>(
-              value: value,
-              child: Text(value.name),
-            );
-          }).toList(),
+      items: TrackCondition.values.map((TrackCondition value) {
+        return DropdownMenuItem<TrackCondition>(value: value, child: Text(value.name));
+      }).toList(),
       onChanged: (TrackCondition? value) {
         _recordCreationProvider.selectTrackCondition(value!);
       },
       onSaved: (val) => _recordCreationProvider.record.conditions = val!.name,
-      validator:
-          (val) => val == null ? AppString.recordConditionMandatory : null,
+      validator: (val) => val == null ? AppString.recordConditionMandatory : null,
     );
 
-    final form = Form(
-      autovalidateMode: AutovalidateMode.disabled,
-      key: _formKey,
-      child: ListView(
-        padding: const EdgeInsets.symmetric(
-          horizontal: UI_FORM_PADDING,
-          vertical: 16.0,
-        ),
-        children: <Widget>[
-          _dateField,
-          const SizedBox(height: 16),
-          _trackField,
-          const SizedBox(height: 16),
-          DropdownButtonFormField<Bike>(
-            initialValue: _recordCreationProvider.selectedBike,
-            decoration: const InputDecoration(
-              icon: Icon(CustomIcons.motorbike),
-              hintText: AppString.recordBikeHint,
-              labelText: AppString.recordBikeLabel,
-            ),
-            items:
-                Provider.of<LoginProvider>(
-                  context,
-                  listen: false,
-                ).loggedMember!.bikes!.map((Bike bike) {
-                  return DropdownMenuItem<Bike>(
-                    value: bike,
-                    child: Text("${bike.manufacturer} ${bike.modelName}"),
-                  );
-                }).toList(),
-            onChanged: (Bike? val) {
-              _recordCreationProvider.selectBike(val!);
-            },
-            validator:
-                (val) => val == null ? AppString.recordBikeMandatory : null,
-          ),
-          const SizedBox(height: 16),
-          _lapTimeField,
-          const SizedBox(height: 16),
-          _conditions,
-        ],
+    final _bikeField = DropdownButtonFormField<Bike>(
+      initialValue: _recordCreationProvider.selectedBike,
+      decoration: const InputDecoration(
+        icon: Icon(CustomIcons.motorbike),
+        hintText: AppString.recordBikeHint,
+        labelText: AppString.recordBikeLabel,
       ),
+      items: Provider.of<LoginProvider>(context, listen: false).loggedMember!.bikes!.map((Bike bike) {
+        return DropdownMenuItem<Bike>(value: bike, child: Text("${bike.manufacturer} ${bike.modelName}"));
+      }).toList(),
+      onChanged: (Bike? val) {
+        _recordCreationProvider.selectBike(val!);
+      },
+      validator: (val) => val == null ? AppString.recordBikeMandatory : null,
     );
 
-    final List<Widget> actionMenu = [
-      TextButton(
-        child: Text(
-          AppString.cancel.toUpperCase(),
-          style: TextStyle(color: Colors.white),
-        ),
-        onPressed: () => Navigator.pop(context),
-      ),
-      TextButton(
-        child: Text(
-          AppString.save.toUpperCase(),
-          style: TextStyle(color: Colors.white),
-        ),
-        onPressed: () => submitForm(),
-      ),
-    ];
-
-    final List<Widget> appBarActions = [];
-    if (_recordCreationProvider.record.id != null) {
-      appBarActions.add(
-        IconButton(
-          icon: const Icon(Icons.delete),
-          onPressed: () => _deleteRecord(),
-        ),
-      );
-    }
-    
-    if (MediaQuery.of(context).orientation == Orientation.landscape) {
-      appBarActions.addAll(actionMenu);
-    }
-
-    return Scaffold(
-      key: _scaffoldKey,
-      appBar: AppBar(
-        elevation: 0.0,
-        title: Text(AppString.recordEdit),
-        actions: appBarActions.isNotEmpty ? appBarActions : null,
-      ),
-      body: Container(
-        decoration: CustomDecorations.mainContent,
-        child: LoadingContent(
-          loadingStatus: _recordCreationProvider.loadingStatus,
-          defaultText: AppString.contentNotLoaded,
-          emptyText: AppString.noContentToDisplay,
-          child: Column(
-            children: <Widget>[
-              Expanded(child: form),
-              SafeArea(
-                child: SaveCancelBar(
-                  saveFunction: () => submitForm(),
-                  cancelFunction: () => Navigator.pop(context),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
+    return FormScaffold(
+      title: AppString.recordEdit,
+      formKey: _formKey,
+      loadingStatus: _recordCreationProvider.loadingStatus,
+      onSave: submitForm,
+      // delete action only when editing an existing record
+      onDelete: _recordCreationProvider.record.id != null ? _deleteRecord : null,
+      fields: <Widget>[_dateField, _trackField, _bikeField, _lapTimeField, _conditions],
     );
   }
 }
 
-/// Input formatter class for lap times
+/// Input formatter that turns raw digit input into a lap-time string
+/// of the form `MM'SS"mmm`.
+///
+/// The user types digits 0–9 only; this formatter:
+///  1. strips anything that isn't a digit (so paste, autocorrect and
+///     leftover separators from the previous render can't smuggle
+///     anything in),
+///  2. caps the digit count at 7 (2 minutes + 2 seconds + 3 ms),
+///  3. inserts `'` after the 2nd digit and `"` after the 4th — but
+///     only when there is an actual digit to "anchor" them, so
+///     backspacing past a digit naturally drops the trailing
+///     separator instead of leaving it stranded,
+///  4. re-positions the caret so it lands at exactly the same logical
+///     position relative to the digits (typing, backspacing and
+///     mid-string editing all behave naturally).
+///
+/// Two additional details make backspace feel right:
+///  - The caret formula only counts a separator as "before the caret"
+///    if that separator is actually rendered. Without this guard the
+///    caret can land beyond the text length, which Flutter silently
+///    rejects — that was the cause of the "delete stops at \"" bug.
+///  - When the user deletes a separator (text gets shorter but the
+///    digit count is unchanged), we also drop the digit just before
+///    it. Otherwise we'd re-insert the same separator at the same
+///    position on every render and backspace would look like a no-op.
 class LapTimeTextInputFormatter extends TextInputFormatter {
+  static const int _maxDigits = 7; // MM (2) + SS (2) + mmm (3)
+
   @override
-  TextEditingValue formatEditUpdate(
-    TextEditingValue oldValue,
-    TextEditingValue newValue,
-  ) {
-    final int _newTextLength = newValue.text.length;
-    int _selectionIndex = newValue.selection.end;
-    int _usedSubstringIndex = 0;
-    final StringBuffer _newText = new StringBuffer();
-    // add a space after the 2nd character
-    if (_newTextLength >= 3) {
-      _newText.write(
-        newValue.text.substring(0, _usedSubstringIndex = 2) + '\'',
-      );
-      if (newValue.selection.end >= 2) _selectionIndex++;
+  TextEditingValue formatEditUpdate(TextEditingValue oldValue, TextEditingValue newValue) {
+    final String raw = newValue.text;
+    final int originalCaret = newValue.selection.end.clamp(0, raw.length);
+
+    // pull out digits from the new value + count how many sit to the left of the caret
+    final StringBuffer digitsBuf = StringBuffer();
+    int digitsBeforeCaret = 0;
+    for (int i = 0; i < raw.length; i++) {
+      if (_isDigit(raw.codeUnitAt(i))) {
+        digitsBuf.write(raw[i]);
+        if (i < originalCaret) digitsBeforeCaret++;
+      }
     }
-    // add a space after the 4rd character
-    if (_newTextLength >= 4) {
-      _newText.write(newValue.text.substring(2, _usedSubstringIndex = 4) + '"');
-      if (newValue.selection.end >= 3) _selectionIndex++;
+    String digits = digitsBuf.toString();
+
+    // count digits in the old value too, so we can detect a
+    // "separator-only deletion" — i.e. the user backspaced a `'` or `"`
+    // in the middle of the text. In that case the digit count is
+    // unchanged, but the text shrank. We absorb the deletion by also
+    // dropping the digit immediately to the left of the caret, so
+    // backspace "eats through" the separator rather than letting it
+    // re-grow at the same spot.
+    int oldDigitCount = 0;
+    for (int i = 0; i < oldValue.text.length; i++) {
+      if (_isDigit(oldValue.text.codeUnitAt(i))) oldDigitCount++;
     }
-    // then write following characters
-    if (_newTextLength >= _usedSubstringIndex)
-      _newText.write(newValue.text.substring(_usedSubstringIndex));
+    if (digits.length == oldDigitCount && raw.length < oldValue.text.length && digitsBeforeCaret > 0) {
+      digits = digits.substring(0, digitsBeforeCaret - 1) + digits.substring(digitsBeforeCaret);
+      digitsBeforeCaret -= 1;
+    }
+
+    // cap at 7 digits = MM + SS + mmm
+    if (digits.length > _maxDigits) {
+      digits = digits.substring(0, _maxDigits);
+      if (digitsBeforeCaret > _maxDigits) digitsBeforeCaret = _maxDigits;
+    }
+
+    // re-assemble with `'` after the 2nd digit and `"` after the 4th.
+    // The separators are only emitted right before a digit, so a
+    // 4-digit input renders as `01'31` (no trailing `"`) and a 2-digit
+    // input as `01` — letting backspace naturally drop the separator
+    // along with the preceding digit segment.
+    final StringBuffer out = StringBuffer();
+    for (int i = 0; i < digits.length; i++) {
+      if (i == 2) out.write("'");
+      if (i == 4) out.write('"');
+      out.write(digits[i]);
+    }
+
+    // caret position in the formatted text
+    final int caret =
+        digitsBeforeCaret +
+        (digitsBeforeCaret >= 2 && digits.length > 2 ? 1 : 0) +
+        (digitsBeforeCaret >= 4 && digits.length > 4 ? 1 : 0);
+
     return TextEditingValue(
-      text: _newText.toString(),
-      selection: TextSelection.collapsed(offset: _selectionIndex),
+      text: out.toString(),
+      selection: TextSelection.collapsed(offset: caret),
     );
   }
+
+  static bool _isDigit(int codeUnit) => codeUnit >= 0x30 && codeUnit <= 0x39;
 }

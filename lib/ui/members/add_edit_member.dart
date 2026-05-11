@@ -21,17 +21,15 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:ccteam/providers/avatar_provider.dart';
+import 'package:ccteam/providers/login_provider.dart';
 import 'package:ccteam/providers/member_creation_provider.dart';
 import 'package:ccteam/providers/member_detail_provider.dart';
 import 'package:ccteam/providers/member_list_provider.dart';
-import 'package:ccteam/utils/constants.dart';
-import 'package:ccteam/utils/custom_decorations.dart';
 import 'package:ccteam/utils/custom_icons.dart';
 import 'package:ccteam/utils/enums.dart';
 import 'package:ccteam/utils/string_utils.dart';
 import 'package:ccteam/utils/strings.dart';
-import 'package:ccteam/providers/login_provider.dart';
-import 'package:ccteam/widgets/save_cancel_bar.dart';
+import 'package:ccteam/widgets/form_scaffold.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
@@ -39,10 +37,7 @@ import 'package:provider/provider.dart';
 /// Input formatter class for E.164 phone number
 class NumberTextInputFormatter extends TextInputFormatter {
   @override
-  TextEditingValue formatEditUpdate(
-    TextEditingValue oldValue,
-    TextEditingValue newValue,
-  ) {
+  TextEditingValue formatEditUpdate(TextEditingValue oldValue, TextEditingValue newValue) {
     final int _newTextLength = newValue.text.length;
     int _selectionIndex = newValue.selection.end;
     int _usedSubstringIndex = 0;
@@ -58,8 +53,7 @@ class NumberTextInputFormatter extends TextInputFormatter {
       if (newValue.selection.end >= 2) _selectionIndex += 1;
     }
     // then write following characters
-    if (_newTextLength >= _usedSubstringIndex)
-      _newText.write(newValue.text.substring(_usedSubstringIndex));
+    if (_newTextLength >= _usedSubstringIndex) _newText.write(newValue.text.substring(_usedSubstringIndex));
     return TextEditingValue(
       text: _newText.toString(),
       selection: TextSelection.collapsed(offset: _selectionIndex),
@@ -88,8 +82,7 @@ class _AddEditMemberState extends State<AddEditMember> {
   @override
   void initState() {
     super.initState();
-    final MemberCreationProvider provider =
-        Provider.of<MemberCreationProvider>(context, listen: false);
+    final MemberCreationProvider provider = Provider.of<MemberCreationProvider>(context, listen: false);
     _initialBoardRole = provider.currentMember.boardRole;
     _selectedBoardRole = _initialBoardRole;
   }
@@ -99,131 +92,170 @@ class _AddEditMemberState extends State<AddEditMember> {
     final FormState form = _formKey.currentState!;
 
     if (!form.validate()) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          backgroundColor: Colors.red,
-          content: Text(AppString.formNotValid),
-        ),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(backgroundColor: Colors.red, content: Text(AppString.formNotValid)));
     } else {
       // this invokes each onSaved event
       form.save();
 
-      final MemberListProvider _memberListProvider =
-          Provider.of<MemberListProvider>(context, listen: false);
-      final MemberDetailProvider _memberDetailProvider =
-          Provider.of<MemberDetailProvider>(context, listen: false);
-      final LoginProvider _loginProvider =
-          Provider.of<LoginProvider>(context, listen: false);
+      final MemberListProvider _memberListProvider = Provider.of<MemberListProvider>(context, listen: false);
+      final MemberDetailProvider _memberDetailProvider = Provider.of<MemberDetailProvider>(context, listen: false);
+      final LoginProvider _loginProvider = Provider.of<LoginProvider>(context, listen: false);
 
       final bool boardRoleChanged = _selectedBoardRole != _initialBoardRole;
 
       // submit data to backend, if id is set this is an update, else a creation
       if (memberCreationProvider.currentMember.id != null) {
         memberCreationProvider.updateMember().then((value) async {
-          // board role is persisted via a dedicated mutation; only call
-          // it if the value actually changed
+          // board role is persisted via a dedicated mutation; only call it if the value actually changed
           if (boardRoleChanged) {
             await memberCreationProvider.setBoardRole(_selectedBoardRole);
           }
-          _memberListProvider.updateMemberInList(
-            memberCreationProvider.currentMember,
-          );
-          _memberDetailProvider.setCurrentMember(
-            memberCreationProvider.currentMember,
-          );
-          // keep LoginProvider in sync when the user edits their own
-          // profile so the drawer header (and anything else bound to
-          // loggedMember) reflects the new avatar / fields immediately
-          _loginProvider.updateLoggedMember(
-            memberCreationProvider.currentMember,
-          );
+          _memberListProvider.updateMemberInList(memberCreationProvider.currentMember);
+          _memberDetailProvider.setCurrentMember(memberCreationProvider.currentMember);
+          // keep LoginProvider in sync when the user edits their own profile so the drawer header (and anything else bound to loggedMember) reflects the new avatar / fields immediately
+          _loginProvider.updateLoggedMember(memberCreationProvider.currentMember);
         });
       } else {
         memberCreationProvider.createMember().then((value) async {
-          // when creating a new member, optionally apply the chosen
-          // board role right after creation
+          // when creating a new member, optionally apply the chosen board role right after creation
           if (_selectedBoardRole != null) {
             await memberCreationProvider.setBoardRole(_selectedBoardRole);
           }
-          _memberListProvider.addMemberInList(
-            memberCreationProvider.currentMember,
-          );
+          _memberListProvider.addMemberInList(memberCreationProvider.currentMember);
         });
       }
       Navigator.pop(context);
     }
   }
 
+  /// Opens the avatar edit page. Pre-fills the [AvatarProvider]'s picked
+  /// and cropped images with the current avatar so the editor starts
+  /// from "the existing photo" rather than empty.
+  void _openAvatarEditor(MemberCreationProvider mcp, AvatarProvider ap) {
+    if (mcp.currentMember.avatar != null) {
+      ap.setPickedImage(File.fromRawPath(base64Decode(mcp.currentMember.avatar!)));
+      ap.setCroppedImage(base64Decode(mcp.currentMember.avatar!));
+    }
+    Navigator.of(context).pushNamed('/editAvatar');
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final MemberCreationProvider _memberCreationProvider =
-        Provider.of<MemberCreationProvider>(context, listen: true);
-    final AvatarProvider _avatarProvider = Provider.of<AvatarProvider>(
-      context,
-      listen: false,
-    );
-    final LoginProvider _loginProvider = Provider.of<LoginProvider>(
-      context,
-      listen: false,
+    final MemberCreationProvider _memberCreationProvider = Provider.of<MemberCreationProvider>(context, listen: true);
+    final AvatarProvider _avatarProvider = Provider.of<AvatarProvider>(context, listen: false);
+    final LoginProvider _loginProvider = Provider.of<LoginProvider>(context, listen: false);
+
+    final _editableAvatar = Stack(
+      children: <Widget>[
+        InkWell(
+          onTap: () => _openAvatarEditor(_memberCreationProvider, _avatarProvider),
+          child: _memberCreationProvider.currentMember.avatar != null
+              ? CircleAvatar(
+                  radius: 60,
+                  backgroundImage: MemoryImage(base64Decode(_memberCreationProvider.currentMember.avatar!)),
+                )
+              : CircleAvatar(
+                  radius: 60,
+                  backgroundColor: Colors.blue[200],
+                  child: ShaderMask(
+                    blendMode: BlendMode.srcATop,
+                    shaderCallback: (bounds) => LinearGradient(
+                      begin: const FractionalOffset(0.0, 0.0),
+                      end: const FractionalOffset(0.0, 1.0),
+                      stops: const [0.0, 1.0],
+                      colors: [Colors.red[700]!, Colors.blue[700]!],
+                    ).createShader(bounds),
+                    child: const Icon(CustomIcons.pilot, size: 75, color: Colors.white),
+                  ),
+                ),
+        ),
+        Positioned(
+          height: 30,
+          width: 30,
+          top: 75,
+          left: 75,
+          child: FloatingActionButton(
+            backgroundColor: Colors.red[700],
+            child: const Icon(Icons.edit, size: 12, color: Colors.white),
+            onPressed: () => _openAvatarEditor(_memberCreationProvider, _avatarProvider),
+          ),
+        ),
+      ],
     );
 
-    final firstNameField = TextFormField(
+    final _avatarHeader = Stack(
+      alignment: Alignment.topCenter,
+      children: <Widget>[
+        Column(
+          children: <Widget>[
+            Container(
+              height: 60,
+              decoration: BoxDecoration(
+                color: Colors.red[700],
+                boxShadow: const [BoxShadow(color: Colors.black26, spreadRadius: 0.5, blurRadius: 2)],
+              ),
+            ),
+            Container(height: 60, color: Colors.transparent),
+          ],
+        ),
+        Container(
+          height: 120,
+          width: 120,
+          decoration: ShapeDecoration(shape: const CircleBorder(), color: Colors.blue[100]),
+          child: Padding(padding: const EdgeInsets.all(6.0), child: _editableAvatar),
+        ),
+      ],
+    );
+
+    final _firstNameField = TextFormField(
       decoration: const InputDecoration(
-        icon: const Icon(Icons.person),
+        icon: Icon(Icons.person),
         hintText: AppString.memberFirstNameHint,
         labelText: AppString.memberFirstName,
       ),
       maxLines: 1,
       inputFormatters: [LengthLimitingTextInputFormatter(64)],
-      validator:
-          (val) =>
-              (val == null || val.isEmpty)
-                  ? AppString.memberFirstNameMandatory
-                  : null,
+      validator: (val) => (val == null || val.isEmpty) ? AppString.memberFirstNameMandatory : null,
       onSaved: (val) => _memberCreationProvider.currentMember.firstName = val,
       initialValue: _memberCreationProvider.currentMember.firstName,
     );
 
-    final lastNameField = TextFormField(
+    final _lastNameField = TextFormField(
       decoration: const InputDecoration(
-        icon: const Icon(Icons.person),
+        icon: Icon(Icons.person),
         hintText: AppString.memberLastNameHint,
         labelText: AppString.memberLastName,
       ),
       maxLines: 1,
       inputFormatters: [LengthLimitingTextInputFormatter(64)],
-      validator:
-          (val) =>
-              (val == null || val.isEmpty)
-                  ? AppString.memberLastNameMandatory
-                  : null,
+      validator: (val) => (val == null || val.isEmpty) ? AppString.memberLastNameMandatory : null,
       onSaved: (val) => _memberCreationProvider.currentMember.lastName = val,
       initialValue: _memberCreationProvider.currentMember.lastName,
     );
 
-    final emailField = TextFormField(
+    final _emailField = TextFormField(
       decoration: const InputDecoration(
-        icon: const Icon(Icons.mail),
+        icon: Icon(Icons.mail),
         hintText: AppString.memberEmailHint,
         labelText: AppString.memberEmail,
       ),
       keyboardType: TextInputType.emailAddress,
       maxLines: 1,
       inputFormatters: [LengthLimitingTextInputFormatter(128)],
-      validator:
-          (val) =>
-              (val == null || val.isEmpty)
-                  ? AppString.memberEmailMandatory
-                  : (StringUtils.isValidEmail(val)
-                      ? null
-                      : AppString.memberEmailNotValid),
+      validator: (val) {
+        if (val == null || val.isEmpty) return AppString.memberEmailMandatory;
+        if (!StringUtils.isValidEmail(val)) return AppString.memberEmailNotValid;
+        return null;
+      },
       onSaved: (val) => _memberCreationProvider.currentMember.email = val,
       initialValue: _memberCreationProvider.currentMember.email,
     );
 
-    final phoneField = TextFormField(
+    final _phoneField = TextFormField(
       decoration: const InputDecoration(
-        icon: const Icon(Icons.phone),
+        icon: Icon(Icons.phone),
         hintText: AppString.memberPhoneHint,
         labelText: AppString.memberPhone,
       ),
@@ -234,20 +266,20 @@ class _AddEditMemberState extends State<AddEditMember> {
         FilteringTextInputFormatter.digitsOnly,
         NumberTextInputFormatter(),
       ],
-      validator:
-          (val) =>
-              (val == null || val.isEmpty)
-                  ? AppString.memberPhoneMandatory
-                  : (StringUtils.isValidPhoneNumber(val)
-                      ? null
-                      : AppString.memberPhoneNotValid),
+      validator: (val) {
+        if (val == null || val.isEmpty) return AppString.memberPhoneMandatory;
+        if (!StringUtils.isValidPhoneNumber(val)) {
+          return AppString.memberPhoneNotValid;
+        }
+        return null;
+      },
       onSaved: (val) => _memberCreationProvider.currentMember.phone = val,
       initialValue: _memberCreationProvider.currentMember.phone,
     );
 
-    final riderNumberField = TextFormField(
+    final _riderNumberField = TextFormField(
       decoration: const InputDecoration(
-        icon: const Icon(Icons.tag),
+        icon: Icon(Icons.tag),
         hintText: AppString.memberRiderNumberHint,
         labelText: AppString.memberRiderNumber,
       ),
@@ -257,283 +289,76 @@ class _AddEditMemberState extends State<AddEditMember> {
         FilteringTextInputFormatter.digitsOnly,
         LengthLimitingTextInputFormatter(3),
       ],
-      onSaved:
-          (val) =>
-              _memberCreationProvider.currentMember.riderNumber =
-                  (val != null && val.isNotEmpty) ? int.parse(val) : null,
-      initialValue:
-          _memberCreationProvider.currentMember.riderNumber?.toString(),
+      onSaved: (val) =>
+          _memberCreationProvider.currentMember.riderNumber = (val != null && val.isNotEmpty) ? int.parse(val) : null,
+      initialValue: _memberCreationProvider.currentMember.riderNumber?.toString(),
     );
 
-    final roleField = Row(
-      children: [
-        Icon(Icons.enhanced_encryption, color: Colors.black45),
-        SizedBox(width: 16),
-        Expanded(
-          child: DropdownButtonFormField<MemberRole>(
-            decoration: InputDecoration(labelText: AppString.memberRole),
-            initialValue: _memberCreationProvider.currentMember.role,
-            items:
-                MemberRole.values.map((MemberRole role) {
-                  String label = "";
-                  switch (role) {
-                    case MemberRole.ROLE_USER:
-                      label = AppString.memberRoleUser;
-                      break;
-                    case MemberRole.ROLE_MEMBER:
-                      label = AppString.memberRoleMember;
-                      break;
-                    case MemberRole.ROLE_ADMIN:
-                      label = AppString.memberRoleAdmin;
-                      break;
-                  }
-                  return DropdownMenuItem<MemberRole>(
-                    value: role,
-                    child: Text(
-                      label,
-                      style: TextStyle(
-                        color: Colors.black87,
-                        fontWeight: FontWeight.normal,
-                      ),
-                    ),
-                  );
-                }).toList(),
-            onChanged: (MemberRole? newValue) {
-              setState(() {
-                _memberCreationProvider.currentMember.role = newValue;
-              });
-            },
+    final _roleField = DropdownButtonFormField<MemberRole>(
+      decoration: const InputDecoration(icon: Icon(Icons.enhanced_encryption), labelText: AppString.memberRole),
+      initialValue: _memberCreationProvider.currentMember.role,
+      items: MemberRole.values.map((MemberRole role) {
+        String label = "";
+        switch (role) {
+          case MemberRole.ROLE_USER:
+            label = AppString.memberRoleUser;
+            break;
+          case MemberRole.ROLE_MEMBER:
+            label = AppString.memberRoleMember;
+            break;
+          case MemberRole.ROLE_ADMIN:
+            label = AppString.memberRoleAdmin;
+            break;
+        }
+        return DropdownMenuItem<MemberRole>(
+          value: role,
+          child: Text(
+            label,
+            style: const TextStyle(color: Colors.black87, fontWeight: FontWeight.normal),
           ),
-        ),
-      ],
+        );
+      }).toList(),
+      onChanged: (MemberRole? newValue) => setState(() => _memberCreationProvider.currentMember.role = newValue),
     );
 
-    // Board role dropdown — admin-only. Includes a "—" entry to clear the
-    // role. The change is persisted via the dedicated `setBoardRole`
-    // mutation in submitForm.
     final String _languageCode = Localizations.localeOf(context).languageCode;
-    final boardRoleField = Row(
-      children: [
-        Icon(Icons.workspace_premium, color: Colors.black45),
-        const SizedBox(width: 16),
-        Expanded(
-          child: DropdownButtonFormField<BoardRole?>(
-            decoration: const InputDecoration(labelText: "Rôle au bureau"),
-            initialValue: _selectedBoardRole,
-            items: <DropdownMenuItem<BoardRole?>>[
-              const DropdownMenuItem<BoardRole?>(
-                value: null,
-                child: Text(
-                  "— Aucun —",
-                  style: TextStyle(
-                    color: Colors.black54,
-                    fontStyle: FontStyle.italic,
-                  ),
-                ),
-              ),
-              ...BoardRole.values.map(
-                (BoardRole role) => DropdownMenuItem<BoardRole?>(
-                  value: role,
-                  child: Text(
-                    role.localizedLabel(_languageCode),
-                    style: const TextStyle(color: Colors.black87),
-                  ),
-                ),
-              ),
-            ],
-            onChanged: (BoardRole? newValue) {
-              setState(() {
-                _selectedBoardRole = newValue;
-              });
-            },
+    final _boardRoleField = DropdownButtonFormField<BoardRole?>(
+      decoration: const InputDecoration(icon: Icon(Icons.workspace_premium), labelText: "Rôle au bureau"),
+      initialValue: _selectedBoardRole,
+      items: <DropdownMenuItem<BoardRole?>>[
+        const DropdownMenuItem<BoardRole?>(
+          value: null,
+          child: Text(
+            "— Aucun —",
+            style: TextStyle(color: Colors.black54, fontStyle: FontStyle.italic),
+          ),
+        ),
+        ...BoardRole.values.map(
+          (BoardRole role) => DropdownMenuItem<BoardRole?>(
+            value: role,
+            child: Text(role.localizedLabel(_languageCode), style: const TextStyle(color: Colors.black87)),
           ),
         ),
       ],
+      onChanged: (BoardRole? newValue) => setState(() => _selectedBoardRole = newValue),
     );
 
-    final editableAvatar = Stack(
-      children: <Widget>[
-        InkWell(
-          onTap: () {
-            // set default picked and cropped image to existing image
-            if (_memberCreationProvider.currentMember.avatar != null) {
-              _avatarProvider.setPickedImage(
-                File.fromRawPath(
-                  base64Decode(_memberCreationProvider.currentMember.avatar!),
-                ),
-              );
-              _avatarProvider.setCroppedImage(
-                base64Decode(_memberCreationProvider.currentMember.avatar!),
-              );
-            }
-            Navigator.of(context).pushNamed('/editAvatar');
-          },
-          child:
-              _memberCreationProvider.currentMember.avatar != null
-                  ? CircleAvatar(
-                    radius: 60,
-                    backgroundImage: MemoryImage(
-                      base64Decode(
-                        _memberCreationProvider.currentMember.avatar!,
-                      ),
-                    ),
-                  )
-                  : CircleAvatar(
-                    radius: 60,
-                    backgroundColor: Colors.blue[200],
-                    child: ShaderMask(
-                      blendMode: BlendMode.srcATop,
-                      shaderCallback:
-                          (bounds) => LinearGradient(
-                            begin: const FractionalOffset(0.0, 0.0),
-                            end: const FractionalOffset(0.0, 1.0),
-                            stops: [0.0, 1.0],
-                            colors: [Colors.red[700]!, Colors.blue[700]!],
-                          ).createShader(bounds),
-                      child: Icon(
-                        CustomIcons.pilot,
-                        size: 75,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ),
-        ),
-        Positioned(
-          height: 30,
-          width: 30,
-          top: 75,
-          left: 75,
-          child: FloatingActionButton(
-            backgroundColor: Colors.red[700],
-            child: Icon(Icons.edit, size: 12, color: Colors.white),
-            onPressed: () {
-              // set default picked and cropped image to existing image
-              if (_memberCreationProvider.currentMember.avatar != null) {
-                _avatarProvider.setPickedImage(
-                  File.fromRawPath(
-                    base64Decode(_memberCreationProvider.currentMember.avatar!),
-                  ),
-                );
-                _avatarProvider.setCroppedImage(
-                  base64Decode(_memberCreationProvider.currentMember.avatar!),
-                );
-              }
-              Navigator.of(context).pushNamed('/editAvatar');
-            },
-          ),
-        ),
+    final bool isAdmin = _loginProvider.loggedMember?.role == MemberRole.ROLE_ADMIN;
+
+    return FormScaffold(
+      title: AppString.profileEdit,
+      formKey: _formKey,
+      onSave: () => submitForm(_memberCreationProvider),
+      header: _avatarHeader,
+      fields: <Widget>[
+        _firstNameField,
+        _lastNameField,
+        _emailField,
+        _phoneField,
+        _riderNumberField,
+        if (isAdmin) _roleField,
+        if (isAdmin) _boardRoleField,
       ],
-    );
-
-    final listView = ListView(
-      children: <Widget>[
-        Stack(
-          alignment: Alignment.topCenter,
-          children: <Widget>[
-            Column(
-              children: <Widget>[
-                Container(
-                  height: 60,
-                  decoration: BoxDecoration(
-                    color: Colors.red[700],
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black26,
-                        spreadRadius: 0.5,
-                        blurRadius: 2,
-                      ),
-                    ],
-                  ),
-                ),
-                Container(height: 60, color: Colors.transparent),
-              ],
-            ),
-            Container(
-              height: 120,
-              width: 120,
-              decoration: ShapeDecoration(
-                shape: CircleBorder(),
-                color: Colors.blue[100],
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(6.0),
-                child: editableAvatar,
-              ),
-            ),
-          ],
-        ),
-        Container(
-          padding: const EdgeInsets.only(
-            top: 0,
-            left: UI_FORM_PADDING,
-            right: UI_FORM_PADDING,
-            bottom: 56.0,
-          ),
-          child: Form(
-            autovalidateMode: AutovalidateMode.disabled,
-            key: _formKey,
-            child: Column(
-              children: <Widget>[
-                firstNameField,
-                lastNameField,
-                emailField,
-                phoneField,
-                riderNumberField,
-                if (_loginProvider.loggedMember?.role ==
-                    MemberRole.ROLE_ADMIN) ...[
-                  roleField,
-                  boardRoleField,
-                ],
-              ],
-            ),
-          ),
-        ),
-      ],
-    );
-
-    final List<Widget> actionMenu = [
-      TextButton(
-        child: Text(
-          AppString.cancel.toUpperCase(),
-          style: TextStyle(color: Colors.white),
-        ),
-        onPressed: () => Navigator.pop(context),
-      ),
-      TextButton(
-        child: Text(
-          AppString.save.toUpperCase(),
-          style: TextStyle(color: Colors.white),
-        ),
-        onPressed: () => submitForm(_memberCreationProvider),
-      ),
-    ];
-
-    return Scaffold(
-      appBar: AppBar(
-        elevation: 0.0,
-        title: Text(AppString.profileEdit),
-        actions:
-            MediaQuery.of(context).orientation == Orientation.portrait
-                ? null
-                : actionMenu,
-      ),
-      body: Container(
-        decoration: CustomDecorations.mainContent,
-        child:
-            MediaQuery.of(context).orientation == Orientation.portrait
-                ? Column(
-                  children: <Widget>[
-                    Expanded(child: listView),
-                    SafeArea(
-                      child: SaveCancelBar(
-                        saveFunction: () => submitForm(_memberCreationProvider),
-                        cancelFunction: () => Navigator.pop(context),
-                      ),
-                    ),
-                  ],
-                )
-                : listView,
-      ),
     );
   }
 }

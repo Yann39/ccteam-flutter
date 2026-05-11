@@ -57,18 +57,36 @@ class AppDateUtils {
     return d != null && d.isAfter(DateTime.now());
   }
 
-  /// format the specified [duration] (integer representing a number of milliseconds) as string
+  /// Format the specified [duration] (an integer count of milliseconds)
+  /// as a lap-time string in the canonical `MM'SS"mmm` form. Minutes
+  /// and seconds are zero-padded to 2 digits and milliseconds to 3 —
+  /// matches what timing transponders display and what the input mask
+  /// in [LapTimeTextInputFormatter] produces.
   static String? toLapTimeString(int? duration) {
     if (duration == null) return null;
-    return "${Duration(milliseconds: duration).inMinutes.remainder(60).toString().padLeft(2, '0')}'${Duration(milliseconds: duration).inSeconds.remainder(60).toString().padLeft(2, '0')}\"${Duration(milliseconds: duration).inMilliseconds.remainder(1000)}";
+    final Duration d = Duration(milliseconds: duration);
+    final String mm = d.inMinutes.remainder(60).toString().padLeft(2, '0');
+    final String ss = d.inSeconds.remainder(60).toString().padLeft(2, '0');
+    final String mmm = d.inMilliseconds.remainder(1000).toString().padLeft(3, '0');
+    return "$mm'$ss\"$mmm";
   }
 
-  /// format the specified [lapTime] string to an integer representing the number of milliseconds
+  /// Parse a `MM'SS"mmm` lap-time string back into a count of
+  /// milliseconds. Returns null on a malformed input rather than
+  /// throwing — the caller should rely on the form validator to reject
+  /// bad values before persisting.
   static int? toLapTimeDuration(String? lapTime) {
-    if (lapTime == null || lapTime.length == 0) return null;
-    final int minutes = int.parse(lapTime.substring(0, lapTime.indexOf('\'')));
-    final int seconds = int.parse(lapTime.substring(lapTime.indexOf('\'') + 1, lapTime.indexOf('"')));
-    final int milliseconds = int.parse(lapTime.substring(lapTime.indexOf('"') + 1));
-    return minutes * 60000 + seconds * 100 + milliseconds;
+    if (lapTime == null || lapTime.isEmpty) return null;
+    final int apos = lapTime.indexOf('\'');
+    final int quote = lapTime.indexOf('"');
+    if (apos < 0 || quote < 0 || quote <= apos) return null;
+    try {
+      final int minutes = int.parse(lapTime.substring(0, apos));
+      final int seconds = int.parse(lapTime.substring(apos + 1, quote));
+      final int milliseconds = int.parse(lapTime.substring(quote + 1));
+      return minutes * 60000 + seconds * 1000 + milliseconds;
+    } catch (_) {
+      return null;
+    }
   }
 }

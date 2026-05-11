@@ -338,6 +338,22 @@ class AppString {
   static const String recordBikeHint = 'Moto utilisée';
   static const String recordBikeMandatory = 'La moto doit être indiquée';
 
+  // Membership fees
+  static const String membershipFeeCreate = 'Ajouter une cotisation';
+  static const String membershipFeeEdit = 'Modifier la cotisation';
+  static const String membershipFeeSaved = 'Cotisation enregistrée avec succès';
+  static const String membershipFeeSaveFailed = 'Erreur lors de l\'enregistrement de la cotisation';
+  static const String membershipFeeDeleted = 'Cotisation supprimée avec succès';
+  static const String membershipFeeDeleteFailed = 'Erreur lors de la suppression de la cotisation';
+  static const String membershipFeeDeletionAreYouSure = 'Etes-vous sûr de vouloir supprimer cette cotisation ?';
+  static const String membershipFeeYear = 'Année';
+  static const String membershipFeeYearMandatory = 'Veuillez entrer une année';
+  static const String membershipFeeYearNotValid = 'Veuillez entrer une année valide';
+  static const String membershipFeeAmount = 'Montant (€)';
+  static const String membershipFeeAmountMandatory = 'Veuillez entrer un montant';
+  static const String membershipFeeAmountNotValid = 'Veuillez entrer un montant valide';
+  static const String membershipFeePaid = 'Payée ?';
+
   static const String photoScreenTitle = 'Gallerie';
   static const String photoCreate = 'Ajouter une photo';
   static const String photoCreated = 'La photo à été créée avec succès !';

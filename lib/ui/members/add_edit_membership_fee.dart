@@ -22,9 +22,9 @@ import 'package:ccteam/models/membership_fee.dart';
 import 'package:ccteam/providers/member_detail_provider.dart';
 import 'package:ccteam/providers/message_provider.dart';
 import 'package:ccteam/services/members_service.dart';
-import 'package:ccteam/utils/constants.dart';
-import 'package:ccteam/utils/custom_decorations.dart';
 import 'package:ccteam/utils/enums.dart';
+import 'package:ccteam/utils/strings.dart';
+import 'package:ccteam/widgets/form_scaffold.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -37,13 +37,15 @@ class _AddEditMembershipFeeState extends State<AddEditMembershipFee> {
   final _formKey = GlobalKey<FormState>();
   final MembersService _membersService = MembersService();
 
-  bool _isLoading = false;
+  LoadingStatus _loadingStatus = LoadingStatus.loaded;
   Member? _member;
   MembershipFee? _fee;
 
   int? _year;
   double? _amount;
   bool _paid = false;
+
+  bool get _isEditing => _fee != null;
 
   @override
   void didChangeDependencies() {
@@ -65,159 +67,111 @@ class _AddEditMembershipFeeState extends State<AddEditMembershipFee> {
     }
   }
 
-  void _saveFee() async {
-    if (_formKey.currentState!.validate()) {
-      _formKey.currentState!.save();
-
-      setState(() {
-        _isLoading = true;
-      });
-
-      try {
-        if (_fee == null) {
-          // Add new fee
-          await _membersService.addMembershipFee(_member!.id!, _year!, _amount!, _paid);
-        } else {
-          // Update existing fee
-          await _membersService.updateMembershipFee(_fee!.id!, _year!, _amount!, _paid);
+  @override
+  Widget build(BuildContext context) {
+    final _yearField = TextFormField(
+      initialValue: _year?.toString() ?? '',
+      decoration: const InputDecoration(icon: Icon(Icons.calendar_today), labelText: AppString.membershipFeeYear),
+      keyboardType: TextInputType.number,
+      validator: (value) {
+        if (value == null || value.isEmpty) {
+          return AppString.membershipFeeYearMandatory;
         }
+        if (int.tryParse(value) == null) {
+          return AppString.membershipFeeYearNotValid;
+        }
+        return null;
+      },
+      onSaved: (value) => _year = int.parse(value!),
+    );
 
-        // Refresh member details
-        await Provider.of<MemberDetailProvider>(context, listen: false).refreshCurrentMember();
+    final _amountField = TextFormField(
+      initialValue: _amount?.toString() ?? '',
+      decoration: const InputDecoration(icon: Icon(Icons.euro), labelText: AppString.membershipFeeAmount),
+      keyboardType: const TextInputType.numberWithOptions(decimal: true),
+      validator: (value) {
+        if (value == null || value.isEmpty) {
+          return AppString.membershipFeeAmountMandatory;
+        }
+        if (double.tryParse(value.replaceAll(',', '.')) == null) {
+          return AppString.membershipFeeAmountNotValid;
+        }
+        return null;
+      },
+      onSaved: (value) => _amount = double.parse(value!.replaceAll(',', '.')),
+    );
 
-        Navigator.of(context).pop("Cotisation enregistrée avec succès");
-      } catch (e) {
-        Provider.of<MessageProvider>(context, listen: false).setMessage("Erreur lors de l'enregistrement: $e", MessageType.ERROR);
-        setState(() {
-          _isLoading = false;
-        });
-      }
-    }
-  }
+    final _paidField = SwitchListTile(
+      title: const Text(AppString.membershipFeePaid),
+      value: _paid,
+      onChanged: (bool value) => setState(() => _paid = value),
+      secondary: const Icon(Icons.payment),
+      contentPadding: EdgeInsets.zero,
+    );
 
-  void _deleteFee() async {
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text("Confirmation"),
-        content: Text("Voulez-vous vraiment supprimer cette cotisation ?"),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(),
-            child: Text("Annuler"),
-          ),
-          TextButton(
-            onPressed: () async {
-              Navigator.of(ctx).pop();
-              setState(() {
-                _isLoading = true;
-              });
-              try {
-                await _membersService.deleteMembershipFee(_fee!.id!);
-                await Provider.of<MemberDetailProvider>(context, listen: false).refreshCurrentMember();
-                Navigator.of(context).pop("Cotisation supprimée avec succès");
-              } catch (e) {
-                Provider.of<MessageProvider>(context, listen: false).setMessage("Erreur lors de la suppression: $e", MessageType.ERROR);
-                setState(() {
-                  _isLoading = false;
-                });
-              }
-            },
-            child: Text("Supprimer"),
-          ),
-        ],
-      ),
+    return FormScaffold(
+      title: _isEditing ? AppString.membershipFeeEdit : AppString.membershipFeeCreate,
+      formKey: _formKey,
+      loadingStatus: _loadingStatus,
+      onSave: _saveFee,
+      onDelete: _isEditing ? _deleteFee : null,
+      fields: <Widget>[_yearField, _amountField, _paidField],
     );
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(_fee == null ? "Ajouter une cotisation" : "Modifier la cotisation"),
-        actions: [
-          if (_fee != null)
-            IconButton(
-              icon: Icon(Icons.delete),
-              onPressed: _deleteFee,
-            )
-        ],
-      ),
-      body: Container(
-        decoration: CustomDecorations.mainContent,
-        padding: const EdgeInsets.all(UI_FORM_PADDING),
-        child: _isLoading
-            ? Center(child: CircularProgressIndicator())
-            : Form(
-                key: _formKey,
-                child: ListView(
-                  children: [
-                    TextFormField(
-                      initialValue: _year?.toString() ?? '',
-                      decoration: InputDecoration(
-                        labelText: 'Année',
-                        icon: Icon(Icons.calendar_today),
-                      ),
-                      keyboardType: TextInputType.number,
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Veuillez entrer une année';
-                        }
-                        if (int.tryParse(value) == null) {
-                          return 'Veuillez entrer une année valide';
-                        }
-                        return null;
-                      },
-                      onSaved: (value) {
-                        _year = int.parse(value!);
-                      },
-                    ),
-                    SizedBox(height: 16),
-                    TextFormField(
-                      initialValue: _amount?.toString() ?? '',
-                      decoration: InputDecoration(
-                        labelText: 'Montant (€)',
-                        icon: Icon(Icons.euro),
-                      ),
-                      keyboardType: TextInputType.numberWithOptions(decimal: true),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Veuillez entrer un montant';
-                        }
-                        if (double.tryParse(value.replaceAll(',', '.')) == null) {
-                          return 'Veuillez entrer un montant valide';
-                        }
-                        return null;
-                      },
-                      onSaved: (value) {
-                        _amount = double.parse(value!.replaceAll(',', '.'));
-                      },
-                    ),
-                    SizedBox(height: 16),
-                    SwitchListTile(
-                      title: Text('Payée ?'),
-                      value: _paid,
-                      onChanged: (bool value) {
-                        setState(() {
-                          _paid = value;
-                        });
-                      },
-                      secondary: Icon(Icons.payment),
-                    ),
-                    SizedBox(height: 32),
-                    ElevatedButton(
-                      onPressed: _saveFee,
-                      child: Text('Enregistrer'),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.red[700],
-                        foregroundColor: Colors.white,
-                        padding: EdgeInsets.symmetric(vertical: 16),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-      ),
+  void _saveFee() async {
+    if (!_formKey.currentState!.validate()) return;
+    _formKey.currentState!.save();
+
+    setState(() => _loadingStatus = LoadingStatus.loading);
+
+    try {
+      if (_fee == null) {
+        await _membersService.addMembershipFee(_member!.id!, _year!, _amount!, _paid);
+      } else {
+        await _membersService.updateMembershipFee(_fee!.id!, _year!, _amount!, _paid);
+      }
+      await Provider.of<MemberDetailProvider>(context, listen: false).refreshCurrentMember();
+      Navigator.of(context).pop(AppString.membershipFeeSaved);
+    } catch (e) {
+      Provider.of<MessageProvider>(
+        context,
+        listen: false,
+      ).setMessage("${AppString.membershipFeeSaveFailed}: $e", MessageType.ERROR);
+      setState(() => _loadingStatus = LoadingStatus.loaded);
+    }
+  }
+
+  void _deleteFee() {
+    showDialog(
+      context: context,
+      builder: (BuildContext ctx) {
+        return AlertDialog(
+          title: const Text(AppString.confirmation),
+          content: const Text(AppString.membershipFeeDeletionAreYouSure),
+          actions: <Widget>[
+            TextButton(child: const Text(AppString.cancel), onPressed: () => Navigator.of(ctx).pop()),
+            TextButton(
+              child: const Text(AppString.confirm),
+              onPressed: () async {
+                Navigator.of(ctx).pop();
+                setState(() => _loadingStatus = LoadingStatus.loading);
+                try {
+                  await _membersService.deleteMembershipFee(_fee!.id!);
+                  await Provider.of<MemberDetailProvider>(context, listen: false).refreshCurrentMember();
+                  Navigator.of(context).pop(AppString.membershipFeeDeleted);
+                } catch (e) {
+                  Provider.of<MessageProvider>(
+                    context,
+                    listen: false,
+                  ).setMessage("${AppString.membershipFeeDeleteFailed}: $e", MessageType.ERROR);
+                  setState(() => _loadingStatus = LoadingStatus.loaded);
+                }
+              },
+            ),
+          ],
+        );
+      },
     );
   }
 }

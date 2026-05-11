@@ -99,9 +99,9 @@ class _MemberEventsState extends State<MemberEvents> {
           .where((e) => e.startDate!.isBefore(now) && !DateUtils.isSameDay(e.startDate!, now))
           .toList();
 
-      // Sort upcoming events by date ascending (closest first)
+      // sort upcoming events by date ascending (closest first)
       upcomingEvents.sort((a, b) => a.startDate!.compareTo(b.startDate!));
-      // Sort past events by date descending (most recent first)
+      // sort past events by date descending (most recent first)
       pastEvents.sort((a, b) => b.startDate!.compareTo(a.startDate!));
 
       if (upcomingEvents.isEmpty && pastEvents.isEmpty) {
@@ -124,10 +124,8 @@ class _MemberEventsState extends State<MemberEvents> {
             if (pastEvents.isNotEmpty)
               _CollapsibleSection(
                 title: AppString.pastEvents,
-                // expand by default when this is the only visible
-                // section; otherwise stay collapsed so the user focuses
-                // on upcoming events first
                 initiallyExpanded: upcomingEvents.isEmpty,
+                past: true,
                 child: Column(children: pastEvents.map((event) => _buildEventItem(context, event)).toList()),
               ),
           ],
@@ -223,13 +221,24 @@ class _MemberEventsState extends State<MemberEvents> {
 /// Collapsible section with a styled gradient header (matching the original
 /// section header) and a chevron indicator. Tapping the header toggles the
 /// visibility of [child].
+///
+/// When [past] is true, the header switches to a neutral grey gradient and
+/// a history icon — a clear "this is archived" cue without hiding the
+/// content. The active blue is reserved for the upcoming section so the
+/// two are immediately distinguishable at a glance.
 class _CollapsibleSection extends StatefulWidget {
   final String title;
   final Widget child;
   final bool initiallyExpanded;
+  final bool past;
 
-  const _CollapsibleSection({Key? key, required this.title, required this.child, this.initiallyExpanded = true})
-    : super(key: key);
+  const _CollapsibleSection({
+    Key? key,
+    required this.title,
+    required this.child,
+    this.initiallyExpanded = true,
+    this.past = false,
+  }) : super(key: key);
 
   @override
   State<_CollapsibleSection> createState() => _CollapsibleSectionState();
@@ -246,6 +255,11 @@ class _CollapsibleSectionState extends State<_CollapsibleSection> {
 
   @override
   Widget build(BuildContext context) {
+    final List<Color> gradientColors = widget.past
+        ? [Colors.blueGrey[400]!, Colors.blueGrey[600]!]
+        : [Colors.blue[600]!, Colors.blue[800]!];
+    final IconData headerIcon = widget.past ? Icons.history : Icons.calendar_today;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: <Widget>[
@@ -259,7 +273,7 @@ class _CollapsibleSectionState extends State<_CollapsibleSection> {
             child: Container(
               decoration: BoxDecoration(
                 gradient: LinearGradient(
-                  colors: [Colors.blue[600]!, Colors.blue[800]!],
+                  colors: gradientColors,
                   begin: Alignment.centerLeft,
                   end: Alignment.centerRight,
                 ),
@@ -269,7 +283,7 @@ class _CollapsibleSectionState extends State<_CollapsibleSection> {
                 padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 16.0),
                 child: Row(
                   children: <Widget>[
-                    const Icon(Icons.calendar_today, size: 20, color: Colors.white),
+                    Icon(headerIcon, size: 20, color: Colors.white),
                     const SizedBox(width: 12.0),
                     Expanded(
                       child: Text(

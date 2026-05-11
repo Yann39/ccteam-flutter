@@ -32,8 +32,6 @@ import 'package:ccteam/widgets/restricted_content.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../../providers/member_detail_provider.dart';
-
 class MemberChronos extends StatefulWidget {
   const MemberChronos({Key? key}) : super(key: key);
 
@@ -56,19 +54,9 @@ class _MemberChronosState extends State<MemberChronos> {
     final result = await Navigator.pushNamed(context, '/addEditRecord');
     if (result != null) {
       final _recordListProvider = Provider.of<RecordListProvider>(context, listen: false);
-      final _memberDetailProvider = Provider.of<MemberDetailProvider>(context, listen: false);
-      _recordListProvider.fetchMemberRecords(_memberDetailProvider.currentMember!.id!);
+      final _loginProvider = Provider.of<LoginProvider>(context, listen: false);
+      _recordListProvider.fetchMemberRecords(_loginProvider.loggedMember!.id!);
     }
-  }
-
-  List<DropdownMenuItem<String>> get dropdownItems {
-    List<DropdownMenuItem<String>> menuItems = [
-      DropdownMenuItem(child: Text("USA"), value: "USA"),
-      DropdownMenuItem(child: Text("Canada"), value: "Canada"),
-      DropdownMenuItem(child: Text("Brazil"), value: "Brazil"),
-      DropdownMenuItem(child: Text("England"), value: "England"),
-    ];
-    return menuItems;
   }
 
   Widget build(BuildContext context) {
@@ -85,7 +73,6 @@ class _MemberChronosState extends State<MemberChronos> {
     }
 
     final RecordListProvider _recordListProvider = Provider.of<RecordListProvider>(context, listen: true);
-    final MemberDetailProvider _memberDetailProvider = Provider.of<MemberDetailProvider>(context, listen: true);
 
     return Scaffold(
       appBar: AppBar(
@@ -102,7 +89,7 @@ class _MemberChronosState extends State<MemberChronos> {
             const SizedBox(height: 8.0),
             Expanded(
               child: RefreshIndicator(
-                onRefresh: () => _recordListProvider.fetchMemberRecords(_memberDetailProvider.currentMember!.id!),
+                onRefresh: () => _recordListProvider.fetchMemberRecords(_loginProvider.loggedMember!.id!),
                 child: LoadingContent(
                   defaultText: AppString.eventsNotFound,
                   emptyText: AppString.eventsNotFound,
@@ -117,7 +104,7 @@ class _MemberChronosState extends State<MemberChronos> {
                           Provider.of<RecordCreationProvider>(context, listen: false).setRecordToEdit(record);
                           final result = await Navigator.pushNamed(context, '/addEditRecord');
                           if (result != null) {
-                            _recordListProvider.fetchMemberRecords(_memberDetailProvider.currentMember!.id!);
+                            _recordListProvider.fetchMemberRecords(_loginProvider.loggedMember!.id!);
                           }
                         },
                         child: Container(
@@ -125,53 +112,73 @@ class _MemberChronosState extends State<MemberChronos> {
                           decoration: CustomDecorations.cardFull,
                           height: 91,
                           child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            crossAxisAlignment: CrossAxisAlignment.center,
                             children: <Widget>[
-                              //Icon(TrackUtils.trackIconFromName(_recordListProvider.memberRecords[index].track.name), size: 38, color: Colors.red[700]),
-                              Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: <Widget>[
-                                  Row(
-                                    children: <Widget>[
-                                      Icon(
-                                        TrackUtils.trackIconFromName(record.track!.name),
-                                        size: 20,
-                                        color: Colors.red[600],
-                                      ),
-                                      SizedBox(width: 8.0),
-                                      Text(
-                                        record.track!.name!,
-                                        textScaler: TextScaler.linear(1.3),
-                                        style: TextStyle(color: Colors.white),
-                                      ),
-                                    ],
-                                  ),
-                                  SizedBox(height: 8.0),
-                                  Row(
-                                    children: <Widget>[
-                                      Icon(Icons.event, size: 16, color: Colors.teal[700]),
-                                      SizedBox(width: 5.0),
-                                      Text(
-                                        AppDateUtils.convertToString(record.recordDate!, 'dd MMM yyyy') ?? "",
-                                        style: TextStyle(color: Colors.white),
-                                      ),
-                                    ],
-                                  ),
-                                  Row(
-                                    children: <Widget>[
-                                      Icon(CustomIcons.motorbike, size: 16, color: Colors.deepPurple),
-                                      SizedBox(width: 5.0),
-                                      Text(
-                                        record.bike != null
-                                            ? "${record.bike!.manufacturer} ${record.bike!.modelName}"
-                                            : AppString.notDefined,
-                                        style: TextStyle(color: Colors.white),
-                                      ),
-                                    ],
-                                  ),
-                                ],
+                              Expanded(
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: <Widget>[
+                                    Row(
+                                      children: <Widget>[
+                                        Icon(
+                                          TrackUtils.trackIconFromName(record.track!.name),
+                                          size: 20,
+                                          color: Colors.red[600],
+                                        ),
+                                        SizedBox(width: 8.0),
+                                        Expanded(
+                                          child: Text(
+                                            record.track!.name!,
+                                            textScaler: TextScaler.linear(1.3),
+                                            style: TextStyle(color: Colors.white, fontWeight: FontWeight.w500),
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    SizedBox(height: 8.0),
+                                    Row(
+                                      children: <Widget>[
+                                        Icon(Icons.event, size: 16, color: Colors.teal[700]),
+                                        SizedBox(width: 5.0),
+                                        Text(
+                                          AppDateUtils.convertToString(record.recordDate!, 'dd MMM yyyy') ?? "",
+                                          style: TextStyle(color: Colors.white),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                        if (TrackUtils.trackConditionIconData(record.conditions) != null) ...[
+                                          SizedBox(width: 8.0),
+                                          Icon(
+                                            TrackUtils.trackConditionIconData(record.conditions),
+                                            size: 18,
+                                            color: TrackUtils.trackConditionColor(record.conditions),
+                                          ),
+                                        ],
+                                      ],
+                                    ),
+                                    Row(
+                                      children: <Widget>[
+                                        Icon(CustomIcons.motorbike, size: 16, color: Colors.deepPurple),
+                                        SizedBox(width: 5.0),
+                                        Expanded(
+                                          child: Text(
+                                            record.bike != null
+                                                ? "${record.bike!.manufacturer} ${record.bike!.modelName}"
+                                                : AppString.notDefined,
+                                            style: TextStyle(color: Colors.white),
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
                               ),
+                              SizedBox(width: 8.0),
                               Container(
                                 padding: EdgeInsets.symmetric(horizontal: 4.0, vertical: 0.0),
                                 decoration: BoxDecoration(

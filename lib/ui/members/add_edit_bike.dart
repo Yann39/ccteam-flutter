@@ -19,10 +19,10 @@
 
 import 'package:ccteam/models/bike.dart';
 import 'package:ccteam/providers/bike_list_provider.dart';
+import 'package:ccteam/utils/custom_icons.dart';
 import 'package:ccteam/utils/enums.dart';
 import 'package:ccteam/utils/strings.dart';
-import 'package:ccteam/utils/custom_decorations.dart';
-import 'package:ccteam/widgets/save_cancel_bar.dart';
+import 'package:ccteam/widgets/form_scaffold.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -53,103 +53,29 @@ class _AddEditBikeState extends State<AddEditBike> {
 
   @override
   Widget build(BuildContext context) {
-    final formContent = SingleChildScrollView(
-      padding: EdgeInsets.all(16.0),
-      child: Form(
-        key: _formKey,
-        child: Column(
-          children: <Widget>[
-            _buildManufacturerField(),
-            SizedBox(height: 16),
-            _buildModelNameField(),
-            SizedBox(height: 16),
-            _buildEngineSizeField(),
-            SizedBox(height: 16),
-            _buildYearField(),
-          ],
-        ),
-      ),
-    );
-
-    final List<Widget> actionMenu = [
-      TextButton(
-        child: Text(
-          AppString.cancel.toUpperCase(),
-          style: TextStyle(color: Colors.white),
-        ),
-        onPressed: () => Navigator.pop(context),
-      ),
-      TextButton(
-        child: Text(
-          AppString.save.toUpperCase(),
-          style: TextStyle(color: Colors.white),
-        ),
-        onPressed: _submit,
-      ),
-    ];
-
-    final List<Widget> appBarActions = [];
-    if (_isEditing) {
-      appBarActions.add(
-        IconButton(
-          icon: const Icon(Icons.delete),
-          onPressed: () => _deleteBike(),
-        ),
-      );
-    }
-    if (MediaQuery.of(context).orientation == Orientation.landscape) {
-      appBarActions.addAll(actionMenu);
-    }
-
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(_isEditing ? AppString.bikeEdit : AppString.bikeCreate),
-        actions: appBarActions.isNotEmpty ? appBarActions : null,
-      ),
-      body: Container(
-        decoration: CustomDecorations.mainContent,
-        child:
-            MediaQuery.of(context).orientation == Orientation.portrait
-                ? Column(
-                  children: <Widget>[
-                    Expanded(child: formContent),
-                    SafeArea(
-                      child: SaveCancelBar(
-                        saveFunction: _submit,
-                        cancelFunction: () => Navigator.pop(context),
-                      ),
-                    ),
-                  ],
-                )
-                : formContent,
-      ),
+    return FormScaffold(
+      title: _isEditing ? AppString.bikeEdit : AppString.bikeCreate,
+      formKey: _formKey,
+      onSave: _submit,
+      onDelete: _isEditing ? _deleteBike : null,
+      fields: <Widget>[_buildManufacturerField(), _buildModelNameField(), _buildEngineSizeField(), _buildYearField()],
     );
   }
 
   Widget _buildManufacturerField() {
     return DropdownButtonFormField<String>(
-      decoration: InputDecoration(
-        labelText: AppString.bikeManufacturer,
-        border: OutlineInputBorder(),
-      ),
+      decoration: const InputDecoration(icon: Icon(Icons.factory), labelText: AppString.bikeManufacturer),
       initialValue: _bike.manufacturer,
       items: BikeManufacturer.values.map((BikeManufacturer value) {
         return DropdownMenuItem<String>(
           value: value.name,
-              child: Text(
-                value.name[0].toUpperCase() + value.name.substring(1),
-                style: TextStyle(
-                  color: Colors.black87,
-                  fontWeight: FontWeight.normal,
-                ),
-              ),
+          child: Text(
+            value.name[0].toUpperCase() + value.name.substring(1),
+            style: const TextStyle(color: Colors.black87, fontWeight: FontWeight.normal),
+          ),
         );
       }).toList(),
-      onChanged: (value) {
-        setState(() {
-          _bike.manufacturer = value;
-        });
-      },
+      onChanged: (value) => setState(() => _bike.manufacturer = value),
       validator: (value) {
         if (value == null || value.isEmpty) {
           return AppString.bikeManufacturerMandatory;
@@ -162,10 +88,7 @@ class _AddEditBikeState extends State<AddEditBike> {
   Widget _buildModelNameField() {
     return TextFormField(
       initialValue: _bike.modelName,
-      decoration: InputDecoration(
-        labelText: AppString.bikeModel,
-        border: OutlineInputBorder(),
-      ),
+      decoration: const InputDecoration(icon: Icon(CustomIcons.motorbike), labelText: AppString.bikeModel),
       onSaved: (value) => _bike.modelName = value,
       validator: (value) {
         if (value == null || value.isEmpty) {
@@ -179,11 +102,7 @@ class _AddEditBikeState extends State<AddEditBike> {
   Widget _buildEngineSizeField() {
     return TextFormField(
       initialValue: _bike.engineSize?.toString(),
-      decoration: InputDecoration(
-        labelText: AppString.bikeEngineSize,
-        border: OutlineInputBorder(),
-        suffixText: "cc",
-      ),
+      decoration: const InputDecoration(icon: Icon(Icons.speed), labelText: AppString.bikeEngineSize, suffixText: "cc"),
       keyboardType: TextInputType.number,
       onSaved: (value) => _bike.engineSize = int.tryParse(value ?? ""),
       validator: (value) {
@@ -201,10 +120,7 @@ class _AddEditBikeState extends State<AddEditBike> {
   Widget _buildYearField() {
     return TextFormField(
       initialValue: _bike.year?.toString(),
-      decoration: InputDecoration(
-        labelText: AppString.bikeYear,
-        border: OutlineInputBorder(),
-      ),
+      decoration: const InputDecoration(icon: Icon(Icons.calendar_today), labelText: AppString.bikeYear),
       keyboardType: TextInputType.number,
       onSaved: (value) => _bike.year = int.tryParse(value ?? ""),
       validator: (value) {
@@ -239,10 +155,7 @@ class _AddEditBikeState extends State<AddEditBike> {
           title: Text(AppString.confirmation),
           content: Text(AppString.bikeDeletionAreYouSure),
           actions: <Widget>[
-            TextButton(
-              child: Text(AppString.cancel),
-              onPressed: () => Navigator.of(context).pop(),
-            ),
+            TextButton(child: Text(AppString.cancel), onPressed: () => Navigator.of(context).pop()),
             TextButton(
               child: Text(AppString.confirm),
               onPressed: () {
