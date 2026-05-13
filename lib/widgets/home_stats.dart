@@ -140,21 +140,21 @@ class HomeStats extends StatelessWidget {
                     rows: <_GroupCardRow>[
                       _GroupCardRow(
                         icon: Icons.people,
-                        iconColor: Colors.amber,
+                        iconColor: Colors.yellow,
                         value: membersValue,
                         label: AppString.statsMembers,
                         onTap: () => _switchTab(context, 2),
                       ),
                       _GroupCardRow(
                         icon: Icons.event,
-                        iconColor: Colors.redAccent,
+                        iconColor: Colors.red,
                         value: eventsValue,
                         label: AppString.events,
                         onTap: () => _switchTab(context, 1),
                       ),
                       _GroupCardRow(
                         icon: CustomIcons.track_sample,
-                        iconColor: Colors.greenAccent[400]!,
+                        iconColor: Colors.blue[800]!,
                         value: tracksValue,
                         label: AppString.statsTracks,
                         onTap: () => _switchTab(context, 3),
@@ -171,21 +171,21 @@ class HomeStats extends StatelessWidget {
                     rows: <_GroupCardRow>[
                       _GroupCardRow(
                         icon: Icons.flag,
-                        iconColor: Colors.orangeAccent,
+                        iconColor: Colors.orange[700]!,
                         value: myEvents.toString(),
                         label: AppString.statsMyEvents,
                         onTap: () => Navigator.pushNamed(context, '/memberEvents'),
                       ),
                       _GroupCardRow(
                         icon: CustomIcons.motorbike,
-                        iconColor: Colors.purpleAccent,
+                        iconColor: Colors.purple,
                         value: myBikes.toString(),
                         label: AppString.statsMyBikes,
                         onTap: () => Navigator.pushNamed(context, '/myBikes'),
                       ),
                       _GroupCardRow(
                         icon: Icons.speed,
-                        iconColor: Colors.tealAccent[200]!,
+                        iconColor: Colors.lightGreenAccent,
                         value: myKm.toString(),
                         label: AppString.statsMyKm,
                       ),
@@ -560,11 +560,7 @@ class _GroupCardState extends State<_GroupCard> {
     );
 
     if (!tappable) return content;
-    return InkWell(
-      onTap: widget.onHeaderTap,
-      borderRadius: BorderRadius.circular(6.0),
-      child: content,
-    );
+    return InkWell(onTap: widget.onHeaderTap, borderRadius: BorderRadius.circular(6.0), child: content);
   }
 
   /// Bottom-aligned chevron that toggles the card between
@@ -581,11 +577,7 @@ class _GroupCardState extends State<_GroupCard> {
           child: AnimatedRotation(
             turns: _expanded ? 0.5 : 0.0,
             duration: const Duration(milliseconds: 180),
-            child: Icon(
-              Icons.expand_more,
-              size: 20,
-              color: Colors.white.withValues(alpha: 0.85),
-            ),
+            child: Icon(Icons.expand_more, size: 20, color: Colors.white.withValues(alpha: 0.85)),
           ),
         ),
       ),
@@ -688,12 +680,7 @@ class _FeeStatusPill extends StatelessWidget {
           const SizedBox(width: 3.0),
           Text(
             label,
-            style: TextStyle(
-              color: tint,
-              fontSize: 9.0,
-              fontWeight: FontWeight.w700,
-              letterSpacing: 0.5,
-            ),
+            style: TextStyle(color: tint, fontSize: 9.0, fontWeight: FontWeight.w700, letterSpacing: 0.5),
           ),
         ],
       ),

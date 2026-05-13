@@ -218,18 +218,18 @@ class EventDetail extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         actions: <Widget>[
-          if (_loginProvider.isMember) ...[
+          if (_loginProvider.isAdmin)
             Builder(
               builder: (context) => IconButton(
                 icon: Icon(Icons.edit),
                 onPressed: () => _navigateToEditEventScreen(context, _eventDetailProvider.currentEvent),
               ),
             ),
+          if (_loginProvider.isAdmin)
             IconButton(
               icon: Icon(Icons.delete_forever),
               onPressed: () => _showDeleteEventConfirmation(context, AppString.eventDeletionAreYouSure),
             ),
-          ],
         ],
         title: Text(AppString.eventDetailScreenTitle),
         leading: IconButton(icon: Icon(Icons.arrow_back), onPressed: () => Navigator.pop(context)),

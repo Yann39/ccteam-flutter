@@ -372,7 +372,7 @@ class AppString {
   static const String photosNotFound = 'Aucune photo trouvée';
 
   static const String participant = 'participant';
-  static const String participants = 'participants';
+  static const String participants = 'Participants';
   static const String events = 'événements';
   static const String moto = 'Moto';
   static const String mobile = 'Mobile';

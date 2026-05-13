@@ -18,10 +18,14 @@
  */
 
 import 'package:ccteam/models/news.dart';
+import 'package:ccteam/providers/event_list_provider.dart';
 import 'package:ccteam/providers/login_provider.dart';
+import 'package:ccteam/providers/member_list_provider.dart';
 import 'package:ccteam/providers/news_creation_provider.dart';
 import 'package:ccteam/providers/news_detail_provider.dart';
 import 'package:ccteam/providers/news_list_provider.dart';
+import 'package:ccteam/providers/record_list_provider.dart';
+import 'package:ccteam/providers/track_list_provider.dart';
 import 'package:ccteam/ui/main/main_action_menu.dart';
 import 'package:ccteam/ui/main/main_drawer.dart';
 import 'package:ccteam/ui/news/news_card.dart';
@@ -55,6 +59,58 @@ class NewsList extends StatelessWidget {
             Navigator.pushNamed(context, '/newsDetail'),
           },
         );
+  }
+
+  /// Section title above the news feed: "ACTUALITÉS" left-aligned,
+  /// underlined by a thin full-width rule. Subtle anchor that breaks
+  /// the visual flow between the stats panel and the news cards
+  /// without competing with either of them.
+  Widget _buildNewsSectionHeader() {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16.0, 14.0, 16.0, 6.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: <Widget>[
+          Text(
+            AppString.news.toUpperCase(),
+            style: const TextStyle(
+              color: Colors.black87,
+              fontSize: 16,
+              fontWeight: FontWeight.w800,
+              fontStyle: FontStyle.italic,
+              letterSpacing: 1.8,
+            ),
+          ),
+          const SizedBox(height: 4.0),
+          Container(height: 1, color: Colors.black.withValues(alpha: 0.18)),
+        ],
+      ),
+    );
+  }
+
+  /// Pull-to-refresh handler for the whole home screen. Re-fetches:
+  ///  - the news feed (the obvious one — the user is pulling on it)
+  ///  - the members / events / tracks lists used by the "Le club" stats
+  ///  - the logged member (cascades to "Moi" stats: my events, bikes,
+  ///    membership fee, next ride)
+  ///  - the member's records (so the estimated-km figure recomputes
+  ///    with any newly added chrono)
+  ///
+  /// Everything runs in parallel — the spinner stays only as long as
+  /// the slowest call. Errors on individual fetches are already
+  /// surfaced by each provider (snackbar / message-provider), so we
+  /// don't need to handle them here.
+  Future<void> _refreshAll(BuildContext context, NewsListProvider newsListProvider) async {
+    final loginProvider = Provider.of<LoginProvider>(context, listen: false);
+    final memberId = loginProvider.loggedMember?.id;
+    await Future.wait<void>(<Future<void>>[
+      newsListProvider.fetchNewsList(),
+      Provider.of<MemberListProvider>(context, listen: false).fetchMemberList(null),
+      Provider.of<EventListProvider>(context, listen: false).fetchEventList(),
+      Provider.of<TrackListProvider>(context, listen: false).fetchTracks(),
+      loginProvider.refreshLoggedMember(),
+      if (memberId != null) Provider.of<RecordListProvider>(context, listen: false).fetchMemberRecords(memberId),
+    ]);
   }
 
   Widget build(BuildContext context) {
@@ -113,26 +169,11 @@ class NewsList extends StatelessWidget {
                     ),
                   ),
                   const SliverToBoxAdapter(child: HomeStats()),
-                  SliverToBoxAdapter(
-                    child: Container(
-                      padding: EdgeInsets.only(left: 8.0, right: 8.0, top: 10.0, bottom: 2.0),
-                      alignment: Alignment.center,
-                      child: Text(
-                        AppString.news.toUpperCase(),
-                        style: TextStyle(
-                          color: Colors.black87,
-                          fontSize: 16,
-                          fontWeight: FontWeight.w800,
-                          fontStyle: FontStyle.italic,
-                          letterSpacing: 1.5,
-                        ),
-                      ),
-                    ),
-                  ),
+                  SliverToBoxAdapter(child: _buildNewsSectionHeader()),
                 ];
               },
               body: RefreshIndicator(
-                onRefresh: () => _newsListProvider.fetchNewsList(),
+                onRefresh: () => _refreshAll(context, _newsListProvider),
                 child: LoadingContent(
                   loadingStatus: _newsListProvider.loadingStatus,
                   defaultText: AppString.newsEmpty,

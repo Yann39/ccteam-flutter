@@ -293,24 +293,25 @@ class NewsDetail extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         actions: <Widget>[
-          if (_loginProvider.isMember) ...[
+          if (_loginProvider.isMember)
             Builder(
               builder: (context) => IconButton(
                 icon: const Icon(Icons.notifications_active),
                 onPressed: () => NotificationsService.pushInstantNewsNotification(news),
               ),
             ),
+          if (_loginProvider.isAdmin)
             Builder(
               builder: (context) =>
                   IconButton(icon: const Icon(Icons.edit), onPressed: () => _navigateToEditNewsScreen(context, news)),
             ),
+          if (_loginProvider.isAdmin)
             Builder(
               builder: (context) => IconButton(
                 icon: const Icon(Icons.delete_forever),
                 onPressed: () => _showDeleteNewsConfirmation(context, AppString.newsDeletionAreYouSure),
               ),
             ),
-          ],
         ],
         title: Text(AppString.detail),
         leading: IconButton(icon: const Icon(Icons.arrow_back), onPressed: () => Navigator.pop(context)),

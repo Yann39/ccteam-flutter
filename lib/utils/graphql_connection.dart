@@ -35,20 +35,15 @@ class GraphQLConnection {
   }
 
   GraphQLConnection._internal() {
-    /*final ioc = new HttpClient();
-    ioc.badCertificateCallback = (X509Certificate cert, String host, int port) => true;
-    final http = new IOClient(ioc);*/
-
     final HttpLink httpLink = HttpLink(API_BASE_URL + API_GRAPHQL_ENDPOINT);
 
-    final AuthLink authLink = AuthLink(
-      getToken: () async => 'Bearer $_jwtToken',
-    );
+    final AuthLink authLink = AuthLink(getToken: () async => 'Bearer $_jwtToken');
 
     final Link link = authLink.concat(httpLink);
 
     _graphQLClient = GraphQLClient(
       cache: GraphQLCache(store: InMemoryStore()),
+      queryRequestTimeout: const Duration(seconds: 10),
       link: link,
     );
 
