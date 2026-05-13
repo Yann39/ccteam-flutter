@@ -25,6 +25,7 @@ import 'package:ccteam/providers/login_provider.dart';
 import 'package:ccteam/providers/member_creation_provider.dart';
 import 'package:ccteam/providers/member_detail_provider.dart';
 import 'package:ccteam/providers/member_list_provider.dart';
+import 'package:ccteam/providers/message_provider.dart';
 import 'package:ccteam/utils/custom_icons.dart';
 import 'package:ccteam/utils/enums.dart';
 import 'package:ccteam/utils/string_utils.dart';
@@ -74,15 +75,8 @@ class AddEditMember extends StatefulWidget {
 class _AddEditMemberState extends State<AddEditMember> {
   final GlobalKey<FormState> _formKey = new GlobalKey<FormState>();
 
-  /// Snapshot of the board role the member had when the form was opened,
-  /// so we can detect a change on save and call the dedicated server-side
-  /// mutation only when needed.
   BoardRole? _initialBoardRole;
   BoardRole? _selectedBoardRole;
-
-  /// Mirror state for the header-palette picker — like board role,
-  /// the value is buffered locally and only persisted via
-  /// `setHeaderPalette` after the main `updateMember` succeeds.
   int? _initialHeaderPalette;
   int? _selectedHeaderPalette;
 
@@ -101,9 +95,7 @@ class _AddEditMemberState extends State<AddEditMember> {
     final FormState form = _formKey.currentState!;
 
     if (!form.validate()) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(backgroundColor: Colors.red, content: Text(AppString.formNotValid)));
+      Provider.of<MessageProvider>(context, listen: false).setMessage(AppString.formNotValid, MessageType.ERROR);
     } else {
       // this invokes each onSaved event
       form.save();
@@ -147,9 +139,7 @@ class _AddEditMemberState extends State<AddEditMember> {
     }
   }
 
-  /// Opens the avatar edit page. Pre-fills the [AvatarProvider]'s picked
-  /// and cropped images with the current avatar so the editor starts
-  /// from "the existing photo" rather than empty.
+  /// Opens the avatar edit page.
   void _openAvatarEditor(MemberCreationProvider mcp, AvatarProvider ap) {
     if (mcp.currentMember.avatar != null) {
       ap.setPickedImage(File.fromRawPath(base64Decode(mcp.currentMember.avatar!)));
@@ -311,13 +301,11 @@ class _AddEditMemberState extends State<AddEditMember> {
       initialValue: _memberCreationProvider.currentMember.riderNumber?.toString(),
     );
 
-    // Header palette picker
-    final int _paletteSeed = _memberCreationProvider.currentMember.id ??
-        _memberCreationProvider.currentMember.email?.hashCode ??
-        0;
+    // header palette picker
+    final int _paletteSeed =
+        _memberCreationProvider.currentMember.id ?? _memberCreationProvider.currentMember.email?.hashCode ?? 0;
     final List<Color> _palettePreview = _selectedHeaderPalette != null
-        ? kMemberHeaderPalettes[
-            _selectedHeaderPalette!.clamp(0, kMemberHeaderPalettes.length - 1)]
+        ? kMemberHeaderPalettes[_selectedHeaderPalette!.clamp(0, kMemberHeaderPalettes.length - 1)]
         : kMemberHeaderPalettes[_paletteSeed.abs() % kMemberHeaderPalettes.length];
     final _paletteField = InkWell(
       onTap: () {

@@ -31,6 +31,7 @@ import 'package:ccteam/providers/login_provider.dart';
 import 'package:ccteam/providers/member_creation_provider.dart';
 import 'package:ccteam/providers/member_detail_provider.dart';
 import 'package:ccteam/providers/member_list_provider.dart';
+import 'package:ccteam/providers/message_provider.dart';
 import 'package:ccteam/providers/record_list_provider.dart';
 import 'package:ccteam/utils/app_utils.dart';
 import 'package:ccteam/utils/custom_decorations.dart';
@@ -99,11 +100,9 @@ class MemberDetail extends StatelessWidget {
     // Navigator.push returns a Future that will complete after we call Navigator.pop on the target screen
     final _result = await Navigator.pushNamed(context, '/trackDetail');
 
-    // after the target screen returns a result, hide any previous snack bars and show the result
+    // after the target screen returns a result, show the result
     if (_result != null) {
-      ScaffoldMessenger.of(context)
-        ..removeCurrentSnackBar()
-        ..showSnackBar(SnackBar(content: Text("$_result")));
+      Provider.of<MessageProvider>(context, listen: false).setMessage("$_result", MessageType.INFO);
     }
   }
 
@@ -445,9 +444,7 @@ class MemberDetail extends StatelessWidget {
       );
     }
 
-    // Sort chronologically: oldest event on the left, newest on the
-    // right — that's the natural reading order for a timeline and the
-    // direction the gray-then-red line below will follow.
+    // sort chronologically: oldest event on the left, newest on the right
     final List<EventMember> sorted = List<EventMember>.of(eventMembers)
       ..sort((a, b) {
         final DateTime aDate = a.event?.startDate ?? DateTime(2100);
@@ -458,9 +455,7 @@ class MemberDetail extends StatelessWidget {
     final DateTime now = DateTime.now();
     final DateTime today = DateTime(now.year, now.month, now.day);
 
-    // Index of the first event that is NOT in the past — used to
-    // colour each card AND to drive the initial auto-scroll target so
-    // the user lands directly on their first upcoming roulage.
+    // index of the first event that is NOT in the past, used to colour each card and to drive the initial auto-scroll target
     int? transitionIndex;
     for (int i = 0; i < sorted.length; i++) {
       final DateTime? start = sorted[i].event?.startDate;
@@ -469,12 +464,10 @@ class MemberDetail extends StatelessWidget {
         break;
       }
     }
-    // total width of one card slot, including the 8 px margin on each
-    // side baked into _buildTimelineEventItem
     final double cardSlotWidth = _eventCardSize + 16;
     final double totalWidth = cardSlotWidth * sorted.length;
 
-    // Build the list of timeline items.
+    // build the list of timeline items.
     final List<Widget> items = <Widget>[];
     for (int i = 0; i < sorted.length; i++) {
       items.add(
@@ -488,12 +481,6 @@ class MemberDetail extends StatelessWidget {
       );
     }
 
-    // Auto-scroll once per widget instance:
-    //  - mixed past + future → land just before the first upcoming
-    //    event so the user immediately sees what's next
-    //  - all past, no upcoming → scroll to the end (most recent event
-    //    is the rightmost one)
-    //  - all upcoming → no scroll, the closest one is already first
     if (!_eventsTimelineAutoScrolled) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (!_eventsTimelineController.hasClients) return;
@@ -536,14 +523,8 @@ class MemberDetail extends StatelessWidget {
     required double totalWidth,
   }) {
     final Event event = em.event!;
-    // An event counts as "past" when its start date is strictly
-    // before today (0h00). Events happening today render with the
-    // upcoming/red style.
     final bool isPast = event.startDate != null && event.startDate!.isBefore(today);
     final Color accent = isPast ? Colors.grey[500]! : Colors.red[700]!;
-
-    // if list view is not large enough, add padding so the last item
-    // pushes everything to fill the whole screen width
     final double pad = isLast ? max(MediaQuery.of(context).size.width - totalWidth - 16, 0).toDouble() : 0.0;
 
     return Column(
@@ -591,30 +572,9 @@ class MemberDetail extends StatelessWidget {
                 ),
               ),
             ),
-            // Timeline backbone — coloured per segment so past
-            // events sit on a gray line and upcoming ones on a
-            // red one. The transition spot on the screen is the
-            // "now" marker (no separate label needed).
+            // time line
             Positioned(top: 17.0, left: 0.0, right: 0.0, child: Container(height: 2, color: accent)),
-            // Pin on the line, right at the centre of the date
-            // badge — gives a clear "node" feel like on a real
-            // timeline, without enlarging the layout.
-            Positioned(
-              top: 13.0,
-              left: 0.0,
-              right: pad,
-              child: Center(
-                child: Container(
-                  width: 10,
-                  height: 10,
-                  decoration: BoxDecoration(
-                    color: accent,
-                    shape: BoxShape.circle,
-                    border: Border.all(color: Colors.white, width: 2),
-                  ),
-                ),
-              ),
-            ),
+            // date card on the line
             Positioned(
               top: 0.0,
               left: 0.0,
@@ -713,7 +673,7 @@ class MemberDetail extends StatelessWidget {
                         Text("Rôle au bureau", style: TextStyle(color: Colors.red[700])),
                         Text(
                           _boardRole.localizedLabel(Localizations.localeOf(context).languageCode),
-                          style: TextStyle(color: Colors.black.withAlpha(204), fontWeight: FontWeight.w600),
+                          style: TextStyle(color: Colors.black.withAlpha(204)),
                           textScaler: const TextScaler.linear(1.1),
                         ),
                       ],

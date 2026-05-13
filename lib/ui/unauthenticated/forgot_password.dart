@@ -18,7 +18,9 @@
  */
 
 import 'package:ccteam/providers/login_provider.dart';
+import 'package:ccteam/providers/message_provider.dart';
 import 'package:ccteam/utils/custom_decorations.dart';
+import 'package:ccteam/utils/enums.dart';
 import 'package:ccteam/utils/string_utils.dart';
 import 'package:ccteam/utils/strings.dart';
 import 'package:ccteam/widgets/unauthenticated_layout.dart';
@@ -46,9 +48,7 @@ class _ForgotPassword extends State<ForgotPassword> {
 
     // validate the form
     if (!_form.validate()) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(backgroundColor: Colors.red, content: Text(AppString.formNotValid)));
+      Provider.of<MessageProvider>(context, listen: false).setMessage(AppString.formNotValid, MessageType.ERROR);
     } else {
       // this invokes each onSaved event
       _form.save();

@@ -18,6 +18,8 @@
  */
 
 import 'package:ccteam/providers/avatar_provider.dart';
+import 'package:ccteam/providers/message_provider.dart';
+import 'package:ccteam/utils/enums.dart';
 import 'package:ccteam/utils/strings.dart';
 import 'package:crop_your_image/crop_your_image.dart';
 import 'package:flutter/material.dart';
@@ -43,14 +45,10 @@ class ImageCrop extends StatelessWidget {
                 _avatarProvider.setCroppedImage(croppedImage);
                 Navigator.pop(context);
               case CropFailure(:final cause):
-                showDialog(
-                  context: context,
-                  builder: (context) => AlertDialog(
-                    title: Text('Error'),
-                    content: Text('Failed to crop image: ${cause.toString()}'),
-                    actions: [TextButton(onPressed: () => Navigator.pop(context), child: Text('OK'))],
-                  ),
-                );
+                Provider.of<MessageProvider>(
+                  context,
+                  listen: false,
+                ).setMessage(AppString.format(AppString.imageCropFailed, [cause.toString()]), MessageType.ERROR);
             }
           },
           withCircleUi: true,

@@ -20,6 +20,7 @@
 import 'package:ccteam/models/bike.dart';
 import 'package:ccteam/models/track.dart';
 import 'package:ccteam/providers/login_provider.dart';
+import 'package:ccteam/providers/message_provider.dart';
 import 'package:ccteam/providers/record_creation_provider.dart';
 import 'package:ccteam/services/tracks_service.dart';
 import 'package:ccteam/utils/constants.dart';
@@ -104,9 +105,7 @@ class _AddEditRecordState extends State<AddEditRecord> {
     final FormState form = _formKey.currentState!;
 
     if (!form.validate()) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(backgroundColor: Colors.red, content: Text(AppString.formNotValid)));
+      Provider.of<MessageProvider>(context, listen: false).setMessage(AppString.formNotValid, MessageType.ERROR);
     } else {
       // this invokes each onSaved event
       form.save();

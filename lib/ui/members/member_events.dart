@@ -21,6 +21,7 @@ import 'package:ccteam/models/event.dart';
 import 'package:ccteam/providers/event_detail_provider.dart';
 import 'package:ccteam/providers/login_provider.dart';
 import 'package:ccteam/providers/member_detail_provider.dart';
+import 'package:ccteam/providers/message_provider.dart';
 import 'package:ccteam/ui/events/event_card.dart';
 import 'package:ccteam/utils/custom_decorations.dart';
 import 'package:ccteam/utils/enums.dart';
@@ -59,9 +60,7 @@ class _MemberEventsState extends State<MemberEvents> {
   void _navigateToJoinEventScreen(BuildContext context) async {
     final _result = await Navigator.pushNamed(context, '/selectEventToJoin');
     if (_result != null) {
-      ScaffoldMessenger.of(context)
-        ..removeCurrentSnackBar()
-        ..showSnackBar(SnackBar(content: Text("$_result")));
+      Provider.of<MessageProvider>(context, listen: false).setMessage("$_result", MessageType.INFO);
     }
   }
 

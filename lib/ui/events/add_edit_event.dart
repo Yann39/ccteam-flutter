@@ -23,10 +23,12 @@ import 'package:ccteam/providers/event_creation_provider.dart';
 import 'package:ccteam/providers/event_detail_provider.dart';
 import 'package:ccteam/providers/event_list_provider.dart';
 import 'package:ccteam/providers/login_provider.dart';
+import 'package:ccteam/providers/message_provider.dart';
 import 'package:ccteam/services/tracks_service.dart';
 import 'package:ccteam/utils/constants.dart';
 import 'package:ccteam/utils/custom_icons.dart';
 import 'package:ccteam/utils/date_utils.dart';
+import 'package:ccteam/utils/enums.dart';
 import 'package:ccteam/utils/string_utils.dart';
 import 'package:ccteam/utils/strings.dart';
 import 'package:ccteam/widgets/form_scaffold.dart';
@@ -113,9 +115,7 @@ class _AddEditEventState extends State<AddEditEvent> {
     final FormState _form = _formKey.currentState!;
 
     if (!_form.validate()) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(backgroundColor: Colors.red, content: Text(AppString.formNotValid)));
+      Provider.of<MessageProvider>(context, listen: false).setMessage(AppString.formNotValid, MessageType.ERROR);
     } else {
       // this invokes each onSaved event
       _form.save();

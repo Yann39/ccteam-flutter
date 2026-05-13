@@ -361,10 +361,38 @@ class MembersService {
             year
             current
           }
+          membershipFees {
+            id
+            year
+            amount
+            paid
+            createdOn
+            modifiedOn
+          }
           active
           role
           boardRole
           registrationDate
+          eventMembers {
+            id
+            event {
+              id
+              title
+              startDate
+              endDate
+              track {
+                id
+                name
+                distance
+                lapRecord
+              }
+              organizer
+              price
+              participants {
+                id
+              }
+            }
+          }
           likedNews {
             news {
               id
@@ -438,10 +466,38 @@ class MembersService {
             year
             current
           }
+          membershipFees {
+            id
+            year
+            amount
+            paid
+            createdOn
+            modifiedOn
+          }
           active
           role
           boardRole
           registrationDate
+          eventMembers {
+            id
+            event {
+              id
+              title
+              startDate
+              endDate
+              track {
+                id
+                name
+                distance
+                lapRecord
+              }
+              organizer
+              price
+              participants {
+                id
+              }
+            }
+          }
           likedNews {
             news {
               id

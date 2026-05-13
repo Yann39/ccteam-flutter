@@ -423,6 +423,7 @@ class AppString {
   static const String cancelSelection = 'Annuler la sélection';
   static const String removePhoto = 'Retirer la photo';
   static const String zoomAndCrop = 'Zoom et recadrage';
+  static const String imageCropFailed = 'Le recadrage de l\'image a échoué : {0}';
   static const String profile = 'Profil';
   static const String myTrackEvents = 'Mes roulages';
   static const String myChronos = 'Mes chronos';

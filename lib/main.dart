@@ -260,72 +260,57 @@ class CCTeamApp extends StatelessWidget {
         },
         home: Consumer2<LoginProvider, MessageProvider>(
           builder: (context, loginProvider, messageProvider, child) {
-            // if an error message is set in the message provider, display it in a dialog
+            // if a message is set in the message provider, render it as a floating snackbar
             if (messageProvider.message != null) {
               // to prevent calling setState() during build
               WidgetsBinding.instance.addPostFrameCallback((_) {
-                // handle session expired with a dialog
+                // session expired, handled as a snackbar
                 if (messageProvider.messageType == MessageType.SESSION_EXPIRED) {
-                  _log.info("Session expired message detected in main.dart, showing dialog");
-                  final BuildContext? activeContext = navigatorKey.currentContext;
-                  if (activeContext == null) return;
-                  showDialog(
-                    context: activeContext,
-                    barrierDismissible: false,
-                    builder: (BuildContext context) {
-                      return AlertDialog(
-                        title: Text(AppString.info),
-                        content: Text(messageProvider.message!),
-                        actions: [
-                          TextButton(
-                            child: Text(AppString.validate),
-                            onPressed: () {
-                              Navigator.of(activeContext).pop();
-                              // keep the e-mail in shared preferences so the
-                              // user can re-authenticate from the passcode
-                              // screen without retyping it
-                              loginProvider.handleSessionExpired();
-                              messageProvider.clearMessage();
-                              navigatorKey.currentState?.pushNamedAndRemoveUntil('/', (Route<dynamic> route) => false);
-                            },
-                          ),
-                        ],
-                      );
-                    },
-                  );
-                  return;
+                  // on cold start / mid-login the JWT being stale is expected, no need to interrupt with a snackbar
+                  if (loginProvider.authStatus != AuthStatus.Authenticated) {
+                    _log.info(
+                      "Session expired detected before authentication completed, skipping snackbar, routing to passcode silently",
+                    );
+                    loginProvider.handleSessionExpired();
+                    messageProvider.clearMessage();
+                    return;
+                  }
+                  _log.info("Session expired during active navigation, showing snackbar + clearing nav stack");
+                  loginProvider.handleSessionExpired();
+                  navigatorKey.currentState?.pushNamedAndRemoveUntil('/', (Route<dynamic> route) => false);
+                  // intentionally NOT returning, fall through to the snackbar rendering so the user sees what happened
                 }
 
                 // global application success/warning/error snack bar messages
-                final Color notificationColor = messageProvider.messageType == MessageType.ERROR
+                final Color notificationColor = (messageProvider.messageType == MessageType.ERROR)
                     ? Color(0xFFB43636)
-                    : messageProvider.messageType == MessageType.WARNING
+                    : (messageProvider.messageType == MessageType.WARNING ||
+                          messageProvider.messageType == MessageType.SESSION_EXPIRED)
                     ? Color(0xFFC9922D)
                     : messageProvider.messageType == MessageType.SUCCESS
                     ? Color(0xFF42914A)
                     : Color(0xFF2368AF);
-                final String notificationTitle = messageProvider.messageType == MessageType.ERROR
+                final String notificationTitle = (messageProvider.messageType == MessageType.ERROR)
                     ? AppString.error
-                    : messageProvider.messageType == MessageType.WARNING
+                    : (messageProvider.messageType == MessageType.WARNING ||
+                          messageProvider.messageType == MessageType.SESSION_EXPIRED)
                     ? AppString.warning
                     : messageProvider.messageType == MessageType.SUCCESS
                     ? AppString.success
                     : AppString.info;
-                final IconData notificationIcon = messageProvider.messageType == MessageType.ERROR
+                final IconData notificationIcon = (messageProvider.messageType == MessageType.ERROR)
                     ? Icons.error_outline
-                    : messageProvider.messageType == MessageType.WARNING
+                    : (messageProvider.messageType == MessageType.WARNING ||
+                          messageProvider.messageType == MessageType.SESSION_EXPIRED)
                     ? Icons.warning_amber_rounded
                     : messageProvider.messageType == MessageType.SUCCESS
                     ? Icons.check_circle_outline
                     : Icons.info_outline;
                 final snackBar = SnackBar(
-                  behavior: SnackBarBehavior.floating,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(32)),
                   showCloseIcon: true,
                   closeIconColor: Colors.white,
                   backgroundColor: notificationColor,
                   padding: const EdgeInsets.all(24),
-                  margin: const EdgeInsets.all(24),
                   duration: Duration(minutes: 1),
                   content: Row(
                     children: [

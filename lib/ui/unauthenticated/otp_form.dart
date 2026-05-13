@@ -18,6 +18,7 @@
  */
 
 import 'package:ccteam/providers/login_provider.dart';
+import 'package:ccteam/providers/message_provider.dart';
 import 'package:ccteam/providers/timer_provider.dart';
 import 'package:ccteam/utils/constants.dart';
 import 'package:ccteam/utils/enums.dart';
@@ -60,8 +61,7 @@ class _OtpFormState extends State<OtpForm> {
 
     // validate the form
     if (!_form.validate()) {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(backgroundColor: Colors.red, content: Text(AppString.formNotValid)));
+      Provider.of<MessageProvider>(context, listen: false).setMessage(AppString.formNotValid, MessageType.ERROR);
     } else {
       _form.save();
 
@@ -99,7 +99,7 @@ class _OtpFormState extends State<OtpForm> {
           if (value.isEmpty && digitId > 0)
             _otpFocusNodes[digitId - 1].requestFocus()
           else if (value.isNotEmpty && digitId < 3)
-            _otpFocusNodes[digitId + 1].requestFocus()
+            _otpFocusNodes[digitId + 1].requestFocus(),
         },
         maxLines: 1,
         inputFormatters: [LengthLimitingTextInputFormatter(1)],
@@ -111,17 +111,17 @@ class _OtpFormState extends State<OtpForm> {
           else if (digitId == 2)
             _otpDigit2 = val!
           else if (digitId == 3)
-            _otpDigit3 = val!
+            _otpDigit3 = val!,
         },
         initialValue: digitId == 0
             ? _otpDigit0
             : digitId == 1
-                ? _otpDigit1
-                : digitId == 2
-                    ? _otpDigit2
-                    : digitId == 3
-                        ? _otpDigit3
-                        : null,
+            ? _otpDigit1
+            : digitId == 2
+            ? _otpDigit2
+            : digitId == 3
+            ? _otpDigit3
+            : null,
       ),
       decoration: BoxDecoration(
         border: Border.all(color: Colors.blue[700]!, width: 2.0),
@@ -138,21 +138,14 @@ class _OtpFormState extends State<OtpForm> {
 
     final _otpField = Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-      children: <Widget>[
-        _otpDigitBox(0),
-        _otpDigitBox(1),
-        _otpDigitBox(2),
-        _otpDigitBox(3),
-      ],
+      children: <Widget>[_otpDigitBox(0), _otpDigitBox(1), _otpDigitBox(2), _otpDigitBox(3)],
     );
 
     final _otpVerifyButton = Builder(
       builder: (BuildContext context) {
         return ElevatedButton(
           style: ElevatedButton.styleFrom(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(4),
-            ),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
             backgroundColor: Colors.blue[700],
             padding: EdgeInsets.fromLTRB(16.0, 12.0, 16.0, 12.0),
           ),
@@ -168,10 +161,7 @@ class _OtpFormState extends State<OtpForm> {
                   height: 14.0,
                   width: 14.0,
                 )
-              : Text(
-                  AppString.verify,
-                  style: TextStyle(color: Colors.white),
-                ),
+              : Text(AppString.verify, style: TextStyle(color: Colors.white)),
         );
       },
     );
@@ -182,10 +172,7 @@ class _OtpFormState extends State<OtpForm> {
           onPressed: () {
             _goToPreviousStep();
           },
-          child: Text(
-            AppString.back,
-            style: TextStyle(color: Colors.blue[900]),
-          ),
+          child: Text(AppString.back, style: TextStyle(color: Colors.blue[900])),
         );
       },
     );
@@ -216,10 +203,7 @@ class _OtpFormState extends State<OtpForm> {
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[
-                Text(
-                  "${AppString.timeLeft} : ",
-                  style: TextStyle(fontSize: 14.0),
-                ),
+                Text("${AppString.timeLeft} : ", style: TextStyle(fontSize: 14.0)),
                 CountDownTimer(textStyle: TextStyle(fontSize: 14.0, fontWeight: FontWeight.bold)),
               ],
             ),
@@ -244,19 +228,13 @@ class _OtpFormState extends State<OtpForm> {
                           height: 14.0,
                           width: 14.0,
                         )
-                      : Text(
-                          AppString.resendOtp.toUpperCase(),
-                          style: TextStyle(color: Colors.blue[900]),
-                        ),
+                      : Text(AppString.resendOtp.toUpperCase(), style: TextStyle(color: Colors.blue[900])),
                 ),
               ],
             ),
           ],
         ),
-        actions: <Widget>[
-          _otpVerifyButton,
-          _backButton,
-        ],
+        actions: <Widget>[_otpVerifyButton, _backButton],
       ),
     );
 

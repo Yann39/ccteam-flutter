@@ -19,7 +19,10 @@
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:ccteam/models/photo.dart';
+import 'package:ccteam/providers/message_provider.dart';
+import 'package:ccteam/utils/enums.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import '../../utils/constants.dart';
 
@@ -31,17 +34,11 @@ class PhotoCard extends StatelessWidget {
   /// Method that launches the Photo detail screen and awaits the result from Navigator.pop
   _navigateToPhotoDetailScreen(BuildContext context, Photo photo) async {
     // Navigator.push returns a Future that will complete after we call Navigator.pop on the target screen
-    final result = await Navigator.pushNamed(
-      context,
-      "/photoDetail",
-      arguments: photo,
-    );
+    final result = await Navigator.pushNamed(context, "/photoDetail", arguments: photo);
 
-    // after the target screen returns a result, hide any previous snack bars and show the new result
+    // after the target screen returns a result, show the new result
     if (result != null) {
-      ScaffoldMessenger.of(context)
-        ..removeCurrentSnackBar()
-        ..showSnackBar(SnackBar(content: Text("$result")));
+      Provider.of<MessageProvider>(context, listen: false).setMessage("$result", MessageType.INFO);
     }
   }
 
@@ -53,16 +50,17 @@ class PhotoCard extends StatelessWidget {
       child: InkWell(
         onTap: () => _navigateToPhotoDetailScreen(context, photo),
         child: Hero(
-          flightShuttleBuilder: (
-            BuildContext flightContext,
-            Animation<double> animation,
-            HeroFlightDirection flightDirection,
-            BuildContext fromHeroContext,
-            BuildContext toHeroContext,
-          ) {
-            final Widget toHero = toHeroContext.widget;
-            return RotationTransition(turns: animation, child: toHero);
-          },
+          flightShuttleBuilder:
+              (
+                BuildContext flightContext,
+                Animation<double> animation,
+                HeroFlightDirection flightDirection,
+                BuildContext fromHeroContext,
+                BuildContext toHeroContext,
+              ) {
+                final Widget toHero = toHeroContext.widget;
+                return RotationTransition(turns: animation, child: toHero);
+              },
           tag: photo.id!,
           child: Stack(
             fit: StackFit.expand,
@@ -77,10 +75,7 @@ class PhotoCard extends StatelessWidget {
                 child: Container(
                   height: 20.0,
                   alignment: Alignment.center,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.rectangle,
-                    color: Colors.black.withAlpha(128),
-                  ),
+                  decoration: BoxDecoration(shape: BoxShape.rectangle, color: Colors.black.withAlpha(128)),
                   child: Text(
                     photo.title!,
                     softWrap: false,
