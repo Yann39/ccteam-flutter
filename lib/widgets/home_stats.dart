@@ -25,7 +25,6 @@ import 'package:ccteam/providers/event_detail_provider.dart';
 import 'package:ccteam/providers/event_list_provider.dart';
 import 'package:ccteam/providers/home_provider.dart';
 import 'package:ccteam/providers/login_provider.dart';
-import 'package:ccteam/providers/member_creation_provider.dart';
 import 'package:ccteam/providers/member_list_provider.dart';
 import 'package:ccteam/providers/record_list_provider.dart';
 import 'package:ccteam/providers/track_list_provider.dart';
@@ -40,7 +39,7 @@ import 'package:provider/provider.dart';
 /// news list on the home screen.
 ///
 /// Visual structure (top to bottom):
-///  1. **Hero card** — countdown to the next event the user is
+///  1. **Hero card**, countdown to the next event the user is
 ///     registered to. Tappable to jump straight to the event detail.
 ///     Falls back to an "inscrivez-vous" prompt when there is no
 ///     upcoming registration.
@@ -50,10 +49,6 @@ import 'package:provider/provider.dart';
 ///     - **Mon profil** : personal stats (events registered to, bikes,
 ///       membership fee status). Each row taps through to its
 ///       dedicated screen (when applicable).
-///
-/// All cards share the same blue-gradient style as the rest of the
-/// app's content cards. Values are pulled live from the existing list
-/// providers — no extra fetch.
 class HomeStats extends StatelessWidget {
   const HomeStats({Key? key}) : super(key: key);
 
@@ -72,7 +67,7 @@ class HomeStats extends StatelessWidget {
         ? memberListProvider.memberList.length.toString()
         : '—';
 
-    // total events in the club (past + upcoming) — gives a sense of
+    // total events in the club (past + upcoming), gives a sense of
     // the club's activity history rather than just what's coming up
     final String eventsValue = eventListProvider.loadingStatus == LoadingStatus.loaded
         ? eventListProvider.allEvents.length.toString()
@@ -167,7 +162,7 @@ class HomeStats extends StatelessWidget {
                   child: _GroupCard(
                     title: AppString.statsProfile,
                     headerTrailing: _FeeStatusPill(paid: feePaid),
-                    onHeaderTap: () => _navigateToEditProfile(context),
+                    onHeaderTap: () => _navigateToMyAccount(context),
                     rows: <_GroupCardRow>[
                       _GroupCardRow(
                         icon: Icons.flag,
@@ -204,23 +199,18 @@ class HomeStats extends StatelessWidget {
     Provider.of<HomeProvider>(context, listen: false).setCurrentIndex(index);
   }
 
-  /// Open the profile edit screen for the currently logged-in member.
-  /// Mirrors what `member_detail._navigateToEditMemberScreen` does:
-  /// inject the member into MemberCreationProvider, then push the
-  /// shared `/addEditMember` route.
-  void _navigateToEditProfile(BuildContext context) {
+  /// Open the "My account" hub for the currently logged-in member.
+  void _navigateToMyAccount(BuildContext context) {
     final loginProvider = Provider.of<LoginProvider>(context, listen: false);
-    final member = loginProvider.loggedMember;
-    if (member == null) return;
-    Provider.of<MemberCreationProvider>(context, listen: false).setMemberToEdit(member);
-    Navigator.pushNamed(context, '/addEditMember');
+    if (loginProvider.loggedMember == null) return;
+    Navigator.pushNamed(context, '/myAccount');
   }
 
   static DateTime _dayOnly(DateTime d) => DateTime(d.year, d.month, d.day);
 
   /// Estimate total kilometres ridden across the past events the
-  /// member is registered to. This is necessarily a rough estimate —
-  /// the app doesn't track laps per event — but it's grounded enough
+  /// member is registered to. This is necessarily a rough estimate,
+  /// the app doesn't track laps per event, but it's grounded enough
   /// to give a meaningful "achievement" number.
   ///
   /// Heuristic, applied per past event:
@@ -295,7 +285,7 @@ class HomeStats extends StatelessWidget {
   }
 }
 
-/// Hero "next ride" card — wide blue gradient tile with a leading disc
+/// Hero "next ride" card, wide blue gradient tile with a leading disc
 /// icon, a countdown headline, an event subtitle, and a chevron. Falls
 /// back to a gentle empty-state prompt when the user has no upcoming
 /// registration.
@@ -436,7 +426,7 @@ class _NextRideHero extends StatelessWidget {
   }
 }
 
-/// A grouped stats card — blue-gradient container with a header row
+/// A grouped stats card, blue-gradient container with a header row
 /// (icon + title) and a vertical list of [_GroupCardRow] entries. Used
 /// for the side-by-side "Le club" / "Mon profil" cards on the home
 /// stats panel.
@@ -509,8 +499,7 @@ class _GroupCardState extends State<_GroupCard> {
                 padding: const EdgeInsets.symmetric(vertical: 4.0),
                 child: Container(height: 1, color: Colors.white.withValues(alpha: 0.25)),
               ),
-              // Smooth expand/collapse so toggling the chevron doesn't
-              // snap the card height
+              // smooth expand/collapse so toggling the chevron doesn't snap the card height
               AnimatedSize(
                 duration: const Duration(milliseconds: 180),
                 curve: Curves.easeInOut,
@@ -529,10 +518,11 @@ class _GroupCardState extends State<_GroupCard> {
     );
   }
 
-  /// Header row builder — extracted so we can either render a plain
+  /// Header row builder, extracted so we can either render a plain
   /// Row or wrap it in an [InkWell] when [_GroupCard.onHeaderTap] is
-  /// set. The chevron is only rendered in the tappable case so the
-  /// non-interactive cards stay visually unchanged.
+  /// set. The tappable variant uses the InkWell ripple alone as the
+  /// affordance, no chevron, to keep the card visually balanced
+  /// with the non-tappable one next to it.
   Widget _buildHeader() {
     final bool tappable = widget.onHeaderTap != null;
     final Row content = Row(
@@ -550,11 +540,6 @@ class _GroupCardState extends State<_GroupCard> {
             ),
           ),
         ),
-        if (tappable) ...[
-          const SizedBox(width: 2.0),
-          Icon(Icons.chevron_right, size: 16, color: Colors.white.withValues(alpha: 0.85)),
-          const SizedBox(width: 2.0),
-        ],
         if (widget.headerTrailing != null) widget.headerTrailing!,
       ],
     );
@@ -651,7 +636,7 @@ class _GroupCardRow extends StatelessWidget {
 
 /// Tiny "membership fee" status pill displayed in the "Mon profil"
 /// card header. Green check + "PAYÉE" when paid, amber warning + "À
-/// PAYER" otherwise — both translucent so the pill sits nicely on the
+/// PAYER" otherwise, both translucent so the pill sits nicely on the
 /// blue gradient background.
 class _FeeStatusPill extends StatelessWidget {
   const _FeeStatusPill({Key? key, required this.paid}) : super(key: key);

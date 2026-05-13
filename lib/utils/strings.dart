@@ -425,6 +425,29 @@ class AppString {
   static const String zoomAndCrop = 'Zoom et recadrage';
   static const String imageCropFailed = 'Le recadrage de l\'image a échoué : {0}';
   static const String profile = 'Profil';
+  static const String myAccount = 'Mon compte';
+  static const String myAccountTitle = 'Mon compte';
+  static const String editMyProfile = 'Modifier mon profil';
+  static const String changeMyPasscode = 'Changer mon passcode';
+  static const String accountActions = 'Actions';
+  static const String membershipStatus = 'Statut de la cotisation';
+  static const String membershipPaidYear = 'Cotisation {0} payée';
+  static const String membershipUnpaidYear = 'Cotisation {0} non payée';
+  static const String membershipNoneYear = 'Aucune cotisation enregistrée pour {0}';
+  static const String membershipAmount = '{0} CHF';
+
+  // Change-passcode screen
+  static const String changePasscodeTitle = 'Changer mon passcode';
+  static const String changePasscodeStepCurrent = 'Saisissez votre passcode actuel';
+  static const String changePasscodeStepNew = 'Choisissez votre nouveau passcode';
+  static const String changePasscodeStepConfirm = 'Confirmez votre nouveau passcode';
+  static const String changePasscodeSubmit = 'Valider';
+  static const String changePasscodeSuccess = 'Passcode modifié avec succès';
+  static const String changePasscodeErrorCurrentWrong = 'Le passcode actuel est incorrect';
+  static const String changePasscodeErrorMismatch = 'La confirmation ne correspond pas au nouveau passcode';
+  static const String changePasscodeErrorSame = 'Le nouveau passcode doit être différent du passcode actuel';
+  static const String changePasscodeErrorNetwork = 'Une erreur est survenue, réessayez plus tard';
+
   static const String myTrackEvents = 'Mes roulages';
   static const String myChronos = 'Mes chronos';
   static const String upcomingEvents = 'Événements à venir';

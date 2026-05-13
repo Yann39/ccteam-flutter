@@ -19,6 +19,7 @@
 
 import 'package:ccteam/providers/avatar_provider.dart';
 import 'package:ccteam/providers/bike_list_provider.dart';
+import 'package:ccteam/providers/change_passcode_provider.dart';
 import 'package:ccteam/providers/event_creation_provider.dart';
 import 'package:ccteam/providers/event_detail_provider.dart';
 import 'package:ccteam/providers/event_list_provider.dart';
@@ -45,9 +46,11 @@ import 'package:ccteam/ui/events/add_edit_event.dart';
 import 'package:ccteam/ui/events/event_detail.dart';
 import 'package:ccteam/ui/laprecord/add_edit_record.dart';
 import 'package:ccteam/ui/laprecord/member_chronos.dart';
+import 'package:ccteam/ui/main/change_passcode.dart';
 import 'package:ccteam/ui/main/edit_avatar.dart';
 import 'package:ccteam/ui/main/home.dart';
 import 'package:ccteam/ui/main/image_crop.dart';
+import 'package:ccteam/ui/main/my_account.dart';
 import 'package:ccteam/ui/members/add_edit_bike.dart';
 import 'package:ccteam/ui/members/add_edit_member.dart';
 import 'package:ccteam/ui/members/add_edit_membership_fee.dart';
@@ -90,6 +93,7 @@ void main() {
         ChangeNotifierProvider(create: (context) => PhotoProvider()),
         ChangeNotifierProvider(create: (context) => TrackListProvider()),
         ChangeNotifierProvider(create: (context) => PasscodeProvider()),
+        ChangeNotifierProvider(create: (context) => ChangePasscodeProvider()),
         ChangeNotifierProvider(create: (context) => MessageProvider()),
         // so that we can set messages from login provider
         ChangeNotifierProxyProvider<MessageProvider, LoginProvider>(
@@ -240,6 +244,8 @@ class CCTeamApp extends StatelessWidget {
           '/imageCrop': (context) => ImageCrop(),
           '/gallery': (context) => Gallery(),
           '/editAvatar': (context) => EditAvatar(),
+          '/myAccount': (context) => MyAccount(),
+          '/changePasscode': (context) => ChangePasscode(),
           '/addEditNews': (context) => AddEditNews(),
           '/addEditEvent': (context) => AddEditEvent(),
           '/addEditMember': (context) => AddEditMember(),

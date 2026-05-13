@@ -20,10 +20,18 @@
 import 'package:ccteam/providers/login_provider.dart';
 import 'package:ccteam/providers/passcode_provider.dart';
 import 'package:ccteam/utils/enums.dart';
+import 'package:ccteam/widgets/passcode_keypad.dart';
 import 'package:flutter/material.dart';
 import 'package:logging/logging.dart';
 import 'package:provider/provider.dart';
 
+/// Login-flow passcode widget.
+///
+/// Thin wrapper around the generic [PasscodeKeypad] that wires the
+/// keypad to the [LoginProvider]/[PasscodeProvider]'s buffers, one
+/// of three depending on the current [LoginStatus] (login, create,
+/// confirm). For an in-app passcode change, use [PasscodeKeypad]
+/// directly with your own state.
 class PasscodeWidget extends StatefulWidget {
   @override
   _PasscodeWidgetState createState() => _PasscodeWidgetState();
@@ -42,208 +50,47 @@ class _PasscodeWidgetState extends State<PasscodeWidget> {
     passcodeProvider.loginPassCode = null;
   }
 
-  /// A widget representing a digit of the passcode
-  Widget _passcodeDigit(int digitId, LoginProvider loginProvider, PasscodeProvider passcodeProvider) {
-    return Padding(
-      padding: const EdgeInsets.all(6.0),
-      child: SizedBox(
-        width: 80.0,
-        height: 64.0,
-        child: TextButton(
-          onPressed: () {
-            // passcode for logging in
-            if (loginProvider.loginStatus == LoginStatus.PasscodeStep) {
-              // if 6 digits have already been entered, ignore any tap
-              if (passcodeProvider.loginPassCode != null && passcodeProvider.loginPassCode!.length >= 6) {
-                return;
-              }
-              // update the provider, so we can update the digits indicator
-              passcodeProvider.loginPassCode =
-                  (passcodeProvider.loginPassCode != null ? passcodeProvider.loginPassCode! : "") + "$digitId";
-              // auto submit form when last digit is entered
-              if (passcodeProvider.loginPassCode != null && passcodeProvider.loginPassCode!.length >= 6) {
-                _doLogin(context, passcodeProvider);
-              }
-            }
-            // passcode creation 1st step
-            else if (loginProvider.loginStatus == LoginStatus.CreatePasscodeStep) {
-              // if 6 digits have already been entered, ignore any tap
-              if (passcodeProvider.firstPassCode != null && passcodeProvider.firstPassCode!.length >= 6) {
-                return;
-              }
-              // update the provider, so we can update the digits indicator
-              passcodeProvider.firstPassCode =
-                  (passcodeProvider.firstPassCode != null ? passcodeProvider.firstPassCode! : "") + "$digitId";
-            }
-            // passcode creation 2nd step (confirmation)
-            else if (loginProvider.loginStatus == LoginStatus.ConfirmPasscodeStep) {
-              // if 6 digits have already been entered, ignore any tap
-              if (passcodeProvider.secondPassCode != null && passcodeProvider.secondPassCode!.length >= 6) {
-                return;
-              }
-              // update the provider, so we can update the digits indicator
-              passcodeProvider.secondPassCode =
-                  (passcodeProvider.secondPassCode != null ? passcodeProvider.secondPassCode! : "") + "$digitId";
-            }
-          },
-          style: TextButton.styleFrom(
-            shape: CircleBorder(side: BorderSide(color: Colors.blue[900]!)),
-            foregroundColor: Colors.black,
-            padding: EdgeInsets.zero,
-            disabledForegroundColor: Colors.blue[700],
-          ),
-          child: Text(
-            "$digitId",
-            style: TextStyle(fontSize: 18.0),
-          ),
-        ),
-      ),
-    );
-  }
-
-  /// A widget representing the back button of the passcode
-  Widget _passcodeBack(LoginProvider loginProvider, PasscodeProvider passcodeProvider) {
-    return Padding(
-      padding: const EdgeInsets.all(6.0),
-      child: SizedBox(
-        width: 80.0,
-        height: 64.0,
-        child: TextButton(
-          onPressed: () {
-            // passcode for logging in
-            if (loginProvider.loginStatus == LoginStatus.PasscodeStep) {
-              // remove last digit or set it to null if it was the last one
-              if (passcodeProvider.loginPassCode != null && passcodeProvider.loginPassCode!.length >= 1) {
-                passcodeProvider.loginPassCode =
-                    passcodeProvider.loginPassCode!.substring(0, passcodeProvider.loginPassCode!.length - 1);
-              } else {
-                passcodeProvider.loginPassCode = null;
-              }
-            }
-            // passcode creation 1st step
-            else if (loginProvider.loginStatus == LoginStatus.CreatePasscodeStep) {
-              // remove last digit or set it to null if it was the last one
-              if (passcodeProvider.firstPassCode != null && passcodeProvider.firstPassCode!.length >= 1) {
-                passcodeProvider.firstPassCode =
-                    passcodeProvider.firstPassCode!.substring(0, passcodeProvider.firstPassCode!.length - 1);
-              } else {
-                passcodeProvider.firstPassCode = null;
-              }
-            }
-            // passcode creation 2nd step (confirmation)
-            else if (loginProvider.loginStatus == LoginStatus.ConfirmPasscodeStep) {
-              // remove last digit or set it to null if it was the last one
-              if (passcodeProvider.secondPassCode != null && passcodeProvider.secondPassCode!.length >= 1) {
-                passcodeProvider.secondPassCode =
-                    passcodeProvider.secondPassCode!.substring(0, passcodeProvider.secondPassCode!.length - 1);
-              } else {
-                passcodeProvider.secondPassCode = null;
-              }
-            }
-          },
-          child: Icon(
-            Icons.arrow_back,
-            size: 22.0,
-          ),
-          style: TextButton.styleFrom(
-            shape: CircleBorder(side: BorderSide(color: Colors.blue[900]!)),
-            foregroundColor: Colors.black,
-            padding: EdgeInsets.zero,
-            disabledForegroundColor: Colors.blue[700],
-          ),
-        ),
-      ),
-    );
-  }
-
-  /// A widget representing the passcode indicator (number of digits entered)
-  Widget _passcodeIndicator(LoginProvider loginProvider, PasscodeProvider passcodeProvider) {
-    final List<Widget> digits = [];
-    for (var i = 0; i < 6; i++) {
-      digits.add(
-        Container(
-          margin: EdgeInsets.only(left: 4.0, right: 4.0),
-          width: 16.0,
-          height: 16.0,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            border: Border.all(color: Colors.blue[900]!),
-            color: ((loginProvider.loginStatus == LoginStatus.PasscodeStep &&
-                        (passcodeProvider.loginPassCode == null || passcodeProvider.loginPassCode!.length <= i)) ||
-                    (loginProvider.loginStatus == LoginStatus.CreatePasscodeStep &&
-                        (passcodeProvider.firstPassCode == null || passcodeProvider.firstPassCode!.length <= i)) ||
-                    (loginProvider.loginStatus == LoginStatus.ConfirmPasscodeStep &&
-                        (passcodeProvider.secondPassCode == null || passcodeProvider.secondPassCode!.length <= i)))
-                ? Colors.transparent
-                : Colors.blue[700],
-          ),
-        ),
-      );
-    }
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: digits,
-    );
-  }
-
+  @override
   Widget build(BuildContext context) {
     final LoginProvider _loginProvider = Provider.of<LoginProvider>(context, listen: false);
     final PasscodeProvider _passcodeProvider = Provider.of<PasscodeProvider>(context, listen: true);
 
     _log.info("Building PasscodeForm...");
 
-    final _passcodeField = Column(
-      children: <Widget>[
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            _passcodeDigit(1, _loginProvider, _passcodeProvider),
-            _passcodeDigit(2, _loginProvider, _passcodeProvider),
-            _passcodeDigit(3, _loginProvider, _passcodeProvider),
-          ],
-        ),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            _passcodeDigit(4, _loginProvider, _passcodeProvider),
-            _passcodeDigit(5, _loginProvider, _passcodeProvider),
-            _passcodeDigit(6, _loginProvider, _passcodeProvider),
-          ],
-        ),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            _passcodeDigit(7, _loginProvider, _passcodeProvider),
-            _passcodeDigit(8, _loginProvider, _passcodeProvider),
-            _passcodeDigit(9, _loginProvider, _passcodeProvider),
-          ],
-        ),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            Padding(
-              padding: const EdgeInsets.all(6.0),
-              child: SizedBox(width: 80.0, height: 64.0),
-            ),
-            _passcodeDigit(0, _loginProvider, _passcodeProvider),
-            _passcodeBack(_loginProvider, _passcodeProvider),
-          ],
-        )
-      ],
-    );
+    // pick the buffer matching the current login step
+    final String currentValue = () {
+      switch (_loginProvider.loginStatus) {
+        case LoginStatus.PasscodeStep:
+          return _passcodeProvider.loginPassCode ?? '';
+        case LoginStatus.CreatePasscodeStep:
+          return _passcodeProvider.firstPassCode ?? '';
+        case LoginStatus.ConfirmPasscodeStep:
+          return _passcodeProvider.secondPassCode ?? '';
+        default:
+          return '';
+      }
+    }();
 
-    final _passcodeWidget = Column(
-      mainAxisSize: MainAxisSize.max,
-      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: <Widget>[
-        _passcodeIndicator(_loginProvider, _passcodeProvider),
-        SizedBox(height: 12.0),
-        _passcodeField,
-        SizedBox(height: 8.0),
-      ],
+    return PasscodeKeypad(
+      value: currentValue,
+      onChanged: (String newValue) {
+        switch (_loginProvider.loginStatus) {
+          case LoginStatus.PasscodeStep:
+            _passcodeProvider.loginPassCode = newValue.isEmpty ? null : newValue;
+            break;
+          case LoginStatus.CreatePasscodeStep:
+            _passcodeProvider.firstPassCode = newValue.isEmpty ? null : newValue;
+            break;
+          case LoginStatus.ConfirmPasscodeStep:
+            _passcodeProvider.secondPassCode = newValue.isEmpty ? null : newValue;
+            break;
+          default:
+            break;
+        }
+      },
+      autoSubmit: _loginProvider.loginStatus == LoginStatus.PasscodeStep
+          ? (String _) => _doLogin(context, _passcodeProvider)
+          : null,
     );
-
-    return _passcodeWidget;
   }
 }

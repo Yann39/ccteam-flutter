@@ -658,6 +658,39 @@ class MembersService {
     }
   }
 
+  /// Change the passcode of the currently authenticated member.
+  ///
+  /// The target member is implicit (taken from the JWT subject server-side),
+  /// so a user can only ever change their own passcode. The server returns
+  /// a `bad_credentials` GraphQL error when [currentPasscode] doesn't match,
+  /// `invalid_passcode` for malformed new passcodes, and `same_passcode`
+  /// when [newPasscode] equals the current one, the caller can use these
+  /// codes to display the appropriate inline error.
+  ///
+  /// We log the call but **never** the passcodes themselves.
+  Future<bool> changePasscode(String currentPasscode, String newPasscode) async {
+    _log.info("Calling changePasscode mutation");
+
+    final String query = """
+      mutation ChangePasscode(\$currentPasscode: String!, \$newPasscode: String!) {
+        changePasscode(currentPasscode: \$currentPasscode, newPasscode: \$newPasscode)
+      }
+    """;
+
+    final MutationOptions mutationOptions = new MutationOptions(
+      document: parseString(query),
+      variables: {'currentPasscode': currentPasscode, 'newPasscode': newPasscode},
+      fetchPolicy: FetchPolicy.noCache,
+    );
+
+    final QueryResult result = await GraphQLConnection().graphQLClient.mutate(mutationOptions);
+
+    if (result.hasException) {
+      throw AppUtils.handleGraphQlException(result)!;
+    }
+    return result.data!['changePasscode'] == true;
+  }
+
   /// Ask for a password reset for the account related to the specified [email].
   /// Send a POST request to the Restful API.
   /// Throw an exception if response status code is different from 201.
