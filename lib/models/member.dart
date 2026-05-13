@@ -43,6 +43,8 @@ class Member {
   DateTime? registrationDate;
   List<EventMember>? eventMembers;
   int? riderNumber;
+  int? headerPalette;
+
   DateTime? createdOn;
   DateTime? modifiedOn;
 
@@ -66,6 +68,7 @@ class Member {
     this.registrationDate,
     this.eventMembers,
     this.riderNumber,
+    this.headerPalette,
     this.createdOn,
     this.modifiedOn,
   });
@@ -128,6 +131,7 @@ class Member {
       registrationDate = json['registrationDate'] != null ? DateTime.parse(json['registrationDate']) : null,
       eventMembers = json['eventMembers'] != null ? (json['eventMembers'] as Iterable).map((i) => EventMember.fromJson(i)).toList() : null,
       riderNumber = json['riderNumber'],
+      headerPalette = json['headerPalette'],
       createdOn = json['createdOn'] != null ? DateTime.parse(json['createdOn']) : null,
       modifiedOn = json['modifiedOn'] != null ? DateTime.parse(json['modifiedOn']) : null;
 
@@ -152,6 +156,7 @@ class Member {
     "registrationDate": registrationDate?.toIso8601String(),
     "eventMembers": eventMembers?.map((i) => i.toJson()).toList(),
     "riderNumber": riderNumber,
+    "headerPalette": headerPalette,
     "createdOn": createdOn?.toIso8601String(),
     "modifiedOn": modifiedOn?.toIso8601String(),
   };

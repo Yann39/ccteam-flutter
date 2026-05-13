@@ -126,6 +126,28 @@ class MemberCreationProvider extends ChangeNotifier {
 
   /// Assign (or clear) the executive board role of the current member.
   /// Uses the dedicated server-side mutation that enforces uniqueness.
+  /// Persist the header-palette choice for the current member.
+  /// Called from the profile edit form's submitForm after
+  /// [updateMember] succeeds, only when the value actually changed.
+  /// Refreshes the logged member when the edited member is the same
+  /// person — so the home stats and other listeners pick up the new
+  /// colours immediately.
+  Future<void> setHeaderPalette(int? headerPalette) async {
+    if (_currentMember.id == null) return;
+    try {
+      await _membersService.setMemberPalette(_currentMember.id!, headerPalette);
+      _currentMember.headerPalette = headerPalette;
+      _notifyListeners();
+      if (_currentMember.id == _loginProvider.loggedMember?.id) {
+        await _loginProvider.refreshLoggedMember();
+      }
+    } catch (error) {
+      _log.warning("Error when setting header palette ($error)");
+      _messageProvider.setMessage(AppString.memberUpdateFailed, MessageType.ERROR);
+      AppUtils.handleServiceException(error, _messageProvider, _loginProvider);
+    }
+  }
+
   Future<void> setBoardRole(BoardRole? newBoardRole) async {
     _updateStatus(LoadingStatus.loading);
     await _membersService

@@ -392,6 +392,11 @@ class AppString {
   // Home stats panel
   static const String statsClub = 'Le club';
   static const String statsProfile = 'Moi';
+
+  static const String changeHeaderPalette = 'Changer les couleurs du header';
+  static const String headerPaletteTitle = 'Choisissez vos couleurs';
+  static const String headerPaletteDefault = 'Couleurs par défaut';
+  static const String memberHeaderPaletteLabel = 'Couleurs du header';
   static const String statsMembers = 'membres';
   static const String statsTracks = 'circuits';
   static const String statsMyEvents = 'roulages';

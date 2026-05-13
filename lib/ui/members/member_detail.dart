@@ -20,7 +20,6 @@
 import 'dart:convert';
 import 'dart:math';
 
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:ccteam/models/bike.dart';
 import 'package:ccteam/models/event.dart';
 import 'package:ccteam/models/event_member.dart';
@@ -40,6 +39,8 @@ import 'package:ccteam/utils/date_utils.dart';
 import 'package:ccteam/utils/enums.dart';
 import 'package:ccteam/utils/strings.dart';
 import 'package:ccteam/widgets/loading_content.dart';
+import 'package:ccteam/widgets/member_header_palette.dart';
+import 'package:ccteam/widgets/random_pattern_painter.dart';
 import 'package:ccteam/widgets/restricted_content.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -73,6 +74,21 @@ class MemberDetail extends StatelessWidget {
 
     // navigate to the member creation form screen
     Navigator.pushNamed(context, '/addEditMember');
+  }
+
+  /// Open the shared header-palette picker and persist the selection
+  /// via the provider as soon as the user picks something. The picker
+  /// itself lives in `widgets/member_header_palette.dart` so the same
+  /// UI is reused from the profile edit form.
+  void _showHeaderPalettePicker(BuildContext context, MemberDetailProvider provider) {
+    final int? current = provider.currentMember?.headerPalette;
+    final int seed = provider.currentMember?.id ?? provider.currentMember?.email?.hashCode ?? 0;
+    showMemberHeaderPalettePicker(
+      context: context,
+      currentIndex: current,
+      seed: seed,
+      onSelected: (int? picked) => provider.updateHeaderPalette(picked),
+    );
   }
 
   /// Navigate to the specified [track] detail screen.
@@ -144,9 +160,6 @@ class MemberDetail extends StatelessWidget {
           fontStyle: FontStyle.italic,
           letterSpacing: 0.3,
           height: 1.0,
-          shadows: [
-            Shadow(offset: const Offset(1.0, 1.0), blurRadius: 3.0, color: Colors.black.withValues(alpha: 0.6)),
-          ],
         ),
       ),
     );
@@ -834,13 +847,7 @@ class MemberDetail extends StatelessWidget {
                               children: <Widget>[
                                 Text(
                                   "${_memberDetailProvider.currentMember!.firstName} ${_memberDetailProvider.currentMember!.lastName}",
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.bold,
-                                    shadows: t < 0.5
-                                        ? [Shadow(offset: Offset(1.0, 1.0), blurRadius: 3.0, color: Colors.black)]
-                                        : null,
-                                  ),
+                                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
                                 ),
                                 if (_memberDetailProvider.currentMember!.riderNumber != null)
                                   ClipRect(
@@ -864,12 +871,22 @@ class MemberDetail extends StatelessWidget {
                               alignment: Alignment.bottomLeft,
                               fit: StackFit.expand,
                               children: <Widget>[
-                                CachedNetworkImage(
-                                  placeholder: (context, url) => Center(
-                                    child: SizedBox(child: CircularProgressIndicator(), height: 20.0, width: 20.0),
+                                // procedurally-generated background according to palette
+                                Positioned.fill(
+                                  child: CustomPaint(
+                                    painter: () {
+                                      final int seed =
+                                          _memberDetailProvider.currentMember!.id ??
+                                          _memberDetailProvider.currentMember!.email?.hashCode ??
+                                          0;
+                                      final int paletteIdx =
+                                          _memberDetailProvider.currentMember!.headerPalette ??
+                                          (seed.abs() % kMemberHeaderPalettes.length);
+                                      final List<Color> palette =
+                                          kMemberHeaderPalettes[paletteIdx.clamp(0, kMemberHeaderPalettes.length - 1)];
+                                      return RandomPatternPainter(seed: seed, color1: palette[0], color2: palette[1]);
+                                    }(),
                                   ),
-                                  imageUrl: 'https://images.freeimages.com/images/small-previews/e71/frog-1371919.jpg',
-                                  fit: BoxFit.fitWidth,
                                 ),
                                 DecoratedBox(
                                   decoration: BoxDecoration(
@@ -919,14 +936,23 @@ class MemberDetail extends StatelessWidget {
                         },
                       ),
                       actions: <Widget>[
-                        IconButton(
-                          icon: const Icon(Icons.edit),
-                          onPressed: () => _navigateToEditMemberScreen(context, _memberDetailProvider.currentMember!),
-                        ),
-                        IconButton(
-                          icon: const Icon(Icons.delete_forever),
-                          onPressed: () => _showDeleteMemberConfirmation(context, AppString.memberDeletionAreYouSure),
-                        ),
+                        // palette picker
+                        if (_isOwnProfile)
+                          IconButton(
+                            icon: const Icon(Icons.palette_outlined),
+                            tooltip: AppString.changeHeaderPalette,
+                            onPressed: () => _showHeaderPalettePicker(context, _memberDetailProvider),
+                          ),
+                        if (_isAdmin || _isOwnProfile)
+                          IconButton(
+                            icon: const Icon(Icons.edit),
+                            onPressed: () => _navigateToEditMemberScreen(context, _memberDetailProvider.currentMember!),
+                          ),
+                        if (_isAdmin)
+                          IconButton(
+                            icon: const Icon(Icons.delete_forever),
+                            onPressed: () => _showDeleteMemberConfirmation(context, AppString.memberDeletionAreYouSure),
+                          ),
                       ],
                     ),
                     SliverPadding(

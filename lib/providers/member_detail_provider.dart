@@ -71,16 +71,21 @@ class MemberDetailProvider extends ChangeNotifier {
   Future<void> fetchMember(Member member) async {
     _log.fine("Fetching member ${member.email}...");
     _updateStatus(LoadingStatus.loading);
-    await _membersService.getMemberById(member.id!).then((value) async {
-      _log.fine("Member ID ${member.id} retrieved successfully");
-      _currentMember = value;
-      _updateStatus(LoadingStatus.loaded);
-    }, onError: (error) {
-      _log.warning("Error when retrieving member ($error)");
-      _currentMember = null;
-      AppUtils.handleServiceException(error, _messageProvider, _loginProvider);
-      _updateStatus(LoadingStatus.notLoaded);
-    });
+    await _membersService
+        .getMemberById(member.id!)
+        .then(
+          (value) async {
+            _log.fine("Member ID ${member.id} retrieved successfully");
+            _currentMember = value;
+            _updateStatus(LoadingStatus.loaded);
+          },
+          onError: (error) {
+            _log.warning("Error when retrieving member ($error)");
+            _currentMember = null;
+            AppUtils.handleServiceException(error, _messageProvider, _loginProvider);
+            _updateStatus(LoadingStatus.notLoaded);
+          },
+        );
   }
 
   /// Refresh the current member from the database.
@@ -90,19 +95,50 @@ class MemberDetailProvider extends ChangeNotifier {
     }
   }
 
+  /// Persist the header-palette choice for the current member, then
+  /// refresh both the local `currentMember` and (if it's the same
+  /// person) the cached `loggedMember` on LoginProvider — so any UI
+  /// listening to either of those rebuilds with the new colours
+  /// immediately.
+  ///
+  /// We deliberately re-fetch the full member after the mutation
+  /// instead of binding to its response: the mutation only projects a
+  /// few scalar fields, so reusing it as-is would wipe the avatar,
+  /// bikes, fees, events… that the rest of the detail page needs.
+  Future<void> updateHeaderPalette(int? headerPalette) async {
+    final int? id = _currentMember?.id;
+    if (id == null) return;
+    try {
+      await _membersService.setMemberPalette(id, headerPalette);
+      // re-pull the complete member record so all fields stay populated
+      await refreshCurrentMember();
+      if (_loginProvider.loggedMember?.id == id) {
+        await _loginProvider.refreshLoggedMember();
+      }
+    } catch (e) {
+      _log.warning("Failed to update header palette: $e");
+      AppUtils.handleServiceException(e, _messageProvider, _loginProvider);
+    }
+  }
+
   /// Delete the specified [member].
   Future<void> deleteMember(Member member) async {
-    await _membersService.deleteMember(member).then((value) {
-      _log.fine("Member deleted successfully : ${member.email}");
-      _currentMember = null;
-      _messageProvider.setMessage(AppString.memberDeleted, MessageType.SUCCESS);
-      _notifyListeners();
-    }, onError: (error) {
-      _log.warning("Failed to delete member ($error)");
-      _messageProvider.setMessage(AppString.memberDeletionFailed, MessageType.ERROR);
-      AppUtils.handleServiceException(error, _messageProvider, _loginProvider);
-      _notifyListeners();
-    });
+    await _membersService
+        .deleteMember(member)
+        .then(
+          (value) {
+            _log.fine("Member deleted successfully : ${member.email}");
+            _currentMember = null;
+            _messageProvider.setMessage(AppString.memberDeleted, MessageType.SUCCESS);
+            _notifyListeners();
+          },
+          onError: (error) {
+            _log.warning("Failed to delete member ($error)");
+            _messageProvider.setMessage(AppString.memberDeletionFailed, MessageType.ERROR);
+            AppUtils.handleServiceException(error, _messageProvider, _loginProvider);
+            _notifyListeners();
+          },
+        );
   }
 
   /// Notify all the registered listeners of this provider.

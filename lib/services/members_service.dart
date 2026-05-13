@@ -110,6 +110,7 @@ class MembersService {
           avatarFile
           avatarFileName
           riderNumber
+          headerPalette
           bikes {
             id
             manufacturer
@@ -169,6 +170,7 @@ class MembersService {
           avatarFile
           avatarFileName
           riderNumber
+          headerPalette
           bikes {
             id
             manufacturer
@@ -249,6 +251,7 @@ class MembersService {
           avatarFile
           avatarFileName
           riderNumber
+          headerPalette
           bikes {
             id
             manufacturer
@@ -349,6 +352,7 @@ class MembersService {
           avatarFile
           avatarFileName
           riderNumber
+          headerPalette
           bikes {
             id
             manufacturer
@@ -425,6 +429,7 @@ class MembersService {
           avatarFile
           avatarFileName
           riderNumber
+          headerPalette
           bikes {
             id
             manufacturer
@@ -562,6 +567,38 @@ class MembersService {
       throw AppUtils.handleGraphQlException(result)!;
     } else {
       return Member.fromJson(result.data!['setBoardRole']);
+    }
+  }
+
+  /// Set the colour palette index the member has chosen for their
+  /// detail-page header background. Passing `null` resets the choice.
+  Future<Member> setMemberPalette(int memberId, int? headerPalette) async {
+    _log.info("Setting palette of member $memberId to $headerPalette");
+
+    final String query = """
+      mutation SetMemberPalette(\$memberId: Long!, \$headerPalette: Int) {
+        setMemberPalette(memberId: \$memberId, headerPalette: \$headerPalette) {
+          id
+          firstName
+          lastName
+          email
+          headerPalette
+        }
+      }
+    """;
+
+    final MutationOptions mutationOptions = new MutationOptions(
+      document: parseString(query),
+      variables: {'memberId': memberId, 'headerPalette': headerPalette},
+      fetchPolicy: FetchPolicy.noCache,
+    );
+
+    final QueryResult result = await GraphQLConnection().graphQLClient.mutate(mutationOptions);
+
+    if (result.hasException) {
+      throw AppUtils.handleGraphQlException(result)!;
+    } else {
+      return Member.fromJson(result.data!['setMemberPalette']);
     }
   }
 

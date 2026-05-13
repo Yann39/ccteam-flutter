@@ -30,6 +30,7 @@ import 'package:ccteam/utils/enums.dart';
 import 'package:ccteam/utils/string_utils.dart';
 import 'package:ccteam/utils/strings.dart';
 import 'package:ccteam/widgets/form_scaffold.dart';
+import 'package:ccteam/widgets/member_header_palette.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
@@ -79,12 +80,20 @@ class _AddEditMemberState extends State<AddEditMember> {
   BoardRole? _initialBoardRole;
   BoardRole? _selectedBoardRole;
 
+  /// Mirror state for the header-palette picker — like board role,
+  /// the value is buffered locally and only persisted via
+  /// `setHeaderPalette` after the main `updateMember` succeeds.
+  int? _initialHeaderPalette;
+  int? _selectedHeaderPalette;
+
   @override
   void initState() {
     super.initState();
     final MemberCreationProvider provider = Provider.of<MemberCreationProvider>(context, listen: false);
     _initialBoardRole = provider.currentMember.boardRole;
     _selectedBoardRole = _initialBoardRole;
+    _initialHeaderPalette = provider.currentMember.headerPalette;
+    _selectedHeaderPalette = _initialHeaderPalette;
   }
 
   /// Validate the form then submit data to backend
@@ -104,13 +113,18 @@ class _AddEditMemberState extends State<AddEditMember> {
       final LoginProvider _loginProvider = Provider.of<LoginProvider>(context, listen: false);
 
       final bool boardRoleChanged = _selectedBoardRole != _initialBoardRole;
+      final bool paletteChanged = _selectedHeaderPalette != _initialHeaderPalette;
 
       // submit data to backend, if id is set this is an update, else a creation
       if (memberCreationProvider.currentMember.id != null) {
         memberCreationProvider.updateMember().then((value) async {
-          // board role is persisted via a dedicated mutation; only call it if the value actually changed
+          // board role is persisted via a dedicated mutation, only call it if the value actually changed
           if (boardRoleChanged) {
             await memberCreationProvider.setBoardRole(_selectedBoardRole);
+          }
+          // header palette uses its own mutation too
+          if (paletteChanged) {
+            await memberCreationProvider.setHeaderPalette(_selectedHeaderPalette);
           }
           _memberListProvider.updateMemberInList(memberCreationProvider.currentMember);
           _memberDetailProvider.setCurrentMember(memberCreationProvider.currentMember);
@@ -122,6 +136,9 @@ class _AddEditMemberState extends State<AddEditMember> {
           // when creating a new member, optionally apply the chosen board role right after creation
           if (_selectedBoardRole != null) {
             await memberCreationProvider.setBoardRole(_selectedBoardRole);
+          }
+          if (_selectedHeaderPalette != null) {
+            await memberCreationProvider.setHeaderPalette(_selectedHeaderPalette);
           }
           _memberListProvider.addMemberInList(memberCreationProvider.currentMember);
         });
@@ -294,6 +311,58 @@ class _AddEditMemberState extends State<AddEditMember> {
       initialValue: _memberCreationProvider.currentMember.riderNumber?.toString(),
     );
 
+    // Header palette picker
+    final int _paletteSeed = _memberCreationProvider.currentMember.id ??
+        _memberCreationProvider.currentMember.email?.hashCode ??
+        0;
+    final List<Color> _palettePreview = _selectedHeaderPalette != null
+        ? kMemberHeaderPalettes[
+            _selectedHeaderPalette!.clamp(0, kMemberHeaderPalettes.length - 1)]
+        : kMemberHeaderPalettes[_paletteSeed.abs() % kMemberHeaderPalettes.length];
+    final _paletteField = InkWell(
+      onTap: () {
+        showMemberHeaderPalettePicker(
+          context: context,
+          currentIndex: _selectedHeaderPalette,
+          seed: _paletteSeed,
+          onSelected: (int? picked) {
+            setState(() => _selectedHeaderPalette = picked);
+          },
+        );
+      },
+      borderRadius: BorderRadius.circular(4.0),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 10.0),
+        child: Row(
+          children: <Widget>[
+            const Icon(Icons.palette_outlined, color: Colors.black54),
+            const SizedBox(width: 16.0),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  Text(
+                    AppString.memberHeaderPaletteLabel,
+                    style: TextStyle(color: Colors.black.withValues(alpha: 0.6), fontSize: 12),
+                  ),
+                  const SizedBox(height: 4.0),
+                  Text(
+                    _selectedHeaderPalette == null
+                        ? AppString.headerPaletteDefault
+                        : 'Palette ${_selectedHeaderPalette! + 1}',
+                    style: const TextStyle(color: Colors.black87, fontSize: 16),
+                  ),
+                ],
+              ),
+            ),
+            MemberHeaderPaletteChip(palette: _palettePreview),
+            const SizedBox(width: 8.0),
+            Icon(Icons.chevron_right, color: Colors.black.withValues(alpha: 0.45)),
+          ],
+        ),
+      ),
+    );
+
     final _roleField = DropdownButtonFormField<MemberRole>(
       decoration: const InputDecoration(icon: Icon(Icons.enhanced_encryption), labelText: AppString.memberRole),
       initialValue: _memberCreationProvider.currentMember.role,
@@ -356,6 +425,7 @@ class _AddEditMemberState extends State<AddEditMember> {
         _emailField,
         _phoneField,
         _riderNumberField,
+        _paletteField,
         if (isAdmin) _roleField,
         if (isAdmin) _boardRoleField,
       ],
