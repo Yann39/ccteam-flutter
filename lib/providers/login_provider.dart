@@ -27,6 +27,7 @@ import 'package:ccteam/services/members_service.dart';
 import 'package:ccteam/utils/custom_graphql_exception.dart';
 import 'package:ccteam/utils/enums.dart';
 import 'package:ccteam/utils/graphql_connection.dart';
+import 'package:ccteam/utils/navigator_key.dart';
 import 'package:ccteam/utils/strings.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
@@ -748,7 +749,12 @@ class LoginProvider extends ChangeNotifier {
 
   /// Change the current authentication [status].
   void _setAuthStatus(AuthStatus status) {
+    final bool becomesAuthenticated = status == AuthStatus.Authenticated && _authStatus != AuthStatus.Authenticated;
     _authStatus = status;
+    // dismiss any snackbar that might still be on screen
+    if (becomesAuthenticated) {
+      scaffoldMessengerKey.currentState?.hideCurrentSnackBar();
+    }
     _notifyListeners();
   }
 

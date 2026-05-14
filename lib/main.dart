@@ -237,6 +237,7 @@ class CCTeamApp extends StatelessWidget {
       client: GraphQLConnection().client,
       child: MaterialApp(
         navigatorKey: navigatorKey,
+        scaffoldMessengerKey: scaffoldMessengerKey,
         title: AppString.applicationTitle,
         initialRoute: '/',
         routes: {
@@ -317,7 +318,7 @@ class CCTeamApp extends StatelessWidget {
                   closeIconColor: Colors.white,
                   backgroundColor: notificationColor,
                   padding: const EdgeInsets.all(24),
-                  duration: Duration(minutes: 1),
+                  duration: const Duration(seconds: 6),
                   content: Row(
                     children: [
                       Icon(notificationIcon, color: Colors.white, size: 35),

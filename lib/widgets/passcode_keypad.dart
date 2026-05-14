@@ -18,6 +18,7 @@
  */
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 /// A generic 6-digit numeric keypad with a row of dot indicators.
 ///
@@ -53,6 +54,8 @@ class PasscodeKeypad extends StatelessWidget {
   void _append(int digit) {
     if (!enabled) return;
     if (value.length >= 6) return;
+    // small vibration on each accepted digit
+    HapticFeedback.lightImpact();
     final String next = value + '$digit';
     onChanged(next);
     if (next.length == 6 && autoSubmit != null) {
@@ -63,6 +66,7 @@ class PasscodeKeypad extends StatelessWidget {
   void _backspace() {
     if (!enabled) return;
     if (value.isEmpty) return;
+    HapticFeedback.lightImpact();
     onChanged(value.substring(0, value.length - 1));
   }
 

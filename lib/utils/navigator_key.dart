@@ -29,3 +29,10 @@ import 'package:flutter/material.dart';
 /// and helper modules without creating import cycles back into the
 /// main entry point.
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+
+/// Global scaffold messenger key. Used as `MaterialApp.scaffoldMessengerKey`
+/// so providers can dismiss/show snackbars without a `BuildContext` —
+/// typically to clear a stale error notification (e.g. a "bad
+/// credentials" snackbar from a failed login) when the auth state
+/// transitions and the user lands on the home page.
+final GlobalKey<ScaffoldMessengerState> scaffoldMessengerKey = GlobalKey<ScaffoldMessengerState>();
