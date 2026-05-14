@@ -74,6 +74,40 @@ class LoginProvider extends ChangeNotifier {
   // current JWT token
   String? _jwtToken;
 
+  // passcode rate-limit lockout state. Populated after a 423 response
+  // from the authenticate endpoint; cleared on success or once the
+  // [_passcodeLockoutTimer] elapses. The keypad on the login screen
+  // listens to [isPasscodeLocked] to disable input while a lockout is
+  // active. The server stays the source of truth: even if the client
+  // forgets the lockout (app restart), the next attempt is rejected
+  // with 423 again and the state is rebuilt.
+  DateTime? _passcodeLockedUntil;
+
+  /// auto-unlock timer. When a 423 is received, we schedule this to
+  /// fire at the deadline and call [clearPasscodeLockout] so the
+  /// keypad re-enables automatically without any user action.
+  Timer? _passcodeLockoutTimer;
+
+  /// OTP-resend rate limit. Populated after a successful preRegister,
+  /// a successful resendOtp, or a 429 from resendOtp. The OTP screen's
+  /// "Renvoyer" button reads [otpResendCooldownUntil] to know whether
+  /// it should disable itself and how many seconds remain.
+  /// {@template otp_resend_cooldown}
+  /// The server is the source of truth (the same 60 s cooldown is
+  /// enforced server-side based on `member.otpDate`), so even if the
+  /// client forgets the cooldown (app restart) the next request is
+  /// rejected with 429 and the state is rebuilt.
+  /// {@endtemplate}
+  DateTime? _otpResendCooldownUntil;
+
+  /// Companion auto-clear timer for [_otpResendCooldownUntil].
+  Timer? _otpResendCooldownTimer;
+
+  /// Cooldown duration applied locally after every successful OTP
+  /// issuance (preRegister / resendOtp). Must match the server-side
+  /// constant `AccountController.OTP_RESEND_COOLDOWN_SECONDS`.
+  static const int _otpResendCooldownSeconds = 60;
+
   // constructor
   LoginProvider() {
     // as soon as it is instantiated, we check if the user needs to authenticate
@@ -97,6 +131,63 @@ class LoginProvider extends ChangeNotifier {
   String? get secondPassCode => _secondPassCode;
 
   String? get jwtToken => _jwtToken;
+
+  /// Wall-clock time when the current lockout expires. `null` if the
+  /// account is not locked. Compare against [DateTime.now] to know
+  /// whether the lockout is still active.
+  DateTime? get passcodeLockedUntil => _passcodeLockedUntil;
+
+  /// Whether a lockout window is currently active.
+  bool get isPasscodeLocked {
+    final DateTime? until = _passcodeLockedUntil;
+    return until != null && until.isAfter(DateTime.now());
+  }
+
+  /// Clear the in-memory lockout state and cancel the auto-unlock
+  /// timer. Called from the scheduled timer when the deadline is
+  /// reached, and from the success path so a brand new login starts
+  /// clean.
+  void clearPasscodeLockout() {
+    _passcodeLockoutTimer?.cancel();
+    _passcodeLockoutTimer = null;
+    if (_passcodeLockedUntil != null) {
+      _passcodeLockedUntil = null;
+      _notifyListeners();
+    }
+  }
+
+  /// Wall-clock time when the next OTP resend is allowed. `null` if
+  /// no cooldown is active. The OTP screen's "Renvoyer" button uses
+  /// this to drive its own disabled state and remaining-seconds label.
+  DateTime? get otpResendCooldownUntil => _otpResendCooldownUntil;
+
+  /// Whether the OTP resend cooldown is currently active.
+  bool get isOtpResendCoolingDown {
+    final DateTime? until = _otpResendCooldownUntil;
+    return until != null && until.isAfter(DateTime.now());
+  }
+
+  /// Start (or restart) the OTP-resend cooldown for [seconds] seconds.
+  /// Schedules a timer that calls [_clearOtpResendCooldown] at the
+  /// deadline so the resend button re-enables without any user action.
+  void _startOtpResendCooldown(int seconds) {
+    _otpResendCooldownTimer?.cancel();
+    _otpResendCooldownUntil = DateTime.now().add(Duration(seconds: seconds));
+    _otpResendCooldownTimer = Timer(
+      Duration(seconds: seconds),
+      _clearOtpResendCooldown,
+    );
+    _notifyListeners();
+  }
+
+  void _clearOtpResendCooldown() {
+    _otpResendCooldownTimer?.cancel();
+    _otpResendCooldownTimer = null;
+    if (_otpResendCooldownUntil != null) {
+      _otpResendCooldownUntil = null;
+      _notifyListeners();
+    }
+  }
 
   String? get email => _email;
 
@@ -330,6 +421,8 @@ class LoginProvider extends ChangeNotifier {
             // member has been pre-registered successfully
             if (response.statusCode == 201) {
               await _clearStoredOtpTimer();
+              // start the resend cooldown so the user can't immediately spam "Renvoyer"
+              _startOtpResendCooldown(_otpResendCooldownSeconds);
               _setLoginStatus(LoginStatus.OtpStep);
             }
             // e-mail address, first name, or last name is missing from the request
@@ -345,6 +438,7 @@ class LoginProvider extends ChangeNotifier {
             // member successfully created but the confirmation e-mail failed to be sent
             else if (response.statusCode == 207) {
               await _clearStoredOtpTimer();
+              _startOtpResendCooldown(_otpResendCooldownSeconds);
               _setLoginStatus(LoginStatus.OtpStep);
               _messageProvider.setMessage(
                 AppString.format(AppString.preRegisterConfirmationEmailNotSent, [_email!]),
@@ -385,6 +479,8 @@ class LoginProvider extends ChangeNotifier {
               // store the OTP sent date in the shared preferences for timer
               final SharedPreferences prefs = await SharedPreferences.getInstance();
               prefs.setString('otpDate', DateTime.now().millisecondsSinceEpoch.toString());
+              // arm a fresh cooldown so the next resend is also rate-limited locally
+              _startOtpResendCooldown(_otpResendCooldownSeconds);
               _setLoginStatus(LoginStatus.OtpStep);
             }
             // e-mail address is missing in the request
@@ -397,8 +493,21 @@ class LoginProvider extends ChangeNotifier {
               _setLoginStatus(LoginStatus.OtpStep);
               _messageProvider.setMessage(AppString.resendOtpNoAccountFound, MessageType.ERROR);
             }
+            // cooldown not elapsed yet (the user managed to call resend despite the UI guard — e.g. app restart)
+            else if (response.statusCode == 429) {
+              final int? secondsLeft = _extractSecondsLeft(response.body);
+              if (secondsLeft != null && secondsLeft > 0) {
+                _startOtpResendCooldown(secondsLeft);
+              }
+              _setLoginStatus(LoginStatus.OtpStep);
+              _messageProvider.setMessage(
+                AppString.format(AppString.resendOtpTooSoon, [secondsLeft ?? _otpResendCooldownSeconds]),
+                MessageType.WARNING,
+              );
+            }
             // the OTP has been successfully updated but the mail failed to be sent
             else if (response.statusCode == 207) {
+              _startOtpResendCooldown(_otpResendCooldownSeconds);
               _setLoginStatus(LoginStatus.OtpStep);
               _messageProvider.setMessage(
                 AppString.format(AppString.resendOtpEmailNotSent, [_email!]),
@@ -578,6 +687,11 @@ class LoginProvider extends ChangeNotifier {
                       }
 
                       _loggedMember = m;
+                      // successful auth → the server has cleared its
+                      // lockout state; mirror that locally and cancel
+                      // any pending auto-unlock timer so we don't
+                      // leak it across logins.
+                      clearPasscodeLockout();
                       _setAuthStatus(AuthStatus.Authenticated);
                       _setLoginStatus(LoginStatus.EmailStep);
                     },
@@ -638,7 +752,48 @@ class LoginProvider extends ChangeNotifier {
               _log.info("Failed to authenticate member $email, wrong username or password");
               _setAuthStatus(AuthStatus.Unauthenticated);
               _setLoginStatus(LoginStatus.PasscodeStep);
-              _messageProvider.setMessage(AppString.errorBadCredentials, MessageType.ERROR);
+              // parse the optional body: when the e-mail is known the
+              // server includes `attemptsLeft` so we can warn the user
+              // before the next lockout. For unknown e-mails the body
+              // is empty and we fall back to the generic error.
+              final int? attemptsLeft = _extractAttemptsLeft(response.body);
+              if (attemptsLeft != null) {
+                final String message = attemptsLeft <= 1
+                    ? AppString.passcodeOneAttemptLeft
+                    : AppString.format(AppString.passcodeAttemptsLeft, [attemptsLeft]);
+                _messageProvider.setMessage(message, MessageType.WARNING);
+              } else {
+                _messageProvider.setMessage(AppString.errorBadCredentials, MessageType.ERROR);
+              }
+            }
+            // account locked due to too many failed attempts
+            else if (response.statusCode == 423) {
+              _log.info("Failed to authenticate member $email, account is locked");
+              _setAuthStatus(AuthStatus.Unauthenticated);
+              _setLoginStatus(LoginStatus.PasscodeStep);
+              final int? secondsLeft = _extractLockedUntilSeconds(response.body);
+              if (secondsLeft != null && secondsLeft > 0) {
+                _passcodeLockedUntil = DateTime.now().add(Duration(seconds: secondsLeft));
+                // schedule an auto-unlock so the keypad re-enables
+                // itself at the deadline without any user action.
+                _passcodeLockoutTimer?.cancel();
+                _passcodeLockoutTimer = Timer(
+                  Duration(seconds: secondsLeft),
+                  () => clearPasscodeLockout(),
+                );
+                _messageProvider.setMessage(
+                  AppString.format(AppString.passcodeLocked, [_formatLockoutDuration(secondsLeft)]),
+                  MessageType.ERROR,
+                );
+              } else {
+                // defensive: server said locked but didn't say for
+                // how long. Still inform the user — keypad stays
+                // enabled, they'll just get another 423 on retry.
+                _messageProvider.setMessage(
+                  AppString.format(AppString.passcodeLocked, [AppString.passcodeLockedFallback]),
+                  MessageType.ERROR,
+                );
+              }
             }
             // unexpected status code
             else {
@@ -765,6 +920,80 @@ class LoginProvider extends ChangeNotifier {
             throw (error);
           },
         );
+  }
+
+  @override
+  void dispose() {
+    _passcodeLockoutTimer?.cancel();
+    _otpResendCooldownTimer?.cancel();
+    super.dispose();
+  }
+
+  /// Parse the `secondsLeft` field from a 429 resendOtp response.
+  /// Returns null when the body is missing or malformed — caller
+  /// falls back to the default cooldown duration.
+  int? _extractSecondsLeft(String body) {
+    if (body.isEmpty) return null;
+    try {
+      final dynamic decoded = json.decode(body);
+      if (decoded is Map && decoded['secondsLeft'] != null) {
+        final dynamic v = decoded['secondsLeft'];
+        if (v is num) return v.toInt();
+      }
+    } catch (_) {
+      // body was not JSON — no info
+    }
+    return null;
+  }
+
+  /// Turn a lockout duration (seconds) into a human-readable label
+  /// for the snackbar, in French. Uses the coarsest meaningful unit
+  /// — our lockout values are 60 s / 5 min / 15 min / 1 h, so we get
+  /// "1 minute", "5 minutes", "15 minutes", "1 heure" naturally.
+  String _formatLockoutDuration(int seconds) {
+    if (seconds < 60) {
+      return seconds == 1 ? '1 seconde' : '$seconds secondes';
+    }
+    if (seconds < 3600) {
+      final int minutes = (seconds / 60).round();
+      return minutes == 1 ? '1 minute' : '$minutes minutes';
+    }
+    final int hours = (seconds / 3600).round();
+    return hours == 1 ? '1 heure' : '$hours heures';
+  }
+
+  /// Parse the `attemptsLeft` field from a 401 authenticate response.
+  /// Returns null when the body is empty, malformed, or doesn't carry
+  /// the field (typically the case for unknown e-mail addresses where
+  /// we intentionally don't leak any info).
+  int? _extractAttemptsLeft(String body) {
+    if (body.isEmpty) return null;
+    try {
+      final dynamic decoded = json.decode(body);
+      if (decoded is Map && decoded['attemptsLeft'] is int) {
+        return decoded['attemptsLeft'] as int;
+      }
+    } catch (_) {
+      // body was not JSON — that's fine, just no info
+    }
+    return null;
+  }
+
+  /// Parse the `lockedUntilSeconds` field from a 423 authenticate
+  /// response. Returns null when the body is missing the field, in
+  /// which case the caller falls back to a generic "locked" message.
+  int? _extractLockedUntilSeconds(String body) {
+    if (body.isEmpty) return null;
+    try {
+      final dynamic decoded = json.decode(body);
+      if (decoded is Map && decoded['lockedUntilSeconds'] != null) {
+        final dynamic v = decoded['lockedUntilSeconds'];
+        if (v is num) return v.toInt();
+      }
+    } catch (_) {
+      // body was not JSON — no countdown info
+    }
+    return null;
   }
 
   /// Remove the persisted OTP-countdown timestamp from

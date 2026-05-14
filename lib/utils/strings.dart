@@ -51,6 +51,8 @@ class AppString {
   static const String unlike = 'Je n\'aime plus';
   static const String continue1 = 'Continuer';
   static const String resendOtp = 'Renvoyer';
+  static const String resendOtpCooldown = 'Renvoyer ({0}s)';
+  static const String resendOtpTooSoon = 'Patientez encore {0}s avant de renvoyer un code';
   static const String verify = 'Vérifier';
   static const String finish = 'Terminer';
   static const String createAccount = 'Créer un compte';
@@ -76,6 +78,7 @@ class AppString {
   static const String timeLeft = 'Temps restant';
   static const String passcodeInfo = 'Veuillez définir un code vous permettant de sécuriser votre compte';
   static const String confirmPasscodeInfo = 'Veuillez confirmer le code';
+  static const String confirmPasscodeMismatch = 'Les passcodes ne correspondent pas, veuillez réessayer';
 
   static const String about = 'A propos';
   static const String contact = 'Contact';
@@ -497,6 +500,12 @@ class AppString {
   static const String errorTokenNotFound = 'Votre session n\'est pas valide';
   static const String errorTokenWrongFormat = 'Votre identifiant de session n\'est pas valide';
   static const String errorBadCredentials = 'Nom d\'utilisateur ou mot de passe incorrect';
+
+  // Passcode rate-limit messages on the login screen.
+  static const String passcodeAttemptsLeft = 'Passcode incorrect. Il vous reste {0} essais avant blocage.';
+  static const String passcodeOneAttemptLeft = 'Passcode incorrect. Dernière tentative avant blocage.';
+  static const String passcodeLocked = 'Trop de tentatives. Réessayez dans {0}.';
+  static const String passcodeLockedFallback = 'quelques instants';
   static const String errorServerInternal =
       'Erreur interne au serveur. Si le problème persiste, contactez un administrateur';
   static const String errorServerTimeOut =

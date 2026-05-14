@@ -52,7 +52,8 @@ class _PasscodeWidgetState extends State<PasscodeWidget> {
 
   @override
   Widget build(BuildContext context) {
-    final LoginProvider _loginProvider = Provider.of<LoginProvider>(context, listen: false);
+    // listen to LoginProvider so the keypad re-enables automatically when the lockout state changes (e.g. countdown elapsed)
+    final LoginProvider _loginProvider = Provider.of<LoginProvider>(context, listen: true);
     final PasscodeProvider _passcodeProvider = Provider.of<PasscodeProvider>(context, listen: true);
 
     _log.info("Building PasscodeForm...");
@@ -71,8 +72,13 @@ class _PasscodeWidgetState extends State<PasscodeWidget> {
       }
     }();
 
+    // disable the keypad during a passcode lockout window
+    final bool keypadEnabled =
+        !(_loginProvider.loginStatus == LoginStatus.PasscodeStep && _loginProvider.isPasscodeLocked);
+
     return PasscodeKeypad(
       value: currentValue,
+      enabled: keypadEnabled,
       onChanged: (String newValue) {
         switch (_loginProvider.loginStatus) {
           case LoginStatus.PasscodeStep:

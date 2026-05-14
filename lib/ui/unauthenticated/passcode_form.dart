@@ -52,10 +52,7 @@ class _PasscodeFormState extends State<PasscodeForm> {
             _loginProvider.logoutMember();
             _loginProvider.goToPreviousLoginStep();
           },
-          child: Text(
-            AppString.useAnotherEmailAddress,
-            style: TextStyle(color: Colors.black87),
-          ),
+          child: Text(AppString.useAnotherEmailAddress, style: TextStyle(color: Colors.black87)),
         ),
       ],
     );

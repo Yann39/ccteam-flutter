@@ -17,6 +17,8 @@
  * along with CCTeam. If not, see <http://www.gnu.org/licenses/>.
  */
 
+import 'dart:async';
+
 import 'package:ccteam/providers/login_provider.dart';
 import 'package:ccteam/providers/message_provider.dart';
 import 'package:ccteam/providers/timer_provider.dart';
@@ -90,6 +92,8 @@ class _OtpFormState extends State<OtpForm> {
       child: TextFormField(
         autofocus: digitId == 0 ? true : false,
         focusNode: _otpFocusNodes[digitId],
+        // add extra padding to ensure the field is not hidden by the keyboard when it appears, especially on smaller screens
+        scrollPadding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom + 3 * 80),
         keyboardType: TextInputType.number,
         maxLength: 1,
         textAlign: TextAlign.center,
@@ -212,23 +216,13 @@ class _OtpFormState extends State<OtpForm> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[
                 Text(AppString.codeNotReceived),
-                TextButton(
-                  onPressed: () {
+                _OtpResendButton(
+                  onResend: () {
                     _loginProvider.resendOtp().then((value) {
-                      // OTP resent, restart countdown timer
+                      // OTP resent,restart the 10-min OTP-validity
                       _timerProvider.startNewCountDown(OTP_VALIDITY);
                     });
                   },
-                  child: _loginProvider.loginStatus == LoginStatus.Loading
-                      ? SizedBox(
-                          child: CircularProgressIndicator(
-                            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                            strokeWidth: 2.0,
-                          ),
-                          height: 14.0,
-                          width: 14.0,
-                        )
-                      : Text(AppString.resendOtp.toUpperCase(), style: TextStyle(color: Colors.blue[900])),
                 ),
               ],
             ),
@@ -239,5 +233,80 @@ class _OtpFormState extends State<OtpForm> {
     );
 
     return _otpForm;
+  }
+}
+
+/// "Renvoyer" button that knows about the 60 s OTP-resend cooldown.
+///
+/// Two state sources combine to drive the visual:
+///  - [LoginProvider.otpResendCooldownUntil] — when the cooldown
+///    starts/ends, the provider notifies and the button re-renders.
+///  - A local 1-second [Timer.periodic] — needed to refresh the
+///    "Renvoyer (Xs)" label every second while the cooldown is
+///    active; the provider only fires once at start and once at end.
+///
+/// While the cooldown is active the button is disabled and shows the
+/// remaining seconds; once elapsed it returns to its normal label and
+/// fires [onResend] when tapped.
+class _OtpResendButton extends StatefulWidget {
+  const _OtpResendButton({Key? key, required this.onResend}) : super(key: key);
+
+  final VoidCallback onResend;
+
+  @override
+  State<_OtpResendButton> createState() => _OtpResendButtonState();
+}
+
+class _OtpResendButtonState extends State<_OtpResendButton> {
+  Timer? _ticker;
+
+  @override
+  void dispose() {
+    _ticker?.cancel();
+    super.dispose();
+  }
+
+  /// Start or stop the per-second tick depending on whether a
+  /// cooldown is currently active. Called on every build so we don't
+  /// have to subscribe to provider changes imperatively.
+  void _syncTicker(bool cooldownActive) {
+    if (cooldownActive && _ticker == null) {
+      _ticker = Timer.periodic(const Duration(seconds: 1), (_) {
+        if (mounted) setState(() {});
+      });
+    } else if (!cooldownActive && _ticker != null) {
+      _ticker!.cancel();
+      _ticker = null;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final LoginProvider loginProvider = Provider.of<LoginProvider>(context, listen: true);
+    final DateTime? until = loginProvider.otpResendCooldownUntil;
+    final int secondsLeft = until == null ? 0 : until.difference(DateTime.now()).inSeconds;
+    final bool cooldownActive = secondsLeft > 0;
+    final bool isLoading = loginProvider.loginStatus == LoginStatus.Loading;
+
+    // defer ticker start/stop to a post-frame callback so we don't touch setState during build.
+    WidgetsBinding.instance.addPostFrameCallback((_) => _syncTicker(cooldownActive));
+
+    final String label = cooldownActive
+        ? AppString.format(AppString.resendOtpCooldown, [secondsLeft])
+        : AppString.resendOtp.toUpperCase();
+
+    return TextButton(
+      onPressed: (cooldownActive || isLoading) ? null : widget.onResend,
+      child: isLoading
+          ? SizedBox(
+              width: 14.0,
+              height: 14.0,
+              child: CircularProgressIndicator(
+                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                strokeWidth: 2.0,
+              ),
+            )
+          : Text(label, style: TextStyle(color: cooldownActive ? Colors.grey[600] : Colors.blue[900])),
+    );
   }
 }

@@ -18,6 +18,7 @@
  */
 
 import 'package:ccteam/providers/login_provider.dart';
+import 'package:ccteam/providers/message_provider.dart';
 import 'package:ccteam/utils/enums.dart';
 import 'package:ccteam/utils/strings.dart';
 import 'package:flutter/material.dart';
@@ -39,16 +40,21 @@ class _ConfirmPasscodeFormState extends State<ConfirmPasscodeForm> {
   /// Complete user registration according to the password specified in the related form.
   /// It updates the login step status according to the result.
   _doCompleteRegistration(BuildContext context) async {
-    // check that the 2 passcodes match
-    if (Provider.of<PasscodeProvider>(context, listen: false).firstPassCode !=
-        Provider.of<PasscodeProvider>(context, listen: false).secondPassCode) {
-      _log.severe("Passcodes do not match");
-    } else {
-      // set password
-      //Provider.of<LoginProvider>(context, listen: false).loggedMember!.password = Provider.of<PasscodeProvider>(context, listen: false).secondPassCode;
-      // complete registration
-      Provider.of<LoginProvider>(context, listen: false).completeRegistration(Provider.of<PasscodeProvider>(context, listen: false).secondPassCode!);
+    final PasscodeProvider passcodeProvider = Provider.of<PasscodeProvider>(context, listen: false);
+
+    // check that the two passcodes match
+    if (passcodeProvider.firstPassCode != passcodeProvider.secondPassCode) {
+      _log.info("Passcodes do not match — asking the user to retype the confirmation");
+      Provider.of<MessageProvider>(
+        context,
+        listen: false,
+      ).setMessage(AppString.confirmPasscodeMismatch, MessageType.ERROR);
+      passcodeProvider.secondPassCode = null;
+      return;
     }
+
+    // both match → complete the registration
+    Provider.of<LoginProvider>(context, listen: false).completeRegistration(passcodeProvider.secondPassCode!);
   }
 
   /// Method that update the current login status to go to the previous step of the identification process.
@@ -65,9 +71,7 @@ class _ConfirmPasscodeFormState extends State<ConfirmPasscodeForm> {
       builder: (BuildContext context) {
         return ElevatedButton(
           style: ElevatedButton.styleFrom(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(4),
-            ),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
             padding: EdgeInsets.fromLTRB(16.0, 12.0, 16.0, 12.0),
             backgroundColor: Colors.blue[700],
           ),
@@ -83,10 +87,7 @@ class _ConfirmPasscodeFormState extends State<ConfirmPasscodeForm> {
                   height: 14.0,
                   width: 14.0,
                 )
-              : Text(
-                  AppString.validate,
-                  style: TextStyle(color: Colors.white),
-                ),
+              : Text(AppString.validate, style: TextStyle(color: Colors.white)),
         );
       },
     );
@@ -97,25 +98,16 @@ class _ConfirmPasscodeFormState extends State<ConfirmPasscodeForm> {
           onPressed: () {
             _goToPreviousStep();
           },
-          child: Text(
-            AppString.back,
-            style: TextStyle(color: Colors.blue[900]),
-          ),
+          child: Text(AppString.back, style: TextStyle(color: Colors.blue[900])),
         );
       },
     );
 
     return UnauthenticatedLayout(
       title: "Confirmation de votre passcode",
-      description: Text(
-        AppString.confirmPasscodeInfo,
-        textAlign: TextAlign.center,
-      ),
+      description: Text(AppString.confirmPasscodeInfo, textAlign: TextAlign.center),
       body: PasscodeWidget(),
-      actions: <Widget>[
-        _passcodeCreateButton,
-        _backButton,
-      ],
+      actions: <Widget>[_passcodeCreateButton, _backButton],
     );
   }
 }
