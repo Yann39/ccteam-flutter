@@ -96,6 +96,30 @@ class MembersService {
     );
   }
 
+  /// Lightweight count of all members. Used by the home stats panel
+  /// so non-MEMBER accounts (which can't fetch the full members list)
+  /// still see a total.
+  Future<int?> fetchMembersCount() async {
+    _log.info("Getting members count from database...");
+
+    final String query = """
+      query GetMembersCount {
+        getMembersCount
+      }
+    """;
+
+    final QueryResult result = await GraphQLConnection().graphQLClient.query(
+      QueryOptions(document: parseString(query), fetchPolicy: FetchPolicy.noCache),
+    );
+    if (result.hasException) {
+      throw AppUtils.handleGraphQlException(result)!;
+    }
+    final dynamic v = result.data?['getMembersCount'];
+    if (v == null) return null;
+    if (v is num) return v.toInt();
+    return int.tryParse(v.toString());
+  }
+
   /// Fetch all members from the database according to the specified text [filter].
   /// Returns all records if [filter] is null or empty.
   Future<List<Member>> fetchMembers(String? filter) async {

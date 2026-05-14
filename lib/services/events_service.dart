@@ -29,6 +29,29 @@ import '../utils/custom_graphql_exception.dart';
 class EventsService {
   static final Logger _log = new Logger('EventsService');
 
+  /// Lightweight count of all events. USER-accessible so the home
+  /// stats panel can still display a total when the caller is not a MEMBER.
+  Future<int?> fetchEventsCount() async {
+    _log.info("Getting events count from database...");
+
+    final String query = """
+      query GetEventsCount {
+        getEventsCount
+      }
+    """;
+
+    final QueryResult result = await GraphQLConnection().graphQLClient.query(
+      QueryOptions(document: parseString(query), fetchPolicy: FetchPolicy.noCache),
+    );
+    if (result.hasException) {
+      throw AppUtils.handleGraphQlException(result)!;
+    }
+    final dynamic v = result.data?['getEventsCount'];
+    if (v == null) return null;
+    if (v is num) return v.toInt();
+    return int.tryParse(v.toString());
+  }
+
   /// Fetch all events from the database.
   Future<List<Event>> fetchEvents() async {
     _log.info("Getting all events from database...");

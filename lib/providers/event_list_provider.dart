@@ -61,6 +61,9 @@ class EventListProvider extends ChangeNotifier {
   // current loading status
   LoadingStatus _loadingStatus = LoadingStatus.notLoaded;
 
+  // total number of events in the database
+  int? _totalCount;
+
   // constructor
   EventListProvider() {
     // as soon as it is instantiated, we fetch the event list
@@ -81,6 +84,9 @@ class EventListProvider extends ChangeNotifier {
 
   LoadingStatus get loadingStatus => _loadingStatus;
 
+  /// Total events count, or `null` if we haven't fetched it yet.
+  int? get totalCount => _totalCount;
+
   /// Update message provider with the specified [messageProvider].
   void updateMessageProvider(MessageProvider messageProvider) {
     _messageProvider = messageProvider;
@@ -90,7 +96,23 @@ class EventListProvider extends ChangeNotifier {
   /// Update login provider with the specified [loginProvider].
   void updateLoginProvider(LoginProvider loginProvider) {
     _loginProvider = loginProvider;
+    if (_loginProvider.loggedMember != null) {
+      fetchCount();
+    } else {
+      _totalCount = null;
+    }
     _notifyListeners();
+  }
+
+  /// Fetch only the total events count (USER-accessible). Safe to call regardless of role.
+  Future<void> fetchCount() async {
+    try {
+      final int? count = await _eventsService.fetchEventsCount();
+      _totalCount = count;
+      _notifyListeners();
+    } catch (e) {
+      _log.warning("Failed to fetch events count: $e");
+    }
   }
 
   /// Update the current selected date to the specified [date].

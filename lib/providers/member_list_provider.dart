@@ -45,10 +45,15 @@ class MemberListProvider extends ChangeNotifier {
   // current loading status
   LoadingStatus _loadingStatus = LoadingStatus.notLoaded;
 
+  // total number of members in the database
+  int? _totalCount;
 
   UnmodifiableListView<Member> get memberList => UnmodifiableListView(_memberList);
 
   LoadingStatus get loadingStatus => _loadingStatus;
+
+  // total members count, or `null` if we haven't fetched it yet
+  int? get totalCount => _totalCount;
 
   /// Update message provider with the specified [messageProvider].
   void updateMessageProvider(MessageProvider messageProvider) {
@@ -59,7 +64,7 @@ class MemberListProvider extends ChangeNotifier {
   /// Update login provider with the specified [loginProvider].
   void updateLoginProvider(LoginProvider loginProvider) {
     _loginProvider = loginProvider;
-    
+
     if (_loginProvider.isMember && _loadingStatus == LoadingStatus.notLoaded) {
       // fetch members once the login provider is injected and user is a member
       fetchMemberList(null);
@@ -68,7 +73,14 @@ class MemberListProvider extends ChangeNotifier {
       _memberList = [];
       _loadingStatus = LoadingStatus.notLoaded;
     }
-    
+
+    // always (re)fetch the lightweight total count
+    if (_loginProvider.loggedMember != null) {
+      fetchCount();
+    } else {
+      _totalCount = null;
+    }
+
     _notifyListeners();
   }
 
@@ -97,6 +109,17 @@ class MemberListProvider extends ChangeNotifier {
     _notifyListeners();
   }
 
+  /// Fetch only the total members count (lightweight; USER-accessible).
+  Future<void> fetchCount() async {
+    try {
+      final int? count = await _membersService.fetchMembersCount();
+      _totalCount = count;
+      _notifyListeners();
+    } catch (e) {
+      _log.warning("Failed to fetch members count: $e");
+    }
+  }
+
   /// Fetch the list of all members according to the specified [text] filter.
   Future<void> fetchMemberList(String? text) async {
     // guard against unauthorized access
@@ -107,20 +130,21 @@ class MemberListProvider extends ChangeNotifier {
       return;
     }
     _updateLoadingStatus(LoadingStatus.loading);
-    await _membersService.fetchMembers(text).then((value) async {
-      _log.fine("Members list of ${value.length} members retrieved successfully");
-      _memberList = value;
-      _updateLoadingStatus(LoadingStatus.loaded);
-    }, onError: (error) {
-      _log.warning("Error when retrieving members list ($error)");
-      _memberList = [];
-            AppUtils.handleServiceException(
-              error,
-              _messageProvider,
-              _loginProvider,
-            );
-      _updateLoadingStatus(LoadingStatus.notLoaded);
-    });
+    await _membersService
+        .fetchMembers(text)
+        .then(
+          (value) async {
+            _log.fine("Members list of ${value.length} members retrieved successfully");
+            _memberList = value;
+            _updateLoadingStatus(LoadingStatus.loaded);
+          },
+          onError: (error) {
+            _log.warning("Error when retrieving members list ($error)");
+            _memberList = [];
+            AppUtils.handleServiceException(error, _messageProvider, _loginProvider);
+            _updateLoadingStatus(LoadingStatus.notLoaded);
+          },
+        );
   }
 
   /// Notify all the registered listeners of this provider.

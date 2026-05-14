@@ -62,14 +62,8 @@ class HomeStats extends StatelessWidget {
     final DateTime now = DateTime.now();
 
     // club-wide values
-    final String membersValue = memberListProvider.loadingStatus == LoadingStatus.loaded
-        ? memberListProvider.memberList.length.toString()
-        : '—';
-
-    // total events in the club (past + upcoming), gives a sense of the club's activity history rather than just what's coming up
-    final String eventsValue = eventListProvider.loadingStatus == LoadingStatus.loaded
-        ? eventListProvider.allEvents.length.toString()
-        : '—';
+    final String membersValue = memberListProvider.totalCount?.toString() ?? '—';
+    final String eventsValue = eventListProvider.totalCount?.toString() ?? '—';
 
     final String tracksValue = trackListProvider.loadingStatus == LoadingStatus.loaded
         ? trackListProvider.tracks.length.toString()

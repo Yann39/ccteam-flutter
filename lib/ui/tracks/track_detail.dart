@@ -98,6 +98,26 @@ class _TrackDetailState extends State<TrackDetail> {
     );
   }
 
+  /// Slim placeholder card that replaces the events / chronos table for ROLE_USER callers.
+  Widget _buildMembersOnlyPlaceholder() {
+    return Container(
+      padding: const EdgeInsets.all(12.0),
+      decoration: CustomDecorations.cardLight,
+      child: Row(
+        children: <Widget>[
+          Icon(Icons.lock_outline, size: 18.0, color: Colors.black.withAlpha(160)),
+          const SizedBox(width: 8.0),
+          Expanded(
+            child: Text(
+              AppString.contentReservedForMembers,
+              style: TextStyle(color: Colors.black.withAlpha(180), fontStyle: FontStyle.italic),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _recordsTable(RecordListProvider recordListProvider) {
     if (recordListProvider.loadingStatus == LoadingStatus.loading) {
       return _buildLoadingCard();
@@ -860,7 +880,7 @@ class _TrackDetailState extends State<TrackDetail> {
                                   onTap:
                                       _trackDetailProvider.currentTrack!.latitude != null &&
                                           _trackDetailProvider.currentTrack!.longitude != null
-                                          ? () => AppUtils.launchURL(
+                                      ? () => AppUtils.launchURL(
                                           "https://www.google.com/maps/search/?api=1&query=${_trackDetailProvider.currentTrack!.latitude},${_trackDetailProvider.currentTrack!.longitude}",
                                         )
                                       : null,
@@ -880,24 +900,26 @@ class _TrackDetailState extends State<TrackDetail> {
                               ],
                             ),
                             SizedBox(height: 10),
-                            _eventsTable(_eventDetailProvider),
+                            _loginProvider.isMember
+                                ? _eventsTable(_eventDetailProvider)
+                                : _buildMembersOnlyPlaceholder(),
                             SizedBox(height: 10),
-                            if (_loginProvider.isMember) ...[
-                              SizedBox(height: 10),
-                              Row(
-                                children: <Widget>[
-                                  Icon(Icons.group, size: 18, color: Colors.black.withAlpha(163)),
-                                  SizedBox(width: 5.0),
-                                  Text(
-                                    AppString.chronos,
-                                    textScaler: TextScaler.linear(1.2),
-                                    style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black.withAlpha(163)),
-                                  ),
-                                ],
-                              ),
-                              SizedBox(height: 10),
-                              _recordsTable(_recordListProvider),
-                            ],
+                            SizedBox(height: 10),
+                            Row(
+                              children: <Widget>[
+                                Icon(Icons.group, size: 18, color: Colors.black.withAlpha(163)),
+                                SizedBox(width: 5.0),
+                                Text(
+                                  AppString.chronos,
+                                  textScaler: TextScaler.linear(1.2),
+                                  style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black.withAlpha(163)),
+                                ),
+                              ],
+                            ),
+                            SizedBox(height: 10),
+                            _loginProvider.isMember
+                                ? _recordsTable(_recordListProvider)
+                                : _buildMembersOnlyPlaceholder(),
                           ],
                         ),
                       ),
