@@ -296,6 +296,7 @@ class _EventListState extends State<EventList> {
                     ? LoadingStatus.loading
                     : (_events.isEmpty ? LoadingStatus.empty : _eventListProvider.loadingStatus),
                 child: ListView.builder(
+                  padding: EdgeInsets.only(bottom: MediaQuery.of(context).padding.bottom + 8.0),
                   itemCount: sortedYears.length,
                   itemBuilder: (context, yearIndex) {
                     int year = sortedYears[yearIndex];

@@ -42,25 +42,16 @@ class MemberList extends StatelessWidget {
   /// Navigate to the member creation form screen to create a new member.
   _navigateToAddMemberScreen(BuildContext context) async {
     // set a new member to be created
-    Provider.of<MemberCreationProvider>(
-      context,
-      listen: false,
-    ).setMemberToEdit(new Member());
+    Provider.of<MemberCreationProvider>(context, listen: false).setMemberToEdit(new Member());
 
     // navigate to the member creation form screen
     Navigator.pushNamed(context, '/addEditMember');
   }
 
   /// Navigate to the detail screen of the specified [member].
-  void _navigateToMemberDetailScreen(
-    BuildContext context,
-    Member member,
-  ) async {
+  void _navigateToMemberDetailScreen(BuildContext context, Member member) async {
     if (member.id != null) {
-      Provider.of<RecordListProvider>(
-        context,
-        listen: false,
-      ).fetchMemberRecords(member.id!);
+      Provider.of<RecordListProvider>(context, listen: false).fetchMemberRecords(member.id!);
     }
 
     // fetch the member to get complete data
@@ -110,25 +101,17 @@ class MemberList extends StatelessWidget {
   /// fallback circle with the first-name initial.
   Widget _buildAvatar(Member member) {
     if (member.avatar != null) {
-      return CircleAvatar(
-        radius: 28.0,
-        backgroundImage: MemoryImage(base64Decode(member.avatar!)),
-      );
+      return CircleAvatar(radius: 28.0, backgroundImage: MemoryImage(base64Decode(member.avatar!)));
     }
-    final String initial =
-        (member.firstName != null && member.firstName!.isNotEmpty)
-            ? member.firstName![0].toUpperCase()
-            : "?";
+    final String initial = (member.firstName != null && member.firstName!.isNotEmpty)
+        ? member.firstName![0].toUpperCase()
+        : "?";
     return CircleAvatar(
       radius: 28.0,
       backgroundColor: Colors.blue[700],
       child: Text(
         initial,
-        style: const TextStyle(
-          color: Colors.white,
-          fontSize: 18.0,
-          fontWeight: FontWeight.bold,
-        ),
+        style: const TextStyle(color: Colors.white, fontSize: 18.0, fontWeight: FontWeight.bold),
       ),
     );
   }
@@ -166,27 +149,18 @@ class MemberList extends StatelessWidget {
     if (member.bikes == null || member.bikes!.isEmpty) {
       return AppString.notDefined;
     }
-    final Bike bike = member.bikes!.firstWhere(
-      (b) => b.current ?? false,
-      orElse: () => member.bikes!.first,
-    );
-    return "${bike.manufacturer?.toUpperCase() ?? ""} ${bike.modelName ?? ""}"
-        .trim();
+    final Bike bike = member.bikes!.firstWhere((b) => b.current ?? false, orElse: () => member.bikes!.first);
+    return "${bike.manufacturer?.toUpperCase() ?? ""} ${bike.modelName ?? ""}".trim();
   }
 
   /// Small chip showing the member's executive board role (Président,
   /// Trésorier, …). Only displayed when the member holds a board role.
   Widget _buildBoardRoleBadge(BoardRole role, BuildContext context) {
-    final String label = role.localizedLabel(
-      Localizations.localeOf(context).languageCode,
-    );
+    final String label = role.localizedLabel(Localizations.localeOf(context).languageCode);
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 6.0, vertical: 3.0),
       margin: const EdgeInsets.all(4.0),
-      decoration: BoxDecoration(
-        color: Colors.indigo[400],
-        borderRadius: BorderRadius.circular(4.0),
-      ),
+      decoration: BoxDecoration(color: Colors.indigo[400], borderRadius: BorderRadius.circular(4.0)),
       child: Text(
         label,
         style: const TextStyle(
@@ -202,8 +176,7 @@ class MemberList extends StatelessWidget {
 
   /// Build a single member tile (list item).
   Widget _buildMemberTile(BuildContext context, Member member) {
-    final bool hasBike =
-        member.bikes != null && member.bikes!.isNotEmpty;
+    final bool hasBike = member.bikes != null && member.bikes!.isNotEmpty;
 
     return Material(
       color: Colors.transparent,
@@ -230,97 +203,71 @@ class MemberList extends StatelessWidget {
             Icon(
               CustomIcons.motorbike,
               size: 13.0,
-              color: hasBike
-                  ? Colors.deepPurple
-                  : Colors.black.withValues(alpha: 0.3),
+              color: hasBike ? Colors.deepPurple : Colors.black.withValues(alpha: 0.3),
             ),
             const SizedBox(width: 5.0),
             Expanded(
               child: Text(
                 _currentBikeText(member),
-                style: TextStyle(
-                  fontStyle: hasBike ? FontStyle.normal : FontStyle.italic,
-                ),
+                style: TextStyle(fontStyle: hasBike ? FontStyle.normal : FontStyle.italic),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
             ),
           ],
         ),
-        trailing: member.boardRole != null
-            ? _buildBoardRoleBadge(member.boardRole!, context)
-            : null,
+        trailing: member.boardRole != null ? _buildBoardRoleBadge(member.boardRole!, context) : null,
         onTap: () => _navigateToMemberDetailScreen(context, member),
       ),
     );
   }
 
   Widget build(BuildContext context) {
-    final MemberListProvider _memberListProvider =
-        Provider.of<MemberListProvider>(context, listen: true);
-    final LoginProvider _loginProvider = Provider.of<LoginProvider>(
-      context,
-      listen: false,
-    );
+    final MemberListProvider _memberListProvider = Provider.of<MemberListProvider>(context, listen: true);
+    final LoginProvider _loginProvider = Provider.of<LoginProvider>(context, listen: false);
 
     return Scaffold(
       appBar: AppBar(
         title: Text(AppString.tabTeam),
         actions: <Widget>[
           if (_loginProvider.isAdmin)
-            IconButton(
-              icon: Icon(Icons.add),
-              onPressed: () => _navigateToAddMemberScreen(context),
-            ),
+            IconButton(icon: Icon(Icons.add), onPressed: () => _navigateToAddMemberScreen(context)),
           MainActionMenu(),
         ],
       ),
       drawer: MainDrawer(),
-      body:
-          !_loginProvider.isMember
-              ? Container(
-                decoration: CustomDecorations.mainContent,
-                child: RestrictedContent(),
-              )
-              : Container(
-                  decoration: CustomDecorations.mainContent,
-                  child: Column(
-                    children: <Widget>[
-                      _buildSearchField(_memberListProvider),
-                      Expanded(
-                        child: RefreshIndicator(
-                          onRefresh: () =>
-                              _memberListProvider.fetchMemberList(null),
-                          child: LoadingContent(
-                            loadingStatus:
-                                _memberListProvider.loadingStatus ==
-                                        LoadingStatus.loading
-                                    ? LoadingStatus.loading
-                                    : (_memberListProvider
-                                            .memberList.isEmpty
-                                        ? LoadingStatus.empty
-                                        : _memberListProvider.loadingStatus),
-                            defaultText: AppString.membersNotFound,
-                            emptyText: AppString.membersNotFound,
-                            child: ListView.separated(
-                              physics:
-                                  const AlwaysScrollableScrollPhysics(),
-                              separatorBuilder: (context, index) =>
-                                  Divider(color: Colors.black54, height: 4),
-                              itemCount:
-                                  _memberListProvider.memberList.length,
-                              itemBuilder: (context, index) =>
-                                  _buildMemberTile(
-                                context,
-                                _memberListProvider.memberList[index],
-                              ),
-                            ),
-                          ),
+      body: !_loginProvider.isMember
+          ? Container(decoration: CustomDecorations.mainContent, child: RestrictedContent())
+          : Container(
+              decoration: CustomDecorations.mainContent,
+              child: Column(
+                children: <Widget>[
+                  _buildSearchField(_memberListProvider),
+                  Expanded(
+                    child: RefreshIndicator(
+                      onRefresh: () => _memberListProvider.fetchMemberList(null),
+                      child: LoadingContent(
+                        loadingStatus: _memberListProvider.loadingStatus == LoadingStatus.loading
+                            ? LoadingStatus.loading
+                            : (_memberListProvider.memberList.isEmpty
+                                  ? LoadingStatus.empty
+                                  : _memberListProvider.loadingStatus),
+                        defaultText: AppString.membersNotFound,
+                        emptyText: AppString.membersNotFound,
+                        child: ListView.separated(
+                          physics: const AlwaysScrollableScrollPhysics(),
+                          padding: EdgeInsets.only(bottom: MediaQuery.of(context).padding.bottom + 8.0),
+                          separatorBuilder: (context, index) => Divider(color: Colors.black54, height: 4),
+                          itemCount: _memberListProvider.memberList.length,
+                          itemBuilder: (context, index) =>
+                              _buildMemberTile(context, _memberListProvider.memberList[index]),
                         ),
                       ),
-                    ],
+                    ),
                   ),
-                ),
+                ],
+              ),
+            ),
     );
   }
 }

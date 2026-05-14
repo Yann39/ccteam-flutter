@@ -179,6 +179,7 @@ class NewsList extends StatelessWidget {
                   defaultText: AppString.newsEmpty,
                   emptyText: AppString.newsEmpty,
                   child: ListView.builder(
+                    padding: EdgeInsets.only(bottom: MediaQuery.of(context).padding.bottom + 8.0),
                     itemCount: _newsListProvider.newsList.length,
                     itemBuilder: (context, index) {
                       return InkWell(

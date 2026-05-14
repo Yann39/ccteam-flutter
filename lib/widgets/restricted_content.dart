@@ -29,20 +29,12 @@ class RestrictedContent extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            Icon(
-              Icons.lock_outline,
-              size: 80,
-              color: Colors.red[700]!.withAlpha(128),
-            ),
+            Icon(Icons.lock_outline, size: 80, color: Colors.red[700]!),
             SizedBox(height: 24),
             Text(
               AppString.contentReservedForMembers,
               textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 18,
-                color: Colors.black54,
-                fontWeight: FontWeight.w500,
-              ),
+              style: TextStyle(fontSize: 18, color: Colors.black87, fontWeight: FontWeight.w500),
             ),
           ],
         ),

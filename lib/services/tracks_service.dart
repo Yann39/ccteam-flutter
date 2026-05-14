@@ -40,6 +40,7 @@ class TracksService {
           name
           distance
           lapRecord
+          lapRecordInfo
           website
           latitude
           longitude
@@ -53,12 +54,7 @@ class TracksService {
     """;
 
     return GraphQLConnection().graphQLClient
-        .query(
-          QueryOptions(
-            document: parseString(allTracksQuery),
-            fetchPolicy: FetchPolicy.noCache,
-          ),
-        )
+        .query(QueryOptions(document: parseString(allTracksQuery), fetchPolicy: FetchPolicy.noCache))
         .then(
           (result) {
             final List<Track> tracks = [];
@@ -68,8 +64,7 @@ class TracksService {
               dynamic trackList = result.data!['getAllTracks'];
               if (trackList == null) {
                 _log.info("getAllTracks returned null data");
-              } else if (trackList is Map<String, dynamic> &&
-                  trackList.isEmpty) {
+              } else if (trackList is Map<String, dynamic> && trackList.isEmpty) {
                 _log.info("getAllTracks returned empty data");
               } else {
                 for (dynamic oneTrack in trackList) {
@@ -99,6 +94,7 @@ class TracksService {
           name
           distance
           lapRecord
+          lapRecordInfo
           website
           latitude
           longitude
@@ -128,8 +124,7 @@ class TracksService {
               dynamic trackList = result.data!['getTracksFiltered'];
               if (trackList == null) {
                 _log.info("getTracksFiltered returned null data");
-              } else if (trackList is Map<String, dynamic> &&
-                  trackList.isEmpty) {
+              } else if (trackList is Map<String, dynamic> && trackList.isEmpty) {
                 _log.info("getTracksFiltered returned empty data");
               } else {
                 for (dynamic oneTrack in trackList) {
@@ -157,6 +152,7 @@ class TracksService {
           name
           distance
           lapRecord
+          lapRecordInfo
           website
           latitude
           longitude
@@ -171,11 +167,7 @@ class TracksService {
 
     return GraphQLConnection().graphQLClient
         .query(
-          QueryOptions(
-            document: parseString(trackByIdQuery),
-            variables: {'id': id},
-            fetchPolicy: FetchPolicy.noCache,
-          ),
+          QueryOptions(document: parseString(trackByIdQuery), variables: {'id': id}, fetchPolicy: FetchPolicy.noCache),
         )
         .then(
           (result) {

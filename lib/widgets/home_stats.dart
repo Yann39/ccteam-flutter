@@ -18,9 +18,7 @@
  */
 
 import 'package:ccteam/models/event.dart';
-import 'package:ccteam/models/event_member.dart';
 import 'package:ccteam/models/membership_fee.dart';
-import 'package:ccteam/models/record.dart';
 import 'package:ccteam/providers/event_detail_provider.dart';
 import 'package:ccteam/providers/event_list_provider.dart';
 import 'package:ccteam/providers/home_provider.dart';
@@ -31,6 +29,7 @@ import 'package:ccteam/providers/track_list_provider.dart';
 import 'package:ccteam/utils/custom_icons.dart';
 import 'package:ccteam/utils/date_utils.dart';
 import 'package:ccteam/utils/enums.dart';
+import 'package:ccteam/utils/member_stats.dart';
 import 'package:ccteam/utils/strings.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -67,8 +66,7 @@ class HomeStats extends StatelessWidget {
         ? memberListProvider.memberList.length.toString()
         : '—';
 
-    // total events in the club (past + upcoming), gives a sense of
-    // the club's activity history rather than just what's coming up
+    // total events in the club (past + upcoming), gives a sense of the club's activity history rather than just what's coming up
     final String eventsValue = eventListProvider.loadingStatus == LoadingStatus.loaded
         ? eventListProvider.allEvents.length.toString()
         : '—';
@@ -94,9 +92,8 @@ class HomeStats extends StatelessWidget {
     }
     final bool feePaid = currentYearFee?.paid == true;
 
-    // estimated km ridden across all past events the user has been
-    // registered to (see _estimateKm for the heuristic)
-    final int myKm = _estimateKm(
+    // estimated km ridden across all past events the user has been registered to
+    final int myKm = MemberStatsUtils.estimateKm(
       eventMembers: loginProvider.loggedMember?.eventMembers,
       records: recordListProvider.memberRecords,
       now: now,
@@ -207,82 +204,6 @@ class HomeStats extends StatelessWidget {
   }
 
   static DateTime _dayOnly(DateTime d) => DateTime(d.year, d.month, d.day);
-
-  /// Estimate total kilometres ridden across the past events the
-  /// member is registered to. This is necessarily a rough estimate,
-  /// the app doesn't track laps per event, but it's grounded enough
-  /// to give a meaningful "achievement" number.
-  ///
-  /// Heuristic, applied per past event:
-  ///  1. **Sessions** : a full track day is treated as 6 × 20-minute
-  ///     sessions. A short event (under 6 hours) is treated as a
-  ///     half-day = 3 sessions. Anything longer is counted as
-  ///     `ceil(hours / 24)` full days × 6 sessions.
-  ///  2. **Laps per session** : `20 min / lap_time`. The lap time
-  ///     used is the member's *own* best chrono on the circuit if any,
-  ///     else the track's overall lap record bumped by 15 % (amateurs
-  ///     are typically slower than the recordman), else a 2-minute
-  ///     fallback so an event with no data still produces a number.
-  ///  3. **Distance** : `sessions × laps_per_session × track.distance`
-  ///     and divide by 1000 to get km.
-  static int _estimateKm({
-    required List<EventMember>? eventMembers,
-    required Iterable<Record> records,
-    required DateTime now,
-  }) {
-    if (eventMembers == null || eventMembers.isEmpty) return 0;
-
-    int totalMeters = 0;
-
-    for (final em in eventMembers) {
-      final Event? event = em.event;
-      if (event == null) continue;
-      final DateTime? start = event.startDate;
-      if (start == null) continue;
-      // only count events that have already started
-      if (start.isAfter(now)) continue;
-      final track = event.track;
-      if (track?.distance == null || track!.distance! <= 0) continue;
-
-      // sessions, based on duration
-      final DateTime end = event.endDate ?? start;
-      final int hours = end.difference(start).inHours;
-      int sessions;
-      if (hours < 6) {
-        sessions = 3; // demi-journée
-      } else {
-        final int days = (hours / 24).ceil().clamp(1, 30);
-        sessions = days * 6;
-      }
-
-      // lap time on this track: member's best chrono if any, bumped
-      // by 2 % to model an average lap rather than the personal best
-      // (a rider rarely matches their best on every lap, and rainy
-      // sessions slow things down a bit). Otherwise fall back to the
-      // track's overall lap record +15 % (amateurs are typically
-      // slower than the recordman), or to a 2-minute default if we
-      // have no signal at all.
-      int? lapMs;
-      for (final r in records) {
-        if (r.track?.id == track.id && r.lapTime != null) {
-          if (lapMs == null || r.lapTime! < lapMs) lapMs = r.lapTime;
-        }
-      }
-      if (lapMs != null) {
-        lapMs = (lapMs * 1.02).round();
-      } else if (track.lapRecord != null && track.lapRecord! > 0) {
-        lapMs = (track.lapRecord! * 1.15).round();
-      }
-      lapMs ??= 120 * 1000;
-
-      // 20 min = 1 200 000 ms — integer divide gives full laps
-      final int lapsPerSession = (20 * 60 * 1000) ~/ lapMs;
-      final int totalLaps = sessions * lapsPerSession;
-      totalMeters += track.distance! * totalLaps;
-    }
-
-    return (totalMeters / 1000).round();
-  }
 }
 
 /// Hero "next ride" card, wide blue gradient tile with a leading disc
@@ -430,24 +351,12 @@ class _NextRideHero extends StatelessWidget {
 /// (icon + title) and a vertical list of [_GroupCardRow] entries. Used
 /// for the side-by-side "Le club" / "Mon profil" cards on the home
 /// stats panel.
-class _GroupCard extends StatefulWidget {
-  const _GroupCard({
-    Key? key,
-    required this.title,
-    required this.rows,
-    this.maxVisibleRows = 3,
-    this.headerTrailing,
-    this.onHeaderTap,
-  }) : super(key: key);
+class _GroupCard extends StatelessWidget {
+  const _GroupCard({Key? key, required this.title, required this.rows, this.headerTrailing, this.onHeaderTap})
+    : super(key: key);
 
   final String title;
   final List<_GroupCardRow> rows;
-
-  /// Maximum number of rows shown before the user expands the card.
-  /// When [rows] has more entries than this, a small chevron is
-  /// rendered at the bottom of the card and the extra rows are
-  /// collapsed by default.
-  final int maxVisibleRows;
 
   /// Optional widget rendered on the right side of the card header.
   /// Used by "Mon profil" to surface the membership-fee status as a
@@ -456,25 +365,12 @@ class _GroupCard extends StatefulWidget {
   final Widget? headerTrailing;
 
   /// Optional tap handler on the card header. When set, the header
-  /// becomes interactive (InkWell ripple + a small chevron next to
-  /// the title to advertise the affordance). Used by "Mon profil" to
-  /// jump to the profile edit screen.
+  /// becomes interactive (InkWell ripple). Used by "Me" to jump to
+  /// the My account hub.
   final VoidCallback? onHeaderTap;
 
   @override
-  State<_GroupCard> createState() => _GroupCardState();
-}
-
-class _GroupCardState extends State<_GroupCard> {
-  bool _expanded = false;
-
-  @override
   Widget build(BuildContext context) {
-    final bool hasOverflow = widget.rows.length > widget.maxVisibleRows;
-    final List<_GroupCardRow> visibleRows = (hasOverflow && !_expanded)
-        ? widget.rows.take(widget.maxVisibleRows).toList()
-        : widget.rows;
-
     return Material(
       borderRadius: BorderRadius.circular(12.0),
       clipBehavior: Clip.antiAlias,
@@ -499,18 +395,7 @@ class _GroupCardState extends State<_GroupCard> {
                 padding: const EdgeInsets.symmetric(vertical: 4.0),
                 child: Container(height: 1, color: Colors.white.withValues(alpha: 0.25)),
               ),
-              // smooth expand/collapse so toggling the chevron doesn't snap the card height
-              AnimatedSize(
-                duration: const Duration(milliseconds: 180),
-                curve: Curves.easeInOut,
-                alignment: Alignment.topCenter,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: visibleRows,
-                ),
-              ),
-              if (hasOverflow) _buildExpandToggle(),
+              ...rows,
             ],
           ),
         ),
@@ -519,17 +404,17 @@ class _GroupCardState extends State<_GroupCard> {
   }
 
   /// Header row builder, extracted so we can either render a plain
-  /// Row or wrap it in an [InkWell] when [_GroupCard.onHeaderTap] is
-  /// set. The tappable variant uses the InkWell ripple alone as the
-  /// affordance, no chevron, to keep the card visually balanced
-  /// with the non-tappable one next to it.
+  /// Row or wrap it in an [InkWell] when [onHeaderTap] is set. The
+  /// tappable variant uses the InkWell ripple alone as the affordance
+  /// (no chevron) to stay visually balanced with the non-tappable
+  /// card next to it.
   Widget _buildHeader() {
-    final bool tappable = widget.onHeaderTap != null;
+    final bool tappable = onHeaderTap != null;
     final Row content = Row(
       children: <Widget>[
         Expanded(
           child: Text(
-            widget.title.toUpperCase(),
+            title.toUpperCase(),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: TextStyle(
@@ -540,33 +425,12 @@ class _GroupCardState extends State<_GroupCard> {
             ),
           ),
         ),
-        if (widget.headerTrailing != null) widget.headerTrailing!,
+        if (headerTrailing != null) headerTrailing!,
       ],
     );
 
     if (!tappable) return content;
-    return InkWell(onTap: widget.onHeaderTap, borderRadius: BorderRadius.circular(6.0), child: content);
-  }
-
-  /// Bottom-aligned chevron that toggles the card between
-  /// "compact" (first [maxVisibleRows]) and "expanded" (all rows).
-  /// Rotated 180° when expanded so the affordance is immediately
-  /// readable.
-  Widget _buildExpandToggle() {
-    return InkWell(
-      onTap: () => setState(() => _expanded = !_expanded),
-      borderRadius: BorderRadius.circular(20.0),
-      child: SizedBox(
-        height: 22,
-        child: Center(
-          child: AnimatedRotation(
-            turns: _expanded ? 0.5 : 0.0,
-            duration: const Duration(milliseconds: 180),
-            child: Icon(Icons.expand_more, size: 20, color: Colors.white.withValues(alpha: 0.85)),
-          ),
-        ),
-      ),
-    );
+    return InkWell(onTap: onHeaderTap, borderRadius: BorderRadius.circular(6.0), child: content);
   }
 }
 
@@ -634,10 +498,7 @@ class _GroupCardRow extends StatelessWidget {
   }
 }
 
-/// Tiny "membership fee" status pill displayed in the "Mon profil"
-/// card header. Green check + "PAYÉE" when paid, amber warning + "À
-/// PAYER" otherwise, both translucent so the pill sits nicely on the
-/// blue gradient background.
+/// Tiny "membership fee" status pill displayed in the "My profile" card header.
 class _FeeStatusPill extends StatelessWidget {
   const _FeeStatusPill({Key? key, required this.paid}) : super(key: key);
 

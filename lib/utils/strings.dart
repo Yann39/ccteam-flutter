@@ -380,6 +380,15 @@ class AppString {
   static const String personalInformation = 'Informations personnelles';
   static const String rides = 'Roulages';
   static const String chronos = 'Chronos';
+  static const String statistics = 'Statistiques';
+  static const String statsTrackEventsCount = 'Roulages effectués';
+  static const String statsBikesCount = 'Motos';
+  static const String statsKmEstimated = 'Km estimés';
+  static const String statsFavoriteTrack = 'Circuit le plus roulé';
+  static const String statsFavoriteTrackTimes = '{0} fois';
+  static const String statsTotalSpent = 'Total dépensé';
+  static const String statsAmountChf = '{0} CHF';
+  static const String statsNoData = '—';
   static const String currentYear = 'Année courante';
   static const String byDate = 'Par date';
 
@@ -431,6 +440,12 @@ class AppString {
   static const String changeMyPasscode = 'Changer mon passcode';
   static const String accountActions = 'Actions';
   static const String membershipStatus = 'Statut de la cotisation';
+
+  // Banner shown to ROLE_USER members (not yet promoted to ROLE_MEMBER)
+  // on the "Mon compte" hub.
+  static const String accountPendingTitle = 'Adhésion en attente de validation';
+  static const String accountPendingMessage =
+      'Votre compte a été créé avec succès. Pour accéder à toutes les fonctionnalités du club (inscription aux roulages, gestion de vos motos, chronos…), un administrateur doit valider votre adhésion.';
   static const String membershipPaidYear = 'Cotisation {0} payée';
   static const String membershipUnpaidYear = 'Cotisation {0} non payée';
   static const String membershipNoneYear = 'Aucune cotisation enregistrée pour {0}';

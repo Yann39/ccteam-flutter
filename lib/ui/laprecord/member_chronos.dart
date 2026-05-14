@@ -96,6 +96,7 @@ class _MemberChronosState extends State<MemberChronos> {
                   emptyText: AppString.eventsNotFound,
                   loadingStatus: _recordListProvider.loadingStatus,
                   child: ListView.separated(
+                    padding: EdgeInsets.only(bottom: MediaQuery.of(context).padding.bottom + 72.0),
                     separatorBuilder: (context, index) => SizedBox(height: 8.0),
                     itemCount: _recordListProvider.memberRecords.length,
                     itemBuilder: (context, index) {

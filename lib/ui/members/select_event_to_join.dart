@@ -223,6 +223,7 @@ class _SelectEventToJoinState extends State<SelectEventToJoin> {
   Widget _buildEventList(List<Event> candidateEvents, int? memberId) {
     return ListView.builder(
       physics: const AlwaysScrollableScrollPhysics(),
+      padding: EdgeInsets.only(bottom: MediaQuery.of(context).padding.bottom + 8.0),
       itemCount: candidateEvents.length,
       itemBuilder: (BuildContext context, int index) {
         final Event event = candidateEvents[index];
@@ -231,9 +232,6 @@ class _SelectEventToJoinState extends State<SelectEventToJoin> {
           padding: const EdgeInsets.symmetric(vertical: 2.0),
           child: Stack(
             children: <Widget>[
-              // the existing EventCard renders the visible content —
-              // wrapped in IgnorePointer + Opacity while a join is in
-              // flight, to give the user clear feedback
               Opacity(
                 opacity: isJoining ? 0.6 : 1.0,
                 child: IgnorePointer(

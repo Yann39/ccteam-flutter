@@ -25,6 +25,13 @@ class Track {
   String? name;
   int? distance;
   int? lapRecord;
+
+  /// Free-form context about the lap record (rider, bike, year, …)
+  /// shown as a subtitle under the lap-record value in the track
+  /// detail page. Stays nullable because legacy records may not
+  /// carry the metadata.
+  String? lapRecordInfo;
+
   String? website;
   double? latitude;
   double? longitude;
@@ -35,6 +42,7 @@ class Track {
     this.name,
     this.distance,
     this.lapRecord,
+    this.lapRecordInfo,
     this.website,
     this.latitude,
     this.longitude,
@@ -48,6 +56,7 @@ class Track {
       name: ${this.name},
       distance: ${this.distance},
       lapRecord: ${this.lapRecord},
+      lapRecordInfo: ${this.lapRecordInfo},
       website: ${this.website},
       latitude: ${this.latitude},
       longitude: ${this.longitude},
@@ -61,12 +70,11 @@ class Track {
       name = json['name'],
       distance = json['distance'] != null ? json['distance'] : null,
       lapRecord = json['lapRecord'] != null ? json['lapRecord'] : null,
+      lapRecordInfo = json['lapRecordInfo'],
       website = json['website'],
       latitude = json['latitude'] != null ? json['latitude'] : null,
       longitude = json['longitude'] != null ? json['longitude'] : null,
-      country = json['country'] != null
-          ? Country.fromJson(json['country'])
-          : null;
+      country = json['country'] != null ? Country.fromJson(json['country']) : null;
 
   /// Convert [Record] object to the corresponding JSON map
   Map<String, dynamic> toJson() => {
@@ -74,6 +82,7 @@ class Track {
     "name": name,
     "distance": distance,
     "lapRecord": lapRecord,
+    "lapRecordInfo": lapRecordInfo,
     "website": website,
     "latitude": latitude,
     "longitude": longitude,
@@ -83,8 +92,7 @@ class Track {
   /// Override == operator to compare tracks by id
   @override
   bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is Track && runtimeType == other.runtimeType && id == other.id;
+      identical(this, other) || other is Track && runtimeType == other.runtimeType && id == other.id;
 
   @override
   int get hashCode => id.hashCode;

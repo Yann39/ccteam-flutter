@@ -130,6 +130,14 @@ class TrackUtils {
       return "images/tracks/ledenon_cover.jpg";
     } else if (trackName == 'Magny-Cours') {
       return "images/tracks/magny_cours_cover.jpg";
+    } else if (trackName == 'Mirecourt') {
+      return "images/tracks/mirecourt_cover.jpg";
+    } else if (trackName == 'Misano') {
+      return "images/tracks/misano_cover.jpg";
+    } else if (trackName == 'Portimão') {
+      return "images/tracks/portimao_cover.jpg";
+    } else if (trackName == 'Pouilly-en-Auxois') {
+      return "images/tracks/pouilly_en_auxois_cover.jpg";
     } else if (trackName == 'Vaison') {
       return "images/tracks/vaison_cover.jpg";
     } else {

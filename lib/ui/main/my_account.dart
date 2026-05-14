@@ -23,9 +23,13 @@ import 'package:ccteam/models/member.dart';
 import 'package:ccteam/models/membership_fee.dart';
 import 'package:ccteam/providers/login_provider.dart';
 import 'package:ccteam/providers/member_creation_provider.dart';
+import 'package:ccteam/providers/record_list_provider.dart';
 import 'package:ccteam/utils/custom_decorations.dart';
 import 'package:ccteam/utils/custom_icons.dart';
+import 'package:ccteam/utils/member_stats.dart';
 import 'package:ccteam/utils/strings.dart';
+import 'package:ccteam/widgets/member_header_palette.dart';
+import 'package:ccteam/widgets/random_pattern_painter.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -57,49 +61,188 @@ class MyAccount extends StatelessWidget {
     return null;
   }
 
-  /// Header: sober blue rectangle with the user's avatar, name and
-  /// e-mail. No gradient pattern, it's a utility page, not a hero.
-  Widget _buildHeader(Member member) {
-    return Container(
+  /// Resolve the palette + seed pair used to drive the procedural
+  /// header background. Falls back to a deterministic seed-based
+  /// default when the member hasn't picked a palette yet.
+  ({int seed, List<Color> palette}) _resolvePalette(Member member) {
+    final int seed = member.id ?? member.email?.hashCode ?? 0;
+    final int paletteIdx = member.headerPalette ?? (seed.abs() % kMemberHeaderPalettes.length);
+    final List<Color> palette = kMemberHeaderPalettes[paletteIdx.clamp(0, kMemberHeaderPalettes.length - 1)];
+    return (seed: seed, palette: palette);
+  }
+
+  /// Header: same procedural pattern as the member-detail hero (a
+  /// [RandomPatternPainter] driven by the user's seed + palette),
+  /// with a soft dark overlay so the white text stays readable.
+  /// Includes a small palette-edit chip in the top-right corner so
+  /// the customisation affordance lives right where its result shows.
+  Widget _buildHeader(BuildContext context, Member member) {
+    final resolved = _resolvePalette(member);
+    return SizedBox(
       width: double.infinity,
-      color: Colors.red[700],
-      padding: const EdgeInsets.fromLTRB(20.0, 24.0, 20.0, 24.0),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
+      height: 200,
+      child: Stack(
+        fit: StackFit.expand,
+        children: <Widget>[
+          Positioned.fill(
+            child: CustomPaint(
+              painter: RandomPatternPainter(
+                seed: resolved.seed,
+                color1: resolved.palette[0],
+                color2: resolved.palette[1],
+              ),
+            ),
+          ),
+          Positioned.fill(
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [Colors.transparent, Colors.black.withAlpha(90)],
+                ),
+              ),
+            ),
+          ),
+          Positioned(
+            top: 8,
+            right: 8,
+            child: Material(
+              color: Colors.white.withValues(alpha: 0.18),
+              shape: const CircleBorder(),
+              child: InkWell(
+                customBorder: const CircleBorder(),
+                onTap: () => _openPalettePicker(context, member),
+                child: const Padding(
+                  padding: EdgeInsets.all(8.0),
+                  child: Icon(Icons.palette_outlined, size: 18, color: Colors.white),
+                ),
+              ),
+            ),
+          ),
+          // avatar + name + e-mail stack
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20.0, 24.0, 20.0, 20.0),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+                Container(
+                  width: 88,
+                  height: 88,
+                  decoration: const ShapeDecoration(shape: CircleBorder(), color: Colors.white),
+                  padding: const EdgeInsets.all(3.0),
+                  child: member.avatar != null
+                      ? CircleAvatar(
+                          radius: 42,
+                          backgroundColor: Colors.blue[100],
+                          backgroundImage: MemoryImage(base64Decode(member.avatar!)),
+                        )
+                      : CircleAvatar(
+                          radius: 42,
+                          backgroundColor: Colors.blue[100],
+                          child: ShaderMask(
+                            blendMode: BlendMode.srcATop,
+                            shaderCallback: (bounds) => LinearGradient(
+                              begin: const FractionalOffset(0.0, 0.0),
+                              end: const FractionalOffset(0.0, 1.0),
+                              stops: const [0.0, 1.0],
+                              colors: [Colors.red[700]!, Colors.blue[700]!],
+                            ).createShader(bounds),
+                            child: const Icon(CustomIcons.pilot, size: 52, color: Colors.white),
+                          ),
+                        ),
+                ),
+                const SizedBox(height: 10.0),
+                Text(
+                  "${member.firstName ?? ''} ${member.lastName ?? ''}".trim(),
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 18.0,
+                    fontWeight: FontWeight.w700,
+                    shadows: [Shadow(color: Colors.black.withAlpha(120), blurRadius: 4.0, offset: const Offset(0, 1))],
+                  ),
+                ),
+                const SizedBox(height: 2.0),
+                Text(
+                  member.email ?? '',
+                  style: TextStyle(
+                    color: Colors.white.withValues(alpha: 0.9),
+                    fontSize: 13.0,
+                    shadows: [Shadow(color: Colors.black.withAlpha(120), blurRadius: 3.0, offset: const Offset(0, 1))],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Open the shared header-palette picker and persist the choice
+  /// through [LoginProvider.updateMyHeaderPalette] so the change is
+  /// applied immediately on the header (and propagated to anything
+  /// else bound to `loggedMember`, like the member-detail page).
+  void _openPalettePicker(BuildContext context, Member member) {
+    final LoginProvider loginProvider = Provider.of<LoginProvider>(context, listen: false);
+    final int seed = member.id ?? member.email?.hashCode ?? 0;
+    showMemberHeaderPalettePicker(
+      context: context,
+      currentIndex: member.headerPalette,
+      seed: seed,
+      onSelected: (int? picked) => loginProvider.updateMyHeaderPalette(picked),
+    );
+  }
+
+  /// Soft amber banner shown on top of the page for accounts that
+  /// are still `ROLE_USER`, i.e. registered but not yet promoted to
+  /// `ROLE_MEMBER` by an admin. Explains that most club features
+  /// (event registration, bikes, chronos, …) will stay out of reach
+  /// until the admin validates the membership.
+  ///
+  /// Visual is intentionally distinct from the other cards (amber
+  /// instead of blue) so it reads as a notice rather than as another
+  /// data tile.
+  Widget _buildPendingValidationBanner() {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 12.0),
+      padding: const EdgeInsets.all(12.0),
+      decoration: BoxDecoration(
+        border: Border.all(color: Colors.orange[300]!, width: 1.0),
+        borderRadius: BorderRadius.circular(8.0),
+        color: Colors.orange[50],
+        boxShadow: [
+          BoxShadow(color: Colors.black.withAlpha(25), spreadRadius: 0.5, blurRadius: 0.5, offset: const Offset(2, 2)),
+        ],
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
           Container(
-            width: 88,
-            height: 88,
-            decoration: const ShapeDecoration(shape: CircleBorder(), color: Colors.white),
-            padding: const EdgeInsets.all(3.0),
-            child: member.avatar != null
-                ? CircleAvatar(
-                    radius: 42,
-                    backgroundColor: Colors.blue[100],
-                    backgroundImage: MemoryImage(base64Decode(member.avatar!)),
-                  )
-                : CircleAvatar(
-                    radius: 42,
-                    backgroundColor: Colors.blue[100],
-                    child: ShaderMask(
-                      blendMode: BlendMode.srcATop,
-                      shaderCallback: (bounds) => LinearGradient(
-                        begin: const FractionalOffset(0.0, 0.0),
-                        end: const FractionalOffset(0.0, 1.0),
-                        stops: const [0.0, 1.0],
-                        colors: [Colors.red[700]!, Colors.blue[700]!],
-                      ).createShader(bounds),
-                      child: const Icon(CustomIcons.pilot, size: 52, color: Colors.white),
-                    ),
-                  ),
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(shape: BoxShape.circle, color: Colors.orange[700]!.withValues(alpha: 0.15)),
+            child: Icon(Icons.hourglass_top, color: Colors.orange[700], size: 22.0),
           ),
-          const SizedBox(height: 12.0),
-          Text(
-            "${member.firstName ?? ''} ${member.lastName ?? ''}".trim(),
-            style: const TextStyle(color: Colors.white, fontSize: 18.0, fontWeight: FontWeight.w600),
+          const SizedBox(width: 12.0),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: <Widget>[
+                Text(
+                  AppString.accountPendingTitle,
+                  style: TextStyle(color: Colors.orange[900], fontWeight: FontWeight.bold, fontSize: 14.0, height: 1.2),
+                ),
+                const SizedBox(height: 4.0),
+                Text(
+                  AppString.accountPendingMessage,
+                  style: TextStyle(color: Colors.black.withAlpha(180), fontSize: 12.5, height: 1.35),
+                ),
+              ],
+            ),
           ),
-          const SizedBox(height: 2.0),
-          Text(member.email ?? '', style: TextStyle(color: Colors.white.withValues(alpha: 0.85), fontSize: 13.0)),
         ],
       ),
     );
@@ -277,9 +420,166 @@ class MyAccount extends StatelessWidget {
     );
   }
 
+  /// Small section header: a tinted icon + an uppercase-y label.
+  /// Used to separate the membership / stats / actions zones so the
+  /// page reads as a stack of grouped concerns rather than one long
+  /// list.
+  Widget _buildSectionLabel(IconData icon, String label) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16.0, 0.0, 16.0, 8.0),
+      child: Row(
+        children: <Widget>[
+          Icon(icon, size: 16, color: Colors.black.withAlpha(150)),
+          const SizedBox(width: 6.0),
+          Text(
+            label,
+            style: TextStyle(
+              color: Colors.black.withAlpha(150),
+              fontSize: 12.0,
+              fontWeight: FontWeight.w600,
+              letterSpacing: 0.5,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Stats card: five rows summarising the user's track-day activity
+  /// (events, bikes, km, favourite track, total spent). Uses the same
+  /// `blue[100]` + white-border visual language as the other cards on
+  /// this page so the three zones (statut / stats / actions) read as
+  /// siblings.
+  ///
+  /// All metrics are **past-only** so the numbers stay meaningful: a
+  /// future commitment isn't yet a "ride completed" or "money spent".
+  /// The heuristic for km estimation is shared with the home stats
+  /// panel (lives in [MemberStatsUtils]) so the user sees the same
+  /// number in both places.
+  Widget _buildStatsCard(Member member, RecordListProvider recordListProvider) {
+    final DateTime now = DateTime.now();
+    final int events = MemberStatsUtils.pastEventsCount(eventMembers: member.eventMembers, now: now);
+    final int bikes = member.bikes?.length ?? 0;
+    final int km = MemberStatsUtils.estimateKm(
+      eventMembers: member.eventMembers,
+      records: recordListProvider.memberRecords,
+      now: now,
+    );
+    final MostRiddenTrack? favTrack = MemberStatsUtils.mostRiddenTrack(eventMembers: member.eventMembers, now: now);
+    final double spent = MemberStatsUtils.totalSpent(eventMembers: member.eventMembers, now: now);
+
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 12.0),
+      decoration: BoxDecoration(
+        border: Border.all(color: Colors.white, width: 1.0),
+        borderRadius: BorderRadius.circular(8.0),
+        color: Colors.blue[100],
+        boxShadow: [
+          BoxShadow(color: Colors.black.withAlpha(25), spreadRadius: 0.5, blurRadius: 0.5, offset: const Offset(2, 2)),
+        ],
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: Column(
+        children: <Widget>[
+          _buildStatRow(
+            icon: Icons.flag,
+            iconColor: Colors.orange[700]!,
+            label: AppString.statsTrackEventsCount,
+            value: events.toString(),
+          ),
+          _buildStatDivider(),
+          _buildStatRow(
+            icon: CustomIcons.motorbike,
+            iconColor: Colors.purple,
+            label: AppString.statsBikesCount,
+            value: bikes.toString(),
+          ),
+          _buildStatDivider(),
+          _buildStatRow(
+            icon: Icons.speed,
+            iconColor: Colors.lightGreen[700]!,
+            label: AppString.statsKmEstimated,
+            value: km.toString(),
+          ),
+          _buildStatDivider(),
+          _buildStatRow(
+            icon: Icons.emoji_events,
+            iconColor: Colors.amber[700]!,
+            label: AppString.statsFavoriteTrack,
+            // track name + visit count
+            value: favTrack?.name ?? AppString.statsNoData,
+            subtitle: favTrack != null ? AppString.format(AppString.statsFavoriteTrackTimes, [favTrack.count]) : null,
+          ),
+          _buildStatDivider(),
+          _buildStatRow(
+            icon: Icons.payments_outlined,
+            iconColor: Colors.red[700]!,
+            label: AppString.statsTotalSpent,
+            value: AppString.format(AppString.statsAmountChf, [spent.toStringAsFixed(0)]),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// A single stat row: a colour-tinted halo icon on the left, a small
+  /// label, and the value (with optional subtitle) right-aligned.
+  /// Same visual rhythm as the membership-fee card above so the two
+  /// zones feel like siblings.
+  Widget _buildStatRow({
+    required IconData icon,
+    required Color iconColor,
+    required String label,
+    required String value,
+    String? subtitle,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 10.0),
+      child: Row(
+        children: <Widget>[
+          Container(
+            width: 36,
+            height: 36,
+            decoration: BoxDecoration(shape: BoxShape.circle, color: iconColor.withValues(alpha: 0.15)),
+            child: Icon(icon, color: iconColor, size: 20.0),
+          ),
+          const SizedBox(width: 12.0),
+          Expanded(
+            child: Text(label, style: TextStyle(color: Colors.black.withAlpha(180), fontSize: 13.0)),
+          ),
+          const SizedBox(width: 8.0),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              Text(
+                value,
+                style: TextStyle(color: Colors.black.withAlpha(220), fontSize: 15.0, fontWeight: FontWeight.w700),
+                overflow: TextOverflow.ellipsis,
+              ),
+              if (subtitle != null)
+                Text(subtitle, style: TextStyle(color: Colors.black.withAlpha(120), fontSize: 11.0)),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Soft white divider between two stat rows — visible against the
+  /// `blue[100]` background without being heavy.
+  Widget _buildStatDivider() {
+    return Container(height: 1, color: Colors.white.withValues(alpha: 0.6));
+  }
+
   @override
   Widget build(BuildContext context) {
     final LoginProvider loginProvider = Provider.of<LoginProvider>(context, listen: true);
+    // records are fetched eagerly from the home page (news_list) right
+    // after login, so by the time the user reaches this hub the list
+    // is usually populated. We listen so the km estimate refreshes if
+    // a new chrono is logged elsewhere while the page is open
+    final RecordListProvider recordListProvider = Provider.of<RecordListProvider>(context, listen: true);
     final Member? member = loginProvider.loggedMember;
 
     return Scaffold(
@@ -295,32 +595,23 @@ class MyAccount extends StatelessWidget {
             : ListView(
                 padding: EdgeInsets.zero,
                 children: <Widget>[
-                  _buildHeader(member),
+                  _buildHeader(context, member),
                   const SizedBox(height: 16.0),
+                  // pending-validation notice for ROLE_USER accounts
+                  if (!loginProvider.isMember) ...[_buildPendingValidationBanner(), const SizedBox(height: 16.0)],
                   _buildMembershipCard(member),
                   const SizedBox(height: 20.0),
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(16.0, 0.0, 16.0, 8.0),
-                    child: Row(
-                      children: <Widget>[
-                        Icon(Icons.tune, size: 16, color: Colors.black.withAlpha(150)),
-                        const SizedBox(width: 6.0),
-                        Text(
-                          AppString.accountActions,
-                          style: TextStyle(
-                            color: Colors.black.withAlpha(150),
-                            fontSize: 12.0,
-                            fontWeight: FontWeight.w600,
-                            letterSpacing: 0.5,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
+                  _buildSectionLabel(Icons.tune, AppString.accountActions),
                   _buildActionsSection(context, member),
+                  // stats are hidden for non-members
+                  if (loginProvider.isMember) ...[
+                    const SizedBox(height: 20.0),
+                    _buildSectionLabel(Icons.bar_chart, AppString.statistics),
+                    _buildStatsCard(member, recordListProvider),
+                  ],
                   SizedBox(height: MediaQuery.of(context).padding.bottom + 16.0),
                 ],
-        ),
+              ),
       ),
     );
   }

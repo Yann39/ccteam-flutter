@@ -107,9 +107,8 @@ class _MemberEventsState extends State<MemberEvents> {
         // member is registered to no event at all
         content = _buildGlobalEmptyState();
       } else {
-        // build the visible sections — each one is omitted when its list is empty
         content = ListView(
-          padding: EdgeInsets.symmetric(vertical: 8.0),
+          padding: EdgeInsets.only(top: 8.0, bottom: 8.0 + MediaQuery.of(context).padding.bottom + 72.0),
           children: <Widget>[
             const InfoBanner(message: AppString.myEventsHelp),
             const SizedBox(height: 8.0),
@@ -262,7 +261,7 @@ class _CollapsibleSectionState extends State<_CollapsibleSection> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: <Widget>[
-        // Header (clickable to toggle)
+        // header (clickable to toggle)
         GestureDetector(
           behavior: HitTestBehavior.opaque,
           onTap: () => setState(() => _expanded = !_expanded),
@@ -301,7 +300,7 @@ class _CollapsibleSectionState extends State<_CollapsibleSection> {
             ),
           ),
         ),
-        // Body (animated collapse / expand)
+        // body (animated collapse / expand)
         AnimatedSize(
           duration: const Duration(milliseconds: 200),
           curve: Curves.easeInOut,

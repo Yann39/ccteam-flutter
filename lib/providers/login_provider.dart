@@ -329,6 +329,7 @@ class LoginProvider extends ChangeNotifier {
           (response) async {
             // member has been pre-registered successfully
             if (response.statusCode == 201) {
+              await _clearStoredOtpTimer();
               _setLoginStatus(LoginStatus.OtpStep);
             }
             // e-mail address, first name, or last name is missing from the request
@@ -343,6 +344,7 @@ class LoginProvider extends ChangeNotifier {
             }
             // member successfully created but the confirmation e-mail failed to be sent
             else if (response.statusCode == 207) {
+              await _clearStoredOtpTimer();
               _setLoginStatus(LoginStatus.OtpStep);
               _messageProvider.setMessage(
                 AppString.format(AppString.preRegisterConfirmationEmailNotSent, [_email!]),
@@ -699,6 +701,30 @@ class LoginProvider extends ChangeNotifier {
     }
   }
 
+  /// Change the header palette of the currently logged member.
+  ///
+  /// Used by the "Mon compte" hub which is the canonical place to
+  /// customise the user's own header colours. Passing `null` resets
+  /// the choice (the client then falls back to the seed-based
+  /// default in the picker).
+  ///
+  /// The mutation's projection is intentionally narrow (id, palette
+  /// only), so we follow it up with [refreshLoggedMember] to avoid
+  /// wiping the full member object (fees, events, bikes…). On
+  /// failure we surface a generic error snackbar via [MessageProvider]
+  /// but never throw — the caller is a fire-and-forget tap handler.
+  Future<void> updateMyHeaderPalette(int? palette) async {
+    final int? id = _loggedMember?.id;
+    if (id == null) return;
+    try {
+      await _membersService.setMemberPalette(id, palette);
+      await refreshLoggedMember();
+    } catch (error) {
+      _log.warning("Failed to update header palette: $error");
+      _messageProvider.setMessage(AppString.memberUpdateFailed, MessageType.ERROR);
+    }
+  }
+
   /// Log out the current member.
   Future<void> logoutMember() async {
     _log.info("Logging out user ${_loggedMember?.email}");
@@ -739,6 +765,26 @@ class LoginProvider extends ChangeNotifier {
             throw (error);
           },
         );
+  }
+
+  /// Remove the persisted OTP-countdown timestamp from
+  /// SharedPreferences.
+  ///
+  /// [TimerProvider] persists the start time of an OTP countdown in
+  /// the `otp_timer` key so it can resume the remaining time if the
+  /// user navigates away and back. The key is, however, never cleaned
+  /// up on its own — so a previous (now-defunct) registration attempt
+  /// would otherwise make [TimerProvider.resumeOrStartCountDown]
+  /// re-load a stale, already-expired timestamp the next time the
+  /// user reaches the OTP screen, showing "00:00" instead of a fresh
+  /// 10-min countdown.
+  ///
+  /// Called whenever the server issues a fresh OTP (currently:
+  /// [preRegisterMember] success path) so the next mount of the OTP
+  /// screen starts from a clean state.
+  Future<void> _clearStoredOtpTimer() async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.remove('otp_timer');
   }
 
   /// Notify all the registered listeners of this provider.

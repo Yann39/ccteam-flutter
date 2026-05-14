@@ -152,6 +152,7 @@ class MyBikes extends StatelessWidget {
       // AlwaysScrollableScrollPhysics so pull-to-refresh works even
       // when the list has only 1-2 bikes and doesn't fill the viewport
       physics: const AlwaysScrollableScrollPhysics(),
+      padding: EdgeInsets.only(bottom: MediaQuery.of(context).padding.bottom + 72.0),
       separatorBuilder: (context, index) => SizedBox(height: 8.0),
       itemCount: provider.bikes.length,
       itemBuilder: (context, index) {
