@@ -26,12 +26,11 @@ import 'package:ccteam/models/event_member.dart';
 import 'package:ccteam/models/member.dart';
 import 'package:ccteam/models/membership_fee.dart';
 import 'package:ccteam/models/record.dart';
-import 'package:ccteam/models/track.dart';
+import 'package:ccteam/providers/event_detail_provider.dart';
 import 'package:ccteam/providers/login_provider.dart';
 import 'package:ccteam/providers/member_creation_provider.dart';
 import 'package:ccteam/providers/member_detail_provider.dart';
 import 'package:ccteam/providers/member_list_provider.dart';
-import 'package:ccteam/providers/message_provider.dart';
 import 'package:ccteam/providers/record_list_provider.dart';
 import 'package:ccteam/utils/app_utils.dart';
 import 'package:ccteam/utils/custom_decorations.dart';
@@ -46,7 +45,6 @@ import 'package:ccteam/widgets/restricted_content.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../../providers/track_detail_provider.dart';
 import '../../utils/track_utils.dart';
 
 class MemberDetail extends StatelessWidget {
@@ -92,18 +90,12 @@ class MemberDetail extends StatelessWidget {
     );
   }
 
-  /// Navigate to the specified [track] detail screen.
-  void _navigateToTrackDetailScreen(BuildContext context, Track track) async {
-    // todo Maybe better to do it in detail screen init method instead of each time here ?
-    Provider.of<TrackDetailProvider>(context, listen: false).setCurrentTrack(track);
-
-    // Navigator.push returns a Future that will complete after we call Navigator.pop on the target screen
-    final _result = await Navigator.pushNamed(context, '/trackDetail');
-
-    // after the target screen returns a result, show the result
-    if (_result != null) {
-      Provider.of<MessageProvider>(context, listen: false).setMessage("$_result", MessageType.INFO);
-    }
+  /// Navigate to the detail screen of the specified [event].
+  void _navigateToEventDetailScreen(BuildContext context, Event event) {
+    Provider.of<EventDetailProvider>(
+      context,
+      listen: false,
+    ).fetchEvent(event).then((_) => Navigator.pushNamed(context, '/eventDetail'));
   }
 
   /// Display a confirmation popup when trying to delete a member
@@ -536,7 +528,7 @@ class MemberDetail extends StatelessWidget {
               padding: EdgeInsets.only(top: 36.0),
               margin: EdgeInsets.only(right: pad),
               child: InkWell(
-                onTap: () => _navigateToTrackDetailScreen(context, event.track!),
+                onTap: () => _navigateToEventDetailScreen(context, event),
                 child: Container(
                   decoration: isPast
                       ? BoxDecoration(
@@ -565,7 +557,7 @@ class MemberDetail extends StatelessWidget {
                         textScaler: TextScaler.linear(0.7),
                         textAlign: TextAlign.center,
                         overflow: TextOverflow.ellipsis,
-                        maxLines: 2,
+                        maxLines: 1,
                       ),
                     ],
                   ),
@@ -1032,7 +1024,13 @@ class _BikesInfo extends StatefulWidget {
 class _BikesInfoState extends State<_BikesInfo> {
   bool _expanded = false;
 
-  String _bikeLabel(Bike bike) => "${bike.manufacturer?.toUpperCase() ?? ""} ${bike.modelName ?? ""}".trim();
+  /// Compact bike label: "MANUFACTURER Model year".
+  String _bikeLabel(Bike bike) {
+    final String base = "${bike.manufacturer?.toUpperCase() ?? ""} ${bike.modelName ?? ""}".trim();
+    if (bike.year == null) return base;
+    if (base.isEmpty) return bike.year!.toString();
+    return "$base ${bike.year}";
+  }
 
   @override
   Widget build(BuildContext context) {

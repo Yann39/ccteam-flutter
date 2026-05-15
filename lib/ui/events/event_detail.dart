@@ -246,7 +246,7 @@ class EventDetail extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: <Widget>[
                   Container(
-                    height: 100,
+                    height: 120,
                     decoration: BoxDecoration(
                       boxShadow: [
                         BoxShadow(

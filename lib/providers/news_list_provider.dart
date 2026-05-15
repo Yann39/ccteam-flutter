@@ -112,7 +112,7 @@ class NewsListProvider extends ChangeNotifier {
       (value) async {
         _log.fine("News list of ${value.length} news retrieved successfully");
         _newsList = value;
-        _updateLoadingStatus(LoadingStatus.loaded);
+        _updateLoadingStatus(_newsList.isEmpty ? LoadingStatus.empty : LoadingStatus.loaded);
       },
       onError: (error) {
         _log.warning("Error when retrieving news list ($error)");

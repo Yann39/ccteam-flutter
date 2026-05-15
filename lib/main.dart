@@ -33,7 +33,6 @@ import 'package:ccteam/providers/news_creation_provider.dart';
 import 'package:ccteam/providers/news_detail_provider.dart';
 import 'package:ccteam/providers/news_list_provider.dart';
 import 'package:ccteam/providers/passcode_provider.dart';
-import 'package:ccteam/providers/photo_creation_provider.dart';
 import 'package:ccteam/providers/photo_detail_provider.dart';
 import 'package:ccteam/providers/photo_provider.dart';
 import 'package:ccteam/providers/record_creation_provider.dart';
@@ -203,13 +202,6 @@ void main() {
             ..updateMessageProvider(messageProvider)
             ..updateLoginProvider(loginProvider),
         ),
-        // so that we can set messages and logout user from PhotoCreationProvider
-        ChangeNotifierProxyProvider2<MessageProvider, LoginProvider, PhotoCreationProvider>(
-          create: (context) => PhotoCreationProvider(),
-          update: (context, messageProvider, loginProvider, photoCreationProvider) => photoCreationProvider!
-            ..updateMessageProvider(messageProvider)
-            ..updateLoginProvider(loginProvider),
-        ),
         // so that we can set messages and logout user from PhotoDetailProvider
         ChangeNotifierProxyProvider2<MessageProvider, LoginProvider, PhotoDetailProvider>(
           create: (context) => PhotoDetailProvider(),
@@ -288,27 +280,27 @@ class CCTeamApp extends StatelessWidget {
                   // intentionally NOT returning, fall through to the snackbar rendering so the user sees what happened
                 }
 
-                // global application success/warning/error snack bar messages
+                // global application success/warning/error snack bar messages.
+                // SESSION_EXPIRED falls through to the INFO defaults (blue + info icon)
+                // — an expired token is a routine state transition, not a warning the
+                // user did something wrong.
                 final Color notificationColor = (messageProvider.messageType == MessageType.ERROR)
                     ? Color(0xFFB43636)
-                    : (messageProvider.messageType == MessageType.WARNING ||
-                          messageProvider.messageType == MessageType.SESSION_EXPIRED)
+                    : messageProvider.messageType == MessageType.WARNING
                     ? Color(0xFFC9922D)
                     : messageProvider.messageType == MessageType.SUCCESS
                     ? Color(0xFF42914A)
                     : Color(0xFF2368AF);
                 final String notificationTitle = (messageProvider.messageType == MessageType.ERROR)
                     ? AppString.error
-                    : (messageProvider.messageType == MessageType.WARNING ||
-                          messageProvider.messageType == MessageType.SESSION_EXPIRED)
+                    : messageProvider.messageType == MessageType.WARNING
                     ? AppString.warning
                     : messageProvider.messageType == MessageType.SUCCESS
                     ? AppString.success
                     : AppString.info;
                 final IconData notificationIcon = (messageProvider.messageType == MessageType.ERROR)
                     ? Icons.error_outline
-                    : (messageProvider.messageType == MessageType.WARNING ||
-                          messageProvider.messageType == MessageType.SESSION_EXPIRED)
+                    : messageProvider.messageType == MessageType.WARNING
                     ? Icons.warning_amber_rounded
                     : messageProvider.messageType == MessageType.SUCCESS
                     ? Icons.check_circle_outline

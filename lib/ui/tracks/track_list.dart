@@ -23,7 +23,6 @@ import 'package:ccteam/providers/track_list_provider.dart';
 import 'package:ccteam/ui/main/main_action_menu.dart';
 import 'package:ccteam/ui/main/main_drawer.dart';
 import 'package:ccteam/utils/custom_decorations.dart';
-import 'package:ccteam/utils/enums.dart';
 import 'package:ccteam/utils/strings.dart';
 import 'package:ccteam/utils/track_utils.dart';
 import 'package:ccteam/widgets/loading_content.dart';
@@ -249,12 +248,7 @@ class _TracksState extends State<Tracks> {
               child: RefreshIndicator(
                 onRefresh: () => _trackListProvider.fetchTracks(),
                 child: LoadingContent(
-                  loadingStatus: _trackListProvider.loadingStatus ==
-                          LoadingStatus.loading
-                      ? LoadingStatus.loading
-                      : (_trackListProvider.tracks.isEmpty
-                          ? LoadingStatus.empty
-                          : _trackListProvider.loadingStatus),
+                  loadingStatus: _trackListProvider.loadingStatus,
                   defaultText: AppString.tracksNotFound,
                   emptyText: AppString.tracksNotFound,
                   child: GridView.builder(

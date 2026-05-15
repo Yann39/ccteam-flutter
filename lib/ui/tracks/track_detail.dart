@@ -54,12 +54,6 @@ class _TrackDetailState extends State<TrackDetail> {
   static const int _recordsPageSize = 5;
   int _recordsPage = 0;
 
-  /// Stable key for the lap-record card's tooltip. Held at the State
-  /// level (rather than allocated inside `build`) so the same Tooltip
-  /// state survives rebuilds and `ensureTooltipVisible()` can be
-  /// reliably invoked from the card's `onTap`.
-  final GlobalKey<TooltipState> _lapRecordTooltipKey = GlobalKey<TooltipState>();
-
   @override
   void initState() {
     super.initState();
@@ -198,10 +192,9 @@ class _TrackDetailState extends State<TrackDetail> {
   /// Build a single track-stat card.
   ///
   /// Three interaction modes, mutually exclusive (in priority order):
-  ///  1. [tooltipMessage] set → the whole card is tappable; tapping
-  ///     it surfaces the message in a Material tooltip. An ⓘ hint is
-  ///     drawn in the top-right corner. [tooltipKey] must be supplied
-  ///     so we can call `ensureTooltipVisible()` from the tap handler.
+  ///  1. [infoOnTap] set → the whole card is tappable; tapping it
+  ///     fires the callback (typically opens a modal bottom sheet
+  ///     with contextual details).
   ///  2. [onTap] set → the whole card is tappable and a "↗" hint is
   ///     drawn in the top-right corner. Used for cards that link out
   ///     (GPS, website, …).
@@ -213,15 +206,11 @@ class _TrackDetailState extends State<TrackDetail> {
     required String label,
     required Widget value,
     VoidCallback? onTap,
-    String? tooltipMessage,
-    GlobalKey<TooltipState>? tooltipKey,
+    VoidCallback? infoOnTap,
   }) {
-    final bool hasTooltip = tooltipMessage != null && tooltipMessage.isNotEmpty;
-    // tooltip mode wins over onTap mode (we expect callers to use only one)
-    final VoidCallback? effectiveOnTap = hasTooltip ? () => tooltipKey?.currentState?.ensureTooltipVisible() : onTap;
-    final IconData? cornerIcon = hasTooltip
-        ? Icons.info_outline
-        : (effectiveOnTap != null ? Icons.arrow_outward : null);
+    // info mode wins over external-link mode (we expect callers to use only one)
+    final VoidCallback? effectiveOnTap = infoOnTap ?? onTap;
+    final IconData? cornerIcon = infoOnTap != null ? Icons.info_outline : (onTap != null ? Icons.arrow_outward : null);
 
     final Widget content = Container(
       height: 110,
@@ -230,7 +219,7 @@ class _TrackDetailState extends State<TrackDetail> {
       decoration: CustomDecorations.cardLight,
       child: Stack(
         children: <Widget>[
-          // top-right hint icon — ⓘ for tooltip mode, ↗ for external-link mode
+          // top-right hint icon — ⓘ for info-sheet mode, ↗ for external-link mode
           if (cornerIcon != null)
             Positioned(top: 0, right: 0, child: Icon(cornerIcon, size: 14.0, color: iconColor.withValues(alpha: 0.7))),
           Center(
@@ -259,24 +248,224 @@ class _TrackDetailState extends State<TrackDetail> {
       ),
     );
 
-    Widget result = effectiveOnTap != null ? InkWell(onTap: effectiveOnTap, child: content) : content;
-
-    if (hasTooltip) {
-      result = Tooltip(
-        key: tooltipKey,
-        message: tooltipMessage,
-        triggerMode: TooltipTriggerMode.manual,
-        showDuration: const Duration(seconds: 5),
-        preferBelow: true,
-        decoration: BoxDecoration(color: Colors.black.withAlpha(220), borderRadius: BorderRadius.circular(6.0)),
-        textStyle: const TextStyle(color: Colors.white, fontSize: 12.0),
-        padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 8.0),
-        margin: const EdgeInsets.symmetric(horizontal: 12.0),
-        child: result,
-      );
-    }
+    final Widget result = effectiveOnTap != null ? InkWell(onTap: effectiveOnTap, child: content) : content;
 
     return Expanded(flex: 1, child: result);
+  }
+
+  /// Format an absolute gap (in ms) as a compact lap-time delta, e.g.
+  /// `+2"456` for 2.456 s, `+1'03"010` for 1 min 3.010 s. Leading
+  /// zeros are stripped on the minute side so short gaps stay
+  /// visually light. Always prefixed with `+` because the caller
+  /// guarantees this is called only when the member is slower than
+  /// the record holder.
+  String _formatLapGap(int gapMs) {
+    final int m = gapMs ~/ 60000;
+    final int s = (gapMs % 60000) ~/ 1000;
+    final int ms = gapMs % 1000;
+    final String mmm = ms.toString().padLeft(3, '0');
+    if (m > 0) {
+      final String ss = s.toString().padLeft(2, '0');
+      return '+$m\'$ss"$mmm';
+    }
+    return '+$s"$mmm';
+  }
+
+  /// Show a Material-3 styled modal bottom sheet with the lap-record
+  /// context (date, rider, bike, conditions, …) plus, when available,
+  /// the logged member's own best chrono on this track and the gap
+  /// to the record.
+  ///
+  /// Visual language mirrors the palette picker (gradient blue
+  /// background, rounded top, drag handle) so it feels native to the
+  /// app rather than a generic system overlay.
+  ///
+  /// [recordLapTimeStr] is pre-formatted with the AlarmClock font
+  /// like on the card itself so the user sees the same number, just
+  /// larger. [recordLapTimeMs] is needed to compute the gap.
+  /// [info] is the free-text context — typically year, name, motorcycle.
+  /// [memberLapTimeMs] is the logged member's best on this track,
+  /// `null` if they have no chrono recorded (we then skip the
+  /// "your chrono" section entirely rather than show "—").
+  void _showLapRecordInfoSheet(
+    BuildContext context, {
+    required String recordLapTimeStr,
+    required int recordLapTimeMs,
+    required String info,
+    int? memberLapTimeMs,
+  }) {
+    // Compute the gap up-front so the builder body stays readable.
+    // Two distinct UI paths: member faster-or-equal than record vs
+    // strictly slower. The "faster" branch shouldn't normally happen
+    // (it'd mean the lap-record column is stale), but treating it as
+    // "you hold the record" is the least surprising fallback.
+    final String? memberLapTimeStr = memberLapTimeMs != null ? AppDateUtils.toLapTimeString(memberLapTimeMs) : null;
+    final int? gapMs = memberLapTimeMs != null ? memberLapTimeMs - recordLapTimeMs : null;
+    final bool memberHoldsRecord = gapMs != null && gapMs <= 0;
+
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(16.0))),
+      builder: (BuildContext sheetCtx) {
+        return Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [Colors.blue[100]!, Colors.blue[200]!],
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+            ),
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(16.0)),
+          ),
+          child: SafeArea(
+            top: false,
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 20.0),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: <Widget>[
+                  // drag handle
+                  Center(
+                    child: Container(
+                      width: 40,
+                      height: 4,
+                      margin: const EdgeInsets.only(bottom: 14.0),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withValues(alpha: 0.18),
+                        borderRadius: BorderRadius.circular(2.0),
+                      ),
+                    ),
+                  ),
+                  // header row: icon + title
+                  Row(
+                    children: <Widget>[
+                      Container(
+                        width: 36,
+                        height: 36,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Colors.blue[700]!.withValues(alpha: 0.15),
+                        ),
+                        child: Icon(Icons.timer, color: Colors.blue[700], size: 22.0),
+                      ),
+                      const SizedBox(width: 12.0),
+                      Expanded(
+                        child: Text(
+                          AppString.lapRecord,
+                          style: const TextStyle(
+                            fontSize: 15.0,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.black87,
+                            letterSpacing: 0.3,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16.0),
+                  // lap-time
+                  Center(
+                    child: Text(
+                      recordLapTimeStr,
+                      style: const TextStyle(
+                        fontFamily: "AlarmClock",
+                        fontSize: 38.0,
+                        letterSpacing: -1.5,
+                        height: 1.0,
+                        fontWeight: FontWeight.w500,
+                        color: Colors.black87,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16.0),
+                  // thin separator between the figure and the context text
+                  Container(height: 1, color: Colors.black.withValues(alpha: 0.12)),
+                  const SizedBox(height: 14.0),
+                  Text(info, style: TextStyle(fontSize: 13.5, color: Colors.black.withAlpha(204), height: 1.35)),
+                  // Member's own chrono on this track, when available.
+                  // Rendered as a small card-in-card with a subtle white
+                  // background so it has its own visual identity without
+                  // competing with the hero record figure above.
+                  if (memberLapTimeStr != null) ...[
+                    const SizedBox(height: 16.0),
+                    Container(
+                      padding: const EdgeInsets.fromLTRB(14.0, 12.0, 14.0, 12.0),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.55),
+                        borderRadius: BorderRadius.circular(10.0),
+                        border: Border.all(color: Colors.white, width: 1.0),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: <Widget>[
+                          Row(
+                            children: <Widget>[
+                              Icon(Icons.person_outline, size: 16.0, color: Colors.blue[700]),
+                              const SizedBox(width: 6.0),
+                              Text(
+                                AppString.yourBestChrono,
+                                style: TextStyle(
+                                  fontSize: 11.5,
+                                  fontWeight: FontWeight.w700,
+                                  color: Colors.black.withAlpha(160),
+                                  letterSpacing: 0.6,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 6.0),
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.baseline,
+                            textBaseline: TextBaseline.alphabetic,
+                            children: <Widget>[
+                              Text(
+                                memberLapTimeStr,
+                                style: const TextStyle(
+                                  fontFamily: "AlarmClock",
+                                  fontSize: 22.0,
+                                  letterSpacing: -1,
+                                  height: 1.0,
+                                  fontWeight: FontWeight.w500,
+                                  color: Colors.black87,
+                                ),
+                              ),
+                              const SizedBox(width: 8.0),
+                              if (memberHoldsRecord)
+                                Text(
+                                  AppString.youHoldTheRecord,
+                                  style: TextStyle(
+                                    fontSize: 12.0,
+                                    fontStyle: FontStyle.italic,
+                                    color: Colors.green[700],
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                )
+                              else
+                                Expanded(
+                                  child: Text(
+                                    "${_formatLapGap(gapMs!)} ${AppString.fromRecord}",
+                                    style: TextStyle(
+                                      fontSize: 12.0,
+                                      fontStyle: FontStyle.italic,
+                                      color: Colors.black.withAlpha(160),
+                                    ),
+                                  ),
+                                ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
   }
 
   /// Build the pagination footer rendered at the bottom of a paginated
@@ -813,26 +1002,56 @@ class _TrackDetailState extends State<TrackDetail> {
                           children: <Widget>[
                             Row(
                               children: <Widget>[
-                                _buildStatCard(
-                                  icon: Icons.timer,
-                                  iconColor: Colors.blue[700]!,
-                                  label: AppString.lapRecord,
-                                  value: Text(
-                                    AppDateUtils.toLapTimeString(_trackDetailProvider.currentTrack!.lapRecord) ?? "—",
-                                    style: const TextStyle(
-                                      fontFamily: "AlarmClock",
-                                      fontSize: 14.0,
-                                      letterSpacing: -1,
-                                      height: 1.0,
-                                      fontWeight: FontWeight.w500,
+                                () {
+                                  final int? recordLapTimeMs = _trackDetailProvider.currentTrack!.lapRecord;
+                                  final String? lapTimeStr = AppDateUtils.toLapTimeString(recordLapTimeMs);
+                                  final String? info = _trackDetailProvider.currentTrack!.lapRecordInfo;
+                                  final bool hasInfo =
+                                      info != null && info.isNotEmpty && lapTimeStr != null && recordLapTimeMs != null;
+                                  // Compute the logged member's best chrono on this track from the
+                                  // already-loaded trackRecords (filtered by member id). We only
+                                  // surface it when the user is logged in AND has at least one
+                                  // record on this track — no chrono means we skip the section
+                                  // entirely rather than show an empty placeholder.
+                                  int? memberLapTimeMs;
+                                  final int? loggedMemberId = _loginProvider.loggedMember?.id;
+                                  if (loggedMemberId != null) {
+                                    for (final Record r in _recordListProvider.trackRecords) {
+                                      if (r.member?.id != loggedMemberId) continue;
+                                      if (r.lapTime == null) continue;
+                                      if (memberLapTimeMs == null || r.lapTime! < memberLapTimeMs) {
+                                        memberLapTimeMs = r.lapTime;
+                                      }
+                                    }
+                                  }
+                                  return _buildStatCard(
+                                    icon: Icons.timer,
+                                    iconColor: Colors.blue[700]!,
+                                    label: AppString.lapRecord,
+                                    value: Text(
+                                      lapTimeStr ?? "—",
+                                      style: const TextStyle(
+                                        fontFamily: "AlarmClock",
+                                        fontSize: 14.0,
+                                        letterSpacing: -1,
+                                        height: 1.0,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                      textAlign: TextAlign.center,
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
                                     ),
-                                    textAlign: TextAlign.center,
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                  tooltipMessage: _trackDetailProvider.currentTrack!.lapRecordInfo,
-                                  tooltipKey: _lapRecordTooltipKey,
-                                ),
+                                    infoOnTap: hasInfo
+                                        ? () => _showLapRecordInfoSheet(
+                                            context,
+                                            recordLapTimeStr: lapTimeStr,
+                                            recordLapTimeMs: recordLapTimeMs,
+                                            info: info,
+                                            memberLapTimeMs: memberLapTimeMs,
+                                          )
+                                        : null,
+                                  );
+                                }(),
                                 _buildStatCard(
                                   icon: Icons.straighten,
                                   iconColor: Colors.teal[600]!,

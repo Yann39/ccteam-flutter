@@ -37,10 +37,22 @@ class _AddEditBikeState extends State<AddEditBike> {
   bool _isEditing = false;
   late BikeListProvider _bikeListProvider;
 
+  /// One-shot guard for the init in [didChangeDependencies]. The
+  /// callback can re-fire whenever an InheritedWidget we depend on
+  /// updates (typically when [BikeListProvider] notifies after a
+  /// fetch / add / update / delete). Without this guard the
+  /// `_bike = Bike(manufacturer: honda)` line would silently wipe
+  /// the user's dropdown selection mid-flow, causing every freshly
+  /// created bike to come back as Honda regardless of the picked
+  /// brand.
+  bool _initialized = false;
+
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    _bikeListProvider = Provider.of<BikeListProvider>(context);
+    if (_initialized) return;
+    _initialized = true;
+    _bikeListProvider = Provider.of<BikeListProvider>(context, listen: false);
     final Bike? bike = ModalRoute.of(context)!.settings.arguments as Bike?;
     if (bike != null) {
       _bike = bike;

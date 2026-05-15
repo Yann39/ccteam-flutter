@@ -19,10 +19,11 @@
 
 import 'dart:convert';
 
-import 'package:ccteam/models/gallery.dart';
-import 'package:ccteam/models/photo.dart';
 import 'package:ccteam/utils/constants.dart';
 import 'package:http/http.dart' as http;
+
+import '../models/gallery.dart';
+import '../models/photo.dart';
 
 class GalleriesService {
   /// Map of cookies to maintain the session
@@ -36,7 +37,7 @@ class GalleriesService {
     }
 
     final response = await http.get(Uri.parse(LYCHEE_BASE_URL + "/"));
-    
+
     if (response.headers.containsKey('set-cookie')) {
       final setCookie = response.headers['set-cookie']!;
       // Simple cookie extraction
@@ -58,7 +59,7 @@ class GalleriesService {
   /// Fetch all galleries from the Lychee API
   Future<List<Gallery>> fetchGalleries() async {
     final xsrfToken = await _initSession();
-    
+
     if (xsrfToken == null) {
       throw Exception('Failed to initialize Lychee session');
     }
@@ -79,27 +80,23 @@ class GalleriesService {
     if (response.statusCode == 200) {
       final dynamic responseJson = json.decode(response.body);
       final List<dynamic> albumsJson = responseJson['albums'] ?? [];
-      
+
       return albumsJson.map((album) {
         // Map Lychee album to CCTeam Gallery
         return Gallery(
           id: album['id'],
           title: album['title'],
           description: album['description'] ?? '',
-          // Populate the photos list with the thumbnail as the first entry
+          // populate the photos list with the thumbnail as the first entry
           // to maintain compatibility with the UI's stack preview
           photos: [
             if (album['thumb'] != null && album['thumb']['thumb'] != null)
-              Photo(
-                id: album['thumb']['id']?.toString() ?? 'thumb',
-                title: 'Thumbnail',
-                link: album['thumb']['thumb'],
-              ),
+              Photo(id: album['thumb']['id']?.toString() ?? 'thumb', title: 'Thumbnail', link: album['thumb']['thumb']),
           ],
         );
       }).toList();
     } else if (response.statusCode == 401 || response.statusCode == 419) {
-      // If session expired, clear cookies and retry once
+      // if session expired, clear cookies and retry once
       _cookies.clear();
       return fetchGalleries();
     } else {
@@ -115,9 +112,7 @@ class GalleriesService {
     final cookieHeader = _cookies.entries.map((e) => '${e.key}=${e.value}').join('; ');
 
     final response = await http.get(
-      Uri.parse(LYCHEE_BASE_URL + LYCHEE_ALBUM_ENDPOINT).replace(
-        queryParameters: {'album_id': albumId},
-      ),
+      Uri.parse(LYCHEE_BASE_URL + LYCHEE_ALBUM_ENDPOINT).replace(queryParameters: {'album_id': albumId}),
       headers: {
         'Accept': 'application/json',
         'Content-Type': 'application/json',
@@ -129,11 +124,11 @@ class GalleriesService {
 
     if (response.statusCode == 200) {
       final dynamic responseJson = json.decode(response.body);
-      
+
       // Lychee v2 returns the album resource inside a 'resource' field
       final resource = responseJson['resource'];
       if (resource == null) return [];
-      
+
       final List<dynamic> photosJson = resource['photos'] ?? [];
 
       return photosJson.map((p) {
@@ -151,35 +146,15 @@ class GalleriesService {
           id: p['id'].toString(),
           title: p['title'],
           description: p['description'] ?? '',
-          link: link != null
-              ? (link.startsWith('http') ? link : LYCHEE_BASE_URL + '/' + link)
-              : '',
+          link: link != null ? (link.startsWith('http') ? link : LYCHEE_BASE_URL + '/' + link) : '',
           createdOn: p['created_at'] != null ? DateTime.parse(p['created_at']) : null,
         );
       }).toList();
     } else if (response.statusCode == 401 || response.statusCode == 419) {
-       _cookies.clear();
-       return fetchPhotosForAlbum(albumId);
+      _cookies.clear();
+      return fetchPhotosForAlbum(albumId);
     } else {
       throw Exception('Failed to fetch photos for album $albumId: ${response.statusCode}');
     }
-  }
-
-  /// Create the specified [gallery] into the database
-  /// (Deprecated/Not implemented for Lychee)
-  Future<void> createGallery(Gallery gallery) async {
-    throw UnimplementedError('Creation not supported for Lychee integration');
-  }
-
-  /// Update the specified [gallery] into the database
-  /// (Deprecated/Not implemented for Lychee)
-  Future<void> updateGallery(Gallery gallery) async {
-    throw UnimplementedError('Update not supported for Lychee integration');
-  }
-
-  /// Delete specified [gallery] from the database
-  /// (Deprecated/Not implemented for Lychee)
-  Future<void> deleteGallery(Gallery gallery) async {
-    throw UnimplementedError('Deletion not supported for Lychee integration');
   }
 }

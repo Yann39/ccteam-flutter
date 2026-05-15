@@ -86,31 +86,25 @@ class TrackListProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Get the list of all tracks
+  /// Get the list of all tracks.
   Future<void> fetchTracks() async {
     _updateStatus(LoadingStatus.loading);
     await _tracksService.fetchTracks().then(
       (value) async {
-        _log.fine(
-          "Tracks list of ${value.length} tracks retrieved successfully",
-        );
+        _log.fine("Tracks list of ${value.length} tracks retrieved successfully");
         _tracks = value;
-        _updateStatus(LoadingStatus.loaded);
+        _updateStatus(_tracks.isEmpty ? LoadingStatus.empty : LoadingStatus.loaded);
       },
       onError: (error) {
         _log.warning("Error when retrieving tracks list ($error)");
         _tracks = [];
-        AppUtils.handleServiceException(
-          error,
-          _messageProvider,
-          _loginProvider,
-        );
+        AppUtils.handleServiceException(error, _messageProvider, _loginProvider);
         _updateStatus(LoadingStatus.notLoaded);
       },
     );
   }
 
-  /// Search for tracks according to the specified [text]
+  /// Search for tracks according to the specified [text].
   void searchTracks(String text) async {
     _updateStatus(LoadingStatus.loading);
     await _tracksService
@@ -119,7 +113,7 @@ class TrackListProvider extends ChangeNotifier {
           (value) async {
             _log.fine("Tracks search list retrieved successfully");
             _tracks = value;
-            _updateStatus(LoadingStatus.loaded);
+            _updateStatus(_tracks.isEmpty ? LoadingStatus.empty : LoadingStatus.loaded);
           },
           onError: (error) {
             _log.warning("Error when searching tracks ($error)");

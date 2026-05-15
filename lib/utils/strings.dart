@@ -491,6 +491,9 @@ class AppString {
   static const String on = 'Le';
   static const String record = 'Record';
   static const String lapRecord = 'Record';
+  static const String yourBestChrono = 'VOTRE MEILLEUR CHRONO';
+  static const String fromRecord = 'du record';
+  static const String youHoldTheRecord = 'Vous détenez le record !';
   static const String length = 'Longueur';
   static const String trackEvents = 'Roulages';
   static const String currentBike = 'Actuelle';

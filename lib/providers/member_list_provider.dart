@@ -126,7 +126,7 @@ class MemberListProvider extends ChangeNotifier {
     if (!_loginProvider.isMember) {
       _log.info("User not member, skipping member list fetch");
       _memberList = [];
-      _updateLoadingStatus(LoadingStatus.loaded);
+      _updateLoadingStatus(LoadingStatus.empty);
       return;
     }
     _updateLoadingStatus(LoadingStatus.loading);
@@ -136,7 +136,7 @@ class MemberListProvider extends ChangeNotifier {
           (value) async {
             _log.fine("Members list of ${value.length} members retrieved successfully");
             _memberList = value;
-            _updateLoadingStatus(LoadingStatus.loaded);
+            _updateLoadingStatus(_memberList.isEmpty ? LoadingStatus.empty : LoadingStatus.loaded);
           },
           onError: (error) {
             _log.warning("Error when retrieving members list ($error)");

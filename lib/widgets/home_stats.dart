@@ -30,6 +30,7 @@ import 'package:ccteam/utils/custom_icons.dart';
 import 'package:ccteam/utils/date_utils.dart';
 import 'package:ccteam/utils/enums.dart';
 import 'package:ccteam/utils/member_stats.dart';
+import 'package:ccteam/utils/string_utils.dart';
 import 'package:ccteam/utils/strings.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -40,12 +41,12 @@ import 'package:provider/provider.dart';
 /// Visual structure (top to bottom):
 ///  1. **Hero card**, countdown to the next event the user is
 ///     registered to. Tappable to jump straight to the event detail.
-///     Falls back to an "inscrivez-vous" prompt when there is no
+///     Falls back to an "Register" prompt when there is no
 ///     upcoming registration.
 ///  2. Two **grouped cards side by side**:
-///     - **Le club** : community-wide stats (members, upcoming events,
+///     - **The club** : community-wide stats (members, upcoming events,
 ///       tracks). Each row taps through to the matching tab.
-///     - **Mon profil** : personal stats (events registered to, bikes,
+///     - **My profile** : personal stats (events registered to, bikes,
 ///       membership fee status). Each row taps through to its
 ///       dedicated screen (when applicable).
 class HomeStats extends StatelessWidget {
@@ -172,7 +173,7 @@ class HomeStats extends StatelessWidget {
                       _GroupCardRow(
                         icon: Icons.speed,
                         iconColor: Colors.lightGreenAccent,
-                        value: myKm.toString(),
+                        value: StringUtils.formatCompactInt(myKm),
                         label: AppString.statsMyKm,
                       ),
                     ],

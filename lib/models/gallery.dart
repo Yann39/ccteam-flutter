@@ -24,18 +24,9 @@ class Gallery {
   String? id;
   String? title;
   String? description;
-  DateTime? createdOn;
-  DateTime? modifiedOn;
   List<Photo>? photos;
 
-  Gallery({
-    this.id,
-    this.title,
-    this.description,
-    this.createdOn,
-    this.modifiedOn,
-    this.photos,
-  });
+  Gallery({this.id, this.title, this.description, this.photos});
 
   @override
   String toString() {
@@ -43,28 +34,22 @@ class Gallery {
       id: ${this.id},
       title: ${this.title},
       description: ${this.description},
-      createdOn: ${this.createdOn?.toIso8601String()},
-      modifiedOn: ${this.modifiedOn?.toIso8601String()},
       photos: ${this.photos?.map((i) => i.toString())},
     }""";
   }
 
   /// Convert [json] map to the corresponding [Gallery] object
   Gallery.fromJson(Map<String, dynamic> json)
-      : id = json['id']?.toString(),
-        title = json['title'],
-        description = json['description'],
-        createdOn = json['createdOn'] != null ? DateTime.parse(json['createdOn']) : null,
-        modifiedOn = json['modifiedOn'] != null ? DateTime.parse(json['modifiedOn']) : null,
-        photos = json['photos'] != null ? (json['photos'] as List).map((i) => Photo.fromJson(i)).toList() : null;
+    : id = json['id']?.toString(),
+      title = json['title'],
+      description = json['description'],
+      photos = json['photos'] != null ? (json['photos'] as List).map((i) => Photo.fromJson(i)).toList() : null;
 
   /// Convert [Gallery] object to the corresponding JSON map
   Map<String, dynamic> toJson() => {
-        "id": id,
-        "title": title,
-        "description": description,
-        "createdOn": createdOn?.toIso8601String(),
-        "modifiedOn": modifiedOn?.toIso8601String(),
-        "photos": photos?.map((i) => i.toJson()),
-      };
+    "id": id,
+    "title": title,
+    "description": description,
+    "photos": photos?.map((i) => i.toJson()),
+  };
 }

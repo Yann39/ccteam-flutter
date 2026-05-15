@@ -96,11 +96,25 @@ class EventListProvider extends ChangeNotifier {
   /// Update login provider with the specified [loginProvider].
   void updateLoginProvider(LoginProvider loginProvider) {
     _loginProvider = loginProvider;
+
+    if (_loginProvider.isMember && _loadingStatus == LoadingStatus.notLoaded) {
+      // member just authenticated (or recovered from a failed earlier fetch) — replay the events list query
+      fetchEventList();
+    } else if (!_loginProvider.isMember) {
+      // logout or downgrade — clear cached data so the next user doesn't inherit the previous one's events
+      _allEvents = [];
+      _yearEvents = [];
+      _dayEvents = [];
+      _loadingStatus = LoadingStatus.notLoaded;
+    }
+
+    // count is USER-accessible (non-members see it on the home page), keep it in sync regardless of role
     if (_loginProvider.loggedMember != null) {
       fetchCount();
     } else {
       _totalCount = null;
     }
+
     _notifyListeners();
   }
 
