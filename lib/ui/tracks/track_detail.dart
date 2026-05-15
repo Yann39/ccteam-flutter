@@ -795,7 +795,7 @@ class _TrackDetailState extends State<TrackDetail> {
   }
 
   Widget _eventsTable(EventDetailProvider eventDetailProvider) {
-    if (eventDetailProvider.loadingStatus == LoadingStatus.loading) {
+    if (eventDetailProvider.eventsByTrackLoadingStatus == LoadingStatus.loading) {
       return _buildLoadingCard();
     }
     if (eventDetailProvider.allEvents.isEmpty) {
@@ -882,7 +882,7 @@ class _TrackDetailState extends State<TrackDetail> {
                   final double deltaExtent = settings.maxExtent - settings.minExtent;
                   final double t = (1.0 - (settings.currentExtent - settings.minExtent) / deltaExtent).clamp(0.0, 1.0);
 
-                  // t est 0.0 quand complètement déployé, 1.0 quand complètement replié
+                  // t is 0.0 when completely deployed, 1.0 when completely collapsed
                   // smoothly fade the country line out as the header collapses,
                   // so it never overlaps the standard AppBar title
                   final double countryOpacity = ((1.0 - t * 2.0).clamp(0.0, 1.0)).toDouble();
@@ -1142,7 +1142,7 @@ class _TrackDetailState extends State<TrackDetail> {
                           ],
                         ),
                       ),
-                      SizedBox(height: 400),
+                      SizedBox(height: MediaQuery.of(context).padding.bottom + 16.0),
                     ],
                   ),
                 ]),

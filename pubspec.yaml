@@ -88,11 +88,9 @@ flutter:
 
   # Lists assets, such as image files
   assets:
-    - images/ccteam-logo.png
-    - images/ccteam-logo1.png
-    - images/ccteam6.png
-    - images/ccteam8.png
-    - images/ccteam-banner-drawer.png
+    - images/ccteam-logo-horizontal.png
+    - images/ccteam-logo-horizontal-text.png
+    - images/ccteam-logo-vertical.png
     - images/motos.jpg
     - images/tracks/
     - images/manufacturers/

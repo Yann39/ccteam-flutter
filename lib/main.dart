@@ -281,9 +281,6 @@ class CCTeamApp extends StatelessWidget {
                 }
 
                 // global application success/warning/error snack bar messages.
-                // SESSION_EXPIRED falls through to the INFO defaults (blue + info icon)
-                // — an expired token is a routine state transition, not a warning the
-                // user did something wrong.
                 final Color notificationColor = (messageProvider.messageType == MessageType.ERROR)
                     ? Color(0xFFB43636)
                     : messageProvider.messageType == MessageType.WARNING

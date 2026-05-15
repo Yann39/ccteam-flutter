@@ -677,6 +677,8 @@ class MemberDetail extends StatelessWidget {
             ),
           );
 
+    final String? _phone = _memberDetailProvider.currentMember?.phone;
+    final bool _hasPhone = _phone != null && _phone.isNotEmpty;
     final _mobileInfo = MergeSemantics(
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 0.0),
@@ -690,8 +692,11 @@ class MemberDetail extends StatelessWidget {
                   Text(AppString.mobile, style: TextStyle(color: Colors.red[700])),
                   Container(
                     child: Text(
-                      "${_memberDetailProvider.currentMember?.phone}",
-                      style: TextStyle(color: Colors.black.withAlpha(204)),
+                      _hasPhone ? _phone : AppString.notProvided,
+                      style: TextStyle(
+                        color: Colors.black.withAlpha(_hasPhone ? 204 : 120),
+                        fontStyle: _hasPhone ? FontStyle.normal : FontStyle.italic,
+                      ),
                       textScaler: TextScaler.linear(1.1),
                     ),
                   ),
@@ -703,9 +708,7 @@ class MemberDetail extends StatelessWidget {
               child: IconButton(
                 icon: Icon(Icons.phone),
                 color: Colors.green,
-                onPressed: () {
-                  AppUtils.launchURL("tel:${_memberDetailProvider.currentMember?.phone}");
-                },
+                onPressed: _hasPhone ? () => AppUtils.launchURL("tel:$_phone") : null,
               ),
             ),
             SizedBox(
@@ -713,9 +716,7 @@ class MemberDetail extends StatelessWidget {
               child: IconButton(
                 icon: Icon(Icons.sms),
                 color: Colors.blue,
-                onPressed: () {
-                  AppUtils.launchURL("sms:${_memberDetailProvider.currentMember?.phone}");
-                },
+                onPressed: _hasPhone ? () => AppUtils.launchURL("sms:$_phone") : null,
               ),
             ),
           ],
@@ -936,7 +937,7 @@ class MemberDetail extends StatelessWidget {
                                 ),
                                 SizedBox(height: 10),
                                 Container(
-                                  padding: EdgeInsets.all(8.0),
+                                  padding: EdgeInsets.all(6.0),
                                   decoration: CustomDecorations.cardLight,
                                   child: Column(
                                     children: <Widget>[
@@ -1042,7 +1043,7 @@ class _BikesInfoState extends State<_BikesInfo> {
 
     return MergeSemantics(
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
+        padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[

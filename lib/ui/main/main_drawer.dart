@@ -94,17 +94,9 @@ class MainDrawer extends StatelessWidget {
                 ),
                 Container(
                   width: 210,
-                  height: 110,
+                  height: 40,
                   alignment: Alignment.topCenter,
-                  child: Opacity(
-                    opacity: 0.7,
-                    child: Image.asset(
-                      'images/ccteam-banner-drawer.png',
-                      fit: BoxFit.fitWidth,
-                      width: 160,
-                      alignment: Alignment.center,
-                    ),
-                  ),
+                  child: Image.asset('images/ccteam-logo-horizontal-text.png', fit: BoxFit.fitWidth, width: 140),
                 ),
               ],
             ),
@@ -120,6 +112,7 @@ class MainDrawer extends StatelessWidget {
                       Navigator.pushNamed(context, '/myAccount');
                     },
                   ),
+                  Divider(color: Colors.white60),
                   ListTile(
                     leading: Icon(Icons.event, color: Colors.purple[600]),
                     trailing: Icon(Icons.arrow_right, color: Colors.black),

@@ -27,7 +27,8 @@ import 'package:ccteam/services/events_service.dart';
 import 'package:ccteam/utils/app_utils.dart';
 import 'package:ccteam/utils/enums.dart';
 import 'package:ccteam/utils/strings.dart';
-import 'package:flutter/foundation.dart';
+import 'package:flutter/scheduler.dart';
+import 'package:flutter/widgets.dart';
 import 'package:logging/logging.dart';
 
 class EventDetailProvider extends ChangeNotifier {
@@ -46,14 +47,19 @@ class EventDetailProvider extends ChangeNotifier {
   // list of events (for track detail)
   List<Event> _allEvents = [];
 
-  // current loading status
+  /// Loading status for the single-event flow
   LoadingStatus _loadingStatus = LoadingStatus.notLoaded;
+
+  /// Loading status for the events-by-track flow
+  LoadingStatus _eventsByTrackLoadingStatus = LoadingStatus.notLoaded;
 
   Event get currentEvent => _currentEvent;
 
   List<Event> get allEvents => _allEvents;
 
   LoadingStatus get loadingStatus => _loadingStatus;
+
+  LoadingStatus get eventsByTrackLoadingStatus => _eventsByTrackLoadingStatus;
 
   /// Update message provider with the specified [messageProvider].
   void updateMessageProvider(MessageProvider messageProvider) {
@@ -128,20 +134,20 @@ class EventDetailProvider extends ChangeNotifier {
     // clear stale data so the UI doesn't briefly show events from a
     // previous track while the new ones are being fetched
     _allEvents = [];
-    _updateStatus(LoadingStatus.loading);
+    _updateEventsByTrackStatus(LoadingStatus.loading);
     await _eventsService
         .fetchEventsByTrack(track.id!)
         .then(
           (value) async {
             _log.fine("${value.length} events for track ${track.id} retrieved successfully");
             _allEvents = value;
-            _updateStatus(LoadingStatus.loaded);
+            _updateEventsByTrackStatus(LoadingStatus.loaded);
           },
           onError: (error) {
             _log.warning("Error when retrieving track events ($error)");
             _allEvents = [];
             AppUtils.handleServiceException(error, _messageProvider, _loginProvider);
-            _updateStatus(LoadingStatus.notLoaded);
+            _updateEventsByTrackStatus(LoadingStatus.notLoaded);
           },
         );
   }
@@ -151,13 +157,34 @@ class EventDetailProvider extends ChangeNotifier {
   /// so the UI displays a loader instead of the previous track's events.
   void clearAllEvents() {
     _allEvents = [];
-    _loadingStatus = LoadingStatus.loading;
+    _eventsByTrackLoadingStatus = LoadingStatus.loading;
+    _scheduleNotify();
+  }
+
+  /// Defer [notifyListeners] to the next post-frame callback when the
+  /// framework is mid-build, otherwise notify immediately. Lets
+  /// state-mutation methods stay safe to call from anywhere
+  /// (including `initState`) without polluting their call sites with
+  /// scheduling boilerplate.
+  void _scheduleNotify() {
+    final SchedulerPhase phase = SchedulerBinding.instance.schedulerPhase;
+    final bool inBuildPhase = phase == SchedulerPhase.persistentCallbacks || phase == SchedulerPhase.midFrameMicrotasks;
+    if (inBuildPhase) {
+      WidgetsBinding.instance.addPostFrameCallback((_) => _notifyListeners());
+    } else {
+      _notifyListeners();
+    }
+  }
+
+  /// Update the loading status of the single-event flow.
+  void _updateStatus(LoadingStatus status) {
+    _loadingStatus = status;
     _notifyListeners();
   }
 
-  /// Update the current loading [status].
-  void _updateStatus(LoadingStatus status) {
-    _loadingStatus = status;
+  /// Update the loading status of the events-by-track flow.
+  void _updateEventsByTrackStatus(LoadingStatus status) {
+    _eventsByTrackLoadingStatus = status;
     _notifyListeners();
   }
 

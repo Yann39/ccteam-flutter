@@ -48,7 +48,7 @@ class MemberStatsUtils {
   }
 
   /// Sum of the registration prices for the member's past events,
-  /// in CHF. Future commitments are intentionally excluded, the
+  /// in EUR. Future commitments are intentionally excluded, the
   /// label that fronts this metric reads "dépensé" (past tense).
   static double totalSpent({
     required List<EventMember>? eventMembers,
@@ -153,8 +153,7 @@ class MemberStatsUtils {
       }
 
       // lap time on this track: member's best chrono bumped by 2 %
-      // for "average lap" feel, else track's record + 15 %, else
-      // 2-minute default
+      // for "average lap" feel, else track's record + 15 %, else 2-minute default
       int? lapMs;
       for (final r in records) {
         if (r.track?.id == track.id && r.lapTime != null) {

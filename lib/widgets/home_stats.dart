@@ -113,8 +113,8 @@ class HomeStats extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: <Widget>[
           // hero: next ride countdown
-          //_NextRideHero(nextEvent: nextEvent, now: now),
-          //const SizedBox(height: 8.0),
+          _NextRideHero(nextEvent: nextEvent, now: now),
+          const SizedBox(height: 8.0),
 
           // two side-by-side grouped cards
           IntrinsicHeight(

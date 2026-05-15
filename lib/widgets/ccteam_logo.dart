@@ -35,7 +35,7 @@ class CCTeamLogo extends StatelessWidget {
     return Container(
       padding: padding,
       child: Image.asset(
-        'images/ccteam8.png',
+        'images/ccteam-logo-vertical.png',
         height: height,
         fit: BoxFit.fitHeight,
       ),

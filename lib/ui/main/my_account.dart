@@ -268,14 +268,14 @@ class MyAccount extends StatelessWidget {
       color = Colors.green[700]!;
       label = AppString.format(AppString.membershipPaidYear, [currentYear]);
       amount = fee.amount != null
-          ? AppString.format(AppString.membershipAmount, [fee.amount!.toStringAsFixed(0)])
+          ? AppString.format(AppString.membershipAmountEur, [fee.amount!.toStringAsFixed(0)])
           : null;
     } else {
       icon = Icons.warning_amber_rounded;
       color = Colors.orange[700]!;
       label = AppString.format(AppString.membershipUnpaidYear, [currentYear]);
       amount = fee.amount != null
-          ? AppString.format(AppString.membershipAmount, [fee.amount!.toStringAsFixed(0)])
+          ? AppString.format(AppString.membershipAmountEur, [fee.amount!.toStringAsFixed(0)])
           : null;
     }
 
@@ -515,7 +515,7 @@ class MyAccount extends StatelessWidget {
             icon: Icons.payments_outlined,
             iconColor: Colors.red[700]!,
             label: AppString.statsTotalSpent,
-            value: AppString.format(AppString.statsAmountChf, [spent.toStringAsFixed(0)]),
+            value: AppString.format(AppString.statsAmountEur, [spent.toStringAsFixed(0)]),
           ),
         ],
       ),

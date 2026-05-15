@@ -72,10 +72,6 @@ class EventsService {
           participants {
             member {
               id
-              firstName
-              lastName
-              avatarFile
-              avatarFileName
             }
           }
         }
@@ -116,13 +112,7 @@ class EventsService {
     return fetchEvents().then((events) {
       _log.info("Fetched ${events.length} total events. Filtering for track $trackId...");
       final filtered = events.where((e) {
-        final match = e.track?.id == trackId;
-        if (e.track != null) {
-          _log.fine(
-            "Event track id: ${e.track?.id} (type: ${e.track?.id.runtimeType}), target id: $trackId (type: ${trackId.runtimeType}) -> Match: $match",
-          );
-        }
-        return match;
+        return e.track?.id == trackId;
       }).toList();
       _log.info("Found ${filtered.length} events for track $trackId");
       return filtered;

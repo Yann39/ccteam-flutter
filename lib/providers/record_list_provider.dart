@@ -23,7 +23,8 @@ import 'package:ccteam/models/record.dart';
 import 'package:ccteam/services/records_service.dart';
 import 'package:ccteam/utils/enums.dart';
 import 'package:ccteam/providers/login_provider.dart';
-import 'package:flutter/foundation.dart';
+import 'package:flutter/scheduler.dart';
+import 'package:flutter/widgets.dart';
 import 'package:logging/logging.dart';
 
 class RecordListProvider extends ChangeNotifier {
@@ -105,19 +106,41 @@ class RecordListProvider extends ChangeNotifier {
   /// navigating to a screen whose data depends on a fresh fetch (e.g.
   /// track detail), so the UI displays a loader instead of the previous
   /// track's records.
+  ///
+  /// The state mutation is synchronous so the calling widget's first
+  /// build sees the cleared list. The notification is deferred via
+  /// [_scheduleNotify] because this method is typically called from
+  /// a descendant's `initState`, where notifying eagerly would trip
+  /// `setState() called during build`.
   void clearTrackRecords() {
     _trackRecords = [];
     _loadingStatus = LoadingStatus.loading;
-    notifyListeners();
+    _scheduleNotify();
   }
 
   /// Reset the member records list and mark it as loading. Used when
   /// navigating to a member detail screen so the UI doesn't briefly
-  /// show the previous member's records.
+  /// show the previous member's records. Same deferred-notification
+  /// contract as [clearTrackRecords].
   void clearMemberRecords() {
     _memberRecords = [];
     _loadingStatus = LoadingStatus.loading;
-    notifyListeners();
+    _scheduleNotify();
+  }
+
+  /// Defer [notifyListeners] to the next post-frame callback when the
+  /// framework is mid-build, otherwise notify immediately. Lets
+  /// state-mutation methods stay safe to call from anywhere
+  /// (including `initState`) without polluting their call sites with
+  /// scheduling boilerplate.
+  void _scheduleNotify() {
+    final SchedulerPhase phase = SchedulerBinding.instance.schedulerPhase;
+    final bool inBuildPhase = phase == SchedulerPhase.persistentCallbacks || phase == SchedulerPhase.midFrameMicrotasks;
+    if (inBuildPhase) {
+      WidgetsBinding.instance.addPostFrameCallback((_) => notifyListeners());
+    } else {
+      notifyListeners();
+    }
   }
 
   /// Get the list of all records for the specified [memberId]

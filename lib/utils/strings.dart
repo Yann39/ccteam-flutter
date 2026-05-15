@@ -213,7 +213,7 @@ class AppString {
   static const String memberEmailMandatory = 'L\'adresse e-mail est obligatoire';
   static const String memberEmailNotValid = 'L\'adresse e-mail indiquée n\'est pas valide';
   static const String memberPhone = 'Téléphone';
-  static const String memberPhoneHint = 'Numéro de téléphone du membre';
+  static const String memberPhoneHint = 'Numéro de téléphone';
   static const String memberPhoneMandatory = 'Le numéro de téléphone est obligatoire';
   static const String memberPhoneNotValid = 'Le numéro de téléphone indiqué n\'est pas valide';
   static const String memberRiderNumber = 'Numéro de pilote';
@@ -379,6 +379,7 @@ class AppString {
   static const String events = 'événements';
   static const String moto = 'Moto';
   static const String mobile = 'Mobile';
+  static const String notProvided = 'Non indiqué';
   static const String email = 'E-mail';
   static const String personalInformation = 'Informations personnelles';
   static const String rides = 'Roulages';
@@ -390,7 +391,7 @@ class AppString {
   static const String statsFavoriteTrack = 'Circuit le plus roulé';
   static const String statsFavoriteTrackTimes = '{0} fois';
   static const String statsTotalSpent = 'Total dépensé';
-  static const String statsAmountChf = '{0} CHF';
+  static const String statsAmountEur = '{0} EUR';
   static const String statsNoData = '—';
   static const String currentYear = 'Année courante';
   static const String byDate = 'Par date';
@@ -452,7 +453,7 @@ class AppString {
   static const String membershipPaidYear = 'Cotisation {0} payée';
   static const String membershipUnpaidYear = 'Cotisation {0} non payée';
   static const String membershipNoneYear = 'Aucune cotisation enregistrée pour {0}';
-  static const String membershipAmount = '{0} CHF';
+  static const String membershipAmountEur = '{0} EUR';
 
   // Change-passcode screen
   static const String changePasscodeTitle = 'Changer mon passcode';
