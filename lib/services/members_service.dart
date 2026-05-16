@@ -234,6 +234,13 @@ class MembersService {
                 id
               }
             }
+            bike {
+              id
+              manufacturer
+              modelName
+              engineSize
+              year
+            }
           }
           createdOn
           modifiedOn
@@ -314,6 +321,13 @@ class MembersService {
               participants {
                 id
               }
+            }
+            bike {
+              id
+              manufacturer
+              modelName
+              engineSize
+              year
             }
           }
           likedNews {
@@ -415,6 +429,13 @@ class MembersService {
               participants {
                 id
               }
+            }
+            bike {
+              id
+              manufacturer
+              modelName
+              engineSize
+              year
             }
           }
           likedNews {
@@ -520,6 +541,13 @@ class MembersService {
               participants {
                 id
               }
+            }
+            bike {
+              id
+              manufacturer
+              modelName
+              engineSize
+              year
             }
           }
           likedNews {

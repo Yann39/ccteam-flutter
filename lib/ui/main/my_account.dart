@@ -19,6 +19,7 @@
 
 import 'dart:convert';
 
+import 'package:ccteam/models/bike.dart';
 import 'package:ccteam/models/member.dart';
 import 'package:ccteam/models/membership_fee.dart';
 import 'package:ccteam/providers/login_provider.dart';
@@ -445,11 +446,22 @@ class MyAccount extends StatelessWidget {
     );
   }
 
-  /// Stats card: five rows summarising the user's track-day activity
-  /// (events, bikes, km, favourite track, total spent). Uses the same
-  /// `blue[100]` + white-border visual language as the other cards on
-  /// this page so the three zones (statut / stats / actions) read as
-  /// siblings.
+  /// Compact bike label used in the stats rows. Same format as the
+  /// event-detail picker and the participation row on `EventCard` so
+  /// a given bike reads identically across the app: manufacturer
+  /// upper-cased, model as stored, year when known.
+  String _bikeStatLabel(Bike b) {
+    final String base = "${b.manufacturer?.toUpperCase() ?? ''}\n${b.modelName ?? ''}".trim();
+    if (b.year == null) return base.isEmpty ? '—' : base;
+    if (base.isEmpty) return b.year!.toString();
+    return "$base ${b.year}";
+  }
+
+  /// Stats card: six rows summarising the user's track-day activity
+  /// (events, bikes, km, favourite track, favourite bike, total
+  /// spent). Uses the same `blue[100]` + white-border visual language
+  /// as the other cards on this page so the three zones (statut /
+  /// stats / actions) read as siblings.
   ///
   /// All metrics are **past-only** so the numbers stay meaningful: a
   /// future commitment isn't yet a "ride completed" or "money spent".
@@ -466,6 +478,7 @@ class MyAccount extends StatelessWidget {
       now: now,
     );
     final MostRiddenTrack? favTrack = MemberStatsUtils.mostRiddenTrack(eventMembers: member.eventMembers, now: now);
+    final MostUsedBike? favBike = MemberStatsUtils.mostUsedBike(eventMembers: member.eventMembers, now: now);
     final double spent = MemberStatsUtils.totalSpent(eventMembers: member.eventMembers, now: now);
 
     return Container(
@@ -509,6 +522,14 @@ class MyAccount extends StatelessWidget {
             // track name + visit count
             value: favTrack?.name ?? AppString.statsNoData,
             subtitle: favTrack != null ? AppString.format(AppString.statsFavoriteTrackTimes, [favTrack.count]) : null,
+          ),
+          _buildStatDivider(),
+          _buildStatRow(
+            icon: CustomIcons.motorbike,
+            iconColor: Colors.indigo[600]!,
+            label: AppString.statsFavoriteBike,
+            value: favBike != null ? _bikeStatLabel(favBike.bike) : AppString.statsNoData,
+            subtitle: favBike != null ? AppString.format(AppString.statsFavoriteTrackTimes, [favBike.count]) : null,
           ),
           _buildStatDivider(),
           _buildStatRow(

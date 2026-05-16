@@ -165,7 +165,24 @@ class _AddEditBikeState extends State<AddEditBike> {
       builder: (BuildContext context) {
         return AlertDialog(
           title: Text(AppString.confirmation),
-          content: Text(AppString.bikeDeletionAreYouSure),
+          // also warn that the bike will also be dereferenced from any participation
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              Text(AppString.bikeDeletionAreYouSure),
+              const SizedBox(height: 12.0),
+              Text(
+                AppString.bikeDeleteWarning,
+                style: TextStyle(
+                  fontSize: 13.0,
+                  fontStyle: FontStyle.italic,
+                  color: Colors.black.withAlpha(160),
+                  height: 1.35,
+                ),
+              ),
+            ],
+          ),
           actions: <Widget>[
             TextButton(child: Text(AppString.cancel), onPressed: () => Navigator.of(context).pop()),
             TextButton(

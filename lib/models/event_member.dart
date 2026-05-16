@@ -17,6 +17,7 @@
  * along with CCTeam. If not, see <http://www.gnu.org/licenses/>.
  */
 
+import 'package:ccteam/models/bike.dart';
 import 'package:ccteam/models/event.dart';
 import 'package:ccteam/models/member.dart';
 
@@ -25,9 +26,16 @@ class EventMember {
   int? id;
   Member? member;
   Event? event;
+
+  /// Optional bike the member intends to (or did) ride at this event.
+  /// May be null when the member registered without pinning a bike, or
+  /// after the bike has been deleted from the member's profile (the
+  /// server clears the reference, the participation stays).
+  Bike? bike;
+
   DateTime? createdOn;
 
-  EventMember({this.id, this.member, this.event, this.createdOn});
+  EventMember({this.id, this.member, this.event, this.bike, this.createdOn});
 
   @override
   String toString() {
@@ -35,6 +43,7 @@ class EventMember {
       id: ${this.id.toString()},
       members: ${this.member.toString()},
       members: ${this.event.toString()},
+      bike: ${this.bike.toString()},
       createdOn: ${this.createdOn?.toIso8601String()},
     }""";
   }
@@ -44,6 +53,7 @@ class EventMember {
       : id = json['id'] != null ? int.parse(json['id'].toString()) : null,
         member = json['member'] != null ? Member.fromJson(json['member']) : null,
         event = json['event'] != null ? Event.fromJson(json['event']) : null,
+        bike = json['bike'] != null ? Bike.fromJson(json['bike']) : null,
         createdOn = json['createdOn'] != null ? DateTime.parse(json['createdOn']) : null;
 
   /// Convert [EventMember] object to the corresponding JSON map
@@ -51,6 +61,7 @@ class EventMember {
         "id": id.toString(),
         "member": member?.toJson(),
         "event": event?.toJson(),
+        "bike": bike?.toJson(),
         "createdOn": createdOn?.toIso8601String(),
       };
 }

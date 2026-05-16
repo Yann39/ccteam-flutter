@@ -19,7 +19,9 @@
 
 import 'dart:convert';
 
+import 'package:ccteam/models/bike.dart';
 import 'package:ccteam/models/event.dart';
+import 'package:ccteam/models/event_member.dart';
 import 'package:ccteam/models/member.dart';
 import 'package:ccteam/providers/event_creation_provider.dart';
 import 'package:ccteam/providers/event_detail_provider.dart';
@@ -103,6 +105,104 @@ class EventDetail extends StatelessWidget {
     );
   }
 
+  /// Short human-readable label for a bike.
+  String _bikeLabel(Bike bike) {
+    final String base = "${bike.manufacturer?.toUpperCase() ?? ''} ${bike.modelName ?? ''}".trim();
+    if (bike.year == null) return base.isEmpty ? '—' : base;
+    if (base.isEmpty) return bike.year!.toString();
+    return "$base (${bike.year})";
+  }
+
+  /// Open the bike picker for the caller's participation in [event].
+  void _openBikePicker(BuildContext context, Event event, EventDetailProvider provider, Bike? currentBike) {
+    final LoginProvider loginProvider = Provider.of<LoginProvider>(context, listen: false);
+    final List<Bike> bikes = loginProvider.loggedMember?.bikes ?? const <Bike>[];
+
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(16.0))),
+      builder: (BuildContext sheetCtx) {
+        return Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [Colors.blue[100]!, Colors.blue[200]!],
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+            ),
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(16.0)),
+          ),
+          child: SafeArea(
+            top: false,
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(16.0, 10.0, 16.0, 16.0),
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: <Widget>[
+                    // drag handle
+                    Center(
+                      child: Container(
+                        width: 40,
+                        height: 4,
+                        margin: const EdgeInsets.only(bottom: 14.0),
+                        decoration: BoxDecoration(
+                          color: Colors.black.withValues(alpha: 0.18),
+                          borderRadius: BorderRadius.circular(2.0),
+                        ),
+                      ),
+                    ),
+                    Text(
+                      AppString.eventBikePickerTitle,
+                      style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: Colors.black87),
+                    ),
+                    const SizedBox(height: 12.0),
+                    if (bikes.isEmpty)
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8.0),
+                        child: Text(
+                          AppString.eventBikeNoBikes,
+                          style: TextStyle(
+                            color: Colors.black.withAlpha(160),
+                            fontStyle: FontStyle.italic,
+                            fontSize: 13.0,
+                          ),
+                        ),
+                      ),
+                    for (final Bike b in bikes)
+                      _BikePickerTile(
+                        label: _bikeLabel(b),
+                        selected: currentBike?.id == b.id,
+                        onTap: () {
+                          Navigator.pop(sheetCtx);
+                          provider.setEventMemberBike(event, bikeId: b.id);
+                        },
+                      ),
+                    // "clear" entry
+                    Padding(
+                      padding: const EdgeInsets.only(top: 4.0),
+                      child: _BikePickerTile(
+                        label: AppString.eventBikeNoneOption,
+                        selected: currentBike == null,
+                        muted: true,
+                        onTap: () {
+                          Navigator.pop(sheetCtx);
+                          provider.setEventMemberBike(event, bikeId: null);
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   /// Build the registration "card": a horizontal panel that shows the
   /// current participation state (icon + label) on the left and the
   /// appropriate toggle action on the right. Visually integrated with
@@ -112,8 +212,20 @@ class EventDetail extends StatelessWidget {
   ///  - not registered → filled green CTA "Je participe" (encourages action)
   ///  - registered     → outlined red "Se désister" (remains available but
   ///    doesn't shout; reduces the chance of an accidental cancellation)
-  Widget _registrationCard(Event event, int memberId, EventDetailProvider provider) {
-    final bool isRegistered = event.participants?.any((p) => p.member?.id == memberId) ?? false;
+  ///
+  /// When registered, a second row below the status surfaces the bike
+  /// pinned to this participation (or "No bike selected") and
+  /// is tappable to open a picker. The bike picker is intentionally
+  /// post-registration only, keeping the "Je participe" CTA a one-tap
+  /// action, and allowed on past events too so riders can fill in or
+  /// fix the bike retrospectively.
+  Widget _registrationCard(BuildContext context, Event event, int memberId, EventDetailProvider provider) {
+    final EventMember? participation = event.participants?.firstWhere(
+      (p) => p.member?.id == memberId,
+      orElse: () => EventMember(),
+    );
+    final bool isRegistered = participation != null && participation.id != null;
+    final Bike? pinnedBike = isRegistered ? participation.bike : null;
 
     final Color statusColor = isRegistered ? Colors.green[700]! : Colors.blueGrey[500]!;
     final IconData statusIcon = isRegistered ? Icons.check_circle_rounded : Icons.help_outline_rounded;
@@ -133,72 +245,121 @@ class EventDetail extends StatelessWidget {
           BoxShadow(color: Colors.black.withAlpha(25), spreadRadius: 0.5, blurRadius: 0.5, offset: const Offset(2, 2)),
         ],
       ),
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        mainAxisSize: MainAxisSize.min,
         children: <Widget>[
-          // status indicator (icon in a soft circular halo)
-          Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(shape: BoxShape.circle, color: statusColor.withValues(alpha: 0.15)),
-            child: Icon(statusIcon, color: statusColor, size: 24.0),
+          // first row: status + CTA. Layout unchanged from the original card
+          Row(
+            children: <Widget>[
+              // status indicator (icon in a soft circular halo)
+              Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(shape: BoxShape.circle, color: statusColor.withValues(alpha: 0.15)),
+                child: Icon(statusIcon, color: statusColor, size: 24.0),
+              ),
+              const SizedBox(width: 10.0),
+              // status text (title + small explanatory subtitle)
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: <Widget>[
+                    Text(
+                      statusTitle,
+                      style: TextStyle(
+                        color: Colors.black.withAlpha(204),
+                        fontWeight: FontWeight.bold,
+                        fontSize: 14.0,
+                        height: 1.2,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 2.0),
+                    Text(
+                      statusSubtitle,
+                      style: TextStyle(color: Colors.black.withAlpha(140), fontSize: 11.0, height: 1.2),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 8.0),
+              // action button — filled CTA when not registered, outlined
+              // (less aggressive) when already registered
+              isRegistered
+                  ? OutlinedButton.icon(
+                      onPressed: () => provider.unregisterFromEvent(event, memberId),
+                      icon: const Icon(Icons.event_busy, size: 16.0),
+                      label: Text(AppString.eventUnregister),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: Colors.red[700],
+                        side: BorderSide(color: Colors.red[700]!, width: 1.2),
+                        padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 10.0),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6.0)),
+                        textStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13.0),
+                      ),
+                    )
+                  : ElevatedButton.icon(
+                      onPressed: () => provider.registerToEvent(event, memberId),
+                      icon: const Icon(Icons.event_available, size: 16.0),
+                      label: Text(AppString.eventParticipated),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.green[700],
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(horizontal: 14.0, vertical: 10.0),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6.0)),
+                        textStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13.0),
+                        elevation: 1,
+                      ),
+                    ),
+            ],
           ),
-          const SizedBox(width: 10.0),
-          // status text (title + small explanatory subtitle)
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: <Widget>[
-                Text(
-                  statusTitle,
-                  style: TextStyle(
-                    color: Colors.black.withAlpha(204),
-                    fontWeight: FontWeight.bold,
-                    fontSize: 14.0,
-                    height: 1.2,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
+          // second row: bike pinned to the participation. Only shown when registered
+          if (isRegistered) ...[
+            const SizedBox(height: 10.0),
+            Container(height: 1, color: Colors.black.withValues(alpha: 0.08)),
+            const SizedBox(height: 8.0),
+            InkWell(
+              onTap: () => _openBikePicker(context, event, provider, pinnedBike),
+              borderRadius: BorderRadius.circular(6.0),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 4.0, vertical: 6.0),
+                child: Row(
+                  children: <Widget>[
+                    Icon(CustomIcons.motorbike, size: 18.0, color: Colors.black.withAlpha(140)),
+                    const SizedBox(width: 8.0),
+                    Text(
+                      AppString.eventBikeLabel,
+                      style: TextStyle(
+                        color: Colors.black.withAlpha(160),
+                        fontSize: 12.0,
+                        fontWeight: FontWeight.w600,
+                        letterSpacing: 0.4,
+                      ),
+                    ),
+                    const SizedBox(width: 10.0),
+                    Expanded(
+                      child: Text(
+                        pinnedBike != null ? _bikeLabel(pinnedBike) : AppString.eventBikeNone,
+                        style: TextStyle(
+                          color: Colors.black.withAlpha(pinnedBike != null ? 204 : 130),
+                          fontSize: 13.5,
+                          fontStyle: pinnedBike != null ? FontStyle.normal : FontStyle.italic,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    Icon(Icons.edit, size: 16.0, color: Colors.black.withAlpha(140)),
+                  ],
                 ),
-                const SizedBox(height: 2.0),
-                Text(
-                  statusSubtitle,
-                  style: TextStyle(color: Colors.black.withAlpha(140), fontSize: 11.0, height: 1.2),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ],
+              ),
             ),
-          ),
-          const SizedBox(width: 8.0),
-          // action button — filled CTA when not registered, outlined
-          // (less aggressive) when already registered
-          isRegistered
-              ? OutlinedButton.icon(
-                  onPressed: () => provider.unregisterFromEvent(event, memberId),
-                  icon: const Icon(Icons.event_busy, size: 16.0),
-                  label: Text(AppString.eventUnregister),
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: Colors.red[700],
-                    side: BorderSide(color: Colors.red[700]!, width: 1.2),
-                    padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 10.0),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6.0)),
-                    textStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13.0),
-                  ),
-                )
-              : ElevatedButton.icon(
-                  onPressed: () => provider.registerToEvent(event, memberId),
-                  icon: const Icon(Icons.event_available, size: 16.0),
-                  label: Text(AppString.eventParticipated),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.green[700],
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(horizontal: 14.0, vertical: 10.0),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6.0)),
-                    textStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13.0),
-                    elevation: 1,
-                  ),
-                ),
+          ],
         ],
       ),
     );
@@ -491,7 +652,7 @@ class EventDetail extends StatelessWidget {
                           SizedBox(height: 10),
                           (_eventDetailProvider.currentEvent.participants?.length ?? 0) > 0
                               ? SizedBox(
-                                  height: 140,
+                                  height: 125,
                                   child: ListView.builder(
                                     scrollDirection: Axis.horizontal,
                                     itemCount: _eventDetailProvider.currentEvent.participants!.length,
@@ -558,9 +719,10 @@ class EventDetail extends StatelessWidget {
                                   ),
                                 )
                               : Text(AppString.noParticipant),
-                          SizedBox(height: 16),
+                          SizedBox(height: 10),
                           if (_loginProvider.loggedMember != null)
                             _registrationCard(
+                              context,
                               _eventDetailProvider.currentEvent,
                               _loginProvider.loggedMember!.id!,
                               _eventDetailProvider,
@@ -574,6 +736,62 @@ class EventDetail extends StatelessWidget {
                 ],
               ),
             ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Single row of the bike picker bottom sheet.
+class _BikePickerTile extends StatelessWidget {
+  const _BikePickerTile({required this.label, required this.selected, required this.onTap, this.muted = false});
+
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+  final bool muted;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 3.0),
+      child: Material(
+        color: Colors.white.withValues(alpha: 0.55),
+        borderRadius: BorderRadius.circular(10.0),
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(10.0),
+          child: Container(
+            padding: const EdgeInsets.fromLTRB(12.0, 10.0, 12.0, 10.0),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(10.0),
+              border: Border.all(color: Colors.white, width: 1.0),
+            ),
+            child: Row(
+              children: <Widget>[
+                Icon(
+                  muted ? Icons.block : CustomIcons.motorbike,
+                  size: 18.0,
+                  color: Colors.black.withAlpha(muted ? 110 : 160),
+                ),
+                const SizedBox(width: 10.0),
+                Expanded(
+                  child: Text(
+                    label,
+                    style: TextStyle(
+                      color: Colors.black.withAlpha(muted ? 140 : 204),
+                      fontSize: 13.5,
+                      fontStyle: muted ? FontStyle.italic : FontStyle.normal,
+                      fontWeight: selected ? FontWeight.w700 : FontWeight.normal,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                if (selected) Icon(Icons.check, size: 18.0, color: Colors.green[700]),
+              ],
+            ),
           ),
         ),
       ),

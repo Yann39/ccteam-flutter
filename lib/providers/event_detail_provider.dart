@@ -188,14 +188,17 @@ class EventDetailProvider extends ChangeNotifier {
     _notifyListeners();
   }
 
-  /// Register the specified [member] to the specified [event].
+  /// Register the specified [member] to the specified [event],
+  /// optionally pinning a [bikeId] to the participation up front. Pass
+  /// `null` (the default) to register without a bike; the member
+  /// can pick one later via [setEventMemberBike].
   /// On success we also refresh the logged member so any UI bound to
   /// logged member events (notably the home stats panel) picks
   /// up the new registration without a manual reload.
-  Future<void> registerToEvent(Event event, int memberId) async {
-    _log.fine("Registering member $memberId to event ${event.title}...");
+  Future<void> registerToEvent(Event event, int memberId, {int? bikeId}) async {
+    _log.fine("Registering member $memberId to event ${event.title} (bike=$bikeId)...");
     await _eventsService
-        .registerToEvent(event.id!, memberId)
+        .registerToEvent(event.id!, memberId, bikeId: bikeId)
         .then(
           (value) async {
             _log.fine("Registered successfully to event : ${event.title}");
@@ -230,6 +233,29 @@ class EventDetailProvider extends ChangeNotifier {
           },
           onError: (error) {
             _log.warning("Failed to unregister from event ($error)");
+            AppUtils.handleServiceException(error, _messageProvider, _loginProvider);
+          },
+        );
+  }
+
+  /// Change (or clear, by passing a null [bikeId]) the bike pinned to
+  /// the caller's participation in [event]. Server-side, the acting
+  /// member is derived from the auth token, so we don't pass a
+  /// memberId — the user can only edit their own participation.
+  Future<void> setEventMemberBike(Event event, {int? bikeId}) async {
+    _log.fine("Setting bike $bikeId on event ${event.title}...");
+    await _eventsService
+        .setEventMemberBike(event.id!, bikeId: bikeId)
+        .then(
+          (value) async {
+            _log.fine("Bike updated successfully on event : ${event.title}");
+            _updateEventInList(value);
+            // refetch to reflect the new bike pinning
+            await _loginProvider.refreshLoggedMember();
+            _messageProvider.setMessage(AppString.eventBikeUpdated, MessageType.SUCCESS);
+          },
+          onError: (error) {
+            _log.warning("Failed to update event bike ($error)");
             AppUtils.handleServiceException(error, _messageProvider, _loginProvider);
           },
         );

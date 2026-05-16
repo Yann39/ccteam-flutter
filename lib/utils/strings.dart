@@ -305,6 +305,14 @@ class AppString {
   static const String eventsNotFoundForDate = 'Aucun événement trouvé pour cette date';
   static const String eventRegistered = 'Votre participation à été enregistrée !';
   static const String eventUnregistered = 'Votre participation à été annulée !';
+  static const String eventBikeUpdated = 'Moto mise à jour pour ce roulage';
+  static const String eventBikeLabel = 'Moto';
+  static const String eventBikePickerTitle = 'Choisir la moto';
+  static const String eventBikeNone = 'Aucune moto sélectionnée';
+  static const String eventBikeNoneOption = 'Aucune (effacer)';
+  static const String eventBikeNoBikes = 'Vous n\'avez pas encore enregistré de moto.';
+  static const String bikeDeleteWarning =
+      'Cette moto sera également retirée de tous les roulages où vous l\'aviez sélectionnée. Vos inscriptions restent en place, seule l\'info "avec quelle moto" sera effacée.';
   static const String eventParticipated = 'Je participe';
   static const String eventUnregister = 'Se désister';
   static const String joinEvent = 'S\'inscrire à un roulage';
@@ -390,6 +398,7 @@ class AppString {
   static const String statsKmEstimated = 'Km estimés';
   static const String statsFavoriteTrack = 'Circuit le plus roulé';
   static const String statsFavoriteTrackTimes = '{0} fois';
+  static const String statsFavoriteBike = 'Moto la plus utilisée';
   static const String statsTotalSpent = 'Total dépensé';
   static const String statsAmountEur = '{0} EUR';
   static const String statsNoData = '—';

@@ -17,7 +17,9 @@
  * along with CCTeam. If not, see <http://www.gnu.org/licenses/>.
  */
 
+import 'package:ccteam/models/bike.dart';
 import 'package:ccteam/models/event.dart';
+import 'package:ccteam/utils/custom_icons.dart';
 import 'package:ccteam/utils/string_utils.dart';
 import 'package:ccteam/utils/track_utils.dart';
 import 'package:flutter/material.dart';
@@ -26,7 +28,18 @@ import 'package:intl/intl.dart';
 class EventCard extends StatelessWidget {
   final Event event;
 
-  EventCard(this.event);
+  /// Optional bike the *current viewer* has pinned to this event.
+  final Bike? bike;
+
+  EventCard(this.event, {this.bike});
+
+  /// Short human-readable label for the pinned bike.
+  String _bikeLabel(Bike b) {
+    final String base = "${b.manufacturer?.toUpperCase() ?? ''} ${b.modelName ?? ''}".trim();
+    if (b.year == null) return base.isEmpty ? '—' : base;
+    if (base.isEmpty) return b.year!.toString();
+    return "$base (${b.year})";
+  }
 
   /// Two [DateTime]s share the same calendar day (ignoring time-of-day).
   static bool _sameDay(DateTime a, DateTime b) => a.year == b.year && a.month == b.month && a.day == b.day;
@@ -248,6 +261,24 @@ class EventCard extends StatelessWidget {
                               ),
                             ],
                           ),
+                          // row only present when the viewer has pinned a bike to this participation
+                          if (bike != null) ...[
+                            SizedBox(height: 2.0),
+                            Row(
+                              children: [
+                                Icon(CustomIcons.motorbike, size: 14, color: Colors.blue[800]),
+                                SizedBox(width: 4.0),
+                                Expanded(
+                                  child: Text(
+                                    _bikeLabel(bike!),
+                                    style: TextStyle(color: Colors.white, fontSize: 13),
+                                    overflow: TextOverflow.ellipsis,
+                                    maxLines: 1,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
                         ],
                       ),
                     ),

@@ -18,9 +18,9 @@
  */
 
 import 'package:ccteam/models/event.dart';
+import 'package:ccteam/models/event_member.dart';
 import 'package:ccteam/providers/event_detail_provider.dart';
 import 'package:ccteam/providers/login_provider.dart';
-import 'package:ccteam/providers/member_detail_provider.dart';
 import 'package:ccteam/providers/message_provider.dart';
 import 'package:ccteam/ui/events/event_card.dart';
 import 'package:ccteam/utils/custom_decorations.dart';
@@ -41,17 +41,6 @@ class MemberEvents extends StatefulWidget {
 }
 
 class _MemberEventsState extends State<MemberEvents> {
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      final LoginProvider loginProvider = Provider.of<LoginProvider>(context, listen: false);
-      if (loginProvider.isMember && loginProvider.loggedMember != null) {
-        Provider.of<MemberDetailProvider>(context, listen: false).fetchMember(loginProvider.loggedMember!);
-      }
-    });
-  }
-
   /// Open the "S'inscrire à un roulage" screen, which lets the user
   /// register as a participant on an existing upcoming event. The
   /// SelectEventToJoin screen takes care of refreshing the logged
@@ -78,57 +67,52 @@ class _MemberEventsState extends State<MemberEvents> {
       );
     }
 
-    final MemberDetailProvider _memberDetailProvider = Provider.of<MemberDetailProvider>(context, listen: true);
-
     Widget content;
 
-    if (_memberDetailProvider.loadingStatus == LoadingStatus.loading) {
-      content = Center(child: CircularProgressIndicator());
-    } else if (_memberDetailProvider.loadingStatus == LoadingStatus.notLoaded) {
-      content = Center(child: Text(AppString.contentNotLoaded));
+    // keep the EventMember (not just the Event) so each card can surface whether the rider has pinned a bike to this specific participation
+    final List<EventMember> memberParticipations = (loginProvider.loggedMember?.eventMembers
+                ?.where((em) => em.event != null && em.event!.startDate != null)
+                .toList() ??
+            <EventMember>[]);
+
+    final now = DateTime.now();
+    final upcomingParticipations = memberParticipations
+        .where((em) => em.event!.startDate!.isAfter(now) || DateUtils.isSameDay(em.event!.startDate!, now))
+        .toList();
+    final pastParticipations = memberParticipations
+        .where((em) => em.event!.startDate!.isBefore(now) && !DateUtils.isSameDay(em.event!.startDate!, now))
+        .toList();
+
+    // sort upcoming events by date ascending (closest first)
+    upcomingParticipations.sort((a, b) => a.event!.startDate!.compareTo(b.event!.startDate!));
+    // sort past events by date descending (most recent first)
+    pastParticipations.sort((a, b) => b.event!.startDate!.compareTo(a.event!.startDate!));
+
+    if (upcomingParticipations.isEmpty && pastParticipations.isEmpty) {
+      // member is registered to no event at all
+      content = _buildGlobalEmptyState();
     } else {
-      final List<Event> memberEvents =
-          _memberDetailProvider.currentMember?.eventMembers?.map((em) => em.event!).toList() ?? [];
-
-      final now = DateTime.now();
-      final upcomingEvents = memberEvents
-          .where((e) => e.startDate!.isAfter(now) || DateUtils.isSameDay(e.startDate!, now))
-          .toList();
-      final pastEvents = memberEvents
-          .where((e) => e.startDate!.isBefore(now) && !DateUtils.isSameDay(e.startDate!, now))
-          .toList();
-
-      // sort upcoming events by date ascending (closest first)
-      upcomingEvents.sort((a, b) => a.startDate!.compareTo(b.startDate!));
-      // sort past events by date descending (most recent first)
-      pastEvents.sort((a, b) => b.startDate!.compareTo(a.startDate!));
-
-      if (upcomingEvents.isEmpty && pastEvents.isEmpty) {
-        // member is registered to no event at all
-        content = _buildGlobalEmptyState();
-      } else {
-        content = ListView(
-          padding: EdgeInsets.only(top: 8.0, bottom: 8.0 + MediaQuery.of(context).padding.bottom + 72.0),
-          children: <Widget>[
-            const InfoBanner(message: AppString.myEventsHelp),
-            const SizedBox(height: 8.0),
-            if (upcomingEvents.isNotEmpty)
-              _CollapsibleSection(
-                title: AppString.upcomingEvents,
-                initiallyExpanded: true,
-                child: Column(children: upcomingEvents.map((event) => _buildEventItem(context, event)).toList()),
-              ),
-            if (upcomingEvents.isNotEmpty && pastEvents.isNotEmpty) const SizedBox(height: 8.0),
-            if (pastEvents.isNotEmpty)
-              _CollapsibleSection(
-                title: AppString.pastEvents,
-                initiallyExpanded: upcomingEvents.isEmpty,
-                past: true,
-                child: Column(children: pastEvents.map((event) => _buildEventItem(context, event)).toList()),
-              ),
-          ],
-        );
-      }
+      content = ListView(
+        padding: EdgeInsets.only(top: 8.0, bottom: 8.0 + MediaQuery.of(context).padding.bottom + 72.0),
+        children: <Widget>[
+          const InfoBanner(message: AppString.myEventsHelp),
+          const SizedBox(height: 8.0),
+          if (upcomingParticipations.isNotEmpty)
+            _CollapsibleSection(
+              title: AppString.upcomingEvents,
+              initiallyExpanded: true,
+              child: Column(children: upcomingParticipations.map((em) => _buildEventItem(context, em)).toList()),
+            ),
+          if (upcomingParticipations.isNotEmpty && pastParticipations.isNotEmpty) const SizedBox(height: 8.0),
+          if (pastParticipations.isNotEmpty)
+            _CollapsibleSection(
+              title: AppString.pastEvents,
+              initiallyExpanded: upcomingParticipations.isEmpty,
+              past: true,
+              child: Column(children: pastParticipations.map((em) => _buildEventItem(context, em)).toList()),
+            ),
+        ],
+      );
     }
 
     return Scaffold(
@@ -137,11 +121,7 @@ class _MemberEventsState extends State<MemberEvents> {
         leading: IconButton(icon: Icon(Icons.arrow_back), onPressed: () => Navigator.pop(context)),
       ),
       body: RefreshIndicator(
-        onRefresh: () async {
-          if (loginProvider.loggedMember != null) {
-            await Provider.of<MemberDetailProvider>(context, listen: false).fetchMember(loginProvider.loggedMember!);
-          }
-        },
+        onRefresh: () => loginProvider.refreshLoggedMember(),
         child: Container(padding: const EdgeInsets.all(8.0), decoration: CustomDecorations.mainContent, child: content),
       ),
       floatingActionButton: FloatingActionButton(
@@ -156,14 +136,19 @@ class _MemberEventsState extends State<MemberEvents> {
     );
   }
 
-  Widget _buildEventItem(BuildContext context, Event event) {
+  Widget _buildEventItem(BuildContext context, EventMember participation) {
+    final Event event = participation.event!;
+
     return GestureDetector(
       onTap: () {
         Provider.of<EventDetailProvider>(context, listen: false).setCurrentEvent(event);
         Provider.of<EventDetailProvider>(context, listen: false).fetchEvent(event);
         Navigator.pushNamed(context, '/eventDetail');
       },
-      child: Padding(padding: const EdgeInsets.symmetric(vertical: 2.0), child: EventCard(event)),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 2.0),
+        child: EventCard(event, bike: participation.bike),
+      ),
     );
   }
 
@@ -314,3 +299,4 @@ class _CollapsibleSectionState extends State<_CollapsibleSection> {
     );
   }
 }
+

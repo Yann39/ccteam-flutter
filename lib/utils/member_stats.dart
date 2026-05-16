@@ -17,6 +17,7 @@
  * along with CCTeam. If not, see <http://www.gnu.org/licenses/>.
  */
 
+import 'package:ccteam/models/bike.dart';
 import 'package:ccteam/models/event.dart';
 import 'package:ccteam/models/event_member.dart';
 import 'package:ccteam/models/record.dart';
@@ -104,6 +105,53 @@ class MemberStatsUtils {
     return MostRiddenTrack(name: name, count: best.value);
   }
 
+  /// The bike the member has used the most across their past
+  /// participations (highest number of past events where this bike
+  /// was pinned). Returns `null` when no past participation has a
+  /// bike attached.
+  ///
+  /// Past-only, mirroring the [mostRiddenTrack] semantic: this is
+  /// "what I've actually ridden", not "what I plan to ride". Future
+  /// commitments are ignored so the stat doesn't dance around when
+  /// the user pins a bike to a faraway event.
+  ///
+  /// We bundle the full [Bike] in the result rather than a pre-built
+  /// label so the caller decides how to format it (consistent with
+  /// the bike-label format used elsewhere — manufacturer + model +
+  /// year). Returns `null` rather than guessing when the winning
+  /// bike has been deleted since (the participation's bike ref is
+  /// nulled out on delete — see `BikeService.deleteBike`).
+  static MostUsedBike? mostUsedBike({
+    required List<EventMember>? eventMembers,
+    required DateTime now,
+  }) {
+    if (eventMembers == null || eventMembers.isEmpty) return null;
+    // parallel maps: counts by bike id, plus the Bike instance for the
+    // winner so the caller has manufacturer / model / year handy.
+    final Map<int, int> countsById = <int, int>{};
+    final Map<int, Bike> bikesById = <int, Bike>{};
+    for (final em in eventMembers) {
+      final Event? event = em.event;
+      if (event == null) continue;
+      final DateTime? start = event.startDate;
+      if (start == null) continue;
+      if (start.isAfter(now)) continue;
+      final Bike? bike = em.bike;
+      if (bike == null || bike.id == null) continue;
+      final int bikeId = bike.id!;
+      countsById.update(bikeId, (v) => v + 1, ifAbsent: () => 1);
+      bikesById.putIfAbsent(bikeId, () => bike);
+    }
+    if (countsById.isEmpty) return null;
+    MapEntry<int, int> best = countsById.entries.first;
+    for (final entry in countsById.entries) {
+      if (entry.value > best.value) best = entry;
+    }
+    final Bike? bike = bikesById[best.key];
+    if (bike == null) return null;
+    return MostUsedBike(bike: bike, count: best.value);
+  }
+
   /// Rough estimate of total kilometres ridden by the member across
   /// past events. Necessarily approximate, the app doesn't track
   /// laps per event, but grounded enough to give a meaningful
@@ -185,5 +233,19 @@ class MostRiddenTrack {
   final String name;
 
   /// Number of past event registrations on that track.
+  final int count;
+}
+
+/// Bundle returned by [MemberStatsUtils.mostUsedBike]. Carries the
+/// full [Bike] so the caller can format the label however it wants
+/// (typically manufacturer + model + year, matching the format used
+/// in the event-detail bike picker).
+class MostUsedBike {
+  const MostUsedBike({required this.bike, required this.count});
+
+  /// The winning bike.
+  final Bike bike;
+
+  /// Number of past participations where this bike was pinned.
   final int count;
 }

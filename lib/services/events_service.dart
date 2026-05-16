@@ -306,12 +306,20 @@ class EventsService {
           organizer
           price
           participants {
+            id
             member {
               id
               firstName
               lastName
               avatarFile
               avatarFileName
+            }
+            bike {
+              id
+              manufacturer
+              modelName
+              engineSize
+              year
             }
           }
         }
@@ -559,15 +567,19 @@ class EventsService {
   }
 
   /// Mark the specified [eventId] as registered for the member identified by the specified [memberId].
+  /// Optionally pin a [bikeId] to the participation at registration
+  /// time; pass {@code null} to register without a bike (the user can
+  /// pick later via [setEventMemberBike]).
   /// Return the up-to-date event.
-  Future<Event> registerToEvent(int eventId, int memberId) async {
-    _log.info("Registering to event $eventId for member $memberId ...");
+  Future<Event> registerToEvent(int eventId, int memberId, {int? bikeId}) async {
+    _log.info("Registering to event $eventId for member $memberId (bike=$bikeId)...");
 
     final String registerMutation = """
-      mutation RegisterToEvent(\$eventId: Long!, \$memberId: Long!) {
+      mutation RegisterToEvent(\$eventId: Long!, \$memberId: Long!, \$bikeId: Long) {
         registerToEvent(
             eventId: \$eventId
             memberId: \$memberId
+            bikeId: \$bikeId
         )
         {
           id
@@ -587,6 +599,15 @@ class EventsService {
               id
               firstName
               lastName
+              avatarFile
+              avatarFileName
+            }
+            bike {
+              id
+              manufacturer
+              modelName
+              engineSize
+              year
             }
           }
         }
@@ -595,7 +616,7 @@ class EventsService {
 
     final MutationOptions mutationOptions = new MutationOptions(
       document: parseString(registerMutation),
-      variables: {'eventId': eventId, 'memberId': memberId},
+      variables: {'eventId': eventId, 'memberId': memberId, 'bikeId': bikeId},
       fetchPolicy: FetchPolicy.noCache,
     );
 
@@ -605,6 +626,67 @@ class EventsService {
       throw AppUtils.handleGraphQlException(result)!;
     } else {
       return Event.fromJson(result.data!['registerToEvent']);
+    }
+  }
+
+  /// Change (or clear, by passing a {@code null} [bikeId]) the bike
+  /// pinned to the caller's participation in [eventId]. The server
+  /// derives the acting member from the auth token, so we don't pass
+  /// a memberId here. Returns the up-to-date event.
+  Future<Event> setEventMemberBike(int eventId, {int? bikeId}) async {
+    _log.info("Setting bike $bikeId on event $eventId for the caller...");
+
+    final String mutation = """
+      mutation SetEventMemberBike(\$eventId: Long!, \$bikeId: Long) {
+        setEventMemberBike(
+            eventId: \$eventId
+            bikeId: \$bikeId
+        )
+        {
+          id
+          title
+          description
+          startDate
+          endDate
+          track {
+            id
+            name
+          }
+          organizer
+          price
+          participants {
+            id
+            member {
+              id
+              firstName
+              lastName
+              avatarFile
+              avatarFileName
+            }
+            bike {
+              id
+              manufacturer
+              modelName
+              engineSize
+              year
+            }
+          }
+        }
+      }
+    """;
+
+    final MutationOptions mutationOptions = new MutationOptions(
+      document: parseString(mutation),
+      variables: {'eventId': eventId, 'bikeId': bikeId},
+      fetchPolicy: FetchPolicy.noCache,
+    );
+
+    final QueryResult result = await GraphQLConnection().graphQLClient.mutate(mutationOptions);
+
+    if (result.hasException) {
+      throw AppUtils.handleGraphQlException(result)!;
+    } else {
+      return Event.fromJson(result.data!['setEventMemberBike']);
     }
   }
 
@@ -637,6 +719,15 @@ class EventsService {
               id
               firstName
               lastName
+              avatarFile
+              avatarFileName
+            }
+            bike {
+              id
+              manufacturer
+              modelName
+              engineSize
+              year
             }
           }
         }
