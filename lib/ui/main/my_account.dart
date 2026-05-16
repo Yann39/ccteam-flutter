@@ -25,6 +25,7 @@ import 'package:ccteam/providers/member_creation_provider.dart';
 import 'package:ccteam/providers/record_list_provider.dart';
 import 'package:ccteam/utils/custom_decorations.dart';
 import 'package:ccteam/utils/custom_icons.dart';
+import 'package:ccteam/utils/enums.dart';
 import 'package:ccteam/utils/member_stats.dart';
 import 'package:ccteam/utils/strings.dart';
 import 'package:ccteam/widgets/avatar_image.dart';
@@ -80,7 +81,7 @@ class MyAccount extends StatelessWidget {
     final resolved = _resolvePalette(member);
     return SizedBox(
       width: double.infinity,
-      height: 200,
+      height: 232,
       child: Stack(
         fit: StackFit.expand,
         children: <Widget>[
@@ -132,11 +133,7 @@ class MyAccount extends StatelessWidget {
                   height: 88,
                   decoration: const ShapeDecoration(shape: CircleBorder(), color: Colors.white),
                   padding: const EdgeInsets.all(3.0),
-                  child: AvatarImage(
-                    memberId: member.id,
-                    hasAvatar: member.hasAvatar == true,
-                    radius: 41.0,
-                  ),
+                  child: AvatarImage(memberId: member.id, hasAvatar: member.hasAvatar == true, radius: 41.0),
                 ),
                 const SizedBox(height: 10.0),
                 Text(
@@ -157,7 +154,70 @@ class MyAccount extends StatelessWidget {
                     shadows: [Shadow(color: Colors.black.withAlpha(120), blurRadius: 3.0, offset: const Offset(0, 1))],
                   ),
                 ),
+                _buildRoleBadges(member),
               ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Render a row of identity badges just under the email line. The
+  /// row is intentionally only shown when the member has something
+  /// worth flagging:
+  ///   - `ROLE_ADMIN` → red "Administrateur" pill. Plain members get
+  ///     no badge — being a member is the implicit default and a
+  ///     "Membre" pill would just be noise.
+  ///   - `boardRole` set → amber pill with the localised label
+  ///     ("Président", "Trésorier"…) sourced from [BoardRoleLabel].
+  /// When both apply (e.g. an admin who's also Treasurer), the two
+  /// badges sit side by side. When neither applies, the entire row
+  /// is collapsed to a zero-height SizedBox so we don't push down
+  /// the layout for nothing.
+  Widget _buildRoleBadges(Member member) {
+    final bool isAdmin = member.role == MemberRole.ROLE_ADMIN;
+    final BoardRole? boardRole = member.boardRole;
+    if (!isAdmin && boardRole == null) return const SizedBox.shrink();
+    return Padding(
+      padding: const EdgeInsets.only(top: 8.0),
+      child: Wrap(
+        spacing: 6.0,
+        runSpacing: 4.0,
+        children: <Widget>[
+          if (isAdmin) _buildBadge(icon: Icons.security, label: AppString.memberRoleAdmin, color: Colors.red[400]!),
+          if (boardRole != null)
+            _buildBadge(icon: Icons.workspace_premium, label: boardRole.labelFr, color: Colors.amber[700]!),
+        ],
+      ),
+    );
+  }
+
+  /// A single pill. Reused by [_buildRoleBadges] so admin / board-role
+  /// badges share the same shape and only the colour + icon differ.
+  /// Slightly translucent fill so the gradient header still breathes
+  /// through, white text + white border for legibility on top of the
+  /// procedural pattern background.
+  Widget _buildBadge({required IconData icon, required String label, required Color color}) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 3.0),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.75),
+        borderRadius: BorderRadius.circular(10.0),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.7), width: 0.8),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: <Widget>[
+          Icon(icon, size: 12.0, color: Colors.white),
+          const SizedBox(width: 4.0),
+          Text(
+            label,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 11.0,
+              fontWeight: FontWeight.w700,
+              letterSpacing: 0.2,
             ),
           ),
         ],
@@ -435,15 +495,16 @@ class MyAccount extends StatelessWidget {
   /// a given bike reads identically across the app: manufacturer
   /// upper-cased, model as stored, year when known.
   String _bikeStatLabel(Bike b) {
-    final String base = "${b.manufacturer?.toUpperCase() ?? ''}\n${b.modelName ?? ''}".trim();
+    final String base = "${b.manufacturer?.toUpperCase() ?? ''} ${b.modelName ?? ''}".trim();
     if (b.year == null) return base.isEmpty ? '—' : base;
     if (base.isEmpty) return b.year!.toString();
     return "$base ${b.year}";
   }
 
-  /// Stats card: six rows summarising the user's track-day activity
-  /// (events, bikes, km, favourite track, favourite bike, total
-  /// spent). Uses the same `blue[100]` + white-border visual language
+  /// Stats card: seven rows summarising the user's track-day activity
+  /// (events, bikes, km, favourite track, favourite bike, favourite
+  /// organizer, total spent). Uses the same `blue[100]` +
+  /// white-border visual language
   /// as the other cards on this page so the three zones (statut /
   /// stats / actions) read as siblings.
   ///
@@ -463,6 +524,10 @@ class MyAccount extends StatelessWidget {
     );
     final MostRiddenTrack? favTrack = MemberStatsUtils.mostRiddenTrack(eventMembers: member.eventMembers, now: now);
     final MostUsedBike? favBike = MemberStatsUtils.mostUsedBike(eventMembers: member.eventMembers, now: now);
+    final MostFavoriteOrganizer? favOrganizer = MemberStatsUtils.mostFavoriteOrganizer(
+      eventMembers: member.eventMembers,
+      now: now,
+    );
     final double spent = MemberStatsUtils.totalSpent(eventMembers: member.eventMembers, now: now);
 
     return Container(
@@ -517,6 +582,16 @@ class MyAccount extends StatelessWidget {
           ),
           _buildStatDivider(),
           _buildStatRow(
+            icon: Icons.perm_contact_calendar,
+            iconColor: Colors.teal[700]!,
+            label: AppString.statsFavoriteOrganizer,
+            value: favOrganizer?.organizer.name ?? AppString.statsNoData,
+            subtitle: favOrganizer != null
+                ? AppString.format(AppString.statsFavoriteTrackTimes, [favOrganizer.count])
+                : null,
+          ),
+          _buildStatDivider(),
+          _buildStatRow(
             icon: Icons.payments_outlined,
             iconColor: Colors.red[700]!,
             label: AppString.statsTotalSpent,
@@ -541,6 +616,7 @@ class MyAccount extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 10.0),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: <Widget>[
           Container(
             width: 36,
@@ -550,21 +626,24 @@ class MyAccount extends StatelessWidget {
           ),
           const SizedBox(width: 12.0),
           Expanded(
-            child: Text(label, style: TextStyle(color: Colors.black.withAlpha(180), fontSize: 13.0)),
-          ),
-          const SizedBox(width: 8.0),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            mainAxisSize: MainAxisSize.min,
-            children: <Widget>[
-              Text(
-                value,
-                style: TextStyle(color: Colors.black.withAlpha(220), fontSize: 15.0, fontWeight: FontWeight.w700),
-                overflow: TextOverflow.ellipsis,
-              ),
-              if (subtitle != null)
-                Text(subtitle, style: TextStyle(color: Colors.black.withAlpha(120), fontSize: 11.0)),
-            ],
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: <Widget>[
+                Text(label, style: TextStyle(color: Colors.black.withAlpha(180), fontSize: 13.0)),
+                const SizedBox(height: 2.0),
+                Text(
+                  value,
+                  style: TextStyle(color: Colors.black.withAlpha(220), fontSize: 15.0, fontWeight: FontWeight.w700),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                if (subtitle != null) ...[
+                  const SizedBox(height: 2.0),
+                  Text(subtitle, style: TextStyle(color: Colors.black.withAlpha(120), fontSize: 11.0)),
+                ],
+              ],
+            ),
           ),
         ],
       ),
@@ -616,7 +695,7 @@ class MyAccount extends StatelessWidget {
                   ],
                   SizedBox(height: MediaQuery.of(context).padding.bottom + 16.0),
                 ],
-              ),
+        ),
       ),
     );
   }

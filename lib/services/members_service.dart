@@ -226,7 +226,10 @@ class MembersService {
                 distance
                 lapRecord
               }
-              organizer
+              organizer {
+                id
+                name
+              }
               price
               participants {
                 id
@@ -313,7 +316,10 @@ class MembersService {
                 distance
                 lapRecord
               }
-              organizer
+              organizer {
+                id
+                name
+              }
               price
               participants {
                 id
@@ -420,7 +426,10 @@ class MembersService {
                 distance
                 lapRecord
               }
-              organizer
+              organizer {
+                id
+                name
+              }
               price
               participants {
                 id
@@ -531,7 +540,10 @@ class MembersService {
                 distance
                 lapRecord
               }
-              organizer
+              organizer {
+                id
+                name
+              }
               price
               participants {
                 id

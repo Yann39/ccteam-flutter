@@ -91,6 +91,8 @@ class MemberListProvider extends ChangeNotifier {
     // re-sort the list by first name
     _memberList.sort((a, b) => a.firstName!.compareTo(b.firstName!));
 
+    // flip the loading status back to `loaded`
+    _loadingStatus = LoadingStatus.loaded;
     _notifyListeners();
   }
 
@@ -106,6 +108,8 @@ class MemberListProvider extends ChangeNotifier {
   /// Remove the specified [member] from the current members list.
   void removeMemberFromList(Member member) {
     _memberList.removeWhere((n) => n.id == member.id);
+    // re-derive the empty/loaded status so the UI shows the "no members" placeholder when the last row was removed
+    _loadingStatus = _memberList.isEmpty ? LoadingStatus.empty : LoadingStatus.loaded;
     _notifyListeners();
   }
 

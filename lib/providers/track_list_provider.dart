@@ -132,6 +132,8 @@ class TrackListProvider extends ChangeNotifier {
           (value) {
             _log.fine("New track created : ${track.name}");
             _tracks.add(track);
+            // flip the loading status back to `loaded`
+            _loadingStatus = LoadingStatus.loaded;
             _log.info("Notifying listeners of TrackListProvider");
             notifyListeners();
           },

@@ -32,6 +32,7 @@ import 'package:ccteam/providers/message_provider.dart';
 import 'package:ccteam/providers/news_creation_provider.dart';
 import 'package:ccteam/providers/news_detail_provider.dart';
 import 'package:ccteam/providers/news_list_provider.dart';
+import 'package:ccteam/providers/organizer_list_provider.dart';
 import 'package:ccteam/providers/passcode_provider.dart';
 import 'package:ccteam/providers/photo_detail_provider.dart';
 import 'package:ccteam/providers/photo_provider.dart';
@@ -129,6 +130,13 @@ void main() {
         ChangeNotifierProxyProvider2<MessageProvider, LoginProvider, BikeListProvider>(
           create: (context) => BikeListProvider(),
           update: (context, messageProvider, loginProvider, bikeListProvider) => bikeListProvider!
+            ..updateMessageProvider(messageProvider)
+            ..updateLoginProvider(loginProvider),
+        ),
+        // organizer list — populated lazily on first event-form open
+        ChangeNotifierProxyProvider2<MessageProvider, LoginProvider, OrganizerListProvider>(
+          create: (context) => OrganizerListProvider(),
+          update: (context, messageProvider, loginProvider, organizerListProvider) => organizerListProvider!
             ..updateMessageProvider(messageProvider)
             ..updateLoginProvider(loginProvider),
         ),

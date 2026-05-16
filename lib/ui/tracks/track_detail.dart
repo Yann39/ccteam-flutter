@@ -482,7 +482,6 @@ class _TrackDetailState extends State<TrackDetail> {
         Divider(height: 1, thickness: 1, color: Colors.black.withValues(alpha: 0.15)),
         Container(
           color: Colors.black.withValues(alpha: 0.04),
-          padding: const EdgeInsets.symmetric(vertical: 2.0),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
@@ -577,7 +576,7 @@ class _TrackDetailState extends State<TrackDetail> {
                 mainAxisSize: MainAxisSize.min,
                 children: <Widget>[
                   Text(
-                    (event.organizer != null && event.organizer!.isNotEmpty) ? event.organizer! : "—",
+                    (event.organizer?.name != null && event.organizer!.name!.isNotEmpty) ? event.organizer!.name! : "—",
                     style: const TextStyle(
                       color: Colors.black87,
                       fontWeight: FontWeight.w600,
@@ -1122,7 +1121,6 @@ class _TrackDetailState extends State<TrackDetail> {
                             _loginProvider.isMember
                                 ? _eventsTable(_eventDetailProvider)
                                 : _buildMembersOnlyPlaceholder(),
-                            SizedBox(height: 10),
                             SizedBox(height: 10),
                             Row(
                               children: <Widget>[

@@ -87,6 +87,8 @@ class NewsListProvider extends ChangeNotifier {
     // re-sort the list by date
     _newsList.sort((a, b) => a.newsDate!.compareTo(b.newsDate!));
 
+    // flip the loading status back to `loaded` since the list is no longer empty
+    _loadingStatus = LoadingStatus.loaded;
     _notifyListeners();
   }
 
@@ -102,6 +104,8 @@ class NewsListProvider extends ChangeNotifier {
   /// Remove the specified [news] from the current news list.
   void removeNewsFromList(News news) {
     _newsList.removeWhere((n) => n.id == news.id);
+    // re-derive the empty/loaded status so the UI shows the "no news" placeholder when the last entry is removed
+    _loadingStatus = _newsList.isEmpty ? LoadingStatus.empty : LoadingStatus.loaded;
     _notifyListeners();
   }
 

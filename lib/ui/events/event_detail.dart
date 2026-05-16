@@ -607,7 +607,7 @@ class EventDetail extends StatelessWidget {
                                   children: <Widget>[
                                     Icon(Icons.perm_contact_calendar, size: 38, color: Colors.teal[700]),
                                     Text(
-                                      _eventDetailProvider.currentEvent.organizer ?? "",
+                                      _eventDetailProvider.currentEvent.organizer?.name ?? "",
                                       textAlign: TextAlign.center,
                                       maxLines: 2,
                                       overflow: TextOverflow.ellipsis,
@@ -671,7 +671,7 @@ class EventDetail extends StatelessWidget {
                                               decoration: ShapeDecoration(shape: CircleBorder(), color: Colors.white70),
                                               child: AvatarImage(
                                                 memberId:
-                                                _eventDetailProvider.currentEvent.participants![index].member?.id,
+                                                    _eventDetailProvider.currentEvent.participants![index].member?.id,
                                                 hasAvatar:
                                                     _eventDetailProvider
                                                         .currentEvent

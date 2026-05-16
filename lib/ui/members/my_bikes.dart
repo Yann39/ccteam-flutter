@@ -141,16 +141,14 @@ class MyBikes extends StatelessWidget {
       );
     }
 
-    // Compute the "effective" current bike: the one explicitly
-    // flagged as current, or — if none — the first bike of the list
+    // compute the "effective" current bike: the one explicitly flagged as current, or, if none, the first bike of the list
     final Bike effectiveCurrent = provider.bikes.firstWhere(
       (b) => b.current ?? false,
       orElse: () => provider.bikes.first,
     );
 
     return ListView.separated(
-      // AlwaysScrollableScrollPhysics so pull-to-refresh works even
-      // when the list has only 1-2 bikes and doesn't fill the viewport
+      // AlwaysScrollableScrollPhysics so pull-to-refresh works even when the list has only 1-2 bikes and doesn't fill the viewport
       physics: const AlwaysScrollableScrollPhysics(),
       padding: EdgeInsets.only(bottom: MediaQuery.of(context).padding.bottom + 72.0),
       separatorBuilder: (context, index) => SizedBox(height: 8.0),
@@ -165,7 +163,7 @@ class MyBikes extends StatelessWidget {
           child: Container(
             padding: EdgeInsets.all(8.0),
             decoration: CustomDecorations.cardFull,
-            height: 91,
+            height: 80,
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: <Widget>[
@@ -178,8 +176,8 @@ class MyBikes extends StatelessWidget {
                     children: <Widget>[
                       Text(
                         "${bike.manufacturer?.toUpperCase()} ${bike.modelName}",
-                        textScaler: TextScaler.linear(1.3),
-                        style: TextStyle(color: Colors.white),
+                        textScaler: TextScaler.linear(1.1),
+                        style: TextStyle(color: Colors.white, fontWeight: FontWeight.w500),
                         overflow: TextOverflow.ellipsis,
                         maxLines: 1,
                       ),
@@ -194,11 +192,7 @@ class MyBikes extends StatelessWidget {
                     ],
                   ),
                 ),
-                // Star button to mark this bike as the "current" one.
-                // Tap a non-current bike to make it current; tapping
-                // an already-current bike is a no-op (use another
-                // bike to switch). A tiny "actuel" caption appears
-                // under the star of the current bike.
+                // star button to mark this bike as the "current" one
                 Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   mainAxisSize: MainAxisSize.min,

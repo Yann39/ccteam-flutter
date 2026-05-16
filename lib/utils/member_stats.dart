@@ -20,6 +20,7 @@
 import 'package:ccteam/models/bike.dart';
 import 'package:ccteam/models/event.dart';
 import 'package:ccteam/models/event_member.dart';
+import 'package:ccteam/models/organizer.dart';
 import 'package:ccteam/models/record.dart';
 
 /// Aggregated activity-derived stats for a single member, computed
@@ -33,10 +34,7 @@ class MemberStatsUtils {
   MemberStatsUtils._();
 
   /// Number of past track events the member has attended.
-  static int pastEventsCount({
-    required List<EventMember>? eventMembers,
-    required DateTime now,
-  }) {
+  static int pastEventsCount({required List<EventMember>? eventMembers, required DateTime now}) {
     if (eventMembers == null || eventMembers.isEmpty) return 0;
     int count = 0;
     for (final em in eventMembers) {
@@ -51,10 +49,7 @@ class MemberStatsUtils {
   /// Sum of the registration prices for the member's past events,
   /// in EUR. Future commitments are intentionally excluded, the
   /// label that fronts this metric reads "dépensé" (past tense).
-  static double totalSpent({
-    required List<EventMember>? eventMembers,
-    required DateTime now,
-  }) {
+  static double totalSpent({required List<EventMember>? eventMembers, required DateTime now}) {
     if (eventMembers == null || eventMembers.isEmpty) return 0.0;
     double total = 0.0;
     for (final em in eventMembers) {
@@ -73,10 +68,7 @@ class MemberStatsUtils {
   /// The track the member has rolled the most (highest number of
   /// past event registrations on that track). Returns `null` when
   /// the member has no past event with a known track.
-  static MostRiddenTrack? mostRiddenTrack({
-    required List<EventMember>? eventMembers,
-    required DateTime now,
-  }) {
+  static MostRiddenTrack? mostRiddenTrack({required List<EventMember>? eventMembers, required DateTime now}) {
     if (eventMembers == null || eventMembers.isEmpty) return null;
     // two parallel maps so we can rank by count *and* recover a human-friendly name for the winning track id.
     final Map<int, int> countsById = <int, int>{};
@@ -121,10 +113,7 @@ class MemberStatsUtils {
   /// year). Returns `null` rather than guessing when the winning
   /// bike has been deleted since (the participation's bike ref is
   /// nulled out on delete — see `BikeService.deleteBike`).
-  static MostUsedBike? mostUsedBike({
-    required List<EventMember>? eventMembers,
-    required DateTime now,
-  }) {
+  static MostUsedBike? mostUsedBike({required List<EventMember>? eventMembers, required DateTime now}) {
     if (eventMembers == null || eventMembers.isEmpty) return null;
     // parallel maps: counts by bike id, plus the Bike instance for the
     // winner so the caller has manufacturer / model / year handy.
@@ -150,6 +139,42 @@ class MemberStatsUtils {
     final Bike? bike = bikesById[best.key];
     if (bike == null) return null;
     return MostUsedBike(bike: bike, count: best.value);
+  }
+
+  /// The organizer with whom the member has ridden the most across
+  /// their past participations (highest number of past events
+  /// organized by them). Returns `null` when no past participation
+  /// carries an organizer.
+  ///
+  /// Past-only, mirroring [mostRiddenTrack] and [mostUsedBike]: this
+  /// reflects what's already happened, not what's planned.
+  static MostFavoriteOrganizer? mostFavoriteOrganizer({
+    required List<EventMember>? eventMembers,
+    required DateTime now,
+  }) {
+    if (eventMembers == null || eventMembers.isEmpty) return null;
+    final Map<int, int> countsById = <int, int>{};
+    final Map<int, Organizer> organizersById = <int, Organizer>{};
+    for (final em in eventMembers) {
+      final Event? event = em.event;
+      if (event == null) continue;
+      final DateTime? start = event.startDate;
+      if (start == null) continue;
+      if (start.isAfter(now)) continue;
+      final Organizer? organizer = event.organizer;
+      if (organizer == null || organizer.id == null) continue;
+      final int organizerId = organizer.id!;
+      countsById.update(organizerId, (v) => v + 1, ifAbsent: () => 1);
+      organizersById.putIfAbsent(organizerId, () => organizer);
+    }
+    if (countsById.isEmpty) return null;
+    MapEntry<int, int> best = countsById.entries.first;
+    for (final entry in countsById.entries) {
+      if (entry.value > best.value) best = entry;
+    }
+    final Organizer? organizer = organizersById[best.key];
+    if (organizer == null) return null;
+    return MostFavoriteOrganizer(organizer: organizer, count: best.value);
   }
 
   /// Rough estimate of total kilometres ridden by the member across
@@ -247,5 +272,19 @@ class MostUsedBike {
   final Bike bike;
 
   /// Number of past participations where this bike was pinned.
+  final int count;
+}
+
+/// Bundle returned by [MemberStatsUtils.mostFavoriteOrganizer]. The
+/// full [Organizer] is exposed (rather than just the name) so the
+/// caller can route to a future organizer-detail page without an
+/// extra lookup if/when that becomes a thing.
+class MostFavoriteOrganizer {
+  const MostFavoriteOrganizer({required this.organizer, required this.count});
+
+  /// The winning organizer.
+  final Organizer organizer;
+
+  /// Number of past events organized by them that the member attended.
   final int count;
 }

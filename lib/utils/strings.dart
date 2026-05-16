@@ -322,7 +322,7 @@ class AppString {
   static const String eventParticipated = 'Je participe';
   static const String eventUnregister = 'Se désister';
   static const String joinEvent = 'S\'inscrire à un roulage';
-  static const String noEventToJoin = 'Aucun roulage à venir disponible';
+  static const String noEventToJoin = 'Aucun roulage disponible';
   static const String joinEventConfirmation = 'Voulez-vous vraiment vous inscrire à ce roulage ?';
   static const String pullToRefresh = 'Tirez vers le bas pour rafraîchir';
 
@@ -405,6 +405,7 @@ class AppString {
   static const String statsFavoriteTrack = 'Circuit le plus roulé';
   static const String statsFavoriteTrackTimes = '{0} fois';
   static const String statsFavoriteBike = 'Moto la plus utilisée';
+  static const String statsFavoriteOrganizer = 'Organisateur favori';
   static const String statsTotalSpent = 'Total dépensé';
   static const String statsAmountEur = '{0} EUR';
   static const String statsNoData = '—';

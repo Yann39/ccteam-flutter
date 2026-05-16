@@ -246,7 +246,7 @@ class EventCard extends StatelessWidget {
                               SizedBox(width: 4.0),
                               Expanded(
                                 child: Text(
-                                  event.organizer ?? "",
+                                  event.organizer?.name ?? "",
                                   style: TextStyle(color: Colors.white, fontSize: 13),
                                   overflow: TextOverflow.ellipsis,
                                   maxLines: 1,

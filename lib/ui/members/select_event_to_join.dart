@@ -30,10 +30,12 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 /// Screen reached from the "Mes roulages" page via the "+" button. Lists
-/// upcoming events the logged-in user has NOT registered to yet, and lets
-/// them join one with a single tap. After confirmation the registration
-/// mutation fires and the member is re-fetched so the calling page picks
-/// up the new entry in its events list.
+/// every event the logged-in user has NOT registered to yet (past and
+/// upcoming alike) and lets them join one with a single tap. After
+/// confirmation the registration mutation fires and the member is
+/// re-fetched so the calling page picks up the new entry in its events
+/// list. Past events are kept in the list so members can backfill
+/// participations they forgot to record at the time.
 class SelectEventToJoin extends StatefulWidget {
   const SelectEventToJoin({Key? key}) : super(key: key);
 
@@ -102,18 +104,31 @@ class _SelectEventToJoinState extends State<SelectEventToJoin> {
     final LoginProvider loginProvider = Provider.of<LoginProvider>(context, listen: false);
     final int? memberId = loginProvider.loggedMember?.id;
 
-    // build the candidate list:
-    //   - upcoming events (today or later)
-    //   - excluding events the user is already registered to
-    //   - sorted ascending by start date so the closest comes first
+    // build the candidate list: every event the user isn't already
+    // registered to, past and upcoming alike. We sort them in two
+    // groups so the result reads naturally — actionable / soonest
+    // first, then archival:
+    //   - upcoming (today or later) ascending → next ride at the top
+    //   - past events descending → most recent first
+    // Same ordering as the "Mes roulages" page so the two screens
+    // feel like siblings.
     final DateTime now = DateTime.now();
-    final List<Event> candidateEvents = eventListProvider.allEvents.where((e) {
+    final List<Event> notJoined = eventListProvider.allEvents.where((e) {
       if (e.startDate == null) return false;
-      final bool isUpcoming = e.startDate!.isAfter(now) || DateUtils.isSameDay(e.startDate!, now);
-      if (!isUpcoming) return false;
       final bool alreadyIn = e.participants?.any((p) => p.member?.id == memberId) ?? false;
       return !alreadyIn;
-    }).toList()..sort((a, b) => a.startDate!.compareTo(b.startDate!));
+    }).toList();
+
+    final List<Event> upcoming = notJoined
+        .where((e) => e.startDate!.isAfter(now) || DateUtils.isSameDay(e.startDate!, now))
+        .toList()
+      ..sort((a, b) => a.startDate!.compareTo(b.startDate!));
+    final List<Event> past = notJoined
+        .where((e) => e.startDate!.isBefore(now) && !DateUtils.isSameDay(e.startDate!, now))
+        .toList()
+      ..sort((a, b) => b.startDate!.compareTo(a.startDate!));
+
+    final List<Event> candidateEvents = <Event>[...upcoming, ...past];
 
     // pick the right body content based on state:
     //   1. provider is loading & nothing to show yet → centered spinner

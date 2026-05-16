@@ -19,6 +19,7 @@
 
 import 'package:ccteam/models/event_member.dart';
 import 'package:ccteam/models/member.dart';
+import 'package:ccteam/models/organizer.dart';
 import 'package:ccteam/models/track.dart';
 import 'package:intl/intl.dart';
 
@@ -30,7 +31,7 @@ class Event {
   DateTime? startDate;
   DateTime? endDate;
   Track? track;
-  String? organizer;
+  Organizer? organizer;
   double? price;
   List<EventMember>? participants;
   DateTime? createdOn;
@@ -75,38 +76,38 @@ class Event {
 
   /// Convert [json] map to the corresponding object
   Event.fromJson(Map<String, dynamic> json)
-      : id = json['id'] != null ? int.parse(json['id'].toString()) : null,
-        title = json['title'],
-        description = json['description'],
-        startDate = json['startDate'] != null ? DateTime.parse(json['startDate']) : null,
-        endDate = json['endDate'] != null ? DateTime.parse(json['endDate']) : null,
-        track = json['track'] != null ? Track.fromJson(json['track']) : null,
-        organizer = json['organizer'],
-        price = json['price'],
-        participants = json['participants'] != null
-            ? (json['participants'] as Iterable).map((i) => EventMember.fromJson(i)).toList()
-            : null,
-        createdOn = json['createdOn'] != null ? DateTime.parse(json['createdOn']) : null,
-        createdBy = json['createdBy'] != null ? Member.fromJson(json['createdBy']) : null,
-        modifiedOn = json['modifiedOn'] != null ? DateTime.parse(json['modifiedOn']) : null,
-        modifiedBy = json['modifiedBy'] != null ? Member.fromJson(json['modifiedBy']) : null;
+    : id = json['id'] != null ? int.parse(json['id'].toString()) : null,
+      title = json['title'],
+      description = json['description'],
+      startDate = json['startDate'] != null ? DateTime.parse(json['startDate']) : null,
+      endDate = json['endDate'] != null ? DateTime.parse(json['endDate']) : null,
+      track = json['track'] != null ? Track.fromJson(json['track']) : null,
+      organizer = json['organizer'] != null ? Organizer.fromJson(json['organizer']) : null,
+      price = json['price'],
+      participants = json['participants'] != null
+          ? (json['participants'] as Iterable).map((i) => EventMember.fromJson(i)).toList()
+          : null,
+      createdOn = json['createdOn'] != null ? DateTime.parse(json['createdOn']) : null,
+      createdBy = json['createdBy'] != null ? Member.fromJson(json['createdBy']) : null,
+      modifiedOn = json['modifiedOn'] != null ? DateTime.parse(json['modifiedOn']) : null,
+      modifiedBy = json['modifiedBy'] != null ? Member.fromJson(json['modifiedBy']) : null;
 
   /// Convert [Event] object to the corresponding JSON map
   Map<String, dynamic> toJson() => {
-        "id": id.toString(),
-        "title": title,
-        "description": description,
-        "startDate": startDate?.toIso8601String(),
-        "endDate": endDate?.toIso8601String(),
-        "track": track?.toJson(),
-        "organizer": organizer,
-        "price": price,
-        "participants": participants?.map((i) => i.toJson()).toList(),
-        "createdOn": createdOn?.toIso8601String(),
-        "createdBy": createdBy?.toJson(),
-        "modifiedOn": modifiedOn?.toIso8601String(),
-        "modifiedBy": modifiedBy?.toJson(),
-      };
+    "id": id.toString(),
+    "title": title,
+    "description": description,
+    "startDate": startDate?.toIso8601String(),
+    "endDate": endDate?.toIso8601String(),
+    "track": track?.toJson(),
+    "organizer": organizer?.toJson(),
+    "price": price,
+    "participants": participants?.map((i) => i.toJson()).toList(),
+    "createdOn": createdOn?.toIso8601String(),
+    "createdBy": createdBy?.toJson(),
+    "modifiedOn": modifiedOn?.toIso8601String(),
+    "modifiedBy": modifiedBy?.toJson(),
+  };
 
   /// Returns the event full date (begin - end) formatted as String
   String get fullDate {

@@ -18,12 +18,14 @@
  */
 
 import 'package:ccteam/models/event.dart';
+import 'package:ccteam/models/organizer.dart';
 import 'package:ccteam/models/track.dart';
 import 'package:ccteam/providers/event_creation_provider.dart';
 import 'package:ccteam/providers/event_detail_provider.dart';
 import 'package:ccteam/providers/event_list_provider.dart';
 import 'package:ccteam/providers/login_provider.dart';
 import 'package:ccteam/providers/message_provider.dart';
+import 'package:ccteam/providers/organizer_list_provider.dart';
 import 'package:ccteam/services/tracks_service.dart';
 import 'package:ccteam/utils/constants.dart';
 import 'package:ccteam/utils/custom_icons.dart';
@@ -55,10 +57,19 @@ class _AddEditEventState extends State<AddEditEvent> {
   Future<List<Track>>? _futureTracks;
   Track? _selectedTrack;
 
+  Organizer? _selectedOrganizer;
+
+  /// Prime the organizer list once, after the State is attached to the
+  /// tree (initState can't safely call providers that need a context
+  /// hop). The provider keeps the list cached, so reopening the form
+  /// later doesn't re-fetch.
+  bool _organizersBootstrapped = false;
+
   initState() {
     final EventCreationProvider _eventCreationProvider = Provider.of<EventCreationProvider>(context, listen: false);
     // fetch the tracks in initState so it is not fetch each time the state change
     _futureTracks = _tracksService.fetchTracks();
+    _selectedOrganizer = _eventCreationProvider.event.organizer;
     // set date picker text
     _startDatePickerController.text = AppDateUtils.convertToString(
       _eventCreationProvider.event.startDate != null ? _eventCreationProvider.event.startDate! : DateTime.now(),
@@ -71,6 +82,17 @@ class _AddEditEventState extends State<AddEditEvent> {
       DATE_FORMAT,
     )!;
     return super.initState();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_organizersBootstrapped) return;
+    _organizersBootstrapped = true;
+    // kick off the organizer fetch the first time the page is built.
+    // The provider's `ensureLoaded` is a no-op when already cached.
+    final OrganizerListProvider organizerListProvider = Provider.of<OrganizerListProvider>(context, listen: false);
+    organizerListProvider.ensureLoaded();
   }
 
   /// Initialize and display a Date picker related to the specified [controller] in the specified [context]
@@ -226,17 +248,33 @@ class _AddEditEventState extends State<AddEditEvent> {
       },
     );
 
-    final _organizerField = TextFormField(
-      decoration: const InputDecoration(
-        icon: Icon(Icons.perm_contact_calendar),
-        hintText: AppString.eventOrganizerHint,
-        labelText: AppString.eventOrganizer,
-      ),
-      maxLines: 1,
-      inputFormatters: [LengthLimitingTextInputFormatter(64)],
-      validator: (val) => (val == null || val.isEmpty) ? AppString.eventOrganizerMandatory : null,
-      onSaved: (val) => _eventCreationProvider.event.organizer = val,
-      initialValue: _eventCreationProvider.event.organizer,
+    final _organizerField = Consumer<OrganizerListProvider>(
+      builder: (_, organizerListProvider, __) {
+        if (organizerListProvider.loadingStatus == LoadingStatus.loading && organizerListProvider.organizers.isEmpty) {
+          return const Padding(
+            padding: EdgeInsets.symmetric(vertical: 12.0),
+            child: Center(child: CircularProgressIndicator()),
+          );
+        }
+        final List<Organizer> options = organizerListProvider.organizers;
+        final Organizer? currentValue = _selectedOrganizer == null
+            ? null
+            : options.firstWhere((o) => o.id == _selectedOrganizer!.id, orElse: () => _selectedOrganizer!);
+        return DropdownButtonFormField<Organizer>(
+          initialValue: currentValue,
+          decoration: const InputDecoration(
+            icon: Icon(Icons.perm_contact_calendar),
+            hintText: AppString.eventOrganizerHint,
+            labelText: AppString.eventOrganizer,
+          ),
+          items: options.map((Organizer o) {
+            return DropdownMenuItem<Organizer>(value: o, child: Text(o.name ?? '—'));
+          }).toList(),
+          onChanged: (Organizer? val) => setState(() => _selectedOrganizer = val),
+          onSaved: (val) => _eventCreationProvider.event.organizer = val,
+          validator: (val) => val == null ? AppString.eventOrganizerMandatory : null,
+        );
+      },
     );
 
     final _startDateField = GestureDetector(

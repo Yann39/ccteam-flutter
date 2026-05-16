@@ -182,7 +182,7 @@ class _AddEditNewsState extends State<AddEditNews> {
             if (val == null || val.isEmpty) return AppString.newsDateMandatory;
             // only enforce "must be in the future" rule on creation —
             // existing news may legitimately have a past date.
-            if (_newsCreationProvider.news.id == null && !AppDateUtils.isBeforeNow(val, DATE_FORMAT)) {
+            if (_newsCreationProvider.news.id == null && AppDateUtils.isBeforeNow(val, DATE_FORMAT)) {
               return AppString.newsDateMustBeFuture;
             }
             return null;

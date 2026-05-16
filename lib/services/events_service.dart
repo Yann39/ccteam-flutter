@@ -67,7 +67,10 @@ class EventsService {
             id
             name
           }
-          organizer
+          organizer {
+            id
+            name
+          }
           price
           participants {
             member {
@@ -134,7 +137,10 @@ class EventsService {
             id
             name
           }
-          organizer
+          organizer {
+            id
+            name
+          }
           price
           participants {
             id
@@ -186,7 +192,10 @@ class EventsService {
             id
             name
           }
-          organizer
+          organizer {
+            id
+            name
+          }
           price
           participants {
             id
@@ -244,7 +253,10 @@ class EventsService {
             id
             name
           }
-          organizer
+          organizer {
+            id
+            name
+          }
           price
           participants {
             id
@@ -303,7 +315,10 @@ class EventsService {
             id
             name
           }
-          organizer
+          organizer {
+            id
+            name
+          }
           price
           participants {
             id
@@ -351,14 +366,14 @@ class EventsService {
     _log.info("Creating event ${event.title} ...");
 
     final String query = """
-      mutation CreateEvent(\$title: String!, \$description: String!, \$startDate: String!, \$endDate: String!, \$trackId: Long!, \$organizer: String!, \$price: Float!, \$memberId: Long!) {
+      mutation CreateEvent(\$title: String!, \$description: String!, \$startDate: String!, \$endDate: String!, \$trackId: Long!, \$organizerId: Long!, \$price: Float!, \$memberId: Long!) {
         createEvent(
             title: \$title
             description: \$description
             startDate: \$startDate
             endDate: \$endDate
             trackId: \$trackId
-            organizer: \$organizer
+            organizerId: \$organizerId
             price: \$price
             memberId: \$memberId
         )
@@ -381,7 +396,10 @@ class EventsService {
               nameEn
             }
           }
-          organizer
+          organizer {
+            id
+            name
+          }
           price
           createdOn
           createdBy {
@@ -407,7 +425,7 @@ class EventsService {
         'startDate': event.startDate!.toIso8601String(),
         'endDate': event.endDate!.toIso8601String(),
         'trackId': event.track!.id,
-        'organizer': event.organizer,
+        'organizerId': event.organizer?.id,
         'price': event.price,
         'memberId': event.createdBy!.id,
       },
@@ -429,7 +447,7 @@ class EventsService {
     _log.info("Updating event ${event.title} ...");
 
     final String query = """
-      mutation UpdateEvent(\$eventId: Long!, \$title: String!, \$description: String!, \$startDate: String!, \$endDate: String!, \$trackId: Long!, \$organizer: String!, \$price: Float!, \$memberId: Long!) {
+      mutation UpdateEvent(\$eventId: Long!, \$title: String!, \$description: String!, \$startDate: String!, \$endDate: String!, \$trackId: Long!, \$organizerId: Long!, \$price: Float!, \$memberId: Long!) {
         updateEvent(
             eventId: \$eventId
             title: \$title
@@ -437,7 +455,7 @@ class EventsService {
             startDate: \$startDate
             endDate: \$endDate
             trackId: \$trackId
-            organizer: \$organizer
+            organizerId: \$organizerId
             price: \$price
             memberId: \$memberId
         )
@@ -460,7 +478,10 @@ class EventsService {
               nameEn
             }
           }
-          organizer
+          organizer {
+            id
+            name
+          }
           price
           createdOn
           createdBy {
@@ -487,7 +508,7 @@ class EventsService {
         'startDate': event.startDate!.toIso8601String(),
         'endDate': event.endDate!.toIso8601String(),
         'trackId': event.track!.id,
-        'organizer': event.organizer,
+        'organizerId': event.organizer?.id,
         'price': event.price,
         'memberId': event.modifiedBy!.id,
       },
@@ -532,7 +553,10 @@ class EventsService {
               nameEn
             }
           }
-          organizer
+          organizer {
+            id
+            name
+          }
           price
           createdOn
           createdBy {
@@ -590,7 +614,10 @@ class EventsService {
             id
             name
           }
-          organizer
+          organizer {
+            id
+            name
+          }
           price
           participants {
             id
@@ -650,7 +677,10 @@ class EventsService {
             id
             name
           }
-          organizer
+          organizer {
+            id
+            name
+          }
           price
           participants {
             id
@@ -708,7 +738,10 @@ class EventsService {
             id
             name
           }
-          organizer
+          organizer {
+            id
+            name
+          }
           price
           participants {
             id

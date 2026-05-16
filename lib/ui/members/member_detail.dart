@@ -276,24 +276,8 @@ class MemberDetail extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: <Widget>[
-          // lap time pill (digital/LCD-style font)
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
-            decoration: BoxDecoration(color: Colors.blue[700], borderRadius: BorderRadius.circular(5.0)),
-            child: Text(
-              lapTime,
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 15.0,
-                fontFamily: "AlarmClock",
-                letterSpacing: -1.0,
-                height: 1.0,
-              ),
-            ),
-          ),
-          const SizedBox(width: 10.0),
           Expanded(
-            flex: 3,
+            flex: 2,
             child: Row(
               children: <Widget>[
                 Icon(TrackUtils.trackIconFromName(trackName), size: 16.0, color: Colors.red[700]),
@@ -312,6 +296,22 @@ class MemberDetail extends StatelessWidget {
                   ),
                 ),
               ],
+            ),
+          ),
+          const SizedBox(width: 6.0),
+          // lap time pill (digital/LCD-style font)
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+            decoration: BoxDecoration(color: Colors.blue[700], borderRadius: BorderRadius.circular(5.0)),
+            child: Text(
+              lapTime,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 15.0,
+                fontFamily: "AlarmClock",
+                letterSpacing: -1.0,
+                height: 1.0,
+              ),
             ),
           ),
           if (hasBike) ...[const SizedBox(width: 8.0), Expanded(flex: 2, child: _buildBikeBlock(record.bike))],
@@ -553,7 +553,7 @@ class MemberDetail extends StatelessWidget {
                         maxLines: 2,
                       ),
                       Text(
-                        "${event.organizer}",
+                        "${event.organizer?.name ?? ''}",
                         textScaler: TextScaler.linear(0.7),
                         textAlign: TextAlign.center,
                         overflow: TextOverflow.ellipsis,
@@ -948,11 +948,7 @@ class MemberDetail extends StatelessWidget {
                                       style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black.withAlpha(204)),
                                     ),
                                     Spacer(),
-                                    Icon(
-                                      Icons.arrow_right_alt,
-                                      size: 22,
-                                      color: Colors.black.withAlpha(120),
-                                    ),
+                                    Icon(Icons.arrow_right_alt, size: 22, color: Colors.black.withAlpha(120)),
                                   ],
                                 ),
                                 SizedBox(height: 10),
