@@ -19,6 +19,7 @@
 
 import 'dart:async';
 
+import 'package:ccteam/models/track.dart';
 import 'package:ccteam/providers/login_provider.dart';
 import 'package:ccteam/providers/message_provider.dart';
 import 'package:ccteam/services/tracks_service.dart';
@@ -26,8 +27,6 @@ import 'package:ccteam/utils/app_utils.dart';
 import 'package:ccteam/utils/enums.dart';
 import 'package:flutter/foundation.dart';
 import 'package:logging/logging.dart';
-
-import 'package:ccteam/models/track.dart';
 
 class TrackDetailProvider extends ChangeNotifier {
   final Logger _log = new Logger('TrackDetailProvider');
@@ -82,32 +81,16 @@ class TrackDetailProvider extends ChangeNotifier {
           onError: (error) {
             _log.warning("Error when retrieving track ($error)");
             _currentTrack = null;
-            AppUtils.handleServiceException(
-              error,
-              _messageProvider,
-              _loginProvider,
-            );
+            AppUtils.handleServiceException(error, _messageProvider, _loginProvider);
             _updateStatus(LoadingStatus.notLoaded);
           },
         );
   }
 
-  /// Delete the specified [track]
-  Future<void> deleteTrack(Track track) async {
-    await _tracksService
-        .deleteTrack(track)
-        .then(
-          (value) {
-            _log.fine("Track deleted successfully : ${track.name}");
-            _currentTrack = null;
-            _log.info("Notifying listeners of TrackListProvider");
-            notifyListeners();
-          },
-          onError: (error) {
-            _log.severe("Failed to delete track ($error)");
-            throw (error);
-          },
-        );
+  /// Clear the currently-shown track. Used right after a delete so a stale reference can't be reused.
+  void clearCurrentTrack() {
+    _currentTrack = null;
+    _notifyListeners();
   }
 
   /// Notify all the registered listeners of this provider.

@@ -124,41 +124,40 @@ class TrackListProvider extends ChangeNotifier {
         );
   }
 
-  /// Create the specified [track]
-  Future<void> createTrack(Track track) async {
-    await _tracksService
-        .createTrack(track)
-        .then(
-          (value) {
-            _log.fine("New track created : ${track.name}");
-            _tracks.add(track);
-            // flip the loading status back to `loaded`
-            _loadingStatus = LoadingStatus.loaded;
-            _log.info("Notifying listeners of TrackListProvider");
-            notifyListeners();
-          },
-          onError: (error) {
-            _log.severe("Failed to create new track ($error)");
-            throw (error);
-          },
-        );
+  /// Insert the server-persisted [track] into the in-memory list and
+  /// re-sort alphabetically so the list looks like a freshly fetched
+  /// one. Memory-only: callers run the GraphQL mutation via
+  /// [TrackCreationProvider] first, then push the returned entity here.
+  void addTrackInList(Track track) {
+    _tracks.add(track);
+    _tracks.sort((a, b) => (a.name ?? '').toLowerCase().compareTo((b.name ?? '').toLowerCase()));
+    // flip the loading status back to `loaded`
+    _loadingStatus = LoadingStatus.loaded;
+    _log.info("Notifying listeners of TrackListProvider");
+    notifyListeners();
   }
 
-  /// Update the specified [track]
-  Future<void> updateTrack(Track track) async {
-    await _tracksService
-        .updateTrack(track)
-        .then(
-          (value) {
-            _log.fine("Track successfully updated : ${track.name}");
-            _tracks[_tracks.indexWhere((m) => m.id == track.id)] = track;
-            _log.info("Notifying listeners of TrackListProvider");
-            notifyListeners();
-          },
-          onError: (error) {
-            _log.severe("Failed to update track ($error)");
-            throw (error);
-          },
-        );
+  /// Replace the in-memory copy of the [track] with the freshly
+  /// updated entity returned by the server, then re-sort (the name may
+  /// have changed). Memory-only, see [addTrackInList].
+  void updateTrackInList(Track track) {
+    final int idx = _tracks.indexWhere((t) => t.id == track.id);
+    if (idx != -1) {
+      _tracks[idx] = track;
+    }
+    _tracks.sort((a, b) => (a.name ?? '').toLowerCase().compareTo((b.name ?? '').toLowerCase()));
+    _log.info("Notifying listeners of TrackListProvider");
+    notifyListeners();
+  }
+
+  /// Drop the track with the specified [trackId] from the in-memory
+  /// list and re-derive the empty/loaded status so the UI flips to
+  /// the empty placeholder when the last track is removed.
+  /// Memory-only, see [addTrackInList].
+  void removeTrackFromList(int trackId) {
+    _tracks.removeWhere((t) => t.id == trackId);
+    _loadingStatus = _tracks.isEmpty ? LoadingStatus.empty : LoadingStatus.loaded;
+    _log.info("Notifying listeners of TrackListProvider");
+    notifyListeners();
   }
 }

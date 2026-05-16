@@ -18,6 +18,8 @@
  */
 
 import 'package:ccteam/models/track.dart';
+import 'package:ccteam/providers/login_provider.dart';
+import 'package:ccteam/providers/track_creation_provider.dart';
 import 'package:ccteam/providers/track_detail_provider.dart';
 import 'package:ccteam/providers/track_list_provider.dart';
 import 'package:ccteam/ui/main/main_action_menu.dart';
@@ -72,11 +74,14 @@ class _TracksState extends State<Tracks> {
 
   /// Method that launches the Track detail screen and awaits the result from Navigator.pop
   void _navigateToTrackDetailScreen(BuildContext context, Track track) async {
-    Provider.of<TrackDetailProvider>(
-      context,
-      listen: false,
-    ).setCurrentTrack(track);
+    Provider.of<TrackDetailProvider>(context, listen: false).setCurrentTrack(track);
     Navigator.pushNamed(context, '/trackDetail');
+  }
+
+  /// Seed the creation provider with a fresh, empty [Track] and open the add / edit form.
+  void _navigateToAddTrackScreen(BuildContext context) {
+    Provider.of<TrackCreationProvider>(context, listen: false).setTrackToEdit(Track());
+    Navigator.pushNamed(context, '/addEditTrack');
   }
 
   /// Build a single track card for the grid: cover photo on top half + info
@@ -131,19 +136,13 @@ class _TracksState extends State<Tracks> {
                       child: SizedBox(
                         width: 32.0,
                         height: 32.0,
-                        child: FittedBox(
-                          fit: BoxFit.contain,
-                          child: TrackUtils.getTrackIcon(track.name ?? ""),
-                        ),
+                        child: FittedBox(fit: BoxFit.contain, child: TrackUtils.getTrackIcon(track.name ?? "")),
                       ),
                     ),
                   ),
                 ],
               ),
             ),
-            // bottom: name + stats on blue gradient (no inner border-radius
-            // so the top edge is flush with the photo above; the parent
-            // Card clips the visible bottom corners)
             Expanded(
               flex: 4,
               child: Container(
@@ -175,19 +174,11 @@ class _TracksState extends State<Tracks> {
                     if (track.distance != null)
                       Row(
                         children: <Widget>[
-                          const Icon(
-                            Icons.straighten,
-                            color: Colors.white,
-                            size: 12.0,
-                          ),
+                          const Icon(Icons.straighten, color: Colors.white, size: 12.0),
                           const SizedBox(width: 4.0),
                           Text(
                             "${(track.distance! / 1000).toStringAsFixed(2)} km",
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 11.0,
-                              height: 1.1,
-                            ),
+                            style: const TextStyle(color: Colors.white, fontSize: 11.0, height: 1.1),
                           ),
                         ],
                       ),
@@ -195,21 +186,12 @@ class _TracksState extends State<Tracks> {
                       const SizedBox(height: 1.0),
                       Row(
                         children: <Widget>[
-                          Text(
-                            track.country!.flagEmoji,
-                            style: const TextStyle(fontSize: 12.0, height: 1.0),
-                          ),
+                          Text(track.country!.flagEmoji, style: const TextStyle(fontSize: 12.0, height: 1.0)),
                           const SizedBox(width: 4.0),
                           Flexible(
                             child: Text(
-                              track.country!.localizedName(
-                                Localizations.localeOf(context).languageCode,
-                              ),
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 11.0,
-                                height: 1.1,
-                              ),
+                              track.country!.localizedName(Localizations.localeOf(context).languageCode),
+                              style: const TextStyle(color: Colors.white, fontSize: 11.0, height: 1.1),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                             ),
@@ -228,15 +210,17 @@ class _TracksState extends State<Tracks> {
   }
 
   Widget build(BuildContext context) {
-    final _trackListProvider = Provider.of<TrackListProvider>(
-      context,
-      listen: true,
-    );
+    final _trackListProvider = Provider.of<TrackListProvider>(context, listen: true);
+    final LoginProvider _loginProvider = Provider.of<LoginProvider>(context, listen: false);
 
     return Scaffold(
       appBar: AppBar(
         title: Text(AppString.tabTracks),
-        actions: <Widget>[MainActionMenu()],
+        actions: <Widget>[
+          if (_loginProvider.isAdmin)
+            IconButton(icon: const Icon(Icons.add), onPressed: () => _navigateToAddTrackScreen(context)),
+          MainActionMenu(),
+        ],
       ),
       drawer: MainDrawer(),
       body: Container(
@@ -255,20 +239,14 @@ class _TracksState extends State<Tracks> {
                     physics: const AlwaysScrollableScrollPhysics(),
                     padding: const EdgeInsets.fromLTRB(8.0, 4.0, 8.0, 8.0),
                     gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: MediaQuery.of(context).orientation ==
-                              Orientation.portrait
-                          ? 2
-                          : 3,
+                      crossAxisCount: MediaQuery.of(context).orientation == Orientation.portrait ? 2 : 3,
                       crossAxisSpacing: 8,
                       mainAxisSpacing: 8,
                       childAspectRatio: 1,
                     ),
                     itemCount: _trackListProvider.tracks.length,
                     itemBuilder: (BuildContext context, int index) =>
-                        _buildTrackCard(
-                      context,
-                      _trackListProvider.tracks[index],
-                    ),
+                        _buildTrackCard(context, _trackListProvider.tracks[index]),
                   ),
                 ),
               ),

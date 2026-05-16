@@ -20,9 +20,11 @@
 import 'package:ccteam/models/bike.dart';
 import 'package:ccteam/models/event.dart';
 import 'package:ccteam/models/record.dart';
+import 'package:ccteam/models/track.dart';
 import 'package:ccteam/providers/event_detail_provider.dart';
 import 'package:ccteam/providers/login_provider.dart';
 import 'package:ccteam/providers/record_list_provider.dart';
+import 'package:ccteam/providers/track_creation_provider.dart';
 import 'package:ccteam/providers/track_detail_provider.dart';
 import 'package:ccteam/utils/app_utils.dart';
 import 'package:ccteam/utils/custom_decorations.dart';
@@ -872,6 +874,19 @@ class _TrackDetailState extends State<TrackDetail> {
                     tooltip: "Site web",
                     icon: const Icon(Icons.public, color: Colors.white),
                     onPressed: () => AppUtils.launchURL(_trackDetailProvider.currentTrack!.website!),
+                  ),
+                if (_loginProvider.isAdmin)
+                  IconButton(
+                    tooltip: AppString.trackEdit,
+                    icon: const Icon(Icons.edit, color: Colors.white),
+                    onPressed: () {
+                      // deep-clone so cancelling the form doesn't mutate the track held by TrackDetailProvider / TrackListProvider
+                      Provider.of<TrackCreationProvider>(
+                        context,
+                        listen: false,
+                      ).setTrackToEdit(Track.clone(_trackDetailProvider.currentTrack!));
+                      Navigator.pushNamed(context, '/addEditTrack');
+                    },
                   ),
               ],
               flexibleSpace: LayoutBuilder(

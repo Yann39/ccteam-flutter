@@ -49,6 +49,20 @@ class Track {
     this.country,
   });
 
+  /// Shallow copy constructor used by the edit flow to avoid mutating
+  /// the original [Track] referenced by the list / detail provider when
+  /// the user cancels the form.
+  Track.clone(Track track)
+    : this.id = track.id,
+      this.name = track.name,
+      this.distance = track.distance,
+      this.lapRecord = track.lapRecord,
+      this.lapRecordInfo = track.lapRecordInfo,
+      this.website = track.website,
+      this.latitude = track.latitude,
+      this.longitude = track.longitude,
+      this.country = track.country;
+
   @override
   String toString() {
     return """{

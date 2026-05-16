@@ -20,6 +20,7 @@
 import 'package:ccteam/providers/avatar_provider.dart';
 import 'package:ccteam/providers/bike_list_provider.dart';
 import 'package:ccteam/providers/change_passcode_provider.dart';
+import 'package:ccteam/providers/country_list_provider.dart';
 import 'package:ccteam/providers/event_creation_provider.dart';
 import 'package:ccteam/providers/event_detail_provider.dart';
 import 'package:ccteam/providers/event_list_provider.dart';
@@ -39,6 +40,7 @@ import 'package:ccteam/providers/photo_provider.dart';
 import 'package:ccteam/providers/record_creation_provider.dart';
 import 'package:ccteam/providers/record_list_provider.dart';
 import 'package:ccteam/providers/timer_provider.dart';
+import 'package:ccteam/providers/track_creation_provider.dart';
 import 'package:ccteam/providers/track_detail_provider.dart';
 import 'package:ccteam/providers/track_list_provider.dart';
 import 'package:ccteam/services/notifications_service.dart';
@@ -64,6 +66,7 @@ import 'package:ccteam/ui/news/news_detail.dart';
 import 'package:ccteam/ui/news/news_list.dart';
 import 'package:ccteam/ui/photos/gallery.dart';
 import 'package:ccteam/ui/photos/photo_detail.dart';
+import 'package:ccteam/ui/tracks/add_edit_track.dart';
 import 'package:ccteam/ui/tracks/track_detail.dart';
 import 'package:ccteam/ui/unauthenticated/forgot_password.dart';
 import 'package:ccteam/ui/unauthenticated/loading.dart';
@@ -91,7 +94,6 @@ void main() {
         ChangeNotifierProvider(create: (context) => TimerProvider()),
         ChangeNotifierProvider(create: (context) => HomeProvider()),
         ChangeNotifierProvider(create: (context) => PhotoProvider()),
-        ChangeNotifierProvider(create: (context) => TrackListProvider()),
         ChangeNotifierProvider(create: (context) => PasscodeProvider()),
         ChangeNotifierProvider(create: (context) => ChangePasscodeProvider()),
         ChangeNotifierProvider(create: (context) => MessageProvider()),
@@ -203,6 +205,20 @@ void main() {
             ..updateMessageProvider(messageProvider)
             ..updateLoginProvider(loginProvider),
         ),
+        // so that we can set messages and logout user from TrackCreationProvider
+        ChangeNotifierProxyProvider2<MessageProvider, LoginProvider, TrackCreationProvider>(
+          create: (context) => TrackCreationProvider(),
+          update: (context, messageProvider, loginProvider, trackCreationProvider) => trackCreationProvider!
+            ..updateMessageProvider(messageProvider)
+            ..updateLoginProvider(loginProvider),
+        ),
+        // country list, populated lazily on first track-form open
+        ChangeNotifierProxyProvider2<MessageProvider, LoginProvider, CountryListProvider>(
+          create: (context) => CountryListProvider(),
+          update: (context, messageProvider, loginProvider, countryListProvider) => countryListProvider!
+            ..updateMessageProvider(messageProvider)
+            ..updateLoginProvider(loginProvider),
+        ),
         // so that we can set messages and logout user from RecordCreationProvider
         ChangeNotifierProxyProvider2<MessageProvider, LoginProvider, RecordCreationProvider>(
           create: (context) => RecordCreationProvider(),
@@ -264,6 +280,7 @@ class CCTeamApp extends StatelessWidget {
           '/addEditMembershipFee': (context) => AddEditMembershipFee(),
           '/photoDetail': (context) => PhotoDetail(),
           '/trackDetail': (context) => TrackDetail(),
+          '/addEditTrack': (context) => AddEditTrack(),
         },
         home: Consumer2<LoginProvider, MessageProvider>(
           builder: (context, loginProvider, messageProvider, child) {

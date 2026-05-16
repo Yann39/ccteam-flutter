@@ -19,11 +19,9 @@
 
 import 'package:ccteam/models/track.dart';
 import 'package:ccteam/utils/app_utils.dart';
-import 'package:ccteam/utils/constants.dart';
 import 'package:ccteam/utils/graphql_connection.dart';
 import 'package:gql/language.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
-import 'package:http/http.dart' as http;
 import 'package:logging/logging.dart';
 
 class TracksService {
@@ -186,63 +184,139 @@ class TracksService {
         );
   }
 
-  /// Create the specified [track] into the database
-  /// Send a POST request to the Restful API
-  /// Throw an exception if response status code is different from 201
-  Future<void> createTrack(Track track) async {
-    // call to API
-    final response = await http.post(
-      Uri.parse(API_BASE_URL + API_CREATE_TRACK_ENDPOINT),
-      headers: {'Content-Type': 'application/json'},
-      body: track.toJson(),
+  /// GraphQL projection shared between the create / update / delete
+  /// mutations on Track. Mirrors what [fetchTracks] returns so the
+  /// caller can update its in-memory list with the returned entity.
+  static const String _trackOutputFields = """
+        id
+        name
+        distance
+        lapRecord
+        lapRecordInfo
+        website
+        latitude
+        longitude
+        country {
+          code
+          nameFr
+          nameEn
+        }
+  """;
+
+  /// Create the specified [track] via the GraphQL mutation. Returns
+  /// the persisted entity with its server-assigned id so the caller
+  /// can stash it in the in-memory list. Throws on server error.
+  Future<Track> createTrack(Track track) async {
+    _log.info("Creating track ${track.name}...");
+
+    final String mutation =
+        """
+      mutation CreateTrack(\$name: String!, \$distance: Int!, \$lapRecord: Int!, \$website: String!, \$latitude: Float!, \$longitude: Float!, \$countryCode: String!) {
+        createTrack(
+          name: \$name
+          distance: \$distance
+          lapRecord: \$lapRecord
+          website: \$website
+          latitude: \$latitude
+          longitude: \$longitude
+          countryCode: \$countryCode
+        ) {
+$_trackOutputFields
+        }
+      }
+    """;
+
+    final MutationOptions options = MutationOptions(
+      document: parseString(mutation),
+      variables: <String, dynamic>{
+        'name': track.name,
+        'distance': track.distance,
+        'lapRecord': track.lapRecord ?? 0,
+        'website': track.website ?? '',
+        'latitude': track.latitude,
+        'longitude': track.longitude,
+        'countryCode': track.country?.code,
+      },
+      fetchPolicy: FetchPolicy.noCache,
     );
 
-    // handle server response code
-    if (response.statusCode == 201) {
-      return;
-    } else if (response.statusCode == 503) {
-      throw Exception('Failed to create the track');
-    } else if (response.statusCode == 400) {
-      throw Exception('Bad request, track has not been created');
-    } else {
-      throw Exception('Unexpected server response, track has not been created');
+    final QueryResult result = await GraphQLConnection().graphQLClient.mutate(options);
+    if (result.hasException) {
+      throw AppUtils.handleGraphQlException(result)!;
     }
+    return Track.fromJson(result.data!['createTrack']);
   }
 
-  /// Update the specified [track] into the database
-  /// Send a POST request to the Restful API
-  /// Throw an exception if response status code is different from 200
-  Future<void> updateTrack(Track track) async {
-    // call to API
-    final response = await http.post(
-      Uri.parse(API_BASE_URL + API_UPDATE_TRACK_ENDPOINT),
-      headers: {'Content-Type': 'application/json'},
-      body: track.toJson(),
+  /// Update the specified [track]. Same GraphQL projection / shape as
+  /// [createTrack]; the server returns the up-to-date entity which
+  /// the caller swaps in its in-memory list.
+  Future<Track> updateTrack(Track track) async {
+    _log.info("Updating track ${track.name}...");
+
+    final String mutation =
+        """
+      mutation UpdateTrack(\$trackId: Long!, \$name: String!, \$distance: Int!, \$lapRecord: Int!, \$website: String!, \$latitude: Float!, \$longitude: Float!, \$countryCode: String!) {
+        updateTrack(
+          trackId: \$trackId
+          name: \$name
+          distance: \$distance
+          lapRecord: \$lapRecord
+          website: \$website
+          latitude: \$latitude
+          longitude: \$longitude
+          countryCode: \$countryCode
+        ) {
+$_trackOutputFields
+        }
+      }
+    """;
+
+    final MutationOptions options = MutationOptions(
+      document: parseString(mutation),
+      variables: <String, dynamic>{
+        'trackId': track.id,
+        'name': track.name,
+        'distance': track.distance,
+        'lapRecord': track.lapRecord ?? 0,
+        'website': track.website ?? '',
+        'latitude': track.latitude,
+        'longitude': track.longitude,
+        'countryCode': track.country?.code,
+      },
+      fetchPolicy: FetchPolicy.noCache,
     );
 
-    // handle server response code
-    if (response.statusCode == 200) {
-      return;
-    } else if (response.statusCode == 503) {
-      throw Exception('Failed to update the track');
-    } else {
-      throw Exception('Unexpected server response, track has not been updated');
+    final QueryResult result = await GraphQLConnection().graphQLClient.mutate(options);
+    if (result.hasException) {
+      throw AppUtils.handleGraphQlException(result)!;
     }
+    return Track.fromJson(result.data!['updateTrack']);
   }
 
-  /// Delete specified [track] from the database
-  /// Send a POST request to the Restful API
-  /// Throw an exception if response status code is different from 204
-  Future<void> deleteTrack(Track track) async {
-    // call to API
-    final response = await http.post(
-      Uri.parse(API_BASE_URL + API_DELETE_TRACK_ENDPOINT),
-      headers: {'Content-Type': 'application/json'},
-      body: track.toJson(),
+  /// Delete the specified [track]. Returns the deleted entity (mostly
+  /// useful for logging / success snackbars referring to the name).
+  Future<Track> deleteTrack(int trackId) async {
+    _log.info("Deleting track $trackId...");
+
+    final String mutation =
+        """
+      mutation DeleteTrack(\$trackId: Long!) {
+        deleteTrack(trackId: \$trackId) {
+$_trackOutputFields
+        }
+      }
+    """;
+
+    final MutationOptions options = MutationOptions(
+      document: parseString(mutation),
+      variables: <String, dynamic>{'trackId': trackId},
+      fetchPolicy: FetchPolicy.noCache,
     );
 
-    if (response.statusCode != 204) {
-      throw Exception('Unexpected server response');
+    final QueryResult result = await GraphQLConnection().graphQLClient.mutate(options);
+    if (result.hasException) {
+      throw AppUtils.handleGraphQlException(result)!;
     }
+    return Track.fromJson(result.data!['deleteTrack']);
   }
 }
