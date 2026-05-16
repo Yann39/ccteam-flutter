@@ -30,6 +30,7 @@ class Member {
   String? email;
   String? password;
   String? phone;
+  bool? hasAvatar;
   String? avatar;
   String? avatarName;
   List<Bike>? bikes;
@@ -55,6 +56,7 @@ class Member {
     this.email,
     this.password,
     this.phone,
+    this.hasAvatar,
     this.avatar,
     this.avatarName,
     this.bikes,
@@ -108,18 +110,21 @@ class Member {
       email = json['email'],
       password = json['password'],
       phone = json['phone'],
+      hasAvatar = json['hasAvatar'] == true,
       avatar = json['avatarFile'],
       avatarName = json['avatarFileName'],
       bikes = json['bikes'] != null ? (json['bikes'] as Iterable).map((i) => Bike.fromJson(i)).toList() : null,
-      membershipFees =
-          json['membershipFees'] != null
-              ? (json['membershipFees'] as Iterable)
-                  .map((i) => MembershipFee.fromJson(i))
-                  .toList()
-              : null,
+      membershipFees = json['membershipFees'] != null
+          ? (json['membershipFees'] as Iterable).map((i) => MembershipFee.fromJson(i)).toList()
+          : null,
       active = json['active'] != null && (json['active'] == '1' || json['active'] == true),
       verified = json['verified'] != null && (json['verified'] == '1' || json['verified'] == true),
-      role = json['role'] != null ? MemberRole.values.firstWhere((e) => e.toString().split('.').last == json['role'], orElse: () => MemberRole.ROLE_USER) : MemberRole.ROLE_USER,
+      role = json['role'] != null
+          ? MemberRole.values.firstWhere(
+              (e) => e.toString().split('.').last == json['role'],
+              orElse: () => MemberRole.ROLE_USER,
+            )
+          : MemberRole.ROLE_USER,
       boardRole = json['boardRole'] != null
           ? BoardRole.values.firstWhere(
               (e) => e.toString().split('.').last == json['boardRole'],
@@ -129,7 +134,9 @@ class Member {
       otp = json['otp'],
       otpDate = json['otpDate'] != null ? DateTime.parse(json['otpDate']) : null,
       registrationDate = json['registrationDate'] != null ? DateTime.parse(json['registrationDate']) : null,
-      eventMembers = json['eventMembers'] != null ? (json['eventMembers'] as Iterable).map((i) => EventMember.fromJson(i)).toList() : null,
+      eventMembers = json['eventMembers'] != null
+          ? (json['eventMembers'] as Iterable).map((i) => EventMember.fromJson(i)).toList()
+          : null,
       riderNumber = json['riderNumber'],
       headerPalette = json['headerPalette'],
       createdOn = json['createdOn'] != null ? DateTime.parse(json['createdOn']) : null,
@@ -143,6 +150,7 @@ class Member {
     "email": email,
     "password": password,
     "phone": phone,
+    "hasAvatar": hasAvatar,
     "avatarFile": avatar,
     "avatarFileName": avatarName,
     "bikes": bikes?.map((i) => i.toJson()).toList(),

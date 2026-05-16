@@ -98,8 +98,8 @@ class EventListProvider extends ChangeNotifier {
     _loginProvider = loginProvider;
 
     if (_loginProvider.isMember && _loadingStatus == LoadingStatus.notLoaded) {
-      // member just authenticated (or recovered from a failed earlier fetch) — replay the events list query
-      fetchEventList();
+      // member just authenticated (or recovered from a failed earlier fetch), replay the query
+      refreshCurrentFilter();
     } else if (!_loginProvider.isMember) {
       // logout or downgrade — clear cached data so the next user doesn't inherit the previous one's events
       _allEvents = [];
@@ -116,6 +116,33 @@ class EventListProvider extends ChangeNotifier {
     }
 
     _notifyListeners();
+  }
+
+  /// Replay the events query that matches the currently selected
+  /// filter (top-level mode + calendar granularity when in date
+  /// mode). Used both by [updateLoginProvider] on reconnect, so the
+  /// user doesn't land on an empty list when the session expired
+  /// mid-filter, and by the pull-to-refresh handler in the events
+  /// list screen, so both paths share the same dispatch logic.
+  Future<void> refreshCurrentFilter() {
+    switch (_eventModeSelectorIndex) {
+      case 0:
+        return fetchEventList();
+      case 1:
+        return fetchEventListForYear(DateTime.now().year);
+      case 2:
+        switch (_selectedCalendarMode) {
+          case CalendarMode.year:
+            return fetchEventListForYear(_selectedDate.year);
+          case CalendarMode.month:
+            return fetchEventListForMonthAndYear(_selectedDate.month, _selectedDate.year);
+          case CalendarMode.week:
+          case CalendarMode.decade:
+            return fetchEventListForDayAndMonthAndYear(_selectedDate.day, _selectedDate.month, _selectedDate.year);
+        }
+      default:
+        return fetchEventList();
+    }
   }
 
   /// Fetch only the total events count (USER-accessible). Safe to call regardless of role.

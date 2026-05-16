@@ -54,5 +54,7 @@ class GraphQLConnection {
 
   ValueNotifier<GraphQLClient> get client => _client;
 
+  String? get jwtToken => _jwtToken;
+
   set jwtToken(String? jwtToken) => _jwtToken = jwtToken;
 }

@@ -26,22 +26,20 @@ import 'package:ccteam/providers/member_creation_provider.dart';
 import 'package:ccteam/utils/custom_decorations.dart';
 import 'package:ccteam/utils/custom_icons.dart';
 import 'package:ccteam/utils/strings.dart';
+import 'package:ccteam/widgets/avatar_image.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 
-/// Internal state of the avatar editor: what the user has staged but
-/// not yet confirmed.
+/// Internal state of the avatar editor: what the user has staged but not yet confirmed.
 enum _PendingChange {
-  /// no in-progress change — the preview shows the saved avatar
+  /// no in-progress change, the preview shows the saved avatar
   none,
 
-  /// user picked & cropped a new photo (held in AvatarProvider) — the
-  /// preview shows the new cropped image
+  /// user picked & cropped a new photo (held in AvatarProvider), the preview shows the new cropped image
   newImage,
 
-  /// user explicitly chose to remove the existing avatar — the preview
-  /// shows the default placeholder
+  /// user explicitly chose to remove the existing avatar, the preview shows the default placeholder
   removal,
 }
 
@@ -53,10 +51,18 @@ class EditAvatar extends StatefulWidget {
 }
 
 class _EditAvatarState extends State<EditAvatar> {
-  /// Snapshot of the avatar at page entry. Used as the "before" reference
-  /// to revert to when the user taps "Annuler la sélection", and to
-  /// decide whether the "Retirer la photo" affordance should be shown.
+  /// Snapshot of any pending-upload base64 captured at page entry,
+  /// i.e. the user already picked an image earlier (still buffered on
+  /// the edit copy) and re-entered this editor. Distinct from the
+  /// server-side avatar, which is fetched via the REST endpoint.
   String? _originalAvatar;
+
+  /// Snapshot of the server-side avatar presence at page entry,
+  /// alongside the member id so [_AvatarPreview] can fetch the bytes
+  /// via the `/avatars/{id}` endpoint when reverting to the original.
+  /// Both used to decide whether "Remove the photo" is offered.
+  bool _originalHasAvatar = false;
+  int? _originalMemberId;
 
   /// What the user has staged but not yet confirmed.
   _PendingChange _pendingChange = _PendingChange.none;
@@ -68,6 +74,8 @@ class _EditAvatarState extends State<EditAvatar> {
     // can revert to it on cancel and decide whether removal is offered.
     final memberCreationProvider = Provider.of<MemberCreationProvider>(context, listen: false);
     _originalAvatar = memberCreationProvider.currentMember.avatar;
+    _originalHasAvatar = memberCreationProvider.currentMember.hasAvatar == true;
+    _originalMemberId = memberCreationProvider.currentMember.id;
   }
 
   /// Pick an image from the gallery, crop it, and stage it as the new
@@ -167,7 +175,7 @@ class _EditAvatarState extends State<EditAvatar> {
   Widget build(BuildContext context) {
     final avatarProvider = Provider.of<AvatarProvider>(context, listen: true);
 
-    final bool hasOriginal = _originalAvatar != null;
+    final bool hasOriginal = _originalAvatar != null || _originalHasAvatar;
     final bool hasPendingChange = _pendingChange != _PendingChange.none;
 
     return Scaffold(
@@ -188,6 +196,8 @@ class _EditAvatarState extends State<EditAvatar> {
                     pendingChange: _pendingChange,
                     croppedImage: avatarProvider.croppedImage,
                     originalAvatar: _originalAvatar,
+                    originalMemberId: _originalMemberId,
+                    originalHasAvatar: _originalHasAvatar,
                   ),
                 ),
                 const SizedBox(height: 24.0),
@@ -280,19 +290,23 @@ class _EditAvatarState extends State<EditAvatar> {
 
 /// Circular avatar preview at the top of the page. Shown content
 /// depends on the editor's pending state:
-///   - newImage  → the freshly cropped image
+///   - newImage  → the freshly cropped image (in-memory bytes)
 ///   - removal   → the default pilot placeholder
-///   - none      → the saved avatar (or default if none was saved)
+///   - none      → the saved avatar: pending base64 buffer if any
 class _AvatarPreview extends StatelessWidget {
   final _PendingChange pendingChange;
   final Uint8List? croppedImage;
   final String? originalAvatar;
+  final int? originalMemberId;
+  final bool originalHasAvatar;
 
   const _AvatarPreview({
     Key? key,
     required this.pendingChange,
     required this.croppedImage,
     required this.originalAvatar,
+    required this.originalMemberId,
+    required this.originalHasAvatar,
   }) : super(key: key);
 
   @override
@@ -303,10 +317,13 @@ class _AvatarPreview extends StatelessWidget {
     if (pendingChange == _PendingChange.newImage && croppedImage != null) {
       content = Image.memory(croppedImage!, fit: BoxFit.cover);
     } else if (pendingChange == _PendingChange.none && originalAvatar != null) {
+      // user had previously picked an image in this session but didn't submit yet, render the buffered base64 directly from memory
       content = Image.memory(base64Decode(originalAvatar!), fit: BoxFit.cover);
+    } else if (pendingChange == _PendingChange.none && originalHasAvatar && originalMemberId != null) {
+      // server has an avatar for this member — fetch via the REST endpoint (with disk cache)
+      content = AvatarImage(memberId: originalMemberId, hasAvatar: true, radius: size / 2);
     } else {
-      // pendingChange == removal, OR pendingChange == none with no
-      // original avatar — show the default pilot placeholder
+      // pendingChange == removal OR none, with no original avatar at all, show the default pilot placeholder
       content = Container(
         color: Colors.blue[100],
         alignment: Alignment.center,

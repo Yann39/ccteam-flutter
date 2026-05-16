@@ -181,31 +181,7 @@ class _EventListState extends State<EventList> {
     }
 
     // on refresh, replay whatever filter is currently active so the user gets a fresh copy of the same slice
-    Future<void> onRefresh() {
-      final DateTime selected = _eventListProvider.selectedDate;
-      switch (_eventListProvider.eventModeSelectorIndex) {
-        case 0:
-          return _eventListProvider.fetchEventList();
-        case 1:
-          return _eventListProvider.fetchEventListForYear(DateTime.now().year);
-        case 2:
-          switch (_eventListProvider.selectedCalendarMode) {
-            case CalendarMode.year:
-              return _eventListProvider.fetchEventListForYear(selected.year);
-            case CalendarMode.month:
-              return _eventListProvider.fetchEventListForMonthAndYear(selected.month, selected.year);
-            case CalendarMode.week:
-            case CalendarMode.decade:
-              return _eventListProvider.fetchEventListForDayAndMonthAndYear(
-                selected.day,
-                selected.month,
-                selected.year,
-              );
-          }
-        default:
-          return _eventListProvider.fetchEventList();
-      }
-    }
+    Future<void> onRefresh() => _eventListProvider.refreshCurrentFilter();
 
     // assign fetched events depending on display mode and sort them
     List<Event> _events;
@@ -311,7 +287,7 @@ class _EventListState extends State<EventList> {
                               children: yearEvents
                                   .map(
                                     (event) => Padding(
-                                      padding: const EdgeInsets.only(bottom: 8.0),
+                                      padding: const EdgeInsets.only(bottom: 4.0),
                                       child: InkWell(
                                         child: EventCard(event),
                                         onTap: () => _navigateToEventDetailScreen(context, event),

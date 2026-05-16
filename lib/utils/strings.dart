@@ -309,6 +309,12 @@ class AppString {
   static const String eventBikeLabel = 'Moto';
   static const String eventBikePickerTitle = 'Choisir la moto';
   static const String eventBikeNone = 'Aucune moto sélectionnée';
+  static const String filterByBikeAll = 'Toutes';
+  static const String filterByBikeUnset = 'Non définie';
+  static const String filterByBikeNoMatch = 'Aucun roulage avec cette moto';
+  static const String filterByBikePickerTitle = 'Filtrer par moto';
+  static const String filterByBikeTooltip = 'Filtrer par moto';
+  static const String filterByBikeClear = 'Effacer le filtre';
   static const String eventBikeNoneOption = 'Aucune (effacer)';
   static const String eventBikeNoBikes = 'Vous n\'avez pas encore enregistré de moto.';
   static const String bikeDeleteWarning =

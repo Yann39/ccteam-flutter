@@ -311,8 +311,7 @@ class EventsService {
               id
               firstName
               lastName
-              avatarFile
-              avatarFileName
+              hasAvatar
             }
             bike {
               id
@@ -599,8 +598,7 @@ class EventsService {
               id
               firstName
               lastName
-              avatarFile
-              avatarFileName
+              hasAvatar
             }
             bike {
               id
@@ -660,8 +658,7 @@ class EventsService {
               id
               firstName
               lastName
-              avatarFile
-              avatarFileName
+              hasAvatar
             }
             bike {
               id
@@ -719,8 +716,7 @@ class EventsService {
               id
               firstName
               lastName
-              avatarFile
-              avatarFileName
+              hasAvatar
             }
             bike {
               id

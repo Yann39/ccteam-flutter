@@ -17,8 +17,6 @@
  * along with CCTeam. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import 'dart:convert';
-
 import 'package:ccteam/models/bike.dart';
 import 'package:ccteam/models/member.dart';
 import 'package:ccteam/models/membership_fee.dart';
@@ -29,6 +27,7 @@ import 'package:ccteam/utils/custom_decorations.dart';
 import 'package:ccteam/utils/custom_icons.dart';
 import 'package:ccteam/utils/member_stats.dart';
 import 'package:ccteam/utils/strings.dart';
+import 'package:ccteam/widgets/avatar_image.dart';
 import 'package:ccteam/widgets/member_header_palette.dart';
 import 'package:ccteam/widgets/random_pattern_painter.dart';
 import 'package:flutter/material.dart';
@@ -133,26 +132,11 @@ class MyAccount extends StatelessWidget {
                   height: 88,
                   decoration: const ShapeDecoration(shape: CircleBorder(), color: Colors.white),
                   padding: const EdgeInsets.all(3.0),
-                  child: member.avatar != null
-                      ? CircleAvatar(
-                          radius: 42,
-                          backgroundColor: Colors.blue[100],
-                          backgroundImage: MemoryImage(base64Decode(member.avatar!)),
-                        )
-                      : CircleAvatar(
-                          radius: 42,
-                          backgroundColor: Colors.blue[100],
-                          child: ShaderMask(
-                            blendMode: BlendMode.srcATop,
-                            shaderCallback: (bounds) => LinearGradient(
-                              begin: const FractionalOffset(0.0, 0.0),
-                              end: const FractionalOffset(0.0, 1.0),
-                              stops: const [0.0, 1.0],
-                              colors: [Colors.red[700]!, Colors.blue[700]!],
-                            ).createShader(bounds),
-                            child: const Icon(CustomIcons.pilot, size: 52, color: Colors.white),
-                          ),
-                        ),
+                  child: AvatarImage(
+                    memberId: member.id,
+                    hasAvatar: member.hasAvatar == true,
+                    radius: 41.0,
+                  ),
                 ),
                 const SizedBox(height: 10.0),
                 Text(

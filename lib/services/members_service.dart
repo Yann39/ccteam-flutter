@@ -131,8 +131,7 @@ class MembersService {
           id
           firstName
           lastName
-          avatarFile
-          avatarFileName
+          hasAvatar
           riderNumber
           headerPalette
           bikes {
@@ -191,8 +190,7 @@ class MembersService {
           lastName
           email
           phone
-          avatarFile
-          avatarFileName
+          hasAvatar
           riderNumber
           headerPalette
           bikes {
@@ -279,8 +277,7 @@ class MembersService {
           lastName
           email
           phone
-          avatarFile
-          avatarFileName
+          hasAvatar
           riderNumber
           headerPalette
           bikes {
@@ -387,8 +384,7 @@ class MembersService {
           lastName
           email
           phone
-          avatarFile
-          avatarFileName
+          hasAvatar
           riderNumber
           headerPalette
           bikes {
@@ -499,8 +495,7 @@ class MembersService {
           lastName
           email
           phone
-          avatarFile
-          avatarFileName
+          hasAvatar
           riderNumber
           headerPalette
           bikes {
@@ -604,8 +599,7 @@ class MembersService {
           lastName
           email
           phone
-          avatarFile
-          avatarFileName
+          hasAvatar
           bikes {
             id
             manufacturer

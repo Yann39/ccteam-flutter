@@ -20,6 +20,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:ccteam/models/member.dart';
 import 'package:ccteam/providers/avatar_provider.dart';
 import 'package:ccteam/providers/login_provider.dart';
 import 'package:ccteam/providers/member_creation_provider.dart';
@@ -30,6 +31,7 @@ import 'package:ccteam/utils/custom_icons.dart';
 import 'package:ccteam/utils/enums.dart';
 import 'package:ccteam/utils/string_utils.dart';
 import 'package:ccteam/utils/strings.dart';
+import 'package:ccteam/widgets/avatar_image.dart';
 import 'package:ccteam/widgets/form_scaffold.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -85,45 +87,51 @@ class _AddEditMemberState extends State<AddEditMember> {
     _selectedBoardRole = _initialBoardRole;
   }
 
-  /// Validate the form then submit data to backend
-  void submitForm(MemberCreationProvider memberCreationProvider) {
+  /// Validate the form then submit data to backend.
+  Future<void> submitForm(MemberCreationProvider memberCreationProvider) async {
     final FormState form = _formKey.currentState!;
 
     if (!form.validate()) {
       Provider.of<MessageProvider>(context, listen: false).setMessage(AppString.formNotValid, MessageType.ERROR);
-    } else {
-      // this invokes each onSaved event
-      form.save();
-
-      final MemberListProvider _memberListProvider = Provider.of<MemberListProvider>(context, listen: false);
-      final MemberDetailProvider _memberDetailProvider = Provider.of<MemberDetailProvider>(context, listen: false);
-      final LoginProvider _loginProvider = Provider.of<LoginProvider>(context, listen: false);
-
-      final bool boardRoleChanged = _selectedBoardRole != _initialBoardRole;
-
-      // submit data to backend, if id is set this is an update, else a creation
-      if (memberCreationProvider.currentMember.id != null) {
-        memberCreationProvider.updateMember().then((value) async {
-          // board role is persisted via a dedicated mutation, only call it if the value actually changed
-          if (boardRoleChanged) {
-            await memberCreationProvider.setBoardRole(_selectedBoardRole);
-          }
-          _memberListProvider.updateMemberInList(memberCreationProvider.currentMember);
-          _memberDetailProvider.setCurrentMember(memberCreationProvider.currentMember);
-          // keep LoginProvider in sync when the user edits their own profile so the drawer header (and anything else bound to loggedMember) reflects the new avatar / fields immediately
-          _loginProvider.updateLoggedMember(memberCreationProvider.currentMember);
-        });
-      } else {
-        memberCreationProvider.createMember().then((value) async {
-          // when creating a new member, optionally apply the chosen board role right after creation
-          if (_selectedBoardRole != null) {
-            await memberCreationProvider.setBoardRole(_selectedBoardRole);
-          }
-          _memberListProvider.addMemberInList(memberCreationProvider.currentMember);
-        });
-      }
-      Navigator.pop(context);
+      return;
     }
+
+    // this invokes each onSaved event
+    form.save();
+
+    final MemberListProvider _memberListProvider = Provider.of<MemberListProvider>(context, listen: false);
+    final MemberDetailProvider _memberDetailProvider = Provider.of<MemberDetailProvider>(context, listen: false);
+    final LoginProvider _loginProvider = Provider.of<LoginProvider>(context, listen: false);
+
+    final bool boardRoleChanged = _selectedBoardRole != _initialBoardRole;
+
+    // submit data to backend, if id is set this is an update, else a creation
+    if (memberCreationProvider.currentMember.id != null) {
+      await memberCreationProvider.updateMember();
+      // board role is persisted via a dedicated mutation, only call it if the value actually changed
+      if (boardRoleChanged) {
+        await memberCreationProvider.setBoardRole(_selectedBoardRole);
+      }
+      // drop any cached avatar bytes BEFORE notifying listeners.
+      final int? editedId = memberCreationProvider.currentMember.id;
+      if (editedId != null) {
+        await AvatarImage.evictCache(editedId);
+      }
+      _memberListProvider.updateMemberInList(memberCreationProvider.currentMember);
+      _memberDetailProvider.setCurrentMember(memberCreationProvider.currentMember);
+      // keep LoginProvider in sync when the user edits their own profile so the drawer header (and anything else bound to loggedMember) reflects the new avatar / fields immediately
+      _loginProvider.updateLoggedMember(memberCreationProvider.currentMember);
+    } else {
+      await memberCreationProvider.createMember();
+      // when creating a new member, optionally apply the chosen board role right after creation
+      if (_selectedBoardRole != null) {
+        await memberCreationProvider.setBoardRole(_selectedBoardRole);
+      }
+      _memberListProvider.addMemberInList(memberCreationProvider.currentMember);
+    }
+
+    if (!mounted) return;
+    Navigator.pop(context);
   }
 
   /// Opens the avatar edit page.
@@ -141,29 +149,43 @@ class _AddEditMemberState extends State<AddEditMember> {
     final AvatarProvider _avatarProvider = Provider.of<AvatarProvider>(context, listen: false);
     final LoginProvider _loginProvider = Provider.of<LoginProvider>(context, listen: false);
 
+    // preview priority order: 1. pending upload, 2. server avatar, 3. placeholder pilot glyph
+    final Member _currentMember = _memberCreationProvider.currentMember;
+    final bool _hasPending = _currentMember.avatar != null;
+    final Widget _avatarPreview;
+    if (_hasPending) {
+      _avatarPreview = CircleAvatar(
+        radius: 60,
+        backgroundImage: MemoryImage(base64Decode(_currentMember.avatar!)),
+      );
+    } else if (_currentMember.hasAvatar == true && _currentMember.id != null) {
+      _avatarPreview = AvatarImage(
+        memberId: _currentMember.id,
+        hasAvatar: true,
+        radius: 60.0,
+      );
+    } else {
+      _avatarPreview = CircleAvatar(
+        radius: 60,
+        backgroundColor: Colors.blue[200],
+        child: ShaderMask(
+          blendMode: BlendMode.srcATop,
+          shaderCallback: (bounds) => LinearGradient(
+            begin: const FractionalOffset(0.0, 0.0),
+            end: const FractionalOffset(0.0, 1.0),
+            stops: const [0.0, 1.0],
+            colors: [Colors.red[700]!, Colors.blue[700]!],
+          ).createShader(bounds),
+          child: const Icon(CustomIcons.pilot, size: 75, color: Colors.white),
+        ),
+      );
+    }
+
     final _editableAvatar = Stack(
       children: <Widget>[
         InkWell(
           onTap: () => _openAvatarEditor(_memberCreationProvider, _avatarProvider),
-          child: _memberCreationProvider.currentMember.avatar != null
-              ? CircleAvatar(
-                  radius: 60,
-                  backgroundImage: MemoryImage(base64Decode(_memberCreationProvider.currentMember.avatar!)),
-                )
-              : CircleAvatar(
-                  radius: 60,
-                  backgroundColor: Colors.blue[200],
-                  child: ShaderMask(
-                    blendMode: BlendMode.srcATop,
-                    shaderCallback: (bounds) => LinearGradient(
-                      begin: const FractionalOffset(0.0, 0.0),
-                      end: const FractionalOffset(0.0, 1.0),
-                      stops: const [0.0, 1.0],
-                      colors: [Colors.red[700]!, Colors.blue[700]!],
-                    ).createShader(bounds),
-                    child: const Icon(CustomIcons.pilot, size: 75, color: Colors.white),
-                  ),
-                ),
+          child: _avatarPreview,
         ),
         Positioned(
           height: 30,

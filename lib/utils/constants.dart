@@ -32,6 +32,7 @@ const String SERVER_AVATAR_FOLDER = 'avatars/';
 const String SERVER_PHOTOS_FOLDER = 'photos/';
 
 const String API_GRAPHQL_ENDPOINT = '/graphql';
+const String API_AVATARS_ENDPOINT = '/avatars';
 
 const String API_CHECK_ACCOUNT_ENDPOINT = '/rest/checkAccount';
 const String API_PRE_REGISTER_ENDPOINT = '/rest/preRegister';

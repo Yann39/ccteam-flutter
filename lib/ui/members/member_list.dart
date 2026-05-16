@@ -17,8 +17,6 @@
  * along with CCTeam. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import 'dart:convert';
-
 import 'package:ccteam/models/bike.dart';
 import 'package:ccteam/models/member.dart';
 import 'package:ccteam/providers/login_provider.dart';
@@ -32,6 +30,7 @@ import 'package:ccteam/utils/custom_decorations.dart';
 import 'package:ccteam/utils/custom_icons.dart';
 import 'package:ccteam/utils/enums.dart';
 import 'package:ccteam/utils/strings.dart';
+import 'package:ccteam/widgets/avatar_image.dart';
 import 'package:ccteam/widgets/loading_content.dart';
 import 'package:ccteam/widgets/restricted_content.dart';
 import 'package:flutter/material.dart';
@@ -97,11 +96,12 @@ class MemberList extends StatelessWidget {
     );
   }
 
-  /// Build the avatar of a [member] — either the decoded image or a blue
-  /// fallback circle with the first-name initial.
+  /// Build the avatar of a [member] — either the image fetched from
+  /// the REST endpoint (with disk cache via cached_network_image) or
+  /// a blue fallback circle with the first-name initial.
   Widget _buildAvatar(Member member) {
-    if (member.avatar != null) {
-      return CircleAvatar(radius: 28.0, backgroundImage: MemoryImage(base64Decode(member.avatar!)));
+    if (member.hasAvatar == true && member.id != null) {
+      return AvatarImage(memberId: member.id, hasAvatar: true, radius: 28.0);
     }
     final String initial = (member.firstName != null && member.firstName!.isNotEmpty)
         ? member.firstName![0].toUpperCase()

@@ -17,8 +17,6 @@
  * along with CCTeam. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import 'dart:convert';
-
 import 'package:ccteam/models/bike.dart';
 import 'package:ccteam/models/event.dart';
 import 'package:ccteam/models/event_member.dart';
@@ -33,6 +31,7 @@ import 'package:ccteam/utils/custom_icons.dart';
 import 'package:ccteam/utils/string_utils.dart';
 import 'package:ccteam/utils/strings.dart';
 import 'package:ccteam/utils/track_utils.dart';
+import 'package:ccteam/widgets/avatar_image.dart';
 import 'package:ccteam/widgets/loading_content.dart';
 import 'package:ccteam/widgets/random_pattern_painter.dart';
 import 'package:flutter/material.dart';
@@ -670,37 +669,18 @@ class EventDetail extends StatelessWidget {
                                               padding: EdgeInsets.all(2.0),
                                               margin: EdgeInsets.symmetric(horizontal: 12.0),
                                               decoration: ShapeDecoration(shape: CircleBorder(), color: Colors.white70),
-                                              child:
-                                                  _eventDetailProvider
-                                                          .currentEvent
-                                                          .participants![index]
-                                                          .member!
-                                                          .avatar !=
-                                                      null
-                                                  ? CircleAvatar(
-                                                      backgroundColor: Colors.blue[100],
-                                                      backgroundImage: MemoryImage(
-                                                        base64Decode(
-                                                          _eventDetailProvider
-                                                              .currentEvent
-                                                              .participants![index]
-                                                              .member!
-                                                              .avatar!,
-                                                        ),
-                                                      ),
-                                                    )
-                                                  : CircleAvatar(
-                                                      backgroundColor: Colors.blue[100],
-                                                      child: ShaderMask(
-                                                        shaderCallback: (bounds) => LinearGradient(
-                                                          begin: const FractionalOffset(0.0, 0.0),
-                                                          end: const FractionalOffset(0.0, 1.0),
-                                                          stops: [0.0, 1.0],
-                                                          colors: [Colors.red[300]!, Colors.white],
-                                                        ).createShader(bounds),
-                                                        child: Icon(CustomIcons.pilot, size: 50),
-                                                      ),
-                                                    ),
+                                              child: AvatarImage(
+                                                memberId:
+                                                _eventDetailProvider.currentEvent.participants![index].member?.id,
+                                                hasAvatar:
+                                                    _eventDetailProvider
+                                                        .currentEvent
+                                                        .participants![index]
+                                                        .member
+                                                        ?.hasAvatar ==
+                                                    true,
+                                                radius: 20.0,
+                                              ),
                                             ),
                                           ),
                                           SizedBox(height: 5.0),

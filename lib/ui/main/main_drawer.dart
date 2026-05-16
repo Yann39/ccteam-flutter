@@ -17,12 +17,11 @@
  * along with CCTeam. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import 'dart:convert';
-
 import 'package:ccteam/providers/login_provider.dart';
 import 'package:ccteam/providers/record_list_provider.dart';
 import 'package:ccteam/utils/custom_icons.dart';
 import 'package:ccteam/utils/strings.dart';
+import 'package:ccteam/widgets/avatar_image.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -72,24 +71,11 @@ class MainDrawer extends StatelessWidget {
                   currentAccountPicture: Container(
                     decoration: ShapeDecoration(shape: CircleBorder(), color: Colors.white),
                     padding: EdgeInsets.all(2.0),
-                    child: _loginProvider.loggedMember!.avatar != null
-                        ? CircleAvatar(
-                            backgroundColor: Colors.blue[100],
-                            backgroundImage: MemoryImage(base64Decode(_loginProvider.loggedMember!.avatar!)),
-                          )
-                        : CircleAvatar(
-                            backgroundColor: Colors.blue[100],
-                            child: ShaderMask(
-                              blendMode: BlendMode.srcATop,
-                              shaderCallback: (bounds) => LinearGradient(
-                                begin: const FractionalOffset(0.0, 0.0),
-                                end: const FractionalOffset(0.0, 1.0),
-                                stops: [0.0, 1.0],
-                                colors: [Colors.red[700]!, Colors.blue[700]!],
-                              ).createShader(bounds),
-                              child: Icon(CustomIcons.pilot, size: 50, color: Colors.white),
-                            ),
-                          ),
+                    child: AvatarImage(
+                      memberId: _loginProvider.loggedMember!.id,
+                      hasAvatar: _loginProvider.loggedMember!.hasAvatar == true,
+                      radius: 30.0,
+                    ),
                   ),
                 ),
                 Container(

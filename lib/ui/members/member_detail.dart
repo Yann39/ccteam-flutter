@@ -17,7 +17,6 @@
  * along with CCTeam. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import 'dart:convert';
 import 'dart:math';
 
 import 'package:ccteam/models/bike.dart';
@@ -38,6 +37,7 @@ import 'package:ccteam/utils/custom_icons.dart';
 import 'package:ccteam/utils/date_utils.dart';
 import 'package:ccteam/utils/enums.dart';
 import 'package:ccteam/utils/strings.dart';
+import 'package:ccteam/widgets/avatar_image.dart';
 import 'package:ccteam/widgets/loading_content.dart';
 import 'package:ccteam/widgets/member_header_palette.dart';
 import 'package:ccteam/widgets/random_pattern_painter.dart';
@@ -860,27 +860,11 @@ class MemberDetail extends StatelessWidget {
                                   child: Container(
                                     decoration: ShapeDecoration(shape: CircleBorder(), color: Colors.white),
                                     padding: EdgeInsets.all(3.0),
-                                    child: _memberDetailProvider.currentMember!.avatar != null
-                                        ? CircleAvatar(
-                                            radius: 50,
-                                            backgroundImage: MemoryImage(
-                                              base64Decode(_memberDetailProvider.currentMember!.avatar!),
-                                            ),
-                                          )
-                                        : CircleAvatar(
-                                            radius: 50,
-                                            backgroundColor: Colors.blue[100],
-                                            child: ShaderMask(
-                                              blendMode: BlendMode.srcATop,
-                                              shaderCallback: (bounds) => LinearGradient(
-                                                begin: const FractionalOffset(0.0, 0.0),
-                                                end: const FractionalOffset(0.0, 1.0),
-                                                stops: [0.0, 1.0],
-                                                colors: [Colors.red[700]!, Colors.blue[700]!],
-                                              ).createShader(bounds),
-                                              child: Icon(CustomIcons.pilot, size: 75),
-                                            ),
-                                          ),
+                                    child: AvatarImage(
+                                      memberId: _memberDetailProvider.currentMember!.id,
+                                      hasAvatar: _memberDetailProvider.currentMember!.hasAvatar == true,
+                                      radius: 50.0,
+                                    ),
                                   ),
                                 ),
                               ],
@@ -962,6 +946,12 @@ class MemberDetail extends StatelessWidget {
                                       AppString.rides,
                                       textScaler: TextScaler.linear(1.2),
                                       style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black.withAlpha(204)),
+                                    ),
+                                    Spacer(),
+                                    Icon(
+                                      Icons.arrow_right_alt,
+                                      size: 22,
+                                      color: Colors.black.withAlpha(120),
                                     ),
                                   ],
                                 ),
