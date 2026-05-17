@@ -75,12 +75,12 @@ class Home extends StatelessWidget {
             backgroundColor: Colors.red[700],
           ),
           BottomNavigationBarItem(
-            icon: Icon(CustomIcons.group_helmet, color: Colors.white),
+            icon: Icon(CustomIcons.helmet_group, color: Colors.white),
             label: AppString.tabTeam,
             backgroundColor: Colors.red[700],
           ),
           BottomNavigationBarItem(
-            icon: Icon(CustomIcons.track_sample, color: Colors.white, size: 20),
+            icon: Icon(CustomIcons.track, color: Colors.white, size: 20),
             label: AppString.tabTracks,
             backgroundColor: Colors.red[700],
           ),

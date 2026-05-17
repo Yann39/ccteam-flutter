@@ -551,7 +551,7 @@ class MyAccount extends StatelessWidget {
           ),
           _buildStatDivider(),
           _buildStatRow(
-            icon: CustomIcons.motorbike,
+            icon: CustomIcons.motorbike_plain,
             iconColor: Colors.purple,
             label: AppString.statsBikesCount,
             value: bikes.toString(),
@@ -574,7 +574,7 @@ class MyAccount extends StatelessWidget {
           ),
           _buildStatDivider(),
           _buildStatRow(
-            icon: CustomIcons.motorbike,
+            icon: CustomIcons.motorbike_plain,
             iconColor: Colors.indigo[600]!,
             label: AppString.statsFavoriteBike,
             value: favBike != null ? _bikeStatLabel(favBike.bike) : AppString.statsNoData,

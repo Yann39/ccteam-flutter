@@ -123,7 +123,7 @@ class MainDrawer extends StatelessWidget {
                     },
                   ),
                   ListTile(
-                    leading: Icon(CustomIcons.motorbike, color: Colors.blue[900]),
+                    leading: Icon(CustomIcons.motorbike_plain, color: Colors.blue[900]),
                     trailing: Icon(Icons.arrow_right, color: Colors.black),
                     title: Text(AppString.myBikes, style: TextStyle(color: Colors.black)),
                     onTap: () {

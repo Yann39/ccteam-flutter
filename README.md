@@ -45,9 +45,7 @@ For Intellij :
 To deploy the app in release mode in a local device :
 
 ```
-flutter run --release 
---dart-define=API_BASE_URL=https://ccteam.rockybox.net/ccteam-gql
---dart-define=LYCHEE_BASE_URL=https://lychee.rockybox.net/
+flutter run --release  --dart-define=API_BASE_URL=https://ccteam.example.com/ccteam-gql --dart-define=LYCHEE_BASE_URL=https://lychee.example.com/
 ```
 
 # Play Store
@@ -210,7 +208,7 @@ You must set the `API_BASE_URL` variable when executing the application :
 For production :
 
 ```bash
-flutter run lib/main.dart --dart-define=API_BASE_URL=https://ccteam.rockybox.net/ccteam-gql
+flutter run lib/main.dart --dart-define=API_BASE_URL=https://ccteam.example.com/ccteam-gql
 ```
 
 For connected mobile device :

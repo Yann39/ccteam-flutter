@@ -539,7 +539,7 @@ class _BikeFilterTile extends StatelessWidget {
             child: Row(
               children: <Widget>[
                 Icon(
-                  muted ? Icons.block : CustomIcons.motorbike,
+                  muted ? Icons.block : CustomIcons.motorbike_plain,
                   size: 18.0,
                   color: Colors.black.withAlpha(muted ? 110 : 160),
                 ),

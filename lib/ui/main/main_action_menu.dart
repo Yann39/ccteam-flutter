@@ -17,44 +17,52 @@
  * along with CCTeam. If not, see <http://www.gnu.org/licenses/>.
  */
 
+import 'package:ccteam/providers/message_provider.dart';
 import 'package:ccteam/utils/enums.dart';
 import 'package:ccteam/utils/strings.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class MainActionMenu extends StatelessWidget {
-  /// Launch URL to contact user
-  _launchURL(String url) async {
-    if (await canLaunchUrl(Uri.parse(url))) {
-      await launchUrl(Uri.parse(url));
-    } else {
-      throw 'Could not launch $url';
+  /// Launch the contact email composer.
+  Future<void> _openContactMail(BuildContext context) async {
+    final Uri uri = Uri.parse("mailto:admin@ccteam.club");
+    final MessageProvider messageProvider = Provider.of<MessageProvider>(context, listen: false);
+    try {
+      // skip the canLaunchUrl gate and let the OS pick a handler
+      final bool launched = await launchUrl(uri, mode: LaunchMode.externalApplication);
+      if (!launched) {
+        messageProvider.setMessage(AppString.noMailAppFound, MessageType.WARNING);
+      }
+    } catch (_) {
+      messageProvider.setMessage(AppString.noMailAppFound, MessageType.WARNING);
     }
   }
 
-  /// Handle menu item click
-  void _select(QuickActions choice) async {
-    if (choice == QuickActions.contact) {
-      _launchURL("mailto:rockyracer@mailfence.com");
+  void _handleSelection(BuildContext context, QuickActions choice) {
+    switch (choice) {
+      case QuickActions.contact:
+        _openContactMail(context);
+        break;
+      case QuickActions.about:
+        // not wired yet, left intentionally as a no-op
+        break;
+      case QuickActions.logout:
+        break;
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return PopupMenuButton<QuickActions>(
+      onSelected: (QuickActions choice) => _handleSelection(context, choice),
       itemBuilder: (BuildContext context) {
         return [
-          PopupMenuItem<QuickActions>(
-            child: Text(AppString.about),
-            value: QuickActions.about,
-          ),
-          PopupMenuItem<QuickActions>(
-            child: Text(AppString.contact),
-            value: QuickActions.contact,
-          ),
+          PopupMenuItem<QuickActions>(child: Text(AppString.about), value: QuickActions.about),
+          PopupMenuItem<QuickActions>(child: Text(AppString.contact), value: QuickActions.contact),
         ];
       },
-      onSelected: _select,
     );
   }
 }

@@ -153,7 +153,7 @@ class NewsList extends StatelessWidget {
                 return <Widget>[
                   SliverAppBar(
                     expandedHeight: logoHeight,
-                    floating: true,
+                    floating: false,
                     backgroundColor: Colors.transparent,
                     pinned: false,
                     automaticallyImplyLeading: false,

@@ -230,7 +230,7 @@ class _AddEditEventState extends State<AddEditEvent> {
                 ? snapshot.data!.first
                 : null,
             decoration: const InputDecoration(
-              icon: Icon(CustomIcons.track_sample),
+              icon: Icon(CustomIcons.track),
               hintText: AppString.eventTrackIdHint,
               labelText: AppString.eventTrackId,
             ),

@@ -226,7 +226,7 @@ class MemberDetail extends StatelessWidget {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: <Widget>[
-        Icon(CustomIcons.motorbike, size: 13.0, color: Colors.deepPurple),
+        Icon(CustomIcons.motorbike_plain, size: 13.0, color: Colors.deepPurple),
         const SizedBox(width: 4.0),
         Flexible(
           child: Column(
@@ -1070,7 +1070,7 @@ class _BikesInfoState extends State<_BikesInfo> {
                     ],
                   ),
                 ),
-                SizedBox(width: 72.0, child: Icon(CustomIcons.motorbike, color: Colors.red[700]!.withAlpha(204))),
+                SizedBox(width: 72.0, child: Icon(CustomIcons.motorbike_plain, color: Colors.red[700]!.withAlpha(204))),
               ],
             ),
             // animated reveal of the other bikes when expanded

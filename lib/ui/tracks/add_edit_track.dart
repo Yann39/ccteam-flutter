@@ -160,7 +160,7 @@ class _AddEditTrackState extends State<AddEditTrack> {
 
     final _nameField = TextFormField(
       decoration: const InputDecoration(
-        icon: Icon(CustomIcons.track_sample),
+        icon: Icon(CustomIcons.track),
         hintText: AppString.trackNameHint,
         labelText: AppString.trackName,
       ),
@@ -318,6 +318,35 @@ class _AddEditTrackState extends State<AddEditTrack> {
       initialValue: track.longitude?.toString(),
     );
 
+    // Reminder shown only on the creation flow — once a track exists
+    // the icon / cover image are presumably already bundled (or the
+    // default ones are used) so we don't need to nag on every edit.
+    final Widget _assetsReminder = Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 10.0),
+      decoration: BoxDecoration(
+        color: Colors.amber[50],
+        border: Border.all(color: Colors.amber[300]!),
+        borderRadius: BorderRadius.circular(8.0),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          Icon(Icons.info_outline, size: 18.0, color: Colors.amber[800]),
+          const SizedBox(width: 8.0),
+          Expanded(
+            child: Text(
+              AppString.trackAssetsReminder,
+              style: TextStyle(
+                color: Colors.amber[900],
+                fontSize: 12.5,
+                height: 1.35,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+
     return FormScaffold(
       title: isEditing ? AppString.trackEdit : AppString.trackCreate,
       formKey: _formKey,
@@ -326,6 +355,7 @@ class _AddEditTrackState extends State<AddEditTrack> {
       // delete action only when editing an existing track
       onDelete: isEditing ? _deleteTrack : null,
       fields: <Widget>[
+        if (!isEditing) _assetsReminder,
         _nameField,
         _countryField,
         _distanceField,

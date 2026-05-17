@@ -210,7 +210,7 @@ class _AddEditRecordState extends State<AddEditRecord> {
                     ? snapshot.data!.first
                     : null,
                 decoration: const InputDecoration(
-                  icon: const Icon(CustomIcons.track_sample),
+                  icon: const Icon(CustomIcons.track),
                   hintText: AppString.eventTrackIdHint,
                   labelText: AppString.eventTrackId,
                 ),
@@ -276,7 +276,7 @@ class _AddEditRecordState extends State<AddEditRecord> {
     final _bikeField = DropdownButtonFormField<Bike>(
       initialValue: _recordCreationProvider.selectedBike,
       decoration: const InputDecoration(
-        icon: Icon(CustomIcons.motorbike),
+        icon: Icon(CustomIcons.motorbike_plain),
         hintText: AppString.recordBikeHint,
         labelText: AppString.recordBikeLabel,
       ),

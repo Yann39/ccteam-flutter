@@ -201,7 +201,7 @@ class MemberList extends StatelessWidget {
         subtitle: Row(
           children: <Widget>[
             Icon(
-              CustomIcons.motorbike,
+              CustomIcons.motorbike_plain,
               size: 13.0,
               color: hasBike ? Colors.deepPurple : Colors.black.withValues(alpha: 0.3),
             ),

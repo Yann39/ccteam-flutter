@@ -778,7 +778,7 @@ class _TrackDetailState extends State<TrackDetail> {
                 ),
                 if (bikeStr != null) ...[
                   const SizedBox(height: 2.0),
-                  _chronoMetaItem(CustomIcons.motorbike, Colors.deepPurple, bikeStr),
+                  _chronoMetaItem(CustomIcons.motorbike_plain, Colors.deepPurple, bikeStr),
                 ],
               ],
             ),

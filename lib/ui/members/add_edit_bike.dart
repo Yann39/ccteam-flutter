@@ -100,7 +100,7 @@ class _AddEditBikeState extends State<AddEditBike> {
   Widget _buildModelNameField() {
     return TextFormField(
       initialValue: _bike.modelName,
-      decoration: const InputDecoration(icon: Icon(CustomIcons.motorbike), labelText: AppString.bikeModel),
+      decoration: const InputDecoration(icon: Icon(CustomIcons.motorbike_plain), labelText: AppString.bikeModel),
       onSaved: (value) => _bike.modelName = value,
       validator: (value) {
         if (value == null || value.isEmpty) {

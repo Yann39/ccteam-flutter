@@ -163,7 +163,7 @@ class _MemberChronosState extends State<MemberChronos> {
                                     ),
                                     Row(
                                       children: <Widget>[
-                                        Icon(CustomIcons.motorbike, size: 16, color: Colors.deepPurple),
+                                        Icon(CustomIcons.motorbike_plain, size: 16, color: Colors.deepPurple),
                                         SizedBox(width: 5.0),
                                         Expanded(
                                           child: Text(

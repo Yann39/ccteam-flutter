@@ -329,7 +329,7 @@ class EventDetail extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(horizontal: 4.0, vertical: 6.0),
                 child: Row(
                   children: <Widget>[
-                    Icon(CustomIcons.motorbike, size: 18.0, color: Colors.black.withAlpha(140)),
+                    Icon(CustomIcons.motorbike_plain, size: 18.0, color: Colors.black.withAlpha(140)),
                     const SizedBox(width: 8.0),
                     Text(
                       AppString.eventBikeLabel,
@@ -751,7 +751,7 @@ class _BikePickerTile extends StatelessWidget {
             child: Row(
               children: <Widget>[
                 Icon(
-                  muted ? Icons.block : CustomIcons.motorbike,
+                  muted ? Icons.block : CustomIcons.motorbike_plain,
                   size: 18.0,
                   color: Colors.black.withAlpha(muted ? 110 : 160),
                 ),

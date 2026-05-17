@@ -82,6 +82,7 @@ class AppString {
 
   static const String about = 'A propos';
   static const String contact = 'Contact';
+  static const String noMailAppFound = 'Aucune application de messagerie n\'a pu être ouverte';
   static const String logout = 'Se déconnecter';
   static const String galleries = 'Galleries';
 
@@ -297,6 +298,8 @@ class AppString {
   static const String trackLongitude = 'Longitude';
   static const String trackLongitudeMandatory = 'La longitude est obligatoire';
   static const String trackLongitudeInvalid = 'Longitude invalide';
+  static const String trackAssetsReminder =
+      'N\'oubliez pas d\'ajouter dans l\'application une icône et une photo de couverture pour ce circuit, sinon les visuels par défaut seront utilisés.';
 
   static const String eventCreate = 'Ajouter un événement';
   static const String eventCreated = 'L\'événement à été créée avec succès !';

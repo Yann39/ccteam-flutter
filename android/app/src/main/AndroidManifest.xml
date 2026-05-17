@@ -8,6 +8,27 @@
     <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
 
+    <!-- Android 11+ (API 30+) package-visibility restrictions. Without
+         this block, canLaunchUrl / launchUrl from `url_launcher` won't
+         see the installed handlers for these schemes and the call
+         fails silently. Each <intent> declares one external scheme we
+         actually launch (mailto for "Contact", https for track / GPS
+         links, tel: kept for future use). -->
+    <queries>
+        <intent>
+            <action android:name="android.intent.action.VIEW"/>
+            <data android:scheme="mailto"/>
+        </intent>
+        <intent>
+            <action android:name="android.intent.action.VIEW"/>
+            <data android:scheme="https"/>
+        </intent>
+        <intent>
+            <action android:name="android.intent.action.VIEW"/>
+            <data android:scheme="tel"/>
+        </intent>
+    </queries>
+
     <!-- io.flutter.app.FlutterApplication is an android.app.Application that
          calls FlutterMain.startInitialization(this); in its onCreate method.
          In most cases you can leave this as-is, but you if you want to provide

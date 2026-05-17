@@ -266,7 +266,7 @@ class EventCard extends StatelessWidget {
                             SizedBox(height: 2.0),
                             Row(
                               children: [
-                                Icon(CustomIcons.motorbike, size: 14, color: Colors.blue[800]),
+                                Icon(CustomIcons.motorbike_plain, size: 14, color: Colors.blue[800]),
                                 SizedBox(width: 4.0),
                                 Expanded(
                                   child: Text(

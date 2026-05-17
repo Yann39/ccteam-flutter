@@ -140,7 +140,7 @@ class HomeStats extends StatelessWidget {
                         onTap: () => _switchTab(context, 1),
                       ),
                       _GroupCardRow(
-                        icon: CustomIcons.track_sample,
+                        icon: CustomIcons.track,
                         iconColor: Colors.blue[800]!,
                         value: tracksValue,
                         label: AppString.statsTracks,
@@ -164,7 +164,7 @@ class HomeStats extends StatelessWidget {
                         onTap: () => Navigator.pushNamed(context, '/memberEvents'),
                       ),
                       _GroupCardRow(
-                        icon: CustomIcons.motorbike,
+                        icon: CustomIcons.motorbike_plain,
                         iconColor: Colors.purple,
                         value: myBikes.toString(),
                         label: AppString.statsMyBikes,

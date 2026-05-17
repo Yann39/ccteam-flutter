@@ -25,74 +25,74 @@ class TrackUtils {
   /// Get the right track icon according to the specified [trackName]
   static Icon getTrackIcon(String trackName) {
     if (trackName == 'Alès') {
-      return Icon(CustomIcons.track_ales, color: Colors.red[700], size: 90);
+      return Icon(CustomIcons.ales_track, color: Colors.red[700], size: 90);
     } else if (trackName == 'Barcelone') {
-      return Icon(CustomIcons.track_barcelone, color: Colors.red[700], size: 60);
+      return Icon(CustomIcons.barcelone_track, color: Colors.red[700], size: 60);
     } else if (trackName == 'Bresse') {
-      return Icon(CustomIcons.track_bresse, color: Colors.red[700], size: 60);
+      return Icon(CustomIcons.bresse_track, color: Colors.red[700], size: 60);
     } else if (trackName == 'Bourbonnais') {
-      return Icon(CustomIcons.track_bourbonnais, color: Colors.red[700], size: 70);
+      return Icon(CustomIcons.bourbonnais_track, color: Colors.red[700], size: 70);
     } else if (trackName == 'Carole') {
-      return Icon(CustomIcons.track_carole, color: Colors.red[700], size: 60);
+      return Icon(CustomIcons.carole_track, color: Colors.red[700], size: 60);
     } else if (trackName == 'Dijon-Prenois') {
-      return Icon(CustomIcons.track_dijon_prenois, color: Colors.red[700], size: 90);
+      return Icon(CustomIcons.dijon_prenois_track, color: Colors.red[700], size: 90);
     } else if (trackName == 'La Ferté-Gaucher') {
-      return Icon(CustomIcons.track_la_ferte_gaucher, color: Colors.red[700], size: 78);
+      return Icon(CustomIcons.la_ferte_gaucher_track, color: Colors.red[700], size: 78);
     } else if (trackName == 'Le Mans') {
-      return Icon(CustomIcons.track_le_mans, color: Colors.red[700], size: 80);
+      return Icon(CustomIcons.le_mans_track, color: Colors.red[700], size: 80);
     } else if (trackName == 'Lédenon') {
-      return Icon(CustomIcons.track_ledenon, color: Colors.red[700], size: 70);
+      return Icon(CustomIcons.ledenon_track, color: Colors.red[700], size: 70);
     } else if (trackName == 'Magny-Cours') {
-      return Icon(CustomIcons.track_magny_cours, color: Colors.red[700], size: 65);
+      return Icon(CustomIcons.magny_cours_track, color: Colors.red[700], size: 65);
     } else if (trackName == 'Mirecourt') {
-      return Icon(CustomIcons.track_mirecourt, color: Colors.red[700], size: 65);
+      return Icon(CustomIcons.mirecourt_track, color: Colors.red[700], size: 65);
     } else if (trackName == 'Misano') {
-      return Icon(CustomIcons.track_misano, color: Colors.red[700], size: 52);
+      return Icon(CustomIcons.misano_track, color: Colors.red[700], size: 52);
     } else if (trackName == 'Portimão') {
-      return Icon(CustomIcons.track_portimao, color: Colors.red[700], size: 52);
+      return Icon(CustomIcons.portimao_track, color: Colors.red[700], size: 52);
     } else if (trackName == 'Pouilly-en-Auxois') {
-      return Icon(CustomIcons.track_pouilly_en_auxois, color: Colors.red[700], size: 52);
+      return Icon(CustomIcons.pouilly_en_auxois_track, color: Colors.red[700], size: 52);
     } else if (trackName == 'Vaison') {
-      return Icon(CustomIcons.track_vaison, color: Colors.red[700], size: 52);
+      return Icon(CustomIcons.vaison_track, color: Colors.red[700], size: 52);
     } else {
-      return Icon(CustomIcons.track_sample, color: Colors.red[700], size: 40);
+      return Icon(CustomIcons.default_track, color: Colors.red[700], size: 40);
     }
   }
 
   /// Get the right track icon according to the specified [trackName]
   static IconData trackIconFromName(String? trackName) {
     if (trackName == 'Alès') {
-      return CustomIcons.track_ales;
+      return CustomIcons.ales_track;
     } else if (trackName == 'Barcelone') {
-      return CustomIcons.track_barcelone;
+      return CustomIcons.barcelone_track;
     } else if (trackName == 'Bresse') {
-      return CustomIcons.track_bresse;
+      return CustomIcons.bresse_track;
     } else if (trackName == 'Bourbonnais') {
-      return CustomIcons.track_bourbonnais;
+      return CustomIcons.bourbonnais_track;
     } else if (trackName == 'Carole') {
-      return CustomIcons.track_carole;
+      return CustomIcons.carole_track;
     } else if (trackName == 'Dijon-Prenois') {
-      return CustomIcons.track_dijon_prenois;
+      return CustomIcons.dijon_prenois_track;
     } else if (trackName == 'La Ferté-Gaucher') {
-      return CustomIcons.track_la_ferte_gaucher;
+      return CustomIcons.la_ferte_gaucher_track;
     } else if (trackName == 'Le Mans') {
-      return CustomIcons.track_le_mans;
+      return CustomIcons.le_mans_track;
     } else if (trackName == 'Lédenon') {
-      return CustomIcons.track_ledenon;
+      return CustomIcons.ledenon_track;
     } else if (trackName == 'Magny-Cours') {
-      return CustomIcons.track_magny_cours;
+      return CustomIcons.magny_cours_track;
     } else if (trackName == 'Mirecourt') {
-      return CustomIcons.track_mirecourt;
+      return CustomIcons.mirecourt_track;
     } else if (trackName == 'Misano') {
-      return CustomIcons.track_misano;
+      return CustomIcons.misano_track;
     } else if (trackName == 'Portimão') {
-      return CustomIcons.track_portimao;
+      return CustomIcons.portimao_track;
     } else if (trackName == 'Pouilly-en-Auxois') {
-      return CustomIcons.track_pouilly_en_auxois;
+      return CustomIcons.pouilly_en_auxois_track;
     } else if (trackName == 'Vaison') {
-      return CustomIcons.track_vaison;
+      return CustomIcons.vaison_track;
     } else {
-      return CustomIcons.track_sample;
+      return CustomIcons.default_track;
     }
   }
 
@@ -143,15 +143,15 @@ class TrackUtils {
     } else if (trackName == 'Carole') {
       return "images/tracks/carole_cover.jpg";
     } else if (trackName == 'Dijon-Prenois') {
-      return "images/tracks/dijon_cover.jpg";
+      return "images/tracks/dijon-prenois_cover.jpg";
     } else if (trackName == 'La Ferté-Gaucher') {
-      return "images/tracks/la_ferte_gaucher_cover.jpg";
+      return "images/tracks/la-ferte-gaucher_cover.jpg";
     } else if (trackName == 'Le Mans') {
-      return "images/tracks/le_mans_cover.jpg";
+      return "images/tracks/le-mans_cover.jpg";
     } else if (trackName == 'Lédenon') {
       return "images/tracks/ledenon_cover.jpg";
     } else if (trackName == 'Magny-Cours') {
-      return "images/tracks/magny_cours_cover.jpg";
+      return "images/tracks/magny-cours_cover.jpg";
     } else if (trackName == 'Mirecourt') {
       return "images/tracks/mirecourt_cover.jpg";
     } else if (trackName == 'Misano') {
@@ -159,7 +159,7 @@ class TrackUtils {
     } else if (trackName == 'Portimão') {
       return "images/tracks/portimao_cover.jpg";
     } else if (trackName == 'Pouilly-en-Auxois') {
-      return "images/tracks/pouilly_en_auxois_cover.jpg";
+      return "images/tracks/pouilly-en-auxois_cover.jpg";
     } else if (trackName == 'Vaison') {
       return "images/tracks/vaison_cover.jpg";
     } else {

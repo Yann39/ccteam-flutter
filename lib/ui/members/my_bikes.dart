@@ -66,7 +66,7 @@ Widget _buildManufacturerLogo(String? manufacturer) {
     decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.85), borderRadius: BorderRadius.circular(8.0)),
     child: logoPath != null
         ? SvgPicture.asset(logoPath, fit: BoxFit.contain)
-        : Icon(CustomIcons.motorbike, color: Colors.deepPurple, size: 32),
+        : Icon(CustomIcons.motorbike_plain, color: Colors.deepPurple, size: 32),
   );
 }
 
@@ -184,7 +184,7 @@ class MyBikes extends StatelessWidget {
                       SizedBox(height: 8.0),
                       Row(
                         children: <Widget>[
-                          Icon(CustomIcons.motorbike, size: 16, color: Colors.deepPurple),
+                          Icon(CustomIcons.motorbike_plain, size: 16, color: Colors.deepPurple),
                           SizedBox(width: 5.0),
                           Text("${bike.engineSize} cc - ${bike.year}", style: TextStyle(color: Colors.white)),
                         ],
