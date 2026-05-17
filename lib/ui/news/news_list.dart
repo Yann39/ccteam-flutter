@@ -33,6 +33,7 @@ import 'package:ccteam/utils/strings.dart';
 import 'package:ccteam/widgets/home_stats.dart';
 import 'package:ccteam/widgets/loading_content.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:logging/logging.dart';
 import 'package:provider/provider.dart';
 
@@ -164,7 +165,10 @@ class NewsList extends StatelessWidget {
                     flexibleSpace: FlexibleSpaceBar(
                       background: Padding(
                         padding: const EdgeInsets.all(16.0),
-                        child: Image.asset('images/ccteam-logo-horizontal.png', fit: BoxFit.contain),
+                        child: SvgPicture.asset(
+                          'images/app_logos/ccteam_logo_horizontal_red_white.svg',
+                          fit: BoxFit.contain,
+                        ),
                       ),
                     ),
                   ),

@@ -26,6 +26,7 @@ import 'package:ccteam/ui/events/event_card.dart';
 import 'package:ccteam/utils/custom_decorations.dart';
 import 'package:ccteam/utils/enums.dart';
 import 'package:ccteam/utils/strings.dart';
+import 'package:ccteam/widgets/restricted_content.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -52,8 +53,12 @@ class _SelectEventToJoinState extends State<SelectEventToJoin> {
   void initState() {
     super.initState();
     // refresh the events list as soon as we land on this screen so the
-    // user sees the most up-to-date set of upcoming events
+    // user sees the most up-to-date set of upcoming events. Skipped
+    // for non-members — they'll see the RestrictedContent placeholder
+    // and don't need a (potentially failing) network call.
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      final LoginProvider loginProvider = Provider.of<LoginProvider>(context, listen: false);
+      if (!loginProvider.isMember) return;
       Provider.of<EventListProvider>(context, listen: false).fetchEventList();
     });
   }
@@ -106,12 +111,10 @@ class _SelectEventToJoinState extends State<SelectEventToJoin> {
 
     // build the candidate list: every event the user isn't already
     // registered to, past and upcoming alike. We sort them in two
-    // groups so the result reads naturally — actionable / soonest
+    // groups so the result reads naturally, actionable / soonest
     // first, then archival:
     //   - upcoming (today or later) ascending → next ride at the top
     //   - past events descending → most recent first
-    // Same ordering as the "Mes roulages" page so the two screens
-    // feel like siblings.
     final DateTime now = DateTime.now();
     final List<Event> notJoined = eventListProvider.allEvents.where((e) {
       if (e.startDate == null) return false;
@@ -119,14 +122,12 @@ class _SelectEventToJoinState extends State<SelectEventToJoin> {
       return !alreadyIn;
     }).toList();
 
-    final List<Event> upcoming = notJoined
-        .where((e) => e.startDate!.isAfter(now) || DateUtils.isSameDay(e.startDate!, now))
-        .toList()
-      ..sort((a, b) => a.startDate!.compareTo(b.startDate!));
-    final List<Event> past = notJoined
-        .where((e) => e.startDate!.isBefore(now) && !DateUtils.isSameDay(e.startDate!, now))
-        .toList()
-      ..sort((a, b) => b.startDate!.compareTo(a.startDate!));
+    final List<Event> upcoming =
+        notJoined.where((e) => e.startDate!.isAfter(now) || DateUtils.isSameDay(e.startDate!, now)).toList()
+          ..sort((a, b) => a.startDate!.compareTo(b.startDate!));
+    final List<Event> past =
+        notJoined.where((e) => e.startDate!.isBefore(now) && !DateUtils.isSameDay(e.startDate!, now)).toList()
+          ..sort((a, b) => b.startDate!.compareTo(a.startDate!));
 
     final List<Event> candidateEvents = <Event>[...upcoming, ...past];
 
@@ -150,16 +151,15 @@ class _SelectEventToJoinState extends State<SelectEventToJoin> {
         title: Text(AppString.joinEvent),
         leading: IconButton(icon: const Icon(Icons.arrow_back), onPressed: () => Navigator.pop(context)),
       ),
-      body: Container(
-        // explicit infinity so the gradient covers the full body height
-        // even when the body content (e.g. the empty placeholder) is
-        // shorter than the screen
-        width: double.infinity,
-        height: double.infinity,
-        decoration: CustomDecorations.mainContent,
-        padding: const EdgeInsets.all(8.0),
-        child: RefreshIndicator(onRefresh: () => eventListProvider.fetchEventList(), child: body),
-      ),
+      body: !loginProvider.isMember
+          ? Container(decoration: CustomDecorations.mainContent, child: RestrictedContent())
+          : Container(
+              width: double.infinity,
+              height: double.infinity,
+              decoration: CustomDecorations.mainContent,
+              padding: const EdgeInsets.all(8.0),
+              child: RefreshIndicator(onRefresh: () => eventListProvider.fetchEventList(), child: body),
+            ),
     );
   }
 

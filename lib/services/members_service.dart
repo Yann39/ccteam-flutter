@@ -142,7 +142,6 @@ class MembersService {
             year
             current
           }
-          active
           role
           boardRole
         }
@@ -211,7 +210,6 @@ class MembersService {
           }
           role
           boardRole
-          active
           registrationDate
           eventMembers {
             id
@@ -299,7 +297,6 @@ class MembersService {
             createdOn
             modifiedOn
           }
-          active
           role
           boardRole
           registrationDate
@@ -373,7 +370,7 @@ class MembersService {
     _log.info("Creating member ${member.email} ...");
 
     final String query = """
-      mutation CreateMember(\$firstName: String!, \$lastName: String!, \$email: String!, \$phone: String, \$riderNumber: Int, \$avatarFile: String, \$avatarFileName: String, \$active: Boolean!, \$role: Role!) {
+      mutation CreateMember(\$firstName: String!, \$lastName: String!, \$email: String!, \$phone: String, \$riderNumber: Int, \$avatarFile: String, \$avatarFileName: String, \$role: Role!) {
         createMember(
           firstName: \$firstName
           lastName: \$lastName
@@ -382,7 +379,6 @@ class MembersService {
           riderNumber: \$riderNumber
           avatarFile: \$avatarFile
           avatarFileName: \$avatarFileName
-          active: \$active
           role: \$role
         ) {
           id
@@ -409,7 +405,6 @@ class MembersService {
             createdOn
             modifiedOn
           }
-          active
           role
           boardRole
           registrationDate
@@ -465,7 +460,6 @@ class MembersService {
         'avatarFile': member.avatar,
         'avatarFileName': member.avatarName,
         'riderNumber': member.riderNumber,
-        'active': member.active,
         'role': member.role?.toString().split('.').last,
       },
       fetchPolicy: FetchPolicy.noCache,
@@ -486,7 +480,7 @@ class MembersService {
     _log.info("Updating member ${member.email} ...");
 
     final String query = """
-      mutation UpdateMember(\$memberId: Long!, \$firstName: String!, \$lastName: String!, \$email: String!, \$phone: String, \$riderNumber: Int, \$avatarFile: String, \$avatarFileName: String, \$active: Boolean!, \$role: Role!) {
+      mutation UpdateMember(\$memberId: Long!, \$firstName: String!, \$lastName: String!, \$email: String!, \$phone: String, \$riderNumber: Int, \$avatarFile: String, \$avatarFileName: String, \$role: Role!) {
         updateMember(
           memberId: \$memberId
           firstName: \$firstName
@@ -496,7 +490,6 @@ class MembersService {
           riderNumber: \$riderNumber
           avatarFile: \$avatarFile
           avatarFileName: \$avatarFileName
-          active: \$active
           role: \$role
         ) {
           id
@@ -523,7 +516,6 @@ class MembersService {
             createdOn
             modifiedOn
           }
-          active
           role
           boardRole
           registrationDate
@@ -580,7 +572,6 @@ class MembersService {
         'avatarFile': member.avatar,
         'avatarFileName': member.avatarName,
         'riderNumber': member.riderNumber,
-        'active': member.active,
         'role': member.role?.toString().split('.').last,
       },
       fetchPolicy: FetchPolicy.noCache,
@@ -620,7 +611,6 @@ class MembersService {
             year
             current
           }
-          active
           role
           boardRole
           registrationDate

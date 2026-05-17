@@ -35,7 +35,6 @@ class Member {
   String? avatarName;
   List<Bike>? bikes;
   List<MembershipFee>? membershipFees;
-  bool? active;
   bool? verified;
   MemberRole? role;
   BoardRole? boardRole;
@@ -61,7 +60,6 @@ class Member {
     this.avatarName,
     this.bikes,
     this.membershipFees,
-    this.active = false,
     this.verified = false,
     this.role = MemberRole.ROLE_USER,
     this.boardRole,
@@ -88,7 +86,6 @@ class Member {
       avatarName: ${this.avatarName},
       bikes: ${this.bikes?.map((bike) => bike.toString())},
       membershipFees: ${this.membershipFees?.map((fee) => fee.toString())},
-      active: ${this.active},
       verified: ${this.verified},
       role: ${this.role},
       boardRole: ${this.boardRole},
@@ -117,7 +114,6 @@ class Member {
       membershipFees = json['membershipFees'] != null
           ? (json['membershipFees'] as Iterable).map((i) => MembershipFee.fromJson(i)).toList()
           : null,
-      active = json['active'] != null && (json['active'] == '1' || json['active'] == true),
       verified = json['verified'] != null && (json['verified'] == '1' || json['verified'] == true),
       role = json['role'] != null
           ? MemberRole.values.firstWhere(
@@ -155,7 +151,6 @@ class Member {
     "avatarFileName": avatarName,
     "bikes": bikes?.map((i) => i.toJson()).toList(),
     "membershipFees": membershipFees?.map((i) => i.toJson()).toList(),
-    "active": active,
     "verified": verified,
     "role": role?.toString().split('.').last,
     "boardRole": boardRole?.toString().split('.').last,

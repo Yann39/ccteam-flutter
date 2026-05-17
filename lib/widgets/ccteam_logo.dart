@@ -18,25 +18,22 @@
  */
 
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 
 /// Loading indicator widget
 class CCTeamLogo extends StatelessWidget {
   final double? height;
   final EdgeInsetsGeometry padding;
 
-  const CCTeamLogo({
-    Key? key,
-    this.height,
-    this.padding = const EdgeInsets.fromLTRB(48, 64, 48, 16),
-  }) : super(key: key);
+  const CCTeamLogo({Key? key, this.height, this.padding = const EdgeInsets.fromLTRB(48, 64, 48, 16)}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Container(
       padding: padding,
-      child: Image.asset(
-        'images/ccteam-logo-vertical.png',
-        height: height,
+      child: SvgPicture.asset(
+        'images/app_logos/ccteam_logo_vertical_red_white.svg',
+        width: height,
         fit: BoxFit.fitHeight,
       ),
     );

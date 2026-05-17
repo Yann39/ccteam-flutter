@@ -48,6 +48,7 @@ import 'package:ccteam/ui/events/add_edit_event.dart';
 import 'package:ccteam/ui/events/event_detail.dart';
 import 'package:ccteam/ui/laprecord/add_edit_record.dart';
 import 'package:ccteam/ui/laprecord/member_chronos.dart';
+import 'package:ccteam/ui/main/about.dart';
 import 'package:ccteam/ui/main/change_passcode.dart';
 import 'package:ccteam/ui/main/edit_avatar.dart';
 import 'package:ccteam/ui/main/home.dart';
@@ -263,6 +264,7 @@ class CCTeamApp extends StatelessWidget {
           '/editAvatar': (context) => EditAvatar(),
           '/myAccount': (context) => MyAccount(),
           '/changePasscode': (context) => ChangePasscode(),
+          '/about': (context) => const About(),
           '/addEditNews': (context) => AddEditNews(),
           '/addEditEvent': (context) => AddEditEvent(),
           '/addEditMember': (context) => AddEditMember(),

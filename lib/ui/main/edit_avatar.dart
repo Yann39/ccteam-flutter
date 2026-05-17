@@ -164,7 +164,7 @@ class _EditAvatarState extends State<EditAvatar> {
     Navigator.pop(context);
   }
 
-  /// Compact subtitle ("Max. 500 Ko · JPG, GIF, PNG") — strips the
+  /// Compact subtitle ("Max. 500 Ko · JPG, GIF, PNG"), strips the
   /// leading "Formats " prefix so the line stays on a single row.
   String _formatsShort() {
     final String formats = AppString.avatarFormats;

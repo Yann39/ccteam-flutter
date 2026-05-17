@@ -46,7 +46,7 @@ class MainActionMenu extends StatelessWidget {
         _openContactMail(context);
         break;
       case QuickActions.about:
-        // not wired yet, left intentionally as a no-op
+        Navigator.pushNamed(context, '/about');
         break;
       case QuickActions.logout:
         break;

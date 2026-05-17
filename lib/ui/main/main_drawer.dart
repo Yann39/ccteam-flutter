@@ -23,6 +23,7 @@ import 'package:ccteam/utils/custom_icons.dart';
 import 'package:ccteam/utils/strings.dart';
 import 'package:ccteam/widgets/avatar_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:provider/provider.dart';
 
 class MainDrawer extends StatelessWidget {
@@ -80,9 +81,13 @@ class MainDrawer extends StatelessWidget {
                 ),
                 Container(
                   width: 210,
-                  height: 40,
+                  height: 58,
                   alignment: Alignment.topCenter,
-                  child: Image.asset('images/ccteam-logo-horizontal-text.png', fit: BoxFit.fitWidth, width: 140),
+                  child: SvgPicture.asset(
+                    'images/app_logos/ccteam_logo_text_only_black_white.svg',
+                    width: 140,
+                    fit: BoxFit.fitWidth,
+                  ),
                 ),
               ],
             ),

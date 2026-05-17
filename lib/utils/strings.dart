@@ -31,6 +31,34 @@ class AppString {
   }
 
   static const String applicationTitle = 'CCTeam';
+  static const String applicationVersion = '1.0.0';
+  static const String applicationTagline = 'L\'application officielle du CCTeam motoclub';
+
+  // About page
+  static const String aboutTitle = 'A propos';
+  static const String aboutPurposeTitle = 'Pourquoi cette application ?';
+  static const String aboutPurposeBody =
+      'CCTeam rassemble en un seul endroit la vie du club : calendrier des roulages et inscriptions, '
+      'profils des membres et de leurs motos, fiches détaillées des circuits, chronos et records personnels, '
+      'galeries photos des sorties, et actualités du club.';
+  static const String aboutFeaturesTitle = 'Fonctionnalités principales';
+  static const String aboutFeatureCalendar = 'Calendrier des roulages et inscriptions';
+  static const String aboutFeatureMembers = 'Annuaire des membres et de leurs motos';
+  static const String aboutFeatureTracks = 'Fiches des circuits et records du tour';
+  static const String aboutFeatureChronos = 'Suivi de vos chronos personnels';
+  static const String aboutFeatureGalleries = 'Galeries photos des sorties';
+  static const String aboutFeatureNews = 'Actualités du club';
+  static const String aboutPrivacyTitle = 'Confidentialité et données';
+  static const String aboutPrivacyBody =
+      'Cette application est entièrement gratuite et sans publicité. Vos données personnelles ne sont '
+      'jamais revendues à des tiers. L\'ensemble des données du club est hébergé en Suisse, '
+      'conformément à la législation suisse sur la protection des données.';
+  static const String aboutOpenSourceTitle = 'Open source';
+  static const String aboutOpenSourceBody =
+      'CCTeam est un projet open source, conçu avec Flutter et distribué sous licence GNU GPL v3. '
+      'Le code source est librement consultable et améliorable par la communauté.';
+  static const String aboutThirdPartyLicenses = 'Licences des composants tiers';
+  static const String aboutCopyright = '© 2019–2026 Yann39';
 
   static const String formNotValid = 'Le formulaire n\'est pas valide. Corrigez les erreurs puis essayer à nouveau.';
 
@@ -226,8 +254,6 @@ class AppString {
   static const String memberRegistrationDateHint = 'Date d\'inscription du membre';
   static const String memberRegistrationDateMandatory = 'La date d\'inscription est obligatoire';
   static const String memberRegistrationDateNotValid = 'La date indiquée n\'est pas valide';
-  static const String memberActive = 'Actif ?';
-  static const String memberActiveMandatory = 'Le statut du membre (actif ou non) est obligatoire';
   static const String memberRole = 'Rôle';
   static const String memberRoleUser = 'Utilisateur';
   static const String memberRoleMember = 'Membre';
