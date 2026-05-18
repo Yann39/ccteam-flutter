@@ -186,6 +186,7 @@ class About extends StatelessWidget {
                     _featureBullet(Icons.group, AppString.aboutFeatureMembers),
                     _featureBullet(Icons.place, AppString.aboutFeatureTracks),
                     _featureBullet(Icons.timer, AppString.aboutFeatureChronos),
+                    _featureBullet(Icons.bar_chart, AppString.aboutFeatureStats),
                     _featureBullet(Icons.photo_album, AppString.aboutFeatureGalleries),
                     _featureBullet(Icons.article_outlined, AppString.aboutFeatureNews),
                   ],

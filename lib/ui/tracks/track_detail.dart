@@ -215,7 +215,7 @@ class _TrackDetailState extends State<TrackDetail> {
     final IconData? cornerIcon = infoOnTap != null ? Icons.info_outline : (onTap != null ? Icons.arrow_outward : null);
 
     final Widget content = Container(
-      height: 110,
+      height: 106,
       margin: const EdgeInsets.all(4.0),
       padding: const EdgeInsets.all(8.0),
       decoration: CustomDecorations.cardLight,
@@ -1003,14 +1003,13 @@ class _TrackDetailState extends State<TrackDetail> {
               ),
             ),
             SliverPadding(
-              padding: EdgeInsets.all(8.0),
+              padding: EdgeInsets.all(12.0),
               sliver: SliverList(
                 delegate: SliverChildListDelegate(<Widget>[
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: <Widget>[
                       Container(
-                        padding: EdgeInsets.all(8.0),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: <Widget>[
@@ -1022,11 +1021,6 @@ class _TrackDetailState extends State<TrackDetail> {
                                   final String? info = _trackDetailProvider.currentTrack!.lapRecordInfo;
                                   final bool hasInfo =
                                       info != null && info.isNotEmpty && lapTimeStr != null && recordLapTimeMs != null;
-                                  // Compute the logged member's best chrono on this track from the
-                                  // already-loaded trackRecords (filtered by member id). We only
-                                  // surface it when the user is logged in AND has at least one
-                                  // record on this track — no chrono means we skip the section
-                                  // entirely rather than show an empty placeholder.
                                   int? memberLapTimeMs;
                                   final int? loggedMemberId = _loginProvider.loggedMember?.id;
                                   if (loggedMemberId != null) {

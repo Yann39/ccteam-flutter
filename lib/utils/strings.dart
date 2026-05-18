@@ -32,7 +32,7 @@ class AppString {
 
   static const String applicationTitle = 'CCTeam';
   static const String applicationVersion = '1.0.0';
-  static const String applicationTagline = 'L\'application officielle du CCTeam motoclub';
+  static const String applicationTagline = 'L\'application officielle du motoclub CCTeam';
 
   // About page
   static const String aboutTitle = 'A propos';
@@ -46,6 +46,7 @@ class AppString {
   static const String aboutFeatureMembers = 'Annuaire des membres et de leurs motos';
   static const String aboutFeatureTracks = 'Fiches des circuits et records du tour';
   static const String aboutFeatureChronos = 'Suivi de vos chronos personnels';
+  static const String aboutFeatureStats = 'Statistiques personnelles et diagrammes';
   static const String aboutFeatureGalleries = 'Galeries photos des sorties';
   static const String aboutFeatureNews = 'Actualités du club';
   static const String aboutPrivacyTitle = 'Confidentialité et données';
@@ -462,13 +463,19 @@ class AppString {
   static const String statsTrackEventsCount = 'Roulages effectués';
   static const String statsBikesCount = 'Motos';
   static const String statsKmEstimated = 'Km estimés';
+  static const String statsEventsKmSubtitle = 'soit ≈ {0} km';
   static const String statsFavoriteTrack = 'Circuit le plus roulé';
   static const String statsFavoriteTrackTimes = '{0} fois';
   static const String statsFavoriteBike = 'Moto la plus utilisée';
+  static const String statsBikesOwnedSingular = '1 moto';
+  static const String statsBikesOwnedPlural = '{0} motos';
+  static const String statsFavoriteBikeSubtitle = '{0} · {1}';
   static const String statsFavoriteOrganizer = 'Organisateur favori';
   static const String statsTotalSpent = 'Total dépensé';
   static const String statsAmountEur = '{0} EUR';
   static const String statsNoData = '—';
+  static const String showChart = 'Afficher le diagramme';
+  static const String hideChart = 'Masquer le diagramme';
   static const String currentYear = 'Année courante';
   static const String byDate = 'Par date';
 

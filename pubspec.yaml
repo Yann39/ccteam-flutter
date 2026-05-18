@@ -34,31 +34,31 @@ dependencies:
   # To open a URL
   url_launcher: ^6.3.2
 
+  # Charts (pie / bar / line)
+  fl_chart: ^1.2.0
+
   # Access to shared preferences
   shared_preferences: ^2.5.5
 
-  # for picking images from the image library
+  # For picking images from the image library
   image_picker: ^1.2.2
 
-  # to render SVG
+  # To render SVG
   flutter_svg: ^2.2.4
 
-  # cropping images
+  # Cropping images
   crop_your_image: ^2.0.0
 
   # Markdown text interpreter
   flutter_markdown_plus: ^1.0.7
 
-  # to display notifications
-  flutter_local_notifications: ^21.0.0
-
-  # to share content
+  # To share content
   share_plus: ^13.1.0
 
-  # handle timezones
+  # Handle timezones
   timezone: ^0.11.0
 
-  # mocking
+  # Mocking
   mockito: ^5.5.1
 
   gql: any

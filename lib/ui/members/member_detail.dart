@@ -38,6 +38,7 @@ import 'package:ccteam/utils/date_utils.dart';
 import 'package:ccteam/utils/enums.dart';
 import 'package:ccteam/utils/strings.dart';
 import 'package:ccteam/widgets/avatar_image.dart';
+import 'package:ccteam/widgets/horizontal_scroll_hints.dart';
 import 'package:ccteam/widgets/loading_content.dart';
 import 'package:ccteam/widgets/member_header_palette.dart';
 import 'package:ccteam/widgets/random_pattern_painter.dart';
@@ -187,17 +188,7 @@ class MemberDetail extends StatelessWidget {
       );
     }
 
-    // sort by record date desc (most recent first); records without a date go last
-    final List<Record> records = List<Record>.of(recordListProvider.memberRecords)
-      ..sort((a, b) {
-        final DateTime? aDate = a.recordDate;
-        final DateTime? bDate = b.recordDate;
-        if (aDate == null && bDate == null) return 0;
-        if (aDate == null) return 1;
-        if (bDate == null) return -1;
-        return bDate.compareTo(aDate);
-      });
-
+    final List<Record> records = List<Record>.of(recordListProvider.memberRecords);
     return Container(
       decoration: CustomDecorations.cardLight,
       clipBehavior: Clip.antiAlias,
@@ -500,7 +491,10 @@ class MemberDetail extends StatelessWidget {
 
     return SizedBox(
       height: 142,
-      child: ListView(controller: _eventsTimelineController, scrollDirection: Axis.horizontal, children: items),
+      child: HorizontalScrollHints(
+        controller: _eventsTimelineController,
+        child: ListView(controller: _eventsTimelineController, scrollDirection: Axis.horizontal, children: items),
+      ),
     );
   }
 
@@ -654,7 +648,7 @@ class MemberDetail extends StatelessWidget {
         ? null
         : MergeSemantics(
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
+              padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: <Widget>[
@@ -947,8 +941,6 @@ class MemberDetail extends StatelessWidget {
                                       textScaler: TextScaler.linear(1.2),
                                       style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black.withAlpha(204)),
                                     ),
-                                    Spacer(),
-                                    Icon(Icons.arrow_right_alt, size: 22, color: Colors.black.withAlpha(120)),
                                   ],
                                 ),
                                 SizedBox(height: 10),
@@ -1035,7 +1027,7 @@ class _BikesInfoState extends State<_BikesInfo> {
           children: <Widget>[
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              crossAxisAlignment: CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: <Widget>[
                 Expanded(
                   child: Column(

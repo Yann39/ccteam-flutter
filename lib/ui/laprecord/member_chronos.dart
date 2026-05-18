@@ -112,7 +112,7 @@ class _MemberChronosState extends State<MemberChronos> {
                         child: Container(
                           padding: EdgeInsets.all(8.0),
                           decoration: CustomDecorations.cardFull,
-                          height: 91,
+                          height: 90,
                           child: Row(
                             crossAxisAlignment: CrossAxisAlignment.center,
                             children: <Widget>[
@@ -125,7 +125,7 @@ class _MemberChronosState extends State<MemberChronos> {
                                       children: <Widget>[
                                         Icon(
                                           TrackUtils.trackIconFromName(record.track!.name),
-                                          size: 20,
+                                          size: 22,
                                           color: Colors.red[600],
                                         ),
                                         SizedBox(width: 8.0),

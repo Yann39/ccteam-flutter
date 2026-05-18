@@ -31,6 +31,7 @@ import 'package:ccteam/utils/strings.dart';
 import 'package:ccteam/widgets/avatar_image.dart';
 import 'package:ccteam/widgets/member_header_palette.dart';
 import 'package:ccteam/widgets/random_pattern_painter.dart';
+import 'package:ccteam/widgets/stats_charts.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -40,8 +41,20 @@ import 'package:provider/provider.dart';
 /// the membership-fee status for the current year, and a short list
 /// of account actions: edit profile, change passcode. Easy to extend
 /// with notification preferences, account deletion, etc.
-class MyAccount extends StatelessWidget {
+class MyAccount extends StatefulWidget {
   const MyAccount({Key? key}) : super(key: key);
+
+  @override
+  State<MyAccount> createState() => _MyAccountState();
+}
+
+class _MyAccountState extends State<MyAccount> {
+  // per-chart visibility
+  bool _showYearChart = true;
+  bool _showTrackChart = false;
+  bool _showBikeChart = true;
+  bool _showOrganizerChart = false;
+  bool _showSpentChart = false;
 
   /// Navigate to the profile edit screen, seeding the
   /// [MemberCreationProvider] with a deep copy of the logged member.
@@ -530,6 +543,27 @@ class MyAccount extends StatelessWidget {
     );
     final double spent = MemberStatsUtils.totalSpent(eventMembers: member.eventMembers, now: now);
 
+    // Chart-specific aggregations, computed here (rather than in the
+    // chart widgets) so they're easy to skip when the stats card is
+    // hidden for non-members.
+    final List<BikeUsage> bikeUsages = MemberStatsUtils.bikeUsageBreakdown(eventMembers: member.eventMembers, now: now);
+    final List<TrackUsage> trackUsages = MemberStatsUtils.trackUsageBreakdown(
+      eventMembers: member.eventMembers,
+      now: now,
+    );
+    final List<OrganizerUsage> organizerUsages = MemberStatsUtils.organizerUsageBreakdown(
+      eventMembers: member.eventMembers,
+      now: now,
+    );
+    final List<OrganizerSpending> organizerSpendings = MemberStatsUtils.spendingByOrganizer(
+      eventMembers: member.eventMembers,
+      now: now,
+    );
+    final List<YearlyParticipation> perYear = MemberStatsUtils.participationsPerYear(
+      eventMembers: member.eventMembers,
+      now: now,
+    );
+
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 12.0),
       decoration: BoxDecoration(
@@ -541,63 +575,127 @@ class MyAccount extends StatelessWidget {
         ],
       ),
       clipBehavior: Clip.antiAlias,
-      child: Column(
-        children: <Widget>[
-          _buildStatRow(
-            icon: Icons.flag,
-            iconColor: Colors.orange[700]!,
-            label: AppString.statsTrackEventsCount,
-            value: events.toString(),
-          ),
-          _buildStatDivider(),
-          _buildStatRow(
-            icon: CustomIcons.motorbike_plain,
-            iconColor: Colors.purple,
-            label: AppString.statsBikesCount,
-            value: bikes.toString(),
-          ),
-          _buildStatDivider(),
-          _buildStatRow(
-            icon: Icons.speed,
-            iconColor: Colors.lightGreen[700]!,
-            label: AppString.statsKmEstimated,
-            value: km.toString(),
-          ),
-          _buildStatDivider(),
-          _buildStatRow(
-            icon: Icons.emoji_events,
-            iconColor: Colors.amber[700]!,
-            label: AppString.statsFavoriteTrack,
-            // track name + visit count
-            value: favTrack?.name ?? AppString.statsNoData,
-            subtitle: favTrack != null ? AppString.format(AppString.statsFavoriteTrackTimes, [favTrack.count]) : null,
-          ),
-          _buildStatDivider(),
-          _buildStatRow(
-            icon: CustomIcons.motorbike_plain,
-            iconColor: Colors.indigo[600]!,
-            label: AppString.statsFavoriteBike,
-            value: favBike != null ? _bikeStatLabel(favBike.bike) : AppString.statsNoData,
-            subtitle: favBike != null ? AppString.format(AppString.statsFavoriteTrackTimes, [favBike.count]) : null,
-          ),
-          _buildStatDivider(),
-          _buildStatRow(
-            icon: Icons.perm_contact_calendar,
-            iconColor: Colors.teal[700]!,
-            label: AppString.statsFavoriteOrganizer,
-            value: favOrganizer?.organizer.name ?? AppString.statsNoData,
-            subtitle: favOrganizer != null
-                ? AppString.format(AppString.statsFavoriteTrackTimes, [favOrganizer.count])
-                : null,
-          ),
-          _buildStatDivider(),
-          _buildStatRow(
-            icon: Icons.payments_outlined,
-            iconColor: Colors.red[700]!,
-            label: AppString.statsTotalSpent,
-            value: AppString.format(AppString.statsAmountEur, [spent.toStringAsFixed(0)]),
-          ),
-        ],
+      child: Material(
+        color: Colors.transparent,
+        child: Column(
+          children: <Widget>[
+            _buildStatRow(
+              icon: Icons.flag,
+              iconColor: Colors.orange[700]!,
+              label: AppString.statsTrackEventsCount,
+              value: events.toString(),
+              // km estimate folded in as a subtitle
+              subtitle: AppString.format(AppString.statsEventsKmSubtitle, [km]),
+              // toggle is only useful when the chart has actual data to show
+              chartExpanded: perYear.length >= 2 ? _showYearChart : null,
+              onToggleChart: perYear.length >= 2 ? () => setState(() => _showYearChart = !_showYearChart) : null,
+            ),
+            // bar chart of past participations per year
+            AnimatedSize(
+              duration: const Duration(milliseconds: 220),
+              curve: Curves.easeOut,
+              alignment: Alignment.topCenter,
+              child: _showYearChart ? EventsPerYearBarChart(entries: perYear) : const SizedBox.shrink(),
+            ),
+            _buildStatDivider(),
+            // motos
+            () {
+              final String bikesLabel = bikes == 1
+                  ? AppString.statsBikesOwnedSingular
+                  : AppString.format(AppString.statsBikesOwnedPlural, [bikes]);
+              final String value;
+              final String? subtitle;
+              if (favBike != null) {
+                value = _bikeStatLabel(favBike.bike);
+                subtitle = AppString.format(AppString.statsFavoriteBikeSubtitle, [
+                  AppString.format(AppString.statsFavoriteTrackTimes, [favBike.count]),
+                  bikesLabel,
+                ]);
+              } else if (bikes > 0) {
+                value = bikesLabel;
+                subtitle = null;
+              } else {
+                value = AppString.statsNoData;
+                subtitle = null;
+              }
+              return _buildStatRow(
+                icon: CustomIcons.motorbike_plain,
+                iconColor: Colors.deepPurple[600]!,
+                label: AppString.statsBikesCount,
+                value: value,
+                subtitle: subtitle,
+                chartExpanded: bikeUsages.length >= 2 ? _showBikeChart : null,
+                onToggleChart: bikeUsages.length >= 2 ? () => setState(() => _showBikeChart = !_showBikeChart) : null,
+              );
+            }(),
+            // pie chart of bike usage breakdown
+            AnimatedSize(
+              duration: const Duration(milliseconds: 220),
+              curve: Curves.easeOut,
+              alignment: Alignment.topCenter,
+              child: _showBikeChart ? BikeUsagePieChart(usages: bikeUsages) : const SizedBox.shrink(),
+            ),
+            _buildStatDivider(),
+            _buildStatRow(
+              icon: Icons.emoji_events,
+              iconColor: Colors.amber[700]!,
+              label: AppString.statsFavoriteTrack,
+              // track name + visit count
+              value: favTrack?.name ?? AppString.statsNoData,
+              subtitle: favTrack != null ? AppString.format(AppString.statsFavoriteTrackTimes, [favTrack.count]) : null,
+              chartExpanded: trackUsages.length >= 2 ? _showTrackChart : null,
+              onToggleChart: trackUsages.length >= 2 ? () => setState(() => _showTrackChart = !_showTrackChart) : null,
+            ),
+            // horizontal bar list of track usage
+            AnimatedSize(
+              duration: const Duration(milliseconds: 220),
+              curve: Curves.easeOut,
+              alignment: Alignment.topCenter,
+              child: _showTrackChart ? TrackUsageBarList(usages: trackUsages) : const SizedBox.shrink(),
+            ),
+            _buildStatDivider(),
+            _buildStatRow(
+              icon: Icons.perm_contact_calendar,
+              iconColor: Colors.teal[700]!,
+              label: AppString.statsFavoriteOrganizer,
+              value: favOrganizer?.organizer.name ?? AppString.statsNoData,
+              subtitle: favOrganizer != null
+                  ? AppString.format(AppString.statsFavoriteTrackTimes, [favOrganizer.count])
+                  : null,
+              chartExpanded: organizerUsages.length >= 2 ? _showOrganizerChart : null,
+              onToggleChart: organizerUsages.length >= 2
+                  ? () => setState(() => _showOrganizerChart = !_showOrganizerChart)
+                  : null,
+            ),
+            // horizontal bar-list ranking the organizers
+            AnimatedSize(
+              duration: const Duration(milliseconds: 220),
+              curve: Curves.easeOut,
+              alignment: Alignment.topCenter,
+              child: _showOrganizerChart ? OrganizerUsageBarList(usages: organizerUsages) : const SizedBox.shrink(),
+            ),
+            _buildStatDivider(),
+            _buildStatRow(
+              icon: Icons.payments_outlined,
+              iconColor: Colors.red[700]!,
+              label: AppString.statsTotalSpent,
+              value: AppString.format(AppString.statsAmountEur, [spent.toStringAsFixed(0)]),
+              chartExpanded: organizerSpendings.length >= 2 ? _showSpentChart : null,
+              onToggleChart: organizerSpendings.length >= 2
+                  ? () => setState(() => _showSpentChart = !_showSpentChart)
+                  : null,
+            ),
+            // bar-list ranking the EUR spending by organizer
+            AnimatedSize(
+              duration: const Duration(milliseconds: 220),
+              curve: Curves.easeOut,
+              alignment: Alignment.topCenter,
+              child: _showSpentChart
+                  ? OrganizerSpendingBarList(spendings: organizerSpendings)
+                  : const SizedBox.shrink(),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -606,14 +704,24 @@ class MyAccount extends StatelessWidget {
   /// label, and the value (with optional subtitle) right-aligned.
   /// Same visual rhythm as the membership-fee card above so the two
   /// zones feel like siblings.
+  ///
+  /// When [chartExpanded] / [onToggleChart] are both supplied, a small
+  /// chevron is rendered at the right end of the row, tapping it
+  /// flips [chartExpanded] which the caller uses to show/hide the
+  /// chart that sits right under this row. The chevron rotates
+  /// smoothly between the two states (200 ms, easeOut), mirroring
+  /// the ExpansionTile affordance.
   Widget _buildStatRow({
     required IconData icon,
     required Color iconColor,
     required String label,
     required String value,
     String? subtitle,
+    bool? chartExpanded,
+    VoidCallback? onToggleChart,
   }) {
-    return Padding(
+    final bool hasToggle = chartExpanded != null && onToggleChart != null;
+    final Widget rowContent = Padding(
       padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 10.0),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
@@ -645,9 +753,31 @@ class MyAccount extends StatelessWidget {
               ],
             ),
           ),
+          if (hasToggle) ...[
+            const SizedBox(width: 8.0),
+            // visual affordance only — the actual tap target is the
+            // whole row (InkWell wrapped below). 0.5 turn = 180°,
+            // chevron points down when collapsed, up when expanded.
+            Tooltip(
+              message: chartExpanded ? AppString.hideChart : AppString.showChart,
+              child: AnimatedRotation(
+                turns: chartExpanded ? 0.5 : 0.0,
+                duration: const Duration(milliseconds: 200),
+                curve: Curves.easeOut,
+                child: Icon(Icons.expand_more, size: 22.0, color: Colors.black.withValues(alpha: 0.45)),
+              ),
+            ),
+          ],
         ],
       ),
     );
+    // When the row drives a chart toggle, make the whole row tappable.
+    // The InkWell renders its ripple via the Material ancestor set up
+    // by [_buildStatsCard].
+    if (hasToggle) {
+      return InkWell(onTap: onToggleChart, child: rowContent);
+    }
+    return rowContent;
   }
 
   /// Soft white divider between two stat rows — visible against the
@@ -695,7 +825,7 @@ class MyAccount extends StatelessWidget {
                   ],
                   SizedBox(height: MediaQuery.of(context).padding.bottom + 16.0),
                 ],
-        ),
+              ),
       ),
     );
   }

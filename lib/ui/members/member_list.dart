@@ -153,6 +153,20 @@ class MemberList extends StatelessWidget {
     return "${bike.manufacturer?.toUpperCase() ?? ""} ${bike.modelName ?? ""}".trim();
   }
 
+  /// Pick a semantically meaningful background color for a board role.
+  Color _boardRoleColor(BoardRole role) {
+    switch (role) {
+      case BoardRole.PRESIDENT:
+        return Colors.pinkAccent[700]!;
+      case BoardRole.VICE_PRESIDENT:
+        return Colors.purple[400]!;
+      case BoardRole.SECRETARY:
+        return Colors.teal[600]!;
+      case BoardRole.TREASURER:
+        return Colors.deepPurple[500]!;
+    }
+  }
+
   /// Small chip showing the member's executive board role (Président,
   /// Trésorier, …). Only displayed when the member holds a board role.
   Widget _buildBoardRoleBadge(BoardRole role, BuildContext context) {
@@ -160,7 +174,7 @@ class MemberList extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 6.0, vertical: 3.0),
       margin: const EdgeInsets.all(4.0),
-      decoration: BoxDecoration(color: Colors.indigo[400], borderRadius: BorderRadius.circular(4.0)),
+      decoration: BoxDecoration(color: _boardRoleColor(role), borderRadius: BorderRadius.circular(4.0)),
       child: Text(
         label,
         style: const TextStyle(

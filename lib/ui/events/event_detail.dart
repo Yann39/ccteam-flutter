@@ -32,6 +32,7 @@ import 'package:ccteam/utils/string_utils.dart';
 import 'package:ccteam/utils/strings.dart';
 import 'package:ccteam/utils/track_utils.dart';
 import 'package:ccteam/widgets/avatar_image.dart';
+import 'package:ccteam/widgets/horizontal_scroll_hints.dart';
 import 'package:ccteam/widgets/loading_content.dart';
 import 'package:ccteam/widgets/random_pattern_painter.dart';
 import 'package:flutter/material.dart';
@@ -650,53 +651,9 @@ class EventDetail extends StatelessWidget {
                           ),
                           SizedBox(height: 10),
                           (_eventDetailProvider.currentEvent.participants?.length ?? 0) > 0
-                              ? SizedBox(
-                                  height: 125,
-                                  child: ListView.builder(
-                                    scrollDirection: Axis.horizontal,
-                                    itemCount: _eventDetailProvider.currentEvent.participants!.length,
-                                    itemBuilder: (BuildContext context, int index) {
-                                      return Column(
-                                        children: <Widget>[
-                                          InkWell(
-                                            onTap: () => _navigateToMemberDetailScreen(
-                                              context,
-                                              _eventDetailProvider.currentEvent.participants![index].member!,
-                                            ),
-                                            child: Container(
-                                              width: 80,
-                                              height: 80,
-                                              padding: EdgeInsets.all(2.0),
-                                              margin: EdgeInsets.symmetric(horizontal: 12.0),
-                                              decoration: ShapeDecoration(shape: CircleBorder(), color: Colors.white70),
-                                              child: AvatarImage(
-                                                memberId:
-                                                    _eventDetailProvider.currentEvent.participants![index].member?.id,
-                                                hasAvatar:
-                                                    _eventDetailProvider
-                                                        .currentEvent
-                                                        .participants![index]
-                                                        .member
-                                                        ?.hasAvatar ==
-                                                    true,
-                                                radius: 20.0,
-                                              ),
-                                            ),
-                                          ),
-                                          SizedBox(height: 5.0),
-                                          Container(
-                                            width: 80,
-                                            child: Text(
-                                              "${_eventDetailProvider.currentEvent.participants![index].member!.firstName} ${_eventDetailProvider.currentEvent.participants![index].member!.lastName}",
-                                              overflow: TextOverflow.ellipsis,
-                                              maxLines: 2,
-                                              textAlign: TextAlign.center,
-                                            ),
-                                          ),
-                                        ],
-                                      );
-                                    },
-                                  ),
+                              ? _ParticipantsList(
+                                  participants: _eventDetailProvider.currentEvent.participants!,
+                                  onTapMember: (Member m) => _navigateToMemberDetailScreen(context, m),
                                 )
                               : Text(AppString.noParticipant),
                           SizedBox(height: 10),
@@ -717,6 +674,85 @@ class EventDetail extends StatelessWidget {
               ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Horizontal list of participant avatars + names, with a small
+/// floating chevron affordance on the right edge to hint that the
+/// list is scrollable. The chevron fades out as soon as the user
+/// has reached the right end of the list, so it never "lies" about
+/// remaining content.
+///
+/// Lives in its own StatefulWidget (rather than being inline in
+/// [EventDetail.build]) because it needs a [ScrollController] +
+/// listener — and isolating that concern keeps [EventDetail] a
+/// pure [StatelessWidget].
+class _ParticipantsList extends StatefulWidget {
+  const _ParticipantsList({Key? key, required this.participants, required this.onTapMember}) : super(key: key);
+
+  final List<EventMember> participants;
+  final void Function(Member member) onTapMember;
+
+  @override
+  State<_ParticipantsList> createState() => _ParticipantsListState();
+}
+
+class _ParticipantsListState extends State<_ParticipantsList> {
+  final ScrollController _controller = ScrollController();
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: 125,
+      child: HorizontalScrollHints(
+        controller: _controller,
+        child: ListView.builder(
+          controller: _controller,
+          scrollDirection: Axis.horizontal,
+          itemCount: widget.participants.length,
+          itemBuilder: (BuildContext context, int index) {
+            final EventMember em = widget.participants[index];
+            final Member? member = em.member;
+            if (member == null) return const SizedBox.shrink();
+            return Column(
+              children: <Widget>[
+                InkWell(
+                  onTap: () => widget.onTapMember(member),
+                  child: Container(
+                    width: 80,
+                    height: 80,
+                    padding: const EdgeInsets.all(2.0),
+                    margin: const EdgeInsets.symmetric(horizontal: 12.0),
+                    decoration: const ShapeDecoration(shape: CircleBorder(), color: Colors.white70),
+                    child: AvatarImage(
+                      memberId: member.id,
+                      hasAvatar: member.hasAvatar == true,
+                      radius: 20.0,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 5.0),
+                Container(
+                  width: 80,
+                  child: Text(
+                    "${member.firstName} ${member.lastName}",
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 2,
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              ],
+            );
+          },
         ),
       ),
     );

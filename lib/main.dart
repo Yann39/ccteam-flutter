@@ -43,7 +43,6 @@ import 'package:ccteam/providers/timer_provider.dart';
 import 'package:ccteam/providers/track_creation_provider.dart';
 import 'package:ccteam/providers/track_detail_provider.dart';
 import 'package:ccteam/providers/track_list_provider.dart';
-import 'package:ccteam/services/notifications_service.dart';
 import 'package:ccteam/ui/events/add_edit_event.dart';
 import 'package:ccteam/ui/events/event_detail.dart';
 import 'package:ccteam/ui/laprecord/add_edit_record.dart';
@@ -246,9 +245,6 @@ class CCTeamApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     _log.info("Building CCTeamApp...");
-
-    // initialize notifications plugin
-    NotificationsService.initialize(context);
 
     return GraphQLProvider(
       client: GraphQLConnection().client,

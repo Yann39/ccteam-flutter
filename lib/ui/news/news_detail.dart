@@ -23,7 +23,6 @@ import 'package:ccteam/providers/login_provider.dart';
 import 'package:ccteam/providers/news_creation_provider.dart';
 import 'package:ccteam/providers/news_detail_provider.dart';
 import 'package:ccteam/providers/news_list_provider.dart';
-import 'package:ccteam/services/notifications_service.dart';
 import 'package:ccteam/utils/constants.dart';
 import 'package:ccteam/utils/custom_decorations.dart';
 import 'package:ccteam/utils/date_utils.dart';
@@ -293,13 +292,6 @@ class NewsDetail extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         actions: <Widget>[
-          if (_loginProvider.isMember)
-            Builder(
-              builder: (context) => IconButton(
-                icon: const Icon(Icons.notifications_active),
-                onPressed: () => NotificationsService.pushInstantNewsNotification(news),
-              ),
-            ),
           if (_loginProvider.isAdmin)
             Builder(
               builder: (context) =>

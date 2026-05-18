@@ -177,6 +177,167 @@ class MemberStatsUtils {
     return MostFavoriteOrganizer(organizer: organizer, count: best.value);
   }
 
+  /// Per-organizer EUR amount spent across the member's past events,
+  /// sorted descending by amount.
+  /// Empty list when no past participation had
+  /// both an organizer and a known price.
+  static List<OrganizerSpending> spendingByOrganizer({
+    required List<EventMember>? eventMembers,
+    required DateTime now,
+  }) {
+    if (eventMembers == null || eventMembers.isEmpty) return const <OrganizerSpending>[];
+    final Map<int, double> totalsById = <int, double>{};
+    final Map<int, String> namesById = <int, String>{};
+    for (final em in eventMembers) {
+      final Event? event = em.event;
+      if (event == null) continue;
+      final DateTime? start = event.startDate;
+      if (start == null) continue;
+      if (start.isAfter(now)) continue;
+      final double? price = event.price;
+      if (price == null) continue;
+      final Organizer? organizer = event.organizer;
+      final int? organizerId = organizer?.id;
+      final String? name = organizer?.name;
+      if (organizerId == null) continue;
+      totalsById.update(organizerId, (v) => v + price, ifAbsent: () => price);
+      if (name != null && name.isNotEmpty) {
+        namesById.putIfAbsent(organizerId, () => name);
+      }
+    }
+    final List<OrganizerSpending> out = <OrganizerSpending>[];
+    totalsById.forEach((id, amount) {
+      final String? name = namesById[id];
+      if (name == null) return;
+      out.add(OrganizerSpending(name: name, amount: amount));
+    });
+    out.sort((a, b) => b.amount.compareTo(a.amount));
+    return out;
+  }
+
+  /// Per-organizer participation count across the member's past
+  /// events, sorted descending by count.
+  /// Empty list when no past participation carried an organizer.
+  static List<OrganizerUsage> organizerUsageBreakdown({
+    required List<EventMember>? eventMembers,
+    required DateTime now,
+  }) {
+    if (eventMembers == null || eventMembers.isEmpty) return const <OrganizerUsage>[];
+    final Map<int, int> countsById = <int, int>{};
+    final Map<int, String> namesById = <int, String>{};
+    for (final em in eventMembers) {
+      final Event? event = em.event;
+      if (event == null) continue;
+      final DateTime? start = event.startDate;
+      if (start == null) continue;
+      if (start.isAfter(now)) continue;
+      final Organizer? organizer = event.organizer;
+      final int? organizerId = organizer?.id;
+      final String? name = organizer?.name;
+      if (organizerId == null) continue;
+      countsById.update(organizerId, (v) => v + 1, ifAbsent: () => 1);
+      if (name != null && name.isNotEmpty) {
+        namesById.putIfAbsent(organizerId, () => name);
+      }
+    }
+    final List<OrganizerUsage> out = <OrganizerUsage>[];
+    countsById.forEach((id, count) {
+      final String? name = namesById[id];
+      if (name == null) return;
+      out.add(OrganizerUsage(name: name, count: count));
+    });
+    out.sort((a, b) => b.count.compareTo(a.count));
+    return out;
+  }
+
+  /// Per-track participation count across the member's past events,
+  /// sorted descending by count.
+  /// Empty list when no past participation referenced a track,
+  /// the caller skips the chart in that case.
+  static List<TrackUsage> trackUsageBreakdown({required List<EventMember>? eventMembers, required DateTime now}) {
+    if (eventMembers == null || eventMembers.isEmpty) return const <TrackUsage>[];
+    final Map<int, int> countsById = <int, int>{};
+    final Map<int, String> namesById = <int, String>{};
+    for (final em in eventMembers) {
+      final Event? event = em.event;
+      if (event == null) continue;
+      final DateTime? start = event.startDate;
+      if (start == null) continue;
+      if (start.isAfter(now)) continue;
+      final int? trackId = event.track?.id;
+      final String? trackName = event.track?.name;
+      if (trackId == null) continue;
+      countsById.update(trackId, (v) => v + 1, ifAbsent: () => 1);
+      if (trackName != null && trackName.isNotEmpty) {
+        namesById.putIfAbsent(trackId, () => trackName);
+      }
+    }
+    final List<TrackUsage> out = <TrackUsage>[];
+    countsById.forEach((id, count) {
+      final String? name = namesById[id];
+      if (name == null) return;
+      out.add(TrackUsage(name: name, count: count));
+    });
+    out.sort((a, b) => b.count.compareTo(a.count));
+    return out;
+  }
+
+  /// Per-bike participation count across the member's past events,
+  /// sorted descending by count.
+  /// Empty list when no past participation carried a bike, the
+  /// caller is expected to skip rendering the chart in that case.
+  static List<BikeUsage> bikeUsageBreakdown({required List<EventMember>? eventMembers, required DateTime now}) {
+    if (eventMembers == null || eventMembers.isEmpty) return const <BikeUsage>[];
+    final Map<int, int> countsById = <int, int>{};
+    final Map<int, Bike> bikesById = <int, Bike>{};
+    for (final em in eventMembers) {
+      final Event? event = em.event;
+      if (event == null) continue;
+      final DateTime? start = event.startDate;
+      if (start == null) continue;
+      if (start.isAfter(now)) continue;
+      final Bike? bike = em.bike;
+      if (bike == null || bike.id == null) continue;
+      final int bikeId = bike.id!;
+      countsById.update(bikeId, (v) => v + 1, ifAbsent: () => 1);
+      bikesById.putIfAbsent(bikeId, () => bike);
+    }
+    final List<BikeUsage> out = <BikeUsage>[];
+    countsById.forEach((id, count) {
+      final Bike? bike = bikesById[id];
+      if (bike == null) return;
+      out.add(BikeUsage(bike: bike, count: count));
+    });
+    out.sort((a, b) => b.count.compareTo(a.count));
+    return out;
+  }
+
+  /// Number of past participations grouped by calendar year, sorted
+  /// ascending by year. Years with zero events are NOT inserted, the
+  /// bar chart consumer fills the gaps itself so the X axis stays
+  /// continuous. Empty list when there's no past participation at
+  /// all.
+  static List<YearlyParticipation> participationsPerYear({
+    required List<EventMember>? eventMembers,
+    required DateTime now,
+  }) {
+    if (eventMembers == null || eventMembers.isEmpty) return const <YearlyParticipation>[];
+    final Map<int, int> countsByYear = <int, int>{};
+    for (final em in eventMembers) {
+      final Event? event = em.event;
+      if (event == null) continue;
+      final DateTime? start = event.startDate;
+      if (start == null) continue;
+      if (start.isAfter(now)) continue;
+      countsByYear.update(start.year, (v) => v + 1, ifAbsent: () => 1);
+    }
+    final List<YearlyParticipation> out = countsByYear.entries
+        .map((e) => YearlyParticipation(year: e.key, count: e.value))
+        .toList();
+    out.sort((a, b) => a.year.compareTo(b.year));
+    return out;
+  }
+
   /// Rough estimate of total kilometres ridden by the member across
   /// past events. Necessarily approximate, the app doesn't track
   /// laps per event, but grounded enough to give a meaningful
@@ -240,7 +401,7 @@ class MemberStatsUtils {
       }
       lapMs ??= 120 * 1000;
 
-      // 20 min = 1 200 000 ms — integer divide gives full laps
+      // 20 min = 1 200 000 ms, integer divide gives full laps
       final int lapsPerSession = (20 * 60 * 1000) ~/ lapMs;
       final int totalLaps = sessions * lapsPerSession;
       totalMeters += track.distance! * totalLaps;
@@ -286,5 +447,56 @@ class MostFavoriteOrganizer {
   final Organizer organizer;
 
   /// Number of past events organized by them that the member attended.
+  final int count;
+}
+
+/// One entry in [MemberStatsUtils.bikeUsageBreakdown]. Bundles the
+/// full [Bike] (so the caller can format manufacturer + model + year
+/// the same way as the other places that show a bike label) and the
+/// number of past participations where that bike was pinned.
+class BikeUsage {
+  const BikeUsage({required this.bike, required this.count});
+
+  final Bike bike;
+  final int count;
+}
+
+/// One entry in [MemberStatsUtils.trackUsageBreakdown]. We carry just
+/// the track name (rather than the full [Track]) because the pie
+/// chart only ever renders the label, no need to drag along the
+/// full entity graph.
+class TrackUsage {
+  const TrackUsage({required this.name, required this.count});
+
+  final String name;
+  final int count;
+}
+
+/// One entry in [MemberStatsUtils.organizerUsageBreakdown]. Same
+/// rationale as [TrackUsage], name + count is everything the bar
+/// chart needs.
+class OrganizerUsage {
+  const OrganizerUsage({required this.name, required this.count});
+
+  final String name;
+  final int count;
+}
+
+/// One entry in [MemberStatsUtils.spendingByOrganizer]. Same shape
+/// as [OrganizerUsage] but with a monetary [amount] (EUR) instead
+/// of a participation [count].
+class OrganizerSpending {
+  const OrganizerSpending({required this.name, required this.amount});
+
+  final String name;
+  final double amount;
+}
+
+/// One entry in [MemberStatsUtils.participationsPerYear]. Pure data,
+/// no display formatting, the bar chart picks its own visual style.
+class YearlyParticipation {
+  const YearlyParticipation({required this.year, required this.count});
+
+  final int year;
   final int count;
 }
