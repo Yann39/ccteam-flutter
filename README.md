@@ -45,7 +45,7 @@ For Intellij :
 To deploy the app in release mode in a local device :
 
 ```
-flutter run --release  --dart-define=API_BASE_URL=https://ccteam.example.com/ccteam-gql --dart-define=LYCHEE_BASE_URL=https://lychee.example.com/
+flutter run --release  --dart-define=API_BASE_URL=https://ccteam.example.com/ccteam-gql --dart-define=LYCHEE_BASE_URL=https://lychee.example.com/ --dart-define=LYCHEE_ROOT_ALBUM_ID=xxxxxxxxxx
 ```
 
 # Play Store

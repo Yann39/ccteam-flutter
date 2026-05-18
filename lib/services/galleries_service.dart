@@ -56,8 +56,15 @@ class GalleriesService {
     return null;
   }
 
-  /// Fetch all galleries from the Lychee API
+  /// Fetch the galleries of [LYCHEE_ROOT_ALBUM_ID].
   Future<List<Gallery>> fetchGalleries() async {
+    if (LYCHEE_ROOT_ALBUM_ID.isEmpty) {
+      throw Exception(
+        'LYCHEE_ROOT_ALBUM_ID is not configured — '
+        'pass it at build time via --dart-define=LYCHEE_ROOT_ALBUM_ID=…',
+      );
+    }
+
     final xsrfToken = await _initSession();
 
     if (xsrfToken == null) {
@@ -67,7 +74,9 @@ class GalleriesService {
     final cookieHeader = _cookies.entries.map((e) => '${e.key}=${e.value}').join('; ');
 
     final response = await http.get(
-      Uri.parse(LYCHEE_BASE_URL + LYCHEE_ALBUMS_ENDPOINT),
+      Uri.parse(
+        LYCHEE_BASE_URL + LYCHEE_ALBUM_ENDPOINT,
+      ).replace(queryParameters: {'album_id': LYCHEE_ROOT_ALBUM_ID}),
       headers: {
         'Accept': 'application/json',
         'Content-Type': 'application/json',
@@ -79,10 +88,15 @@ class GalleriesService {
 
     if (response.statusCode == 200) {
       final dynamic responseJson = json.decode(response.body);
-      final List<dynamic> albumsJson = responseJson['albums'] ?? [];
+      // sub-albums live in `resource.albums`; photos directly inside
+      // the root album are intentionally ignored here
+      final dynamic resource = responseJson['resource'];
+      if (resource == null) return <Gallery>[];
+
+      final List<dynamic> albumsJson = resource['albums'] ?? [];
 
       return albumsJson.map((album) {
-        // Map Lychee album to CCTeam Gallery
+        // map Lychee album to CCTeam Gallery
         return Gallery(
           id: album['id'],
           title: album['title'],
@@ -100,7 +114,7 @@ class GalleriesService {
       _cookies.clear();
       return fetchGalleries();
     } else {
-      throw Exception('Failed to fetch albums from Lychee: ${response.statusCode}');
+      throw Exception('Failed to fetch sub-albums of $LYCHEE_ROOT_ALBUM_ID: ${response.statusCode}');
     }
   }
 

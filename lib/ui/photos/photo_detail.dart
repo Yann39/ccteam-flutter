@@ -149,8 +149,8 @@ class _PhotoDetailState extends State<PhotoDetail> with SingleTickerProviderStat
             onScaleEnd: _handleOnScaleEnd,
             child: Transform(
               transform: Matrix4.identity()
-                        ..translateByDouble(_offset.dx, _offset.dy, 0, 0)
-                        ..scaleByDouble(_scale, 0, 0, 0),
+                ..translateByDouble(_offset.dx, _offset.dy, 0.0, 1.0)
+                ..scaleByDouble(_scale, _scale, _scale, 1.0),
               child: CachedNetworkImage(
                 placeholder: (context, url) => Center(child: CircularProgressIndicator(color: Colors.white)),
                 imageUrl: _photoProvider.photos[index].link!,
