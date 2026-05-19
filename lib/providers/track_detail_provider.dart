@@ -75,12 +75,11 @@ class TrackDetailProvider extends ChangeNotifier {
         .then(
           (value) async {
             _log.fine("Track ID ${track.id} retrieved successfully");
-            _currentTrack = value;
+            if (value != null) _currentTrack = value;
             _updateStatus(LoadingStatus.loaded);
           },
           onError: (error) {
             _log.warning("Error when retrieving track ($error)");
-            _currentTrack = null;
             AppUtils.handleServiceException(error, _messageProvider, _loginProvider);
             _updateStatus(LoadingStatus.notLoaded);
           },

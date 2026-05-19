@@ -30,6 +30,7 @@ import 'package:ccteam/providers/login_provider.dart';
 import 'package:ccteam/providers/member_creation_provider.dart';
 import 'package:ccteam/providers/member_detail_provider.dart';
 import 'package:ccteam/providers/member_list_provider.dart';
+import 'package:ccteam/providers/record_detail_provider.dart';
 import 'package:ccteam/providers/record_list_provider.dart';
 import 'package:ccteam/utils/app_utils.dart';
 import 'package:ccteam/utils/custom_decorations.dart';
@@ -176,7 +177,7 @@ class MemberDetail extends StatelessWidget {
     );
   }
 
-  Widget _recordsTable(RecordListProvider recordListProvider) {
+  Widget _recordsTable(BuildContext context, RecordListProvider recordListProvider) {
     if (recordListProvider.loadingStatus == LoadingStatus.loading) {
       return _buildLoadingCard();
     }
@@ -197,7 +198,7 @@ class MemberDetail extends StatelessWidget {
         children: <Widget>[
           for (int i = 0; i < records.length; i++) ...[
             if (i > 0) Divider(height: 1, thickness: 1, color: Colors.black.withValues(alpha: 0.10)),
-            _buildMemberRecordRow(records[i]),
+            _buildMemberRecordRow(context, records[i]),
           ],
         ],
       ),
@@ -255,65 +256,72 @@ class MemberDetail extends StatelessWidget {
   /// the track icon + name, the bike (manufacturer / model stacked), and
   /// the weather icon. The date is intentionally omitted to keep the
   /// row compact.
-  Widget _buildMemberRecordRow(Record record) {
+  Widget _buildMemberRecordRow(BuildContext context, Record record) {
     final String lapTime = AppDateUtils.toLapTimeString(record.lapTime) ?? "";
     final String trackName = record.track?.name ?? "—";
     final bool hasBike =
         record.bike != null &&
         (((record.bike!.manufacturer ?? "").trim().isNotEmpty) || ((record.bike!.modelName ?? "").trim().isNotEmpty));
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 6.0),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: <Widget>[
-          Expanded(
-            flex: 2,
-            child: Row(
-              children: <Widget>[
-                Icon(TrackUtils.trackIconFromName(trackName), size: 16.0, color: Colors.red[700]),
-                const SizedBox(width: 6.0),
-                Flexible(
-                  child: Text(
-                    trackName,
-                    style: const TextStyle(
-                      color: Colors.black87,
-                      fontWeight: FontWeight.w600,
-                      fontSize: 14.0,
-                      height: 1.2,
+    // tap → open the chrono detail page
+    return InkWell(
+      onTap: () {
+        Provider.of<RecordDetailProvider>(context, listen: false).setCurrentRecord(record);
+        Navigator.pushNamed(context, '/chronoDetail');
+      },
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 6.0),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: <Widget>[
+            Expanded(
+              flex: 2,
+              child: Row(
+                children: <Widget>[
+                  Icon(TrackUtils.trackIconFromName(trackName), size: 16.0, color: Colors.red[700]),
+                  const SizedBox(width: 6.0),
+                  Flexible(
+                    child: Text(
+                      trackName,
+                      style: const TextStyle(
+                        color: Colors.black87,
+                        fontWeight: FontWeight.w600,
+                        fontSize: 14.0,
+                        height: 1.2,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 1,
                     ),
-                    overflow: TextOverflow.ellipsis,
-                    maxLines: 1,
                   ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(width: 6.0),
-          // lap time pill (digital/LCD-style font)
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
-            decoration: BoxDecoration(color: Colors.blue[700], borderRadius: BorderRadius.circular(5.0)),
-            child: Text(
-              lapTime,
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 15.0,
-                fontFamily: "AlarmClock",
-                letterSpacing: -1.0,
-                height: 1.0,
+                ],
               ),
             ),
-          ),
-          if (hasBike) ...[const SizedBox(width: 8.0), Expanded(flex: 2, child: _buildBikeBlock(record.bike))],
-          const SizedBox(width: 6.0),
-          // weather icon on the right
-          Icon(
-            record.conditions == "dry" ? Icons.wb_sunny : CustomIcons.rain,
-            color: record.conditions == "dry" ? Colors.orange[600] : Colors.blueGrey[400],
-            size: 16.0,
-          ),
-        ],
+            const SizedBox(width: 6.0),
+            // lap time pill (digital/LCD-style font)
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+              decoration: BoxDecoration(color: Colors.blue[700], borderRadius: BorderRadius.circular(5.0)),
+              child: Text(
+                lapTime,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 15.0,
+                  fontFamily: "AlarmClock",
+                  letterSpacing: -1.0,
+                  height: 1.0,
+                ),
+              ),
+            ),
+            if (hasBike) ...[const SizedBox(width: 8.0), Expanded(flex: 2, child: _buildBikeBlock(record.bike))],
+            const SizedBox(width: 6.0),
+            // weather icon on the right
+            Icon(
+              record.conditions == "dry" ? Icons.wb_sunny : CustomIcons.rain,
+              color: record.conditions == "dry" ? Colors.orange[600] : Colors.blueGrey[400],
+              size: 16.0,
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -958,7 +966,7 @@ class MemberDetail extends StatelessWidget {
                                   ],
                                 ),
                                 SizedBox(height: 10),
-                                _recordsTable(_recordListProvider),
+                                _recordsTable(context, _recordListProvider),
                                 SizedBox(height: 15),
                                 Row(
                                   children: <Widget>[

@@ -38,6 +38,7 @@ import 'package:ccteam/providers/passcode_provider.dart';
 import 'package:ccteam/providers/photo_detail_provider.dart';
 import 'package:ccteam/providers/photo_provider.dart';
 import 'package:ccteam/providers/record_creation_provider.dart';
+import 'package:ccteam/providers/record_detail_provider.dart';
 import 'package:ccteam/providers/record_list_provider.dart';
 import 'package:ccteam/providers/timer_provider.dart';
 import 'package:ccteam/providers/track_creation_provider.dart';
@@ -46,6 +47,7 @@ import 'package:ccteam/providers/track_list_provider.dart';
 import 'package:ccteam/ui/events/add_edit_event.dart';
 import 'package:ccteam/ui/events/event_detail.dart';
 import 'package:ccteam/ui/laprecord/add_edit_record.dart';
+import 'package:ccteam/ui/laprecord/chrono_detail.dart';
 import 'package:ccteam/ui/laprecord/member_chronos.dart';
 import 'package:ccteam/ui/main/about.dart';
 import 'package:ccteam/ui/main/change_passcode.dart';
@@ -226,6 +228,13 @@ void main() {
             ..updateMessageProvider(messageProvider)
             ..updateLoginProvider(loginProvider),
         ),
+        // so that we can set messages and logout user from RecordDetailProvider
+        ChangeNotifierProxyProvider2<MessageProvider, LoginProvider, RecordDetailProvider>(
+          create: (context) => RecordDetailProvider(),
+          update: (context, messageProvider, loginProvider, recordDetailProvider) => recordDetailProvider!
+            ..updateMessageProvider(messageProvider)
+            ..updateLoginProvider(loginProvider),
+        ),
         // so that we can set messages and logout user from PhotoDetailProvider
         ChangeNotifierProxyProvider2<MessageProvider, LoginProvider, PhotoDetailProvider>(
           create: (context) => PhotoDetailProvider(),
@@ -265,6 +274,7 @@ class CCTeamApp extends StatelessWidget {
           '/addEditEvent': (context) => AddEditEvent(),
           '/addEditMember': (context) => AddEditMember(),
           '/addEditRecord': (context) => AddEditRecord(),
+          '/chronoDetail': (context) => const ChronoDetail(),
           '/newsList': (context) => NewsList(),
           '/newsDetail': (context) => NewsDetail(),
           '/eventDetail': (context) => EventDetail(),

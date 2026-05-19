@@ -389,6 +389,16 @@ class AppString {
 
   static const String recordCreate = 'Ajouter un chrono';
   static const String recordEdit = 'Modifier un chrono';
+  static const String recordDetailTitle = 'Détail du chrono';
+  static const String recordPilot = 'Pilote';
+  static const String recordNoComments = 'Aucun commentaire';
+  static const String recordComments = 'Commentaires';
+  static const String recordConditionDry = 'Sec';
+  static const String recordConditionDrying = 'Séchant';
+  static const String recordConditionWet = 'Mouillé';
+  static const String recordRankingTitle = 'Classement';
+  static const String recordGapFromFirstMember = 'Écart au meilleur des membres';
+  static const String recordGapFromTrackRecord = 'Écart au record du circuit';
   static const String recordCreated = 'Le chrono à été ajouté avec succès !';
   static const String recordCreationFailed = 'Échec lors de l\'ajout du chrono';
   static const String recordUpdated = 'Le chrono à été mis à jour avec succès !';

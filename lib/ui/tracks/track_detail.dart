@@ -23,6 +23,7 @@ import 'package:ccteam/models/record.dart';
 import 'package:ccteam/models/track.dart';
 import 'package:ccteam/providers/event_detail_provider.dart';
 import 'package:ccteam/providers/login_provider.dart';
+import 'package:ccteam/providers/record_detail_provider.dart';
 import 'package:ccteam/providers/record_list_provider.dart';
 import 'package:ccteam/providers/track_creation_provider.dart';
 import 'package:ccteam/providers/track_detail_provider.dart';
@@ -705,92 +706,98 @@ class _TrackDetailState extends State<TrackDetail> {
     }
     final String? bikeStr = _bikeText(displayBike);
 
-    // gap with the fastest record (only shown when this record is not the
-    // fastest itself and both lap times are known)
+    // gap with the fastest record (only shown when this record is not the fastest itself and both lap times are known)
     final bool isFastest = record.lapTime != null && fastestLapTime != null && record.lapTime == fastestLapTime;
     final int? gapMs = (record.lapTime != null && fastestLapTime != null && !isFastest)
         ? record.lapTime! - fastestLapTime
         : null;
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 5.0),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: <Widget>[
-          // lap time pill + gap-with-leader caption underneath
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            mainAxisSize: MainAxisSize.min,
-            children: <Widget>[
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
-                decoration: BoxDecoration(color: Colors.blue[700], borderRadius: BorderRadius.circular(5.0)),
-                child: Text(
-                  lapTime,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 15.0,
-                    fontFamily: "AlarmClock",
-                    letterSpacing: -1.0,
-                    height: 1.0,
-                  ),
-                ),
-              ),
-              if (gapMs != null) ...[
-                const SizedBox(height: 2.0),
-                Text(
-                  _formatGap(gapMs),
-                  style: TextStyle(
-                    color: Colors.red[700],
-                    fontSize: 10.5,
-                    fontWeight: FontWeight.w600,
-                    height: 1.0,
-                    fontFeatures: const <FontFeature>[FontFeature.tabularFigures()],
-                  ),
-                ),
-              ],
-            ],
-          ),
-          const SizedBox(width: 10.0),
-          // pilot name (+ rider number) on top, bike below
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+    // tap → open the chrono detail page
+    return InkWell(
+      onTap: () {
+        Provider.of<RecordDetailProvider>(context, listen: false).setCurrentRecord(record);
+        Navigator.pushNamed(context, '/chronoDetail');
+      },
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 5.0),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: <Widget>[
+            // lap time pill + gap-with-leader caption underneath
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
               mainAxisSize: MainAxisSize.min,
               children: <Widget>[
-                Row(
-                  children: <Widget>[
-                    Flexible(
-                      child: Text(
-                        memberName,
-                        style: const TextStyle(
-                          color: Colors.black87,
-                          fontWeight: FontWeight.w600,
-                          fontSize: 15.0,
-                          height: 1.2,
-                        ),
-                        overflow: TextOverflow.ellipsis,
-                        maxLines: 1,
-                      ),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+                  decoration: BoxDecoration(color: Colors.blue[700], borderRadius: BorderRadius.circular(5.0)),
+                  child: Text(
+                    lapTime,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 15.0,
+                      fontFamily: "AlarmClock",
+                      letterSpacing: -1.0,
+                      height: 1.0,
                     ),
-                    if (riderNumber != null) ...[const SizedBox(width: 6.0), _riderNumberBadge(riderNumber)],
-                  ],
+                  ),
                 ),
-                if (bikeStr != null) ...[
+                if (gapMs != null) ...[
                   const SizedBox(height: 2.0),
-                  _chronoMetaItem(CustomIcons.motorbike_plain, Colors.deepPurple, bikeStr),
+                  Text(
+                    _formatGap(gapMs),
+                    style: TextStyle(
+                      color: Colors.red[700],
+                      fontSize: 10.5,
+                      fontWeight: FontWeight.w600,
+                      height: 1.0,
+                      fontFeatures: const <FontFeature>[FontFeature.tabularFigures()],
+                    ),
+                  ),
                 ],
               ],
             ),
-          ),
-          const SizedBox(width: 6.0),
-          // weather icon on the right
-          Icon(
-            record.conditions == "dry" ? Icons.wb_sunny : CustomIcons.rain,
-            color: record.conditions == "dry" ? Colors.orange[600] : Colors.blueGrey[400],
-            size: 16.0,
-          ),
-        ],
+            const SizedBox(width: 10.0),
+            // pilot name (+ rider number) on top, bike below
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: <Widget>[
+                  Row(
+                    children: <Widget>[
+                      Flexible(
+                        child: Text(
+                          memberName,
+                          style: const TextStyle(
+                            color: Colors.black87,
+                            fontWeight: FontWeight.w600,
+                            fontSize: 15.0,
+                            height: 1.2,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                          maxLines: 1,
+                        ),
+                      ),
+                      if (riderNumber != null) ...[const SizedBox(width: 6.0), _riderNumberBadge(riderNumber)],
+                    ],
+                  ),
+                  if (bikeStr != null) ...[
+                    const SizedBox(height: 2.0),
+                    _chronoMetaItem(CustomIcons.motorbike_plain, Colors.deepPurple, bikeStr),
+                  ],
+                ],
+              ),
+            ),
+            const SizedBox(width: 6.0),
+            // weather icon on the right
+            Icon(
+              record.conditions == "dry" ? Icons.wb_sunny : CustomIcons.rain,
+              color: record.conditions == "dry" ? Colors.orange[600] : Colors.blueGrey[400],
+              size: 16.0,
+            ),
+          ],
+        ),
       ),
     );
   }

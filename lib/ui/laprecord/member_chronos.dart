@@ -20,6 +20,7 @@
 import 'package:ccteam/models/record.dart';
 import 'package:ccteam/providers/login_provider.dart';
 import 'package:ccteam/providers/record_creation_provider.dart';
+import 'package:ccteam/providers/record_detail_provider.dart';
 import 'package:ccteam/providers/record_list_provider.dart';
 import 'package:ccteam/utils/custom_decorations.dart';
 import 'package:ccteam/utils/custom_icons.dart';
@@ -103,11 +104,10 @@ class _MemberChronosState extends State<MemberChronos> {
                       final record = _recordListProvider.memberRecords[index];
                       return InkWell(
                         onTap: () async {
-                          Provider.of<RecordCreationProvider>(context, listen: false).setRecordToEdit(record);
-                          final result = await Navigator.pushNamed(context, '/addEditRecord');
-                          if (result != null) {
-                            _recordListProvider.fetchMemberRecords(_loginProvider.loggedMember!.id!);
-                          }
+                          Provider.of<RecordDetailProvider>(context, listen: false).setCurrentRecord(record);
+                          await Navigator.pushNamed(context, '/chronoDetail');
+                          if (!context.mounted) return;
+                          _recordListProvider.fetchMemberRecords(_loginProvider.loggedMember!.id!);
                         },
                         child: Container(
                           padding: EdgeInsets.all(8.0),

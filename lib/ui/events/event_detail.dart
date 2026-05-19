@@ -21,11 +21,13 @@ import 'package:ccteam/models/bike.dart';
 import 'package:ccteam/models/event.dart';
 import 'package:ccteam/models/event_member.dart';
 import 'package:ccteam/models/member.dart';
+import 'package:ccteam/models/track.dart';
 import 'package:ccteam/providers/event_creation_provider.dart';
 import 'package:ccteam/providers/event_detail_provider.dart';
 import 'package:ccteam/providers/event_list_provider.dart';
 import 'package:ccteam/providers/login_provider.dart';
 import 'package:ccteam/providers/member_detail_provider.dart';
+import 'package:ccteam/providers/track_detail_provider.dart';
 import 'package:ccteam/utils/custom_decorations.dart';
 import 'package:ccteam/utils/custom_icons.dart';
 import 'package:ccteam/utils/string_utils.dart';
@@ -52,6 +54,20 @@ class EventDetail extends StatelessWidget {
 
     // navigate to the event creation form screen
     Navigator.pushNamed(context, '/addEditEvent');
+  }
+
+  /// Navigate to the detail screen of the event's track. The [track]
+  /// embedded in an Event only carries `id` + `name` (limited GraphQL
+  /// projection), so we also fire a full `fetchTrack` so the stat
+  /// cards (distance, lap record, GPS) populate as soon as the
+  /// network call returns. The push happens immediately so the user
+  /// sees the hero (cover + name) without waiting; the cards fill
+  /// in once the fetch lands.
+  void _navigateToTrackDetailScreen(BuildContext context, Track track) {
+    final TrackDetailProvider provider = Provider.of<TrackDetailProvider>(context, listen: false);
+    provider.setCurrentTrack(track);
+    if (track.id != null) provider.fetchTrack(track); // fire-and-forget
+    Navigator.pushNamed(context, '/trackDetail');
   }
 
   /// Navigate to the detail screen of the specified [member].
@@ -550,7 +566,6 @@ class EventDetail extends StatelessWidget {
                               child: Container(
                                 height: 100,
                                 margin: EdgeInsets.all(4.0),
-                                padding: EdgeInsets.all(8.0),
                                 decoration: BoxDecoration(
                                   border: Border.all(color: Colors.white, width: 1.0),
                                   borderRadius: BorderRadius.all(Radius.circular(4.0)),
@@ -564,23 +579,53 @@ class EventDetail extends StatelessWidget {
                                     ),
                                   ],
                                 ),
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                  children: <Widget>[
-                                    Icon(
-                                      TrackUtils.trackIconFromName(_eventDetailProvider.currentEvent.track?.name),
-                                      size: 38,
-                                      color: Colors.red[700],
+                                clipBehavior: Clip.antiAlias,
+                                child: Material(
+                                  color: Colors.transparent,
+                                  child: InkWell(
+                                    onTap: _eventDetailProvider.currentEvent.track != null
+                                        ? () => _navigateToTrackDetailScreen(
+                                              context,
+                                              _eventDetailProvider.currentEvent.track!,
+                                            )
+                                        : null,
+                                    child: Stack(
+                                      children: <Widget>[
+                                        Padding(
+                                          padding: EdgeInsets.all(8.0),
+                                          child: Column(
+                                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                            children: <Widget>[
+                                              Icon(
+                                                TrackUtils.trackIconFromName(
+                                                  _eventDetailProvider.currentEvent.track?.name,
+                                                ),
+                                                size: 38,
+                                                color: Colors.red[700],
+                                              ),
+                                              Text(
+                                                _eventDetailProvider.currentEvent.track != null
+                                                    ? _eventDetailProvider.currentEvent.track!.name ?? ""
+                                                    : "",
+                                                textAlign: TextAlign.center,
+                                                maxLines: 2,
+                                                overflow: TextOverflow.ellipsis,
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                        Positioned(
+                                          top: 4.0,
+                                          right: 4.0,
+                                          child: Icon(
+                                            Icons.arrow_outward,
+                                            size: 14.0,
+                                            color: Colors.red[700]!.withValues(alpha: 0.7),
+                                          ),
+                                        ),
+                                      ],
                                     ),
-                                    Text(
-                                      _eventDetailProvider.currentEvent.track != null
-                                          ? _eventDetailProvider.currentEvent.track!.name ?? ""
-                                          : "",
-                                      textAlign: TextAlign.center,
-                                      maxLines: 2,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                  ],
+                                  ),
                                 ),
                               ),
                             ),

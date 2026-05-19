@@ -50,6 +50,7 @@ class RecordsService {
           track {
             id
             name
+            lapRecord
           }
           comments
           createdOn
@@ -117,6 +118,7 @@ class RecordsService {
           track {
             id
             name
+            lapRecord
           }
           comments
           createdOn
@@ -185,6 +187,7 @@ class RecordsService {
           track {
             id
             name
+            lapRecord
           }
           comments
           createdOn
@@ -263,6 +266,7 @@ class RecordsService {
           track {
             id
             name
+            lapRecord
           }
           comments
           createdOn
@@ -327,6 +331,7 @@ class RecordsService {
           track {
             id
             name
+            lapRecord
           }
           comments
           createdOn
@@ -380,6 +385,7 @@ class RecordsService {
           track {
             id
             name
+            lapRecord
           }
           comments
           createdOn
