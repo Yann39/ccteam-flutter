@@ -51,7 +51,8 @@ class PhotoProvider extends ChangeNotifier {
 
   UnmodifiableListView<Photo> get photos => UnmodifiableListView(_photos);
 
-  UnmodifiableListView<Gallery> get galleries => UnmodifiableListView(_galleries);
+  UnmodifiableListView<Gallery> get galleries =>
+      UnmodifiableListView(_galleries);
 
   /// Update the current loading status
   void _updateStatus(LoadingStatus status) {
@@ -70,7 +71,9 @@ class PhotoProvider extends ChangeNotifier {
       _photos = photos;
       _updateStatus(LoadingStatus.loaded);
     } catch (error) {
-      _log.warning("Error when retrieving photos for gallery $galleryId ($error)");
+      _log.warning(
+        "Error when retrieving photos for gallery $galleryId ($error)",
+      );
       _photos = [];
       _updateStatus(LoadingStatus.notLoaded);
     }

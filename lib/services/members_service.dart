@@ -18,7 +18,6 @@
  */
 
 import 'dart:convert';
-import 'dart:io';
 
 import 'package:ccteam/models/member.dart';
 import 'package:ccteam/models/membership_fee.dart';
@@ -31,7 +30,6 @@ import 'package:gql/language.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:http/http.dart' as http;
 import 'package:logging/logging.dart';
-import 'package:path/path.dart';
 
 class MembersService {
   static final Logger _log = new Logger('MembersService');
@@ -41,7 +39,9 @@ class MembersService {
   Future<http.Response> checkAccount(String email) {
     return http.post(
       Uri.parse(API_BASE_URL + API_CHECK_ACCOUNT_ENDPOINT),
-      headers: <String, String>{'Content-Type': 'application/json; charset=UTF-8'},
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
       body: jsonEncode(<String, String>{'email': email}),
     );
   }
@@ -49,11 +49,21 @@ class MembersService {
   /// Pre-register a member given its e-mail address, first name and last name.
   /// It creates the account with minimal information, but the user will still need to
   /// confirm its e-mail address and create a passcode to complete the registration process.
-  Future<http.Response> preRegister(String firstName, String lastName, String email) {
+  Future<http.Response> preRegister(
+    String firstName,
+    String lastName,
+    String email,
+  ) {
     return http.post(
       Uri.parse(API_BASE_URL + API_PRE_REGISTER_ENDPOINT),
-      headers: <String, String>{'Content-Type': 'application/json; charset=UTF-8'},
-      body: jsonEncode(<String, String>{'firstName': firstName, 'lastName': lastName, 'email': email}),
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
+      body: jsonEncode(<String, String>{
+        'firstName': firstName,
+        'lastName': lastName,
+        'email': email,
+      }),
     );
   }
 
@@ -62,7 +72,9 @@ class MembersService {
   Future<http.Response> resendOtp(String email) {
     return http.post(
       Uri.parse(API_BASE_URL + API_RESEND_OTP_ENDPOINT),
-      headers: <String, String>{'Content-Type': 'application/json; charset=UTF-8'},
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
       body: jsonEncode(<String, String>{'email': email}),
     );
   }
@@ -72,7 +84,9 @@ class MembersService {
   Future<http.Response> confirmEmail(String email, String otp) {
     return http.post(
       Uri.parse(API_BASE_URL + API_CONFIRM_EMAIL_ENDPOINT),
-      headers: <String, String>{'Content-Type': 'application/json; charset=UTF-8'},
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
       body: jsonEncode(<String, String>{'email': email, 'otp': otp}),
     );
   }
@@ -81,7 +95,9 @@ class MembersService {
   Future<http.Response> completeRegistration(String email, String passcode) {
     return http.post(
       Uri.parse(API_BASE_URL + API_COMPLETE_REGISTRATION_ENDPOINT),
-      headers: <String, String>{'Content-Type': 'application/json; charset=UTF-8'},
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
       body: jsonEncode(<String, String>{'email': email, 'password': passcode}),
     );
   }
@@ -91,7 +107,9 @@ class MembersService {
   Future<http.Response> authenticate(String email, String password) {
     return http.post(
       Uri.parse(API_BASE_URL + API_AUTHENTICATE_ENDPOINT),
-      headers: <String, String>{'Content-Type': 'application/json; charset=UTF-8'},
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
       body: jsonEncode(<String, String>{'email': email, 'password': password}),
     );
   }
@@ -109,7 +127,10 @@ class MembersService {
     """;
 
     final QueryResult result = await GraphQLConnection().graphQLClient.query(
-      QueryOptions(document: parseString(query), fetchPolicy: FetchPolicy.noCache),
+      QueryOptions(
+        document: parseString(query),
+        fetchPolicy: FetchPolicy.noCache,
+      ),
     );
     if (result.hasException) {
       throw AppUtils.handleGraphQlException(result)!;
@@ -150,7 +171,11 @@ class MembersService {
 
     return GraphQLConnection().graphQLClient
         .query(
-          QueryOptions(document: parseString(query), variables: {'text': filter}, fetchPolicy: FetchPolicy.noCache),
+          QueryOptions(
+            document: parseString(query),
+            variables: {'text': filter},
+            fetchPolicy: FetchPolicy.noCache,
+          ),
         )
         .then(
           (result) {
@@ -161,7 +186,8 @@ class MembersService {
               dynamic memberList = result.data!['getMembersFiltered'];
               if (memberList == null) {
                 _log.info("getMembersFiltered returned null data");
-              } else if (memberList is Map<String, dynamic> && memberList.isEmpty) {
+              } else if (memberList is Map<String, dynamic> &&
+                  memberList.isEmpty) {
                 _log.info("getMembersFiltered returned empty data");
               } else {
                 for (dynamic member in memberList) {
@@ -248,14 +274,23 @@ class MembersService {
     """;
 
     return GraphQLConnection().graphQLClient
-        .query(QueryOptions(document: parseString(query), variables: {'id': id}, fetchPolicy: FetchPolicy.noCache))
+        .query(
+          QueryOptions(
+            document: parseString(query),
+            variables: {'id': id},
+            fetchPolicy: FetchPolicy.noCache,
+          ),
+        )
         .then(
           (result) {
             if (result.hasException) {
               throw AppUtils.handleGraphQlException(result)!;
             } else {
               if (result.data!['getMemberById'] == null) {
-                throw CustomGraphQlException("member_not_found", "Member not found");
+                throw CustomGraphQlException(
+                  "member_not_found",
+                  "Member not found",
+                );
               }
               return Member.fromJson(result.data!['getMemberById']);
             }
@@ -345,7 +380,11 @@ class MembersService {
 
     return GraphQLConnection().graphQLClient
         .query(
-          QueryOptions(document: parseString(query), variables: {'email': email}, fetchPolicy: FetchPolicy.noCache),
+          QueryOptions(
+            document: parseString(query),
+            variables: {'email': email},
+            fetchPolicy: FetchPolicy.noCache,
+          ),
         )
         .then(
           (result) {
@@ -353,7 +392,10 @@ class MembersService {
               throw AppUtils.handleGraphQlException(result)!;
             } else {
               if (result.data!['getMemberByEmail'] == null) {
-                throw CustomGraphQlException("member_not_found", "Member not found");
+                throw CustomGraphQlException(
+                  "member_not_found",
+                  "Member not found",
+                );
               }
               return Member.fromJson(result.data!['getMemberByEmail']);
             }
@@ -465,7 +507,9 @@ class MembersService {
       fetchPolicy: FetchPolicy.noCache,
     );
 
-    final QueryResult result = await GraphQLConnection().graphQLClient.mutate(mutationOptions);
+    final QueryResult result = await GraphQLConnection().graphQLClient.mutate(
+      mutationOptions,
+    );
 
     if (result.hasException) {
       throw AppUtils.handleGraphQlException(result)!;
@@ -577,7 +621,9 @@ class MembersService {
       fetchPolicy: FetchPolicy.noCache,
     );
 
-    final QueryResult result = await GraphQLConnection().graphQLClient.mutate(mutationOptions);
+    final QueryResult result = await GraphQLConnection().graphQLClient.mutate(
+      mutationOptions,
+    );
 
     if (result.hasException) {
       throw AppUtils.handleGraphQlException(result)!;
@@ -632,7 +678,9 @@ class MembersService {
       fetchPolicy: FetchPolicy.noCache,
     );
 
-    final QueryResult result = await GraphQLConnection().graphQLClient.mutate(mutationOptions);
+    final QueryResult result = await GraphQLConnection().graphQLClient.mutate(
+      mutationOptions,
+    );
 
     if (result.hasException) {
       throw AppUtils.handleGraphQlException(result)!;
@@ -661,11 +709,16 @@ class MembersService {
 
     final MutationOptions mutationOptions = new MutationOptions(
       document: parseString(query),
-      variables: {'memberId': member.id, 'boardRole': boardRole?.toString().split('.').last},
+      variables: {
+        'memberId': member.id,
+        'boardRole': boardRole?.toString().split('.').last,
+      },
       fetchPolicy: FetchPolicy.noCache,
     );
 
-    final QueryResult result = await GraphQLConnection().graphQLClient.mutate(mutationOptions);
+    final QueryResult result = await GraphQLConnection().graphQLClient.mutate(
+      mutationOptions,
+    );
 
     if (result.hasException) {
       throw AppUtils.handleGraphQlException(result)!;
@@ -697,7 +750,9 @@ class MembersService {
       fetchPolicy: FetchPolicy.noCache,
     );
 
-    final QueryResult result = await GraphQLConnection().graphQLClient.mutate(mutationOptions);
+    final QueryResult result = await GraphQLConnection().graphQLClient.mutate(
+      mutationOptions,
+    );
 
     if (result.hasException) {
       throw AppUtils.handleGraphQlException(result)!;
@@ -716,7 +771,10 @@ class MembersService {
   /// codes to display the appropriate inline error.
   ///
   /// We log the call but **never** the passcodes themselves.
-  Future<bool> changePasscode(String currentPasscode, String newPasscode) async {
+  Future<bool> changePasscode(
+    String currentPasscode,
+    String newPasscode,
+  ) async {
     _log.info("Calling changePasscode mutation");
 
     final String query = """
@@ -727,11 +785,16 @@ class MembersService {
 
     final MutationOptions mutationOptions = new MutationOptions(
       document: parseString(query),
-      variables: {'currentPasscode': currentPasscode, 'newPasscode': newPasscode},
+      variables: {
+        'currentPasscode': currentPasscode,
+        'newPasscode': newPasscode,
+      },
       fetchPolicy: FetchPolicy.noCache,
     );
 
-    final QueryResult result = await GraphQLConnection().graphQLClient.mutate(mutationOptions);
+    final QueryResult result = await GraphQLConnection().graphQLClient.mutate(
+      mutationOptions,
+    );
 
     if (result.hasException) {
       throw AppUtils.handleGraphQlException(result)!;
@@ -739,101 +802,12 @@ class MembersService {
     return result.data!['changePasscode'] == true;
   }
 
-  /// Ask for a password reset for the account related to the specified [email].
-  /// Send a POST request to the Restful API.
-  /// Throw an exception if response status code is different from 201.
-  Future<Member> askPassword(String email) async {
-    // convert Member object to JSON string
-    final String jsonString = '{email:$email}';
-
-    // call to API
-    final response = await http.post(
-      Uri.parse(API_OLD_ROOT_URL + API_ASK_PASSWORD_MEMBER_ENDPOINT),
-      headers: {'Content-Type': 'application/json'},
-      body: jsonString,
-    );
-
-    // handle server response code
-    if (response.statusCode == 200) {
-      // if the call to the server was successful, parse the JSON and return content
-      dynamic responseJson = json.decode(response.body);
-      return Member.fromJson(responseJson);
-    } else if (response.statusCode == 403) {
-      throw Exception('Account is not activated');
-    } else if (response.statusCode == 404) {
-      throw Exception('No member found with the specified e-mail address');
-    } else if (response.statusCode == 400) {
-      throw Exception('Bad request, missing email attribute');
-    } else {
-      throw Exception('Unexpected server response');
-    }
-  }
-
-  /// Upload the specified avatar [file] for the specified [memberId].
-  /// Send a POST request to the Restful API.
-  /// Throw an exception if response status code is different from 200.
-  /// Return the uploaded avatar relative path.
-  Future<String> uploadAvatar(File file, int memberId) async {
-    final http.ByteStream stream = new http.ByteStream(Stream.castFrom(file.openRead()));
-    final int length = await file.length();
-    final Uri uri = Uri.parse(API_OLD_ROOT_URL + API_UPLOAD_MEMBER_AVATAR_ENDPOINT);
-    final http.MultipartRequest request = new http.MultipartRequest("POST", uri);
-    final http.MultipartFile multipartFile = new http.MultipartFile(
-      'avatar',
-      stream,
-      length,
-      filename: basename(file.path),
-    );
-    request.files.add(multipartFile);
-
-    Map<String, String> params = new Map();
-    params.putIfAbsent("memberId", () => "$memberId");
-    request.fields.addAll(params);
-
-    // call to API
-    final response = await request.send();
-
-    // handle server response code
-    if (response.statusCode == 200) {
-      late String path;
-      await for (String value in response.stream.transform(utf8.decoder)) {
-        path = value;
-      }
-      return path;
-    } else if (response.statusCode == 400) {
-      throw Exception('File too big ($length) or wrong type');
-    } else {
-      throw Exception('Unexpected server response');
-    }
-  }
-
-  /// Delete avatar for the specified [memberId].
-  /// Send a POST request to the Restful API.
-  /// Throw an exception if response status code is different from 200.
-  Future<void> deleteAvatar(int memberId) async {
-    // convert Member object to JSON string
-    final String jsonString = '{\"memberId\":$memberId}';
-
-    // call to API
-    final response = await http.post(
-      Uri.parse(API_OLD_ROOT_URL + API_DELETE_MEMBER_AVATAR_ENDPOINT),
-      headers: {'Content-Type': 'application/json'},
-      body: jsonString,
-    );
-
-    // handle server response code
-    if (response.statusCode == 200) {
-      return;
-    } else if (response.statusCode == 404) {
-      throw Exception('Member avatar file not found');
-    } else if (response.statusCode == 400) {
-      throw Exception('Missing member id');
-    } else {
-      throw Exception('Unexpected server response, member avatar has not been deleted');
-    }
-  }
-
-  Future<MembershipFee> addMembershipFee(int memberId, int year, double amount, bool paid) async {
+  Future<MembershipFee> addMembershipFee(
+    int memberId,
+      int year,
+    double amount,
+    bool paid,
+  ) async {
     final String query = """
       mutation AddMembershipFee(\$memberId: Long!, \$year: Int!, \$amount: Float!, \$paid: Boolean!) {
         addMembershipFee(memberId: \$memberId, year: \$year, amount: \$amount, paid: \$paid) {
@@ -849,11 +823,18 @@ class MembersService {
 
     final MutationOptions mutationOptions = new MutationOptions(
       document: parseString(query),
-      variables: {'memberId': memberId, 'year': year, 'amount': amount, 'paid': paid},
+      variables: {
+        'memberId': memberId,
+        'year': year,
+        'amount': amount,
+        'paid': paid,
+      },
       fetchPolicy: FetchPolicy.noCache,
     );
 
-    final QueryResult result = await GraphQLConnection().graphQLClient.mutate(mutationOptions);
+    final QueryResult result = await GraphQLConnection().graphQLClient.mutate(
+      mutationOptions,
+    );
 
     if (result.hasException) {
       throw AppUtils.handleGraphQlException(result)!;
@@ -862,7 +843,12 @@ class MembersService {
     }
   }
 
-  Future<MembershipFee> updateMembershipFee(int feeId, int year, double amount, bool paid) async {
+  Future<MembershipFee> updateMembershipFee(
+    int feeId,
+    int year,
+    double amount,
+    bool paid,
+  ) async {
     final String query = """
       mutation UpdateMembershipFee(\$feeId: Long!, \$year: Int!, \$amount: Float!, \$paid: Boolean!) {
         updateMembershipFee(feeId: \$feeId, year: \$year, amount: \$amount, paid: \$paid) {
@@ -882,7 +868,9 @@ class MembersService {
       fetchPolicy: FetchPolicy.noCache,
     );
 
-    final QueryResult result = await GraphQLConnection().graphQLClient.mutate(mutationOptions);
+    final QueryResult result = await GraphQLConnection().graphQLClient.mutate(
+      mutationOptions,
+    );
 
     if (result.hasException) {
       throw AppUtils.handleGraphQlException(result)!;
@@ -911,7 +899,9 @@ class MembersService {
       fetchPolicy: FetchPolicy.noCache,
     );
 
-    final QueryResult result = await GraphQLConnection().graphQLClient.mutate(mutationOptions);
+    final QueryResult result = await GraphQLConnection().graphQLClient.mutate(
+      mutationOptions,
+    );
 
     if (result.hasException) {
       throw AppUtils.handleGraphQlException(result)!;

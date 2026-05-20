@@ -421,6 +421,8 @@ class AppString {
   static const String recordConditionMandatory = 'La condition de la piste doit être indiquée';
   static const String recordBikeLabel = 'Moto';
   static const String recordBikeHint = 'Moto utilisée';
+  static const String recordCommentsLabel = 'Détails';
+  static const String recordCommentsHint = 'Conditions particulières, pneus utilisés, etc.';
   static const String recordBikeMandatory = 'La moto doit être indiquée';
 
   // Membership fees

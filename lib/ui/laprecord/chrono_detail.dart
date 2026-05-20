@@ -49,10 +49,7 @@ class _ChronoDetailState extends State<ChronoDetail> {
     super.initState();
     // Fetch the full list of records on this track right after the
     // first frame, we need it to compute the chrono's ranking in
-    // the "Classement" card below. trackRecords is a single slot on
-    // RecordListProvider, so this also overwrites any stale list
-    // from a previous page; we don't pollute caller state since the
-    // detail page is a leaf in the navigation stack.
+    // the "Ranking" card below.
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       final Record? record = Provider.of<RecordDetailProvider>(context, listen: false).currentRecord;
@@ -580,6 +577,15 @@ class _ChronoDetailState extends State<ChronoDetail> {
                               value: conditionLabel,
                             ),
                           ],
+                          if (record.comments != null) ...[
+                            _divider(),
+                            _detailRow(
+                              icon: TrackUtils.trackConditionIconData(record.comments) ?? Icons.comment,
+                              iconColor: Colors.brown,
+                              label: AppString.recordCommentsLabel,
+                              value: record.comments!,
+                            ),
+                          ],
                         ],
                       ),
                     ),
@@ -590,52 +596,6 @@ class _ChronoDetailState extends State<ChronoDetail> {
                     if (rankingCard == null) return const SizedBox.shrink();
                     return Padding(padding: const EdgeInsets.only(top: 12.0), child: rankingCard);
                   }(),
-                  // comments card (only when the chrono carries a note)
-                  if (comments.isNotEmpty) ...[
-                    const SizedBox(height: 12.0),
-                    Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.all(14.0),
-                      decoration: BoxDecoration(
-                        border: Border.all(color: Colors.white, width: 1.0),
-                        borderRadius: BorderRadius.circular(8.0),
-                        color: Colors.blue[100],
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withAlpha(25),
-                            spreadRadius: 0.5,
-                            blurRadius: 0.5,
-                            offset: const Offset(2, 2),
-                          ),
-                        ],
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: <Widget>[
-                          Row(
-                            children: <Widget>[
-                              Icon(Icons.notes, size: 18.0, color: Colors.black.withAlpha(170)),
-                              const SizedBox(width: 6.0),
-                              Text(
-                                AppString.recordComments,
-                                style: TextStyle(
-                                  color: Colors.black.withAlpha(170),
-                                  fontSize: 12.0,
-                                  fontWeight: FontWeight.w700,
-                                  letterSpacing: 0.4,
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 8.0),
-                          Text(
-                            comments,
-                            style: TextStyle(color: Colors.black.withAlpha(220), fontSize: 14.0, height: 1.4),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
                   SizedBox(height: MediaQuery.of(context).padding.bottom + 16.0),
                 ]),
               ),

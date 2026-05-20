@@ -120,7 +120,9 @@ class LoginProvider extends ChangeNotifier {
 
   LoginStatus get loginStatus => _loginStatus;
 
-  bool get isMember => _loggedMember?.role == MemberRole.ROLE_MEMBER || _loggedMember?.role == MemberRole.ROLE_ADMIN;
+  bool get isMember =>
+      _loggedMember?.role == MemberRole.ROLE_MEMBER ||
+      _loggedMember?.role == MemberRole.ROLE_ADMIN;
 
   bool get isAdmin => _loggedMember?.role == MemberRole.ROLE_ADMIN;
 
@@ -278,7 +280,9 @@ class LoginProvider extends ChangeNotifier {
       return;
     }
 
-    _log.fine("Email $_email and token $_jwt found in shared preferences, let's get member from database");
+    _log.fine(
+      "Email $_email and token $_jwt found in shared preferences, let's get member from database",
+    );
 
     // set the JWT token to be used for all future GraphQL queries
     GraphQLConnection().jwtToken = _jwt;
@@ -289,17 +293,24 @@ class LoginProvider extends ChangeNotifier {
         .timeout(Duration(seconds: 10))
         .then(
           (value) {
-            _log.fine("User $_email found in database and JWT token verified, consider as logged in");
+            _log.fine(
+              "User $_email found in database and JWT token verified, consider as logged in",
+            );
             _loggedMember = value;
             _setAuthStatus(AuthStatus.Authenticated);
           },
           onError: (error) {
-            _log.info("An error occurred while retrieving member from the database : $error");
+            _log.info(
+              "An error occurred while retrieving member from the database : $error",
+            );
             if (error is CustomGraphQlException) {
               // JWT token has expired
               if (error.code == "token_expired") {
                 _prefs.remove('jwt');
-                _messageProvider.setMessage(AppString.errorTokenExpired, MessageType.SESSION_EXPIRED);
+                _messageProvider.setMessage(
+                  AppString.errorTokenExpired,
+                  MessageType.SESSION_EXPIRED,
+                );
                 return;
               }
 
@@ -309,32 +320,48 @@ class LoginProvider extends ChangeNotifier {
               // member not found
               if (error.code == "member_not_found") {
                 _messageProvider.setMessage(
-                  AppString.format(AppString.errorEmailNotFoundInDatabase, [_email]),
+                  AppString.format(AppString.errorEmailNotFoundInDatabase, [
+                    _email,
+                  ]),
                   MessageType.ERROR,
                 );
               }
               // JWT token has wrong format and cannot be decoded
               else if (error.code == "wrong_token_format") {
-                _messageProvider.setMessage(AppString.errorTokenWrongFormat, MessageType.ERROR);
+                _messageProvider.setMessage(
+                  AppString.errorTokenWrongFormat,
+                  MessageType.ERROR,
+                );
               }
               // JWT token has not been specified
               else if (error.code == "no_token") {
-                _messageProvider.setMessage(AppString.errorTokenNotFound, MessageType.ERROR);
+                _messageProvider.setMessage(
+                  AppString.errorTokenNotFound,
+                  MessageType.ERROR,
+                );
               }
               // wrong credentials
               else if (error.code == "bad_credentials") {
-                _messageProvider.setMessage(AppString.errorBadCredentials, MessageType.ERROR);
+                _messageProvider.setMessage(
+                  AppString.errorBadCredentials,
+                  MessageType.ERROR,
+                );
               }
               // unknown error code (should never happen)
               else {
                 _messageProvider.setMessage(
-                  AppString.format(AppString.errorUnknown, [error.code ?? "Unknown error"]),
+                  AppString.format(AppString.errorUnknown, [
+                    error.code ?? "Unknown error",
+                  ]),
                   MessageType.ERROR,
                 );
               }
             } else if (error is TimeoutException) {
               _setAuthStatus(AuthStatus.Unauthenticated);
-              _messageProvider.setMessage(AppString.errorServerTimeOut, MessageType.ERROR);
+              _messageProvider.setMessage(
+                AppString.errorServerTimeOut,
+                MessageType.ERROR,
+              );
             }
             // other error
             else {
@@ -370,12 +397,18 @@ class LoginProvider extends ChangeNotifier {
             // e-mail address is missing in the request
             else if (response.statusCode == 400) {
               _setLoginStatus(LoginStatus.EmailStep);
-              _messageProvider.setMessage(AppString.loginEmailMissing, MessageType.ERROR);
+              _messageProvider.setMessage(
+                AppString.loginEmailMissing,
+                MessageType.ERROR,
+              );
             }
             // no account has been found for the specified e-mail address, propose new account
             else if (response.statusCode == 404) {
               _setLoginStatus(LoginStatus.EmailStep);
-              _messageProvider.setMessage(AppString.loginNoAccountFound, MessageType.ERROR);
+              _messageProvider.setMessage(
+                AppString.loginNoAccountFound,
+                MessageType.ERROR,
+              );
             }
             // account exists, OTP has been sent and is still valid
             else if (response.statusCode == 302) {
@@ -391,18 +424,31 @@ class LoginProvider extends ChangeNotifier {
             }
             // unexpected status code
             else {
-              _log.severe("Failed to check account for user $email : ${response.body}");
+              _log.severe(
+                "Failed to check account for user $email : ${response.body}",
+              );
               _setLoginStatus(LoginStatus.EmailStep);
-              _messageProvider.setMessage(AppString.checkAccountUnexpectedResponse, MessageType.ERROR);
+              _messageProvider.setMessage(
+                AppString.checkAccountUnexpectedResponse,
+                MessageType.ERROR,
+              );
             }
           },
           onError: (error) {
-            _log.severe("Error while checking account for user $email : $error");
+            _log.severe(
+              "Error while checking account for user $email : $error",
+            );
             _setLoginStatus(LoginStatus.EmailStep);
             if (error is TimeoutException) {
-              _messageProvider.setMessage(AppString.errorServerTimeOut, MessageType.ERROR);
+              _messageProvider.setMessage(
+                AppString.errorServerTimeOut,
+                MessageType.ERROR,
+              );
             } else {
-              _messageProvider.setMessage(AppString.checkAccountError, MessageType.ERROR);
+              _messageProvider.setMessage(
+                AppString.checkAccountError,
+                MessageType.ERROR,
+              );
             }
           },
         );
@@ -410,7 +456,9 @@ class LoginProvider extends ChangeNotifier {
 
   /// pre-register a new member according to the specified member information.
   Future<void> preRegisterMember() async {
-    _log.info("Pre-registering user ${this.firstName} ${this.lastName} ($_email)");
+    _log.info(
+      "Pre-registering user ${this.firstName} ${this.lastName} ($_email)",
+    );
     _setLoginStatus(LoginStatus.Loading);
 
     await _membersService
@@ -428,12 +476,18 @@ class LoginProvider extends ChangeNotifier {
             // e-mail address, first name, or last name is missing from the request
             else if (response.statusCode == 400) {
               _setLoginStatus(LoginStatus.EmailAndInfoStep);
-              _messageProvider.setMessage(AppString.preRegisterMissingData, MessageType.ERROR);
+              _messageProvider.setMessage(
+                AppString.preRegisterMissingData,
+                MessageType.ERROR,
+              );
             }
             // e-mail address already exists
             else if (response.statusCode == 409) {
               _setLoginStatus(LoginStatus.EmailAndInfoStep);
-              _messageProvider.setMessage(AppString.loginAccountEmailAlreadyExist, MessageType.ERROR);
+              _messageProvider.setMessage(
+                AppString.loginAccountEmailAlreadyExist,
+                MessageType.ERROR,
+              );
             }
             // member successfully created but the confirmation e-mail failed to be sent
             else if (response.statusCode == 207) {
@@ -441,24 +495,38 @@ class LoginProvider extends ChangeNotifier {
               _startOtpResendCooldown(_otpResendCooldownSeconds);
               _setLoginStatus(LoginStatus.OtpStep);
               _messageProvider.setMessage(
-                AppString.format(AppString.preRegisterConfirmationEmailNotSent, [_email!]),
+                AppString.format(
+                  AppString.preRegisterConfirmationEmailNotSent,
+                  [_email!],
+                ),
                 MessageType.WARNING,
               );
             }
             // unexpected status code
             else {
-              _log.severe("Failed to pre-register user $_email : ${response.body}");
+              _log.severe(
+                "Failed to pre-register user $_email : ${response.body}",
+              );
               _setLoginStatus(LoginStatus.EmailAndInfoStep);
-              _messageProvider.setMessage(AppString.preRegisterUnexpectedResponse, MessageType.ERROR);
+              _messageProvider.setMessage(
+                AppString.preRegisterUnexpectedResponse,
+                MessageType.ERROR,
+              );
             }
           },
           onError: (error) {
             _log.severe("Error while pre-registering user $_email : $error");
             _setLoginStatus(LoginStatus.EmailAndInfoStep);
             if (error is TimeoutException) {
-              _messageProvider.setMessage(AppString.errorServerTimeOut, MessageType.ERROR);
+              _messageProvider.setMessage(
+                AppString.errorServerTimeOut,
+                MessageType.ERROR,
+              );
             } else {
-              _messageProvider.setMessage(AppString.preRegisterError, MessageType.ERROR);
+              _messageProvider.setMessage(
+                AppString.preRegisterError,
+                MessageType.ERROR,
+              );
             }
           },
         );
@@ -477,8 +545,12 @@ class LoginProvider extends ChangeNotifier {
             // OTP has been resent successfully
             if (response.statusCode == 200) {
               // store the OTP sent date in the shared preferences for timer
-              final SharedPreferences prefs = await SharedPreferences.getInstance();
-              prefs.setString('otpDate', DateTime.now().millisecondsSinceEpoch.toString());
+              final SharedPreferences prefs =
+                  await SharedPreferences.getInstance();
+              prefs.setString(
+                'otpDate',
+                DateTime.now().millisecondsSinceEpoch.toString(),
+              );
               // arm a fresh cooldown so the next resend is also rate-limited locally
               _startOtpResendCooldown(_otpResendCooldownSeconds);
               _setLoginStatus(LoginStatus.OtpStep);
@@ -486,12 +558,18 @@ class LoginProvider extends ChangeNotifier {
             // e-mail address is missing in the request
             else if (response.statusCode == 400) {
               _setLoginStatus(LoginStatus.OtpStep);
-              _messageProvider.setMessage(AppString.resendOtpMissingData, MessageType.ERROR);
+              _messageProvider.setMessage(
+                AppString.resendOtpMissingData,
+                MessageType.ERROR,
+              );
             }
             // no account has been found for the specified e-mail address
             else if (response.statusCode == 404) {
               _setLoginStatus(LoginStatus.OtpStep);
-              _messageProvider.setMessage(AppString.resendOtpNoAccountFound, MessageType.ERROR);
+              _messageProvider.setMessage(
+                AppString.resendOtpNoAccountFound,
+                MessageType.ERROR,
+              );
             }
             // cooldown not elapsed yet (the user managed to call resend despite the UI guard — e.g. app restart)
             else if (response.statusCode == 429) {
@@ -501,7 +579,9 @@ class LoginProvider extends ChangeNotifier {
               }
               _setLoginStatus(LoginStatus.OtpStep);
               _messageProvider.setMessage(
-                AppString.format(AppString.resendOtpTooSoon, [secondsLeft ?? _otpResendCooldownSeconds]),
+                AppString.format(AppString.resendOtpTooSoon, [
+                  secondsLeft ?? _otpResendCooldownSeconds,
+                ]),
                 MessageType.WARNING,
               );
             }
@@ -516,18 +596,29 @@ class LoginProvider extends ChangeNotifier {
             }
             // unexpected status code
             else {
-              _log.severe("Failed to resend OTP to user $_email : ${response.body}");
+              _log.severe(
+                "Failed to resend OTP to user $_email : ${response.body}",
+              );
               _setLoginStatus(LoginStatus.OtpStep);
-              _messageProvider.setMessage(AppString.resendOtpUnexpectedResponse, MessageType.ERROR);
+              _messageProvider.setMessage(
+                AppString.resendOtpUnexpectedResponse,
+                MessageType.ERROR,
+              );
             }
           },
           onError: (error) {
             _log.severe("Error while resending OTP to user $_email : $error");
             _setLoginStatus(LoginStatus.OtpStep);
             if (error is TimeoutException) {
-              _messageProvider.setMessage(AppString.errorServerTimeOut, MessageType.ERROR);
+              _messageProvider.setMessage(
+                AppString.errorServerTimeOut,
+                MessageType.ERROR,
+              );
             } else {
-              _messageProvider.setMessage(AppString.resendOtpError, MessageType.ERROR);
+              _messageProvider.setMessage(
+                AppString.resendOtpError,
+                MessageType.ERROR,
+              );
             }
           },
         );
@@ -549,37 +640,62 @@ class LoginProvider extends ChangeNotifier {
             // e-mail address or OTP is missing from the request
             else if (response.statusCode == 400) {
               _setLoginStatus(LoginStatus.OtpStep);
-              _messageProvider.setMessage(AppString.confirmEmailMissingData, MessageType.ERROR);
+              _messageProvider.setMessage(
+                AppString.confirmEmailMissingData,
+                MessageType.ERROR,
+              );
             }
             // e-mail address has not been found in the database
             else if (response.statusCode == 404) {
               _setLoginStatus(LoginStatus.OtpStep);
-              _messageProvider.setMessage(AppString.confirmEmailNoAccountFound, MessageType.ERROR);
+              _messageProvider.setMessage(
+                AppString.confirmEmailNoAccountFound,
+                MessageType.ERROR,
+              );
             }
             // the specified OTP has expired
             else if (response.statusCode == 406) {
               _setLoginStatus(LoginStatus.OtpStep);
-              _messageProvider.setMessage(AppString.confirmEmailOtpExpired, MessageType.ERROR);
+              _messageProvider.setMessage(
+                AppString.confirmEmailOtpExpired,
+                MessageType.ERROR,
+              );
             }
             // the specified OTP does not match the one from the database
             else if (response.statusCode == 401) {
               _setLoginStatus(LoginStatus.OtpStep);
-              _messageProvider.setMessage(AppString.confirmEmailWrongOtp, MessageType.ERROR);
+              _messageProvider.setMessage(
+                AppString.confirmEmailWrongOtp,
+                MessageType.ERROR,
+              );
             }
             // unexpected status code
             else {
-              _log.severe("Failed to confirm e-mail for user $_email : ${response.body}");
+              _log.severe(
+                "Failed to confirm e-mail for user $_email : ${response.body}",
+              );
               _setLoginStatus(LoginStatus.OtpStep);
-              _messageProvider.setMessage(AppString.confirmEmailUnexpectedResponse, MessageType.ERROR);
+              _messageProvider.setMessage(
+                AppString.confirmEmailUnexpectedResponse,
+                MessageType.ERROR,
+              );
             }
           },
           onError: (error) {
-            _log.severe("Error while confirming e-mail for user $_email : $error");
+            _log.severe(
+              "Error while confirming e-mail for user $_email : $error",
+            );
             _setLoginStatus(LoginStatus.OtpStep);
             if (error is TimeoutException) {
-              _messageProvider.setMessage(AppString.errorServerTimeOut, MessageType.ERROR);
+              _messageProvider.setMessage(
+                AppString.errorServerTimeOut,
+                MessageType.ERROR,
+              );
             } else {
-              _messageProvider.setMessage(AppString.confirmEmailError, MessageType.ERROR);
+              _messageProvider.setMessage(
+                AppString.confirmEmailError,
+                MessageType.ERROR,
+              );
             }
           },
         );
@@ -600,27 +716,46 @@ class LoginProvider extends ChangeNotifier {
             // e-mail address or password is missing from the request
             else if (response.statusCode == 400) {
               _setLoginStatus(LoginStatus.ConfirmPasscodeStep);
-              _messageProvider.setMessage(AppString.completeRegistrationMissingData, MessageType.ERROR);
+              _messageProvider.setMessage(
+                AppString.completeRegistrationMissingData,
+                MessageType.ERROR,
+              );
             }
             // member not found in the database
             else if (response.statusCode == 404) {
               _setLoginStatus(LoginStatus.ConfirmPasscodeStep);
-              _messageProvider.setMessage(AppString.completeRegistrationNoAccountFound, MessageType.ERROR);
+              _messageProvider.setMessage(
+                AppString.completeRegistrationNoAccountFound,
+                MessageType.ERROR,
+              );
             }
             // unexpected status code
             else {
-              _log.severe("Failed to complete registration for user $_email : ${response.body}");
+              _log.severe(
+                "Failed to complete registration for user $_email : ${response.body}",
+              );
               _setLoginStatus(LoginStatus.CreatePasscodeStep);
-              _messageProvider.setMessage(AppString.completeRegistrationUnexpectedResponse, MessageType.ERROR);
+              _messageProvider.setMessage(
+                AppString.completeRegistrationUnexpectedResponse,
+                MessageType.ERROR,
+              );
             }
           },
           onError: (error) {
-            _log.severe("Error while completing registration for user $_email : $error");
+            _log.severe(
+              "Error while completing registration for user $_email : $error",
+            );
             _setLoginStatus(LoginStatus.CreatePasscodeStep);
             if (error is TimeoutException) {
-              _messageProvider.setMessage(AppString.errorServerTimeOut, MessageType.ERROR);
+              _messageProvider.setMessage(
+                AppString.errorServerTimeOut,
+                MessageType.ERROR,
+              );
             } else {
-              _messageProvider.setMessage(AppString.completeRegistrationError, MessageType.ERROR);
+              _messageProvider.setMessage(
+                AppString.completeRegistrationError,
+                MessageType.ERROR,
+              );
             }
           },
         );
@@ -653,10 +788,14 @@ class LoginProvider extends ChangeNotifier {
           (response) async {
             // status OK, check response and get the JWT token
             if (response.statusCode == 200) {
-              _log.info("User $email successfully authenticated and got a JWT token");
+              _log.info(
+                "User $email successfully authenticated and got a JWT token",
+              );
 
               // get and store JWT token
-              final JwtResponse jwt = JwtResponse.fromJson(json.decode(response.body));
+              final JwtResponse jwt = JwtResponse.fromJson(
+                json.decode(response.body),
+              );
               _jwtToken = jwt.jwtToken;
 
               // set the JWT token to be used for all future GraphQL queries
@@ -669,21 +808,28 @@ class LoginProvider extends ChangeNotifier {
                   .timeout(Duration(seconds: 10))
                   .then(
                     (m) async {
-                      _log.info("Member ${m.email} successfully retrieved from database with role ${m.role}");
+                      _log.info(
+                        "Member ${m.email} successfully retrieved from database with role ${m.role}",
+                      );
 
                       // store the user's e-mail and token in the shared preferences
-                      final SharedPreferences prefs = await SharedPreferences.getInstance();
+                      final SharedPreferences prefs =
+                          await SharedPreferences.getInstance();
 
                       if (m.email != null) {
                         prefs.setString('email', m.email!);
                       } else {
-                        _log.severe("Retrieved member has a null email address!");
+                        _log.severe(
+                          "Retrieved member has a null email address!",
+                        );
                       }
 
                       if (_jwtToken != null) {
                         prefs.setString('jwt', _jwtToken!);
                       } else {
-                        _log.severe("JWT token is null after successful authentication!");
+                        _log.severe(
+                          "JWT token is null after successful authentication!",
+                        );
                       }
 
                       _loggedMember = m;
@@ -696,7 +842,9 @@ class LoginProvider extends ChangeNotifier {
                       _setLoginStatus(LoginStatus.EmailStep);
                     },
                     onError: (error) {
-                      _log.info("Error while getting member with email $email from database: $error");
+                      _log.info(
+                        "Error while getting member with email $email from database: $error",
+                      );
                       _loggedMember = null;
                       _jwtToken = null;
                       GraphQLConnection().jwtToken = null;
@@ -707,40 +855,62 @@ class LoginProvider extends ChangeNotifier {
                         // member not found
                         if (error.code == "member_not_found") {
                           _messageProvider.setMessage(
-                            AppString.format(AppString.errorEmailNotFoundInDatabase, [email ?? ""]),
+                            AppString.format(
+                              AppString.errorEmailNotFoundInDatabase,
+                              [email ?? ""],
+                            ),
                             MessageType.ERROR,
                           );
                         }
                         // JWT token has expired
                         else if (error.code == "token_expired") {
                           prefs.remove('jwt');
-                          _messageProvider.setMessage(AppString.errorTokenExpired, MessageType.SESSION_EXPIRED);
+                          _messageProvider.setMessage(
+                            AppString.errorTokenExpired,
+                            MessageType.SESSION_EXPIRED,
+                          );
                         }
                         // JWT token has wrong format and cannot be decoded
                         else if (error.code == "wrong_token_format") {
-                          _messageProvider.setMessage(AppString.errorTokenWrongFormat, MessageType.ERROR);
+                          _messageProvider.setMessage(
+                            AppString.errorTokenWrongFormat,
+                            MessageType.ERROR,
+                          );
                         }
                         // JWT token has not been specified
                         else if (error.code == "no_token") {
-                          _messageProvider.setMessage(AppString.errorTokenNotFound, MessageType.ERROR);
+                          _messageProvider.setMessage(
+                            AppString.errorTokenNotFound,
+                            MessageType.ERROR,
+                          );
                         }
                         // wrong credentials
                         else if (error.code == "bad_credentials") {
-                          _messageProvider.setMessage(AppString.errorBadCredentials, MessageType.ERROR);
+                          _messageProvider.setMessage(
+                            AppString.errorBadCredentials,
+                            MessageType.ERROR,
+                          );
                         }
                         // unknown error code (should never happen)
                         else {
                           _messageProvider.setMessage(
-                            AppString.format(AppString.errorUnknown, [error.code ?? "Unknown error"]),
+                            AppString.format(AppString.errorUnknown, [
+                              error.code ?? "Unknown error",
+                            ]),
                             MessageType.ERROR,
                           );
                         }
                       } else if (error is TimeoutException) {
-                        _messageProvider.setMessage(AppString.errorServerTimeOut, MessageType.ERROR);
+                        _messageProvider.setMessage(
+                          AppString.errorServerTimeOut,
+                          MessageType.ERROR,
+                        );
                       } else {
                         _log.info("Error is ${error.toString()}");
                         _messageProvider.setMessage(
-                          AppString.format(AppString.errorUnknown, [error.toString()]),
+                          AppString.format(AppString.errorUnknown, [
+                            error.toString(),
+                          ]),
                           MessageType.ERROR,
                         );
                       }
@@ -749,7 +919,9 @@ class LoginProvider extends ChangeNotifier {
             }
             // wrong credentials
             else if (response.statusCode == 401) {
-              _log.info("Failed to authenticate member $email, wrong username or password");
+              _log.info(
+                "Failed to authenticate member $email, wrong username or password",
+              );
               _setAuthStatus(AuthStatus.Unauthenticated);
               _setLoginStatus(LoginStatus.PasscodeStep);
               // parse the optional body: when the e-mail is known the
@@ -760,20 +932,31 @@ class LoginProvider extends ChangeNotifier {
               if (attemptsLeft != null) {
                 final String message = attemptsLeft <= 1
                     ? AppString.passcodeOneAttemptLeft
-                    : AppString.format(AppString.passcodeAttemptsLeft, [attemptsLeft]);
+                    : AppString.format(AppString.passcodeAttemptsLeft, [
+                        attemptsLeft,
+                      ]);
                 _messageProvider.setMessage(message, MessageType.WARNING);
               } else {
-                _messageProvider.setMessage(AppString.errorBadCredentials, MessageType.ERROR);
+                _messageProvider.setMessage(
+                  AppString.errorBadCredentials,
+                  MessageType.ERROR,
+                );
               }
             }
             // account locked due to too many failed attempts
             else if (response.statusCode == 423) {
-              _log.info("Failed to authenticate member $email, account is locked");
+              _log.info(
+                "Failed to authenticate member $email, account is locked",
+              );
               _setAuthStatus(AuthStatus.Unauthenticated);
               _setLoginStatus(LoginStatus.PasscodeStep);
-              final int? secondsLeft = _extractLockedUntilSeconds(response.body);
+              final int? secondsLeft = _extractLockedUntilSeconds(
+                response.body,
+              );
               if (secondsLeft != null && secondsLeft > 0) {
-                _passcodeLockedUntil = DateTime.now().add(Duration(seconds: secondsLeft));
+                _passcodeLockedUntil = DateTime.now().add(
+                  Duration(seconds: secondsLeft),
+                );
                 // schedule an auto-unlock so the keypad re-enables
                 // itself at the deadline without any user action.
                 _passcodeLockoutTimer?.cancel();
@@ -782,7 +965,9 @@ class LoginProvider extends ChangeNotifier {
                   () => clearPasscodeLockout(),
                 );
                 _messageProvider.setMessage(
-                  AppString.format(AppString.passcodeLocked, [_formatLockoutDuration(secondsLeft)]),
+                  AppString.format(AppString.passcodeLocked, [
+                    _formatLockoutDuration(secondsLeft),
+                  ]),
                   MessageType.ERROR,
                 );
               } else {
@@ -790,30 +975,45 @@ class LoginProvider extends ChangeNotifier {
                 // how long. Still inform the user — keypad stays
                 // enabled, they'll just get another 423 on retry.
                 _messageProvider.setMessage(
-                  AppString.format(AppString.passcodeLocked, [AppString.passcodeLockedFallback]),
+                  AppString.format(AppString.passcodeLocked, [
+                    AppString.passcodeLockedFallback,
+                  ]),
                   MessageType.ERROR,
                 );
               }
             }
             // unexpected status code
             else {
-              _log.info("Failed to authenticate user $email : ${response.body}");
+              _log.info(
+                "Failed to authenticate user $email : ${response.body}",
+              );
               _setAuthStatus(AuthStatus.Unauthenticated);
               _setLoginStatus(LoginStatus.PasscodeStep);
-              _messageProvider.setMessage(AppString.loginMemberUnexpectedResponse, MessageType.ERROR);
+              _messageProvider.setMessage(
+                AppString.loginMemberUnexpectedResponse,
+                MessageType.ERROR,
+              );
             }
           },
           onError: (error) {
-            _log.info("Error while authenticating user with e-mail $email ($error)");
+            _log.info(
+              "Error while authenticating user with e-mail $email ($error)",
+            );
             _loggedMember = null;
             _jwtToken = null;
             GraphQLConnection().jwtToken = null;
             _setAuthStatus(AuthStatus.Unauthenticated);
             _setLoginStatus(LoginStatus.PasscodeStep);
             if (error is TimeoutException) {
-              _messageProvider.setMessage(AppString.errorServerTimeOut, MessageType.ERROR);
+              _messageProvider.setMessage(
+                AppString.errorServerTimeOut,
+                MessageType.ERROR,
+              );
             } else {
-              _messageProvider.setMessage(AppString.loginMemberError, MessageType.ERROR);
+              _messageProvider.setMessage(
+                AppString.loginMemberError,
+                MessageType.ERROR,
+              );
             }
           },
         );
@@ -876,7 +1076,10 @@ class LoginProvider extends ChangeNotifier {
       await refreshLoggedMember();
     } catch (error) {
       _log.warning("Failed to update header palette: $error");
-      _messageProvider.setMessage(AppString.memberUpdateFailed, MessageType.ERROR);
+      _messageProvider.setMessage(
+        AppString.memberUpdateFailed,
+        MessageType.ERROR,
+      );
     }
   }
 
@@ -905,21 +1108,6 @@ class LoginProvider extends ChangeNotifier {
     GraphQLConnection().jwtToken = null;
     _setLoginStatus(LoginStatus.PasscodeStep);
     _setAuthStatus(AuthStatus.Unauthenticated);
-  }
-
-  /// Ask for a new password.
-  Future<void> askPassword(String email) async {
-    await _membersService
-        .askPassword(email)
-        .then(
-          (value) {
-            _log.fine("Forgot password requested for e-mail : $email");
-          },
-          onError: (error) {
-            _log.severe("Failed to request forgot password", error);
-            throw (error);
-          },
-        );
   }
 
   @override
@@ -1024,7 +1212,9 @@ class LoginProvider extends ChangeNotifier {
 
   /// Change the current authentication [status].
   void _setAuthStatus(AuthStatus status) {
-    final bool becomesAuthenticated = status == AuthStatus.Authenticated && _authStatus != AuthStatus.Authenticated;
+    final bool becomesAuthenticated =
+        status == AuthStatus.Authenticated &&
+        _authStatus != AuthStatus.Authenticated;
     _authStatus = status;
     // dismiss any snackbar that might still be on screen
     if (becomesAuthenticated) {

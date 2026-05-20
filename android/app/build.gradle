@@ -26,8 +26,8 @@ android {
         minSdkVersion flutter.minSdkVersion
         targetSdkVersion 36
         multiDexEnabled true
-        versionCode 3
-        versionName "0.8.2"
+        versionCode 5
+        versionName "1.0.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         // Required when setting minSdkVersion to 20 or lower
         multiDexEnabled true

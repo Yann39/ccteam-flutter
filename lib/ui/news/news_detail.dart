@@ -320,15 +320,14 @@ class NewsDetail extends StatelessWidget {
               // hero header pinned at the top
               _buildHeroHeader(news),
               if (_loginProvider.isMember) _buildActionButtons(context, news, isLiked),
-              // news content takes all remaining vertical space and
-              // scrolls internally if it overflows
+              // news content takes all remaining vertical space and scrolls internally if it overflows
               Expanded(
                 child: Markdown(
                   padding: const EdgeInsets.fromLTRB(16.0, 16.0, 16.0, 24.0),
                   data: news.content ?? "",
                   styleSheet: MarkdownStyleSheet.fromTheme(
                     ThemeData(
-                      textTheme: const TextTheme(bodyMedium: TextStyle(fontSize: 14.0, color: Colors.black87)),
+                      textTheme: const TextTheme(bodyMedium: TextStyle(fontSize: 16.0, color: Colors.black87)),
                     ),
                   ),
                 ),

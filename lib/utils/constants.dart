@@ -41,25 +41,6 @@ const String API_CONFIRM_EMAIL_ENDPOINT = '/rest/confirmEmail';
 const String API_COMPLETE_REGISTRATION_ENDPOINT = '/rest/completeRegistration';
 const String API_AUTHENTICATE_ENDPOINT = '/rest/authenticate';
 
-const String API_ASK_PASSWORD_MEMBER_ENDPOINT = '/members/ask_password.php';
-const String API_UPLOAD_MEMBER_AVATAR_ENDPOINT = '/members/upload_avatar.php';
-const String API_DELETE_MEMBER_AVATAR_ENDPOINT = '/members/delete_avatar.php';
-
-const String API_SEARCH_TRACKS_ENDPOINT = '/tracks/search.php';
-const String API_CREATE_TRACK_ENDPOINT = '/tracks/create.php';
-const String API_UPDATE_TRACK_ENDPOINT = '/tracks/update.php';
-const String API_DELETE_TRACK_ENDPOINT = '/tracks/delete.php';
-
-const String API_GET_ALL_GALLERIES_ENDPOINT = '/galleries/read.php';
-const String API_CREATE_GALLERY_ENDPOINT = '/galleries/create.php';
-const String API_UPDATE_GALLERY_ENDPOINT = '/galleries/update.php';
-const String API_DELETE_GALLERY_ENDPOINT = '/galleries/delete.php';
-
-const String API_GET_ALL_PHOTOS_ENDPOINT = '/photos/read.php';
-const String API_CREATE_PHOTO_ENDPOINT = '/photos/create.php';
-const String API_UPDATE_PHOTO_ENDPOINT = '/photos/update.php';
-const String API_DELETE_PHOTO_ENDPOINT = '/photos/delete.php';
-
 const String LYCHEE_BASE_URL = String.fromEnvironment('LYCHEE_BASE_URL');
 const String LYCHEE_ALBUM_ENDPOINT = '/api/v2/Album';
 const String LYCHEE_ROOT_ALBUM_ID = String.fromEnvironment('LYCHEE_ROOT_ALBUM_ID');

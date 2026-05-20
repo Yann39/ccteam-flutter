@@ -260,6 +260,18 @@ class _AddEditRecordState extends State<AddEditRecord> {
       validator: (val) => val == null ? AppString.recordBikeMandatory : null,
     );
 
+    final _commentsField = TextFormField(
+      decoration: const InputDecoration(
+        icon: const Icon(Icons.comment),
+        hintText: AppString.recordCommentsHint,
+        labelText: AppString.recordCommentsLabel,
+      ),
+      keyboardType: TextInputType.text,
+      maxLines: 3,
+      onSaved: (val) => _recordCreationProvider.record.comments = val,
+      initialValue: _recordCreationProvider.record.comments,
+    );
+
     return FormScaffold(
       title: AppString.recordEdit,
       formKey: _formKey,
@@ -272,6 +284,7 @@ class _AddEditRecordState extends State<AddEditRecord> {
         _bikeField,
         _lapTimeField,
         _conditions,
+        _commentsField,
       ],
     );
   }
