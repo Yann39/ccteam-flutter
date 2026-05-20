@@ -243,11 +243,11 @@ class _EventListState extends State<EventList> {
                         sliver: SliverToBoxAdapter(
                           child: CalendarSelector(
                             onDateSelected: onSelect,
-                            eventsDates: Map.fromIterable(
-                              _eventListProvider.allEvents,
-                              key: (v) => v.title,
-                              value: (v) => v.startDate,
-                            ),
+                            // every event with a known start date
+                            eventsDates: <DateTime>[
+                              for (final Event e in _eventListProvider.allEvents)
+                                if (e.startDate != null) e.startDate!,
+                            ],
                             onlyMonthDays: false,
                             locale: "fr",
                             weekEndDayColor: Colors.blue[700]!,

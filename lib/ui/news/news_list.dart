@@ -62,28 +62,29 @@ class NewsList extends StatelessWidget {
         );
   }
 
-  /// Section title above the news feed: "ACTUALITÉS" left-aligned,
-  /// underlined by a thin full-width rule. Subtle anchor that breaks
-  /// the visual flow between the stats panel and the news cards
-  /// without competing with either of them.
+  /// Section label above the news feed. Same visual style as the
+  /// "Actions" / "Statistiques" labels on the "Mon compte" page: a
+  /// small icon + tight uppercase-ish label, left-aligned, grey.
+  /// The previous large centered "ACTUALITÉS" with its underline
+  /// rule competed visually with the stats panel above and the
+  /// news cards below; this slimmer version reads as a discreet
+  /// section divider instead.
   Widget _buildNewsSectionHeader() {
     return Padding(
       padding: const EdgeInsets.fromLTRB(16.0, 14.0, 16.0, 6.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
+      child: Row(
         children: <Widget>[
+          Icon(Icons.article_outlined, size: 16, color: Colors.black.withAlpha(150)),
+          const SizedBox(width: 6.0),
           Text(
-            AppString.news.toUpperCase(),
-            style: const TextStyle(
-              color: Colors.black87,
-              fontSize: 16,
-              fontWeight: FontWeight.w800,
-              fontStyle: FontStyle.italic,
-              letterSpacing: 1.8,
+            AppString.news,
+            style: TextStyle(
+              color: Colors.black.withAlpha(150),
+              fontSize: 12.0,
+              fontWeight: FontWeight.w600,
+              letterSpacing: 0.5,
             ),
           ),
-          const SizedBox(height: 4.0),
-          Container(height: 1, color: Colors.black.withValues(alpha: 0.18)),
         ],
       ),
     );

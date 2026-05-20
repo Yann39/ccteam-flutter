@@ -30,7 +30,7 @@ class CalendarSelector extends StatefulWidget {
   final Function onDateSelected; // a function to execute on date selection
   final bool onlyMonthDays; // a boolean indicating if we need to display previous and next months days in month view
   final bool expandable; // a boolean indicating if calendar is expandable between week to month views
-  final Map<String, DateTime>? eventsDates; // list of events dates
+  final List<DateTime>? eventsDates; // list of events dates
   final Color weekEndDayColor; // color to apply on week end days in month and week views
   final int firstWeekDay; // the first week day to display in month and week views
   final String locale; // the locale to use to render dates as strings
@@ -278,7 +278,7 @@ class CalendarSelectorState extends State<CalendarSelector> with TickerProviderS
 
       // number of events in that specific year
       final int nbEvents = widget.eventsDates != null
-          ? widget.eventsDates!.values.where((ed) => df.format(ed) == df.format(dt)).length
+          ? widget.eventsDates!.where((ed) => df.format(ed) == df.format(dt)).length
           : 0;
       final bool isSelected = _selectedDate != null && df.format(_selectedDate!) == df.format(dt);
       final bool isCurrent = dt.year == now.year;
@@ -287,8 +287,8 @@ class CalendarSelectorState extends State<CalendarSelector> with TickerProviderS
         InkWell(
           onTap: () => setCalendarMode(CalendarMode.year, dt),
           child: Container(
-            height: 48,
-            width: 45,
+            height: 49,
+            width: 49,
             padding: EdgeInsets.symmetric(vertical: 9.0, horizontal: 2.0),
             decoration: _cellDecoration(isSelected: isSelected, isCurrent: isCurrent),
             child: Column(
@@ -346,7 +346,7 @@ class CalendarSelectorState extends State<CalendarSelector> with TickerProviderS
 
       // number of events in that specific month
       final int nbEvents = widget.eventsDates != null
-          ? widget.eventsDates!.values.where((ed) => df.format(ed) == df.format(dt)).length
+          ? widget.eventsDates!.where((ed) => df.format(ed) == df.format(dt)).length
           : 0;
       final bool isSelected = _selectedDate != null && df.format(_selectedDate!) == df.format(dt);
       final bool isCurrent = _isSameMonth(dt, now);
@@ -441,7 +441,7 @@ class CalendarSelectorState extends State<CalendarSelector> with TickerProviderS
     for (DateTime? dt in dates) {
       // number of events in that specific day
       final int nbEvents = widget.eventsDates != null
-          ? widget.eventsDates!.values.where((ed) => dt != null && df.format(ed) == df.format(dt)).length
+          ? widget.eventsDates!.where((ed) => dt != null && df.format(ed) == df.format(dt)).length
           : 0;
       final bool isSelected = dt != null && _selectedDate != null && df.format(_selectedDate!) == df.format(dt);
       final bool isCurrent = dt != null && _isSameDay(dt, now);
@@ -529,7 +529,7 @@ class CalendarSelectorState extends State<CalendarSelector> with TickerProviderS
     for (DateTime dt in dates) {
       // number of events in that specific day
       final int nbEvents = widget.eventsDates != null
-          ? widget.eventsDates!.values.where((ed) => df.format(ed) == df.format(dt)).length
+          ? widget.eventsDates!.where((ed) => df.format(ed) == df.format(dt)).length
           : 0;
       final bool isSelected = _selectedDate != null && df.format(_selectedDate!) == df.format(dt);
       final bool isCurrent = _isSameDay(dt, now);
@@ -651,10 +651,7 @@ class CalendarSelectorState extends State<CalendarSelector> with TickerProviderS
   }
 
   /// Compact "this cell has events" indicator: a small red dot, with
-  /// the count discreetly written next to it when there is more than
-  /// one event. The whole thing is only ~5 px tall, so it never
-  /// pressures the height of any cell — in particular the 45 px-tall
-  /// week cells where the previous chip-style badge was overflowing.
+  /// the count written next to it when there is more than one event.
   Widget _eventCountBadge(int count) {
     return Row(
       mainAxisSize: MainAxisSize.min,
@@ -666,11 +663,16 @@ class CalendarSelectorState extends State<CalendarSelector> with TickerProviderS
           decoration: BoxDecoration(color: Colors.red[700], shape: BoxShape.circle),
         ),
         if (count > 1) ...[
-          const SizedBox(width: 2),
+          const SizedBox(width: 2.5),
           Text(
             "$count",
-            textScaler: TextScaler.linear(0.55),
-            style: TextStyle(fontWeight: FontWeight.bold, color: Colors.red[700], height: 1.0),
+            style: TextStyle(
+              color: Colors.red[700],
+              fontSize: 10.0,
+              fontWeight: FontWeight.bold,
+              height: 1.0,
+              fontFeatures: const <FontFeature>[FontFeature.tabularFigures()],
+            ),
           ),
         ],
       ],

@@ -110,6 +110,20 @@ class _HorizontalScrollHintsState extends State<HorizontalScrollHints> {
     super.dispose();
   }
 
+  /// Smoothly scroll to one of the two extremes (depending on
+  /// [leading]). Wrapped in `hasClients` + `mounted` guards so a
+  /// rapid tap during teardown can't crash.
+  void _scrollToExtreme({required bool leading}) {
+    if (!mounted || !widget.controller.hasClients) return;
+    final ScrollPosition pos = widget.controller.position;
+    final double target = leading ? pos.minScrollExtent : pos.maxScrollExtent;
+    widget.controller.animateTo(
+      target,
+      duration: const Duration(milliseconds: 350),
+      curve: Curves.easeOutCubic,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Stack(
@@ -124,31 +138,45 @@ class _HorizontalScrollHintsState extends State<HorizontalScrollHints> {
   /// Single chevron pill. [leading] picks the chevron direction
   /// (`chevron_left` when true, `chevron_right` when false) so the
   /// same helper renders both edges without duplicating the chrome.
+  /// When visible, the pill is tappable and triggers a smooth
+  /// `animateTo` to the matching scroll extreme — quick way for the
+  /// user to jump to the start / end without dragging.
   Widget _hint({required bool visible, required bool leading}) {
-    return IgnorePointer(
-      child: AnimatedOpacity(
-        opacity: visible ? 1.0 : 0.0,
-        duration: const Duration(milliseconds: 200),
-        curve: Curves.easeOut,
-        child: Center(
-          child: Container(
-            width: 26.0,
-            height: 26.0,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: Colors.white.withValues(alpha: 0.85),
-              boxShadow: <BoxShadow>[
-                BoxShadow(color: Colors.black.withAlpha(40), blurRadius: 3.0, offset: const Offset(0, 1)),
-              ],
-            ),
-            child: Icon(
-              leading ? Icons.chevron_left : Icons.chevron_right,
-              size: 18.0,
-              color: Colors.black.withAlpha(170),
-            ),
+    final Widget pill = Material(
+      color: Colors.transparent,
+      shape: const CircleBorder(),
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        // disabled when invisible — prevents an accidental tap on a
+        // fully-faded pill (the AnimatedOpacity widget keeps it in
+        // the tree, just transparent)
+        onTap: visible ? () => _scrollToExtreme(leading: leading) : null,
+        customBorder: const CircleBorder(),
+        child: Container(
+          width: 26.0,
+          height: 26.0,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: Colors.white.withValues(alpha: 0.85),
+            boxShadow: <BoxShadow>[
+              BoxShadow(color: Colors.black.withAlpha(40), blurRadius: 3.0, offset: const Offset(0, 1)),
+            ],
+          ),
+          child: Icon(
+            leading ? Icons.chevron_left : Icons.chevron_right,
+            size: 18.0,
+            color: Colors.black.withAlpha(170),
           ),
         ),
       ),
+    );
+    return AnimatedOpacity(
+      opacity: visible ? 1.0 : 0.0,
+      duration: const Duration(milliseconds: 200),
+      curve: Curves.easeOut,
+      // when invisible we also block hit-testing so a phantom tap
+      // can't fire on a 0-opacity pill
+      child: IgnorePointer(ignoring: !visible, child: Center(child: pill)),
     );
   }
 }

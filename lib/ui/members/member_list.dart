@@ -267,7 +267,7 @@ class MemberList extends StatelessWidget {
                         child: ListView.separated(
                           physics: const AlwaysScrollableScrollPhysics(),
                           padding: EdgeInsets.only(bottom: MediaQuery.of(context).padding.bottom + 8.0),
-                          separatorBuilder: (context, index) => Divider(color: Colors.black54, height: 4),
+                          separatorBuilder: (context, index) => Divider(color: Colors.white.withAlpha(50), height: 4),
                           itemCount: _memberListProvider.memberList.length,
                           itemBuilder: (context, index) =>
                               _buildMemberTile(context, _memberListProvider.memberList[index]),

@@ -389,6 +389,8 @@ class AppString {
 
   static const String recordCreate = 'Ajouter un chrono';
   static const String recordEdit = 'Modifier un chrono';
+  static const String recordFormHelp =
+      'Merci de ne saisir que vos chronos officiels, dont vous êtes certain (vidéo ou chronomètre à l\'appui).';
   static const String recordDetailTitle = 'Détail du chrono';
   static const String recordPilot = 'Pilote';
   static const String recordNoComments = 'Aucun commentaire';

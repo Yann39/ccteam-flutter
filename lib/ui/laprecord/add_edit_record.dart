@@ -28,6 +28,7 @@ import 'package:ccteam/utils/custom_icons.dart';
 import 'package:ccteam/utils/date_utils.dart';
 import 'package:ccteam/utils/strings.dart';
 import 'package:ccteam/widgets/form_scaffold.dart';
+import 'package:ccteam/widgets/info_banner.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
@@ -264,7 +265,14 @@ class _AddEditRecordState extends State<AddEditRecord> {
       formKey: _formKey,
       loadingStatus: _recordCreationProvider.loadingStatus,
       onSave: submitForm,
-      fields: <Widget>[_dateField, _trackField, _bikeField, _lapTimeField, _conditions],
+      fields: <Widget>[
+        const InfoBanner(message: AppString.recordFormHelp),
+        _dateField,
+        _trackField,
+        _bikeField,
+        _lapTimeField,
+        _conditions,
+      ],
     );
   }
 }
