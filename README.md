@@ -3,7 +3,7 @@
 **Flutter** mobile application for the **CCTeam** motorcycle racing club
 
 ![Version](https://img.shields.io/badge/Version-1.0.0-2AAB92.svg)
-![Static Badge](https://img.shields.io/badge/Last_update-20_May_2026-blue)
+![Static Badge](https://img.shields.io/badge/Last_update-25_May_2026-blue)
 
 ![Version](https://img.shields.io/badge/Flutter-3.41.9-red.svg)
 ![Version](https://img.shields.io/badge/Dart-3.11.5-green.svg)
@@ -14,10 +14,10 @@
 
 * [About](#about)
 * [Installation](#installation)
-* [Screenshots](#screenshots)
-* [Play Store](#play-store)
 * [Usage](#usage)
+* [Contributing](#contributing)
 * [Data privacy](#data-privacy)
+* [AI disclosure](#ai-disclosure)
 * [License](#license)
 
 # About
@@ -36,37 +36,24 @@
 CCTeam is a motorcycle racing club that organizes events and activities for motorcycle racing enthusiasts.
 
 The CCTeam Flutter application provides a platform for admins to manage the club, and members to stay updated on club news, events, and activities. 
-It also allows members to manage their profiles, bikes, lap records, and organise their riding sessions.
+It also allows members to manage their profiles, bikes, lap records, and organize their riding sessions.
 
-# Installation
+## Features
 
-For Intellij :
+- **Admin functionalities** (also have member functionalities) :
+  - Manage news, events, members and tracks (create / edit / delete).
+  - Manage membership status and board roles of members.
 
-1. Clone the project
-2. Install the Android SDK on your machine (command line tools)
-   ```
-   sdkmanager --install "platform-tools" "platforms;android-34" "build-tools;34.0.0"
-   sdkmanager "emulator" "system-images;android-34;google_apis;x86_64"
-   ```
-3. Install the flutter SDK on your machine
-4. Install the Flutter plugin in Intellij
-5. In the project settings, set the Flutter SDK path
-6. Create a _local.properties_ files inside the android folder and set :
-   ```properties
-    sdk.dir=C:\\android
-    flutter.sdk=C:\\flutter
-    flutter.buildMode=debug
-    ```
-7. Run `flutter pub get`
-8. Run `gradle app:build`
+- **Member functionalities**:
+  - View news, events, members and tracks details (lap records, bike servicing, etc.).
+  - Manage their profile (avatar, contact details, etc.).
+  - Manage their bikes, including specifications and servicing records.
+  - Organize their riding sessions by joining or leaving sessions.
+  - Record and manage lap times on different tracks.
+  - View statistics and performance metrics.
+  - View the photo gallery of the club's events and activities.
 
-To deploy the app in release mode in a local device :
-
-```
-flutter run --release --dart-define=API_BASE_URL=https://ccteam.example.com/ccteam-gql --dart-define=LYCHEE_BASE_URL=https://lychee.example.com/ --dart-define=LYCHEE_ROOT_ALBUM_ID=xxxxxxxxxx
-```
-
-# Screenshots
+## Screenshots
 
 ![Login page screenshot](doc/login.jpg "Login page")
 ![Passcode page screenshot](doc/passcode.jpg "Passcode page")
@@ -85,6 +72,29 @@ flutter run --release --dart-define=API_BASE_URL=https://ccteam.example.com/ccte
 ![Track details page screenshot](doc/track_detail.jpg "Track detail page")
 ![Photo gallery page screenshot](doc/gallery.jpg "Photo gallery page")
 
+# Installation
+
+To install the application, follow these steps:
+
+1. Clone the project
+2. Install the Android SDK on your machine (i.e. command line tools) :
+   ```
+   sdkmanager --install "platform-tools" "platforms;android-34" "build-tools;34.0.0"
+   sdkmanager "emulator" "system-images;android-34;google_apis;x86_64"
+   ```
+3. Install the flutter SDK on your machine
+4. Install the Flutter plugin (Intellij IDE)
+5. In the project settings, set the Flutter SDK path (Intellij IDE)
+6. Create a _local.properties_ files inside the android folder and set :
+   ```properties
+    sdk.dir=C:\\android
+    flutter.sdk=C:\\flutter
+    flutter.buildMode=debug
+    ```
+7. Run `flutter pub get`
+8. Run `gradle app:build`
+9. Run the application on an emulator or a physical device, see [Usage](#usage) section.
+
 # Usage
 
 ## Install emulator
@@ -102,11 +112,18 @@ Then start it with:
 emulator -avd flutter_x86_64
 ```
 
+## Run the backend
+
+The backend is a Spring Boot application that provides a REST and GraphQL APIs for the Flutter application.
+
+You can find the backend source code in the [ccteam-graphql](https://github.com/Yann39/ccteam-graphql) repository,
+follow the instructions in the README file to run it.
+
 ## Run the app
 
 You must be an authorized member to use the application.
 
-You must set the `API_BASE_URL`, `LYCHEE_BASE_URL` AND `LYCHEE_ROOT_ALBUM_ID` variable when executing the application :
+You must set the `API_BASE_URL`, `LYCHEE_BASE_URL` AND `LYCHEE_ROOT_ALBUM_ID` variables when executing the application :
 
 For production :
 
@@ -114,17 +131,31 @@ For production :
 flutter run lib/main.dart --dart-define=API_BASE_URL=https://ccteam.example.com/ccteam-gql --dart-define=LYCHEE_BASE_URL=https://lychee.example.com/ --dart-define=LYCHEE_ROOT_ALBUM_ID=xxxxxxxxxx
 ```
 
-For connected mobile device :
+For connected mobile device with local backend :
 
 ```bash
 flutter run lib/main.dart --dart-define=API_BASE_URL=http://192.168.0.11:5001/ccteam-gql --dart-define=LYCHEE_BASE_URL=https://lychee.example.com/ --dart-define=LYCHEE_ROOT_ALBUM_ID=xxxxxxxxxx
 ```
 
-For local emulator :
+For local emulator with local backend :
 
 ```bash
-flutter run lib/main.dart --dart-define=API_BASE_URL=http://10.0.2.2:5000/ccteam-gql --dart-define=LYCHEE_BASE_URL=https://lychee.example.com/ --dart-define=LYCHEE_ROOT_ALBUM_ID=xxxxxxxxxx
+flutter run lib/main.dart --dart-define=API_BASE_URL=http://10.0.2.2:5001/ccteam-gql --dart-define=LYCHEE_BASE_URL=https://lychee.example.com/ --dart-define=LYCHEE_ROOT_ALBUM_ID=xxxxxxxxxx
 ```
+
+To deploy the app in release mode :
+
+```bash
+flutter run --release --dart-define=API_BASE_URL=https://ccteam.example.com/ccteam-gql --dart-define=LYCHEE_BASE_URL=https://lychee.example.com/ --dart-define=LYCHEE_ROOT_ALBUM_ID=xxxxxxxxxx
+```
+
+# Contributing
+
+If you want to contribute to this repository, please first discuss the change you wish to make via issue, email,
+or any other method with the owners.
+
+See [Installation](#installation) and [Usage](#usage) sections to set up the project on your machine
+and make sure the [Tests](#tests) are passing.
 
 ## Upgrading Dart
 
@@ -230,15 +261,7 @@ To upgrade all project dependencies to their latest versions, run :
 flutter pub upgrade --major-versions
 ```
 
-# Test
-
-To run integration test :
-
-```
-flutter drive --driver=test_driver/integration_test.dart --target=integration_test/login_test.dart
-```
-
-# Play Store
+## Play Store
 
 To publish the app on the Play Store, you need to create a signed APK or AAB file. You can follow the official Flutter documentation for [building and releasing an Android app](https://flutter.dev/docs/deployment/android).
 
@@ -262,13 +285,33 @@ Then, you can upload the generated AAB file to the Google Play Console and follo
 
 The **aab** file will be available in _\build\app\outputs\bundle\release\app-release.aab_ directory.
 
+## Tests
+
+To run integration tests :
+
+```
+flutter drive --driver=test_driver/integration_test.dart --target=integration_test/login_test.dart
+```
+
 # Data privacy
 
-The data collected by the application is stored securely and is not shared with any third parties.
+The data collected by the application is stored securely in a database and is not shared with any third parties.
 
-Data is stored in Switzerland and is protected by the Swiss Federal Data Protection Act (DPA) and the Swiss Federal Data Protection Ordinance (DPO).
+Data is stored in Switzerland and is protected by the Swiss Federal Data Protection Act (DPA)
+and the Swiss Federal Data Protection Ordinance (DPO).
 
 The only data stored on the device is the user's e-mail, which is used for authentication purposes.
+
+# AI disclosure
+
+Most of this project was built without AI assistance (codebase is from 2019).
+
+I only started using AI recently for a limited set of improvements.
+
+All AI-assisted changes were carefully reviewed before being kept in the codebase.
+
+I can explain every line of code in this project, including the parts where AI was used.
+This project was not "vibe coded".
 
 # License
 
