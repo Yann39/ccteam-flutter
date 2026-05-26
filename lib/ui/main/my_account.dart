@@ -179,25 +179,25 @@ class _MyAccountState extends State<MyAccount> {
   /// Render a row of identity badges just under the email line. The
   /// row is intentionally only shown when the member has something
   /// worth flagging:
-  ///   - `ROLE_ADMIN` → red "Administrateur" pill. Plain members get
-  ///     no badge — being a member is the implicit default and a
-  ///     "Membre" pill would just be noise.
+  ///   - `ROLE_MEMBER` → green "Member" pill.
+  ///   - `ROLE_ADMIN` → red "Administrator" pill.
   ///   - `boardRole` set → amber pill with the localised label
-  ///     ("Président", "Trésorier"…) sourced from [BoardRoleLabel].
-  /// When both apply (e.g. an admin who's also Treasurer), the two
-  /// badges sit side by side. When neither applies, the entire row
-  /// is collapsed to a zero-height SizedBox so we don't push down
-  /// the layout for nothing.
+  ///     ("President", "Secretary"…) sourced from [BoardRoleLabel].
+  /// When multiple apply, the badges sit side by side. When none apply,
+  /// the entire row is collapsed to a zero-height SizedBox so we don't
+  /// push down the layout for nothing.
   Widget _buildRoleBadges(Member member) {
+    final bool isMember = member.role == MemberRole.ROLE_MEMBER;
     final bool isAdmin = member.role == MemberRole.ROLE_ADMIN;
     final BoardRole? boardRole = member.boardRole;
-    if (!isAdmin && boardRole == null) return const SizedBox.shrink();
+    if (!isMember && !isAdmin && boardRole == null) return const SizedBox.shrink();
     return Padding(
       padding: const EdgeInsets.only(top: 8.0),
       child: Wrap(
         spacing: 6.0,
         runSpacing: 4.0,
         children: <Widget>[
+          if (isMember) _buildBadge(icon: Icons.verified_user, label: AppString.member, color: Colors.green[700]!),
           if (isAdmin) _buildBadge(icon: Icons.security, label: AppString.memberRoleAdmin, color: Colors.red[400]!),
           if (boardRole != null)
             _buildBadge(icon: Icons.workspace_premium, label: boardRole.labelFr, color: Colors.amber[700]!),
