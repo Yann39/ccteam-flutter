@@ -108,8 +108,8 @@ class _AddEditEventState extends State<AddEditEvent> {
     final DateTime? dateResult = await showDatePicker(
       context: context,
       initialDate: initialDate,
-      firstDate: DateTime(currentDate.year - 5),
-      lastDate: DateTime(currentDate.year + 5),
+      firstDate: DateTime(2000, 1, 1),
+      lastDate: DateTime.now(),
     );
     if (dateResult == null) return;
 

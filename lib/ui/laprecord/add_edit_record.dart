@@ -77,8 +77,8 @@ class _AddEditRecordState extends State<AddEditRecord> {
     final DateTime? dateResult = await showDatePicker(
       context: context,
       initialDate: initialDate,
-      firstDate: DateTime(currentDate.year - 5),
-      lastDate: DateTime(currentDate.year + 5),
+      firstDate: DateTime(2000, 1, 1),
+      lastDate: DateTime.now(),
     );
 
     // show the time picker and await for the chosen time
