@@ -596,13 +596,31 @@ class EventDetail extends StatelessWidget {
                                           child: Column(
                                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                             children: <Widget>[
-                                              Icon(
-                                                TrackUtils.trackIconFromName(
-                                                  _eventDetailProvider.currentEvent.track?.name,
-                                                ),
-                                                size: 38,
-                                                color: Colors.red[700],
-                                              ),
+                                               SizedBox(
+                                                 height: 38,
+                                                 child: Stack(
+                                                   children: <Widget>[
+                                                     Center(
+                                                       child: Icon(
+                                                         TrackUtils.trackIconFromName(
+                                                           _eventDetailProvider.currentEvent.track?.name,
+                                                         ),
+                                                         size: 38,
+                                                         color: Colors.red[700],
+                                                       ),
+                                                     ),
+                                                     Positioned(
+                                                       top: -4.0,
+                                                       right: -4.0,
+                                                       child: Icon(
+                                                         Icons.arrow_outward,
+                                                         size: 14.0,
+                                                         color: Colors.red[700]!.withValues(alpha: 0.7),
+                                                       ),
+                                                     ),
+                                                   ],
+                                                 ),
+                                               ),
                                               Text(
                                                 _eventDetailProvider.currentEvent.track != null
                                                     ? _eventDetailProvider.currentEvent.track!.name ?? ""
@@ -612,15 +630,6 @@ class EventDetail extends StatelessWidget {
                                                 overflow: TextOverflow.ellipsis,
                                               ),
                                             ],
-                                          ),
-                                        ),
-                                        Positioned(
-                                          top: 4.0,
-                                          right: 4.0,
-                                          child: Icon(
-                                            Icons.arrow_outward,
-                                            size: 14.0,
-                                            color: Colors.red[700]!.withValues(alpha: 0.7),
                                           ),
                                         ),
                                       ],
