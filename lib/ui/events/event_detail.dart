@@ -38,10 +38,12 @@ import 'package:ccteam/widgets/horizontal_scroll_hints.dart';
 import 'package:ccteam/widgets/loading_content.dart';
 import 'package:ccteam/widgets/random_pattern_painter.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:logging/logging.dart';
 import 'package:provider/provider.dart';
 
 import '../../providers/record_list_provider.dart';
+import '../../utils/bike_utils.dart';
 
 class EventDetail extends StatelessWidget {
   final Logger _log = new Logger('EventDetail');
@@ -50,7 +52,10 @@ class EventDetail extends StatelessWidget {
   _navigateToEditEventScreen(BuildContext context, Event event) async {
     // set the event to be edited
     // todo : need deep copy here else the reference will be updated even on error ?
-    Provider.of<EventCreationProvider>(context, listen: false).setEventToEdit(event);
+    Provider.of<EventCreationProvider>(
+      context,
+      listen: false,
+    ).setEventToEdit(event);
 
     // navigate to the event creation form screen
     Navigator.pushNamed(context, '/addEditEvent');
@@ -64,16 +69,25 @@ class EventDetail extends StatelessWidget {
   /// sees the hero (cover + name) without waiting; the cards fill
   /// in once the fetch lands.
   void _navigateToTrackDetailScreen(BuildContext context, Track track) {
-    final TrackDetailProvider provider = Provider.of<TrackDetailProvider>(context, listen: false);
+    final TrackDetailProvider provider = Provider.of<TrackDetailProvider>(
+      context,
+      listen: false,
+    );
     provider.setCurrentTrack(track);
     if (track.id != null) provider.fetchTrack(track); // fire-and-forget
     Navigator.pushNamed(context, '/trackDetail');
   }
 
   /// Navigate to the detail screen of the specified [member].
-  void _navigateToMemberDetailScreen(BuildContext context, Member member) async {
+  void _navigateToMemberDetailScreen(
+    BuildContext context,
+    Member member,
+  ) async {
     // fetch member records
-    Provider.of<RecordListProvider>(context, listen: false).fetchMemberRecords(member.id!);
+    Provider.of<RecordListProvider>(
+      context,
+      listen: false,
+    ).fetchMemberRecords(member.id!);
     // fetch the member to get complete data
     Provider.of<MemberDetailProvider>(context, listen: false)
         .fetchMember(member)
@@ -95,8 +109,10 @@ class EventDetail extends StatelessWidget {
         actions: <Widget>[
           TextButton(
             onPressed: () {
-              final EventDetailProvider eventDetailProvider = Provider.of<EventDetailProvider>(context, listen: false);
-              final EventListProvider eventListProvider = Provider.of<EventListProvider>(context, listen: false);
+              final EventDetailProvider eventDetailProvider =
+                  Provider.of<EventDetailProvider>(context, listen: false);
+              final EventListProvider eventListProvider =
+                  Provider.of<EventListProvider>(context, listen: false);
               // delete event
               final Event eventToDelete = eventDetailProvider.currentEvent;
               eventDetailProvider.deleteEvent(eventToDelete).then((value) {
@@ -123,22 +139,35 @@ class EventDetail extends StatelessWidget {
 
   /// Short human-readable label for a bike.
   String _bikeLabel(Bike bike) {
-    final String base = "${bike.manufacturer?.toUpperCase() ?? ''} ${bike.modelName ?? ''}".trim();
+    final String base =
+        "${bike.manufacturer?.toUpperCase() ?? ''} ${bike.modelName ?? ''}"
+            .trim();
     if (bike.year == null) return base.isEmpty ? '—' : base;
     if (base.isEmpty) return bike.year!.toString();
     return "$base (${bike.year})";
   }
 
   /// Open the bike picker for the caller's participation in [event].
-  void _openBikePicker(BuildContext context, Event event, EventDetailProvider provider, Bike? currentBike) {
-    final LoginProvider loginProvider = Provider.of<LoginProvider>(context, listen: false);
-    final List<Bike> bikes = loginProvider.loggedMember?.bikes ?? const <Bike>[];
+  void _openBikePicker(
+    BuildContext context,
+    Event event,
+    EventDetailProvider provider,
+    Bike? currentBike,
+  ) {
+    final LoginProvider loginProvider = Provider.of<LoginProvider>(
+      context,
+      listen: false,
+    );
+    final List<Bike> bikes =
+        loginProvider.loggedMember?.bikes ?? const <Bike>[];
 
     showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(16.0))),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16.0)),
+      ),
       builder: (BuildContext sheetCtx) {
         return Container(
           decoration: BoxDecoration(
@@ -147,7 +176,9 @@ class EventDetail extends StatelessWidget {
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
             ),
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(16.0)),
+            borderRadius: const BorderRadius.vertical(
+              top: Radius.circular(16.0),
+            ),
           ),
           child: SafeArea(
             top: false,
@@ -172,7 +203,11 @@ class EventDetail extends StatelessWidget {
                     ),
                     Text(
                       AppString.eventBikePickerTitle,
-                      style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: Colors.black87),
+                      style: const TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w700,
+                        color: Colors.black87,
+                      ),
                     ),
                     const SizedBox(height: 12.0),
                     if (bikes.isEmpty)
@@ -190,6 +225,7 @@ class EventDetail extends StatelessWidget {
                     for (final Bike b in bikes)
                       _BikePickerTile(
                         label: _bikeLabel(b),
+                        manufacturer: b.manufacturer,
                         selected: currentBike?.id == b.id,
                         onTap: () {
                           Navigator.pop(sheetCtx);
@@ -235,7 +271,12 @@ class EventDetail extends StatelessWidget {
   /// post-registration only, keeping the "Je participe" CTA a one-tap
   /// action, and allowed on past events too so riders can fill in or
   /// fix the bike retrospectively.
-  Widget _registrationCard(BuildContext context, Event event, int memberId, EventDetailProvider provider) {
+  Widget _registrationCard(
+    BuildContext context,
+    Event event,
+    int memberId,
+    EventDetailProvider provider,
+  ) {
     final EventMember? participation = event.participants?.firstWhere(
       (p) => p.member?.id == memberId,
       orElse: () => EventMember(),
@@ -243,9 +284,15 @@ class EventDetail extends StatelessWidget {
     final bool isRegistered = participation != null && participation.id != null;
     final Bike? pinnedBike = isRegistered ? participation.bike : null;
 
-    final Color statusColor = isRegistered ? Colors.green[700]! : Colors.blueGrey[500]!;
-    final IconData statusIcon = isRegistered ? Icons.check_circle_rounded : Icons.help_outline_rounded;
-    final String statusTitle = isRegistered ? "Vous participez" : "Vous ne participez pas encore";
+    final Color statusColor = isRegistered
+        ? Colors.green[700]!
+        : Colors.blueGrey[500]!;
+    final IconData statusIcon = isRegistered
+        ? Icons.check_circle_rounded
+        : Icons.help_outline_rounded;
+    final String statusTitle = isRegistered
+        ? "Vous participez"
+        : "Vous ne participez pas encore";
     final String statusSubtitle = isRegistered
         ? "Inscrit à cet événement"
         : "Inscrivez-vous pour rejoindre l'événement";
@@ -258,7 +305,12 @@ class EventDetail extends StatelessWidget {
         borderRadius: BorderRadius.circular(8.0),
         color: Colors.blue[100],
         boxShadow: [
-          BoxShadow(color: Colors.black.withAlpha(25), spreadRadius: 0.5, blurRadius: 0.5, offset: const Offset(2, 2)),
+          BoxShadow(
+            color: Colors.black.withAlpha(25),
+            spreadRadius: 0.5,
+            blurRadius: 0.5,
+            offset: const Offset(2, 2),
+          ),
         ],
       ),
       child: Column(
@@ -272,7 +324,10 @@ class EventDetail extends StatelessWidget {
               Container(
                 width: 40,
                 height: 40,
-                decoration: BoxDecoration(shape: BoxShape.circle, color: statusColor.withValues(alpha: 0.15)),
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: statusColor.withValues(alpha: 0.15),
+                ),
                 child: Icon(statusIcon, color: statusColor, size: 24.0),
               ),
               const SizedBox(width: 10.0),
@@ -296,7 +351,11 @@ class EventDetail extends StatelessWidget {
                     const SizedBox(height: 2.0),
                     Text(
                       statusSubtitle,
-                      style: TextStyle(color: Colors.black.withAlpha(140), fontSize: 11.0, height: 1.2),
+                      style: TextStyle(
+                        color: Colors.black.withAlpha(140),
+                        fontSize: 11.0,
+                        height: 1.2,
+                      ),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -308,27 +367,45 @@ class EventDetail extends StatelessWidget {
               // (less aggressive) when already registered
               isRegistered
                   ? OutlinedButton.icon(
-                      onPressed: () => provider.unregisterFromEvent(event, memberId),
+                      onPressed: () =>
+                          provider.unregisterFromEvent(event, memberId),
                       icon: const Icon(Icons.event_busy, size: 16.0),
                       label: Text(AppString.eventUnregister),
                       style: OutlinedButton.styleFrom(
                         foregroundColor: Colors.red[700],
                         side: BorderSide(color: Colors.red[700]!, width: 1.2),
-                        padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 10.0),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6.0)),
-                        textStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13.0),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12.0,
+                          vertical: 10.0,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(6.0),
+                        ),
+                        textStyle: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 13.0,
+                        ),
                       ),
                     )
                   : ElevatedButton.icon(
-                      onPressed: () => provider.registerToEvent(event, memberId),
+                      onPressed: () =>
+                          provider.registerToEvent(event, memberId),
                       icon: const Icon(Icons.event_available, size: 16.0),
                       label: Text(AppString.eventParticipated),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.green[700],
                         foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(horizontal: 14.0, vertical: 10.0),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6.0)),
-                        textStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13.0),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 14.0,
+                          vertical: 10.0,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(6.0),
+                        ),
+                        textStyle: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 13.0,
+                        ),
                         elevation: 1,
                       ),
                     ),
@@ -340,13 +417,21 @@ class EventDetail extends StatelessWidget {
             Container(height: 1, color: Colors.black.withValues(alpha: 0.08)),
             const SizedBox(height: 8.0),
             InkWell(
-              onTap: () => _openBikePicker(context, event, provider, pinnedBike),
+              onTap: () =>
+                  _openBikePicker(context, event, provider, pinnedBike),
               borderRadius: BorderRadius.circular(6.0),
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 4.0, vertical: 6.0),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 4.0,
+                  vertical: 6.0,
+                ),
                 child: Row(
                   children: <Widget>[
-                    Icon(CustomIcons.motorbike_plain, size: 18.0, color: Colors.black.withAlpha(140)),
+                    Icon(
+                      CustomIcons.motorbike_plain,
+                      size: 18.0,
+                      color: Colors.black.withAlpha(140),
+                    ),
                     const SizedBox(width: 8.0),
                     Text(
                       AppString.eventBikeLabel,
@@ -360,17 +445,27 @@ class EventDetail extends StatelessWidget {
                     const SizedBox(width: 10.0),
                     Expanded(
                       child: Text(
-                        pinnedBike != null ? _bikeLabel(pinnedBike) : AppString.eventBikeNone,
+                        pinnedBike != null
+                            ? _bikeLabel(pinnedBike)
+                            : AppString.eventBikeNone,
                         style: TextStyle(
-                          color: Colors.black.withAlpha(pinnedBike != null ? 204 : 130),
+                          color: Colors.black.withAlpha(
+                            pinnedBike != null ? 204 : 130,
+                          ),
                           fontSize: 13.5,
-                          fontStyle: pinnedBike != null ? FontStyle.normal : FontStyle.italic,
+                          fontStyle: pinnedBike != null
+                              ? FontStyle.normal
+                              : FontStyle.italic,
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
-                    Icon(Icons.edit, size: 16.0, color: Colors.black.withAlpha(140)),
+                    Icon(
+                      Icons.edit,
+                      size: 16.0,
+                      color: Colors.black.withAlpha(140),
+                    ),
                   ],
                 ),
               ),
@@ -384,12 +479,18 @@ class EventDetail extends StatelessWidget {
   Widget build(BuildContext context) {
     _log.info("Building Event detail...");
 
-    final EventDetailProvider _eventDetailProvider = Provider.of<EventDetailProvider>(context, listen: true);
-    final LoginProvider _loginProvider = Provider.of<LoginProvider>(context, listen: true);
+    final EventDetailProvider _eventDetailProvider =
+        Provider.of<EventDetailProvider>(context, listen: true);
+    final LoginProvider _loginProvider = Provider.of<LoginProvider>(
+      context,
+      listen: true,
+    );
 
     // if currentEvent is null or empty (e.g. after session expiration), don't render content
     if (_eventDetailProvider.currentEvent.id == null) {
-      return Scaffold(body: Container(decoration: CustomDecorations.mainContent));
+      return Scaffold(
+        body: Container(decoration: CustomDecorations.mainContent),
+      );
     }
 
     return Scaffold(
@@ -399,17 +500,26 @@ class EventDetail extends StatelessWidget {
             Builder(
               builder: (context) => IconButton(
                 icon: Icon(Icons.edit),
-                onPressed: () => _navigateToEditEventScreen(context, _eventDetailProvider.currentEvent),
+                onPressed: () => _navigateToEditEventScreen(
+                  context,
+                  _eventDetailProvider.currentEvent,
+                ),
               ),
             ),
           if (_loginProvider.isAdmin)
             IconButton(
               icon: Icon(Icons.delete_forever),
-              onPressed: () => _showDeleteEventConfirmation(context, AppString.eventDeletionAreYouSure),
+              onPressed: () => _showDeleteEventConfirmation(
+                context,
+                AppString.eventDeletionAreYouSure,
+              ),
             ),
         ],
         title: Text(AppString.eventDetailScreenTitle),
-        leading: IconButton(icon: Icon(Icons.arrow_back), onPressed: () => Navigator.pop(context)),
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back),
+          onPressed: () => Navigator.pop(context),
+        ),
       ),
       body: Container(
         decoration: CustomDecorations.mainContent,
@@ -442,7 +552,10 @@ class EventDetail extends StatelessWidget {
                             painter: RandomPatternPainter(
                               seed:
                                   _eventDetailProvider.currentEvent.id ??
-                                  _eventDetailProvider.currentEvent.title?.hashCode ??
+                                  _eventDetailProvider
+                                      .currentEvent
+                                      .title
+                                      ?.hashCode ??
                                   0,
                             ),
                           ),
@@ -454,7 +567,10 @@ class EventDetail extends StatelessWidget {
                               gradient: LinearGradient(
                                 begin: Alignment.topCenter,
                                 end: Alignment.bottomCenter,
-                                colors: [Colors.transparent, Colors.black.withValues(alpha: 0.22)],
+                                colors: [
+                                  Colors.transparent,
+                                  Colors.black.withValues(alpha: 0.22),
+                                ],
                               ),
                             ),
                           ),
@@ -500,8 +616,13 @@ class EventDetail extends StatelessWidget {
                                 margin: EdgeInsets.all(4.0),
                                 padding: EdgeInsets.all(8.0),
                                 decoration: BoxDecoration(
-                                  border: Border.all(color: Colors.white, width: 1.0),
-                                  borderRadius: BorderRadius.all(Radius.circular(4.0)),
+                                  border: Border.all(
+                                    color: Colors.white,
+                                    width: 1.0,
+                                  ),
+                                  borderRadius: BorderRadius.all(
+                                    Radius.circular(4.0),
+                                  ),
                                   color: Colors.blue[100],
                                   boxShadow: [
                                     BoxShadow(
@@ -513,11 +634,18 @@ class EventDetail extends StatelessWidget {
                                   ],
                                 ),
                                 child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
                                   children: <Widget>[
-                                    Icon(Icons.event, size: 38, color: Colors.blue[700]),
+                                    Icon(
+                                      Icons.event,
+                                      size: 38,
+                                      color: Colors.blue[700],
+                                    ),
                                     Text(
-                                      _eventDetailProvider.currentEvent.fullDate,
+                                      _eventDetailProvider
+                                          .currentEvent
+                                          .fullDate,
                                       textAlign: TextAlign.center,
                                       maxLines: 2,
                                       overflow: TextOverflow.ellipsis,
@@ -533,8 +661,13 @@ class EventDetail extends StatelessWidget {
                                 margin: EdgeInsets.all(4.0),
                                 padding: EdgeInsets.all(8.0),
                                 decoration: BoxDecoration(
-                                  border: Border.all(color: Colors.white, width: 1.0),
-                                  borderRadius: BorderRadius.all(Radius.circular(4.0)),
+                                  border: Border.all(
+                                    color: Colors.white,
+                                    width: 1.0,
+                                  ),
+                                  borderRadius: BorderRadius.all(
+                                    Radius.circular(4.0),
+                                  ),
                                   color: Colors.blue[100],
                                   boxShadow: [
                                     BoxShadow(
@@ -546,12 +679,22 @@ class EventDetail extends StatelessWidget {
                                   ],
                                 ),
                                 child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
                                   children: <Widget>[
-                                    Icon(Icons.euro_symbol, size: 38, color: Colors.purple[700]),
+                                    Icon(
+                                      Icons.euro_symbol,
+                                      size: 38,
+                                      color: Colors.purple[700],
+                                    ),
                                     Text(
-                                      _eventDetailProvider.currentEvent.price != null
-                                          ? StringUtils.formatPrice(_eventDetailProvider.currentEvent.price!)
+                                      _eventDetailProvider.currentEvent.price !=
+                                              null
+                                          ? StringUtils.formatPrice(
+                                              _eventDetailProvider
+                                                  .currentEvent
+                                                  .price!,
+                                            )
                                           : "",
                                       textAlign: TextAlign.center,
                                       maxLines: 2,
@@ -567,8 +710,13 @@ class EventDetail extends StatelessWidget {
                                 height: 100,
                                 margin: EdgeInsets.all(4.0),
                                 decoration: BoxDecoration(
-                                  border: Border.all(color: Colors.white, width: 1.0),
-                                  borderRadius: BorderRadius.all(Radius.circular(4.0)),
+                                  border: Border.all(
+                                    color: Colors.white,
+                                    width: 1.0,
+                                  ),
+                                  borderRadius: BorderRadius.all(
+                                    Radius.circular(4.0),
+                                  ),
                                   color: Colors.blue[100],
                                   boxShadow: [
                                     BoxShadow(
@@ -583,47 +731,67 @@ class EventDetail extends StatelessWidget {
                                 child: Material(
                                   color: Colors.transparent,
                                   child: InkWell(
-                                    onTap: _eventDetailProvider.currentEvent.track != null
+                                    onTap:
+                                        _eventDetailProvider
+                                                .currentEvent
+                                                .track !=
+                                            null
                                         ? () => _navigateToTrackDetailScreen(
-                                              context,
-                                              _eventDetailProvider.currentEvent.track!,
-                                            )
+                                            context,
+                                            _eventDetailProvider
+                                                .currentEvent
+                                                .track!,
+                                          )
                                         : null,
                                     child: Stack(
                                       children: <Widget>[
                                         Padding(
                                           padding: EdgeInsets.all(8.0),
                                           child: Column(
-                                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.spaceBetween,
                                             children: <Widget>[
-                                               SizedBox(
-                                                 height: 38,
-                                                 child: Stack(
-                                                   children: <Widget>[
-                                                     Center(
-                                                       child: Icon(
-                                                         TrackUtils.trackIconFromName(
-                                                           _eventDetailProvider.currentEvent.track?.name,
-                                                         ),
-                                                         size: 38,
-                                                         color: Colors.red[700],
-                                                       ),
-                                                     ),
-                                                     Positioned(
-                                                       top: -4.0,
-                                                       right: -4.0,
-                                                       child: Icon(
-                                                         Icons.arrow_outward,
-                                                         size: 14.0,
-                                                         color: Colors.red[700]!.withValues(alpha: 0.7),
-                                                       ),
-                                                     ),
-                                                   ],
-                                                 ),
-                                               ),
+                                              SizedBox(
+                                                height: 38,
+                                                child: Stack(
+                                                  children: <Widget>[
+                                                    Center(
+                                                      child: Icon(
+                                                        TrackUtils.trackIconFromName(
+                                                          _eventDetailProvider
+                                                              .currentEvent
+                                                              .track
+                                                              ?.name,
+                                                        ),
+                                                        size: 38,
+                                                        color: Colors.red[700],
+                                                      ),
+                                                    ),
+                                                    Positioned(
+                                                      top: -4.0,
+                                                      right: -4.0,
+                                                      child: Icon(
+                                                        Icons.arrow_outward,
+                                                        size: 14.0,
+                                                        color: Colors.red[700]!
+                                                            .withValues(
+                                                              alpha: 0.7,
+                                                            ),
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
                                               Text(
-                                                _eventDetailProvider.currentEvent.track != null
-                                                    ? _eventDetailProvider.currentEvent.track!.name ?? ""
+                                                _eventDetailProvider
+                                                            .currentEvent
+                                                            .track !=
+                                                        null
+                                                    ? _eventDetailProvider
+                                                              .currentEvent
+                                                              .track!
+                                                              .name ??
+                                                          ""
                                                     : "",
                                                 textAlign: TextAlign.center,
                                                 maxLines: 2,
@@ -645,8 +813,13 @@ class EventDetail extends StatelessWidget {
                                 margin: EdgeInsets.all(4.0),
                                 padding: EdgeInsets.all(8.0),
                                 decoration: BoxDecoration(
-                                  border: Border.all(color: Colors.white, width: 1.0),
-                                  borderRadius: BorderRadius.all(Radius.circular(4.0)),
+                                  border: Border.all(
+                                    color: Colors.white,
+                                    width: 1.0,
+                                  ),
+                                  borderRadius: BorderRadius.all(
+                                    Radius.circular(4.0),
+                                  ),
                                   color: Colors.blue[100],
                                   boxShadow: [
                                     BoxShadow(
@@ -658,11 +831,20 @@ class EventDetail extends StatelessWidget {
                                   ],
                                 ),
                                 child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
                                   children: <Widget>[
-                                    Icon(Icons.perm_contact_calendar, size: 38, color: Colors.teal[700]),
+                                    Icon(
+                                      Icons.perm_contact_calendar,
+                                      size: 38,
+                                      color: Colors.teal[700],
+                                    ),
                                     Text(
-                                      _eventDetailProvider.currentEvent.organizer?.name ?? "",
+                                      _eventDetailProvider
+                                              .currentEvent
+                                              .organizer
+                                              ?.name ??
+                                          "",
                                       textAlign: TextAlign.center,
                                       maxLines: 2,
                                       overflow: TextOverflow.ellipsis,
@@ -677,37 +859,61 @@ class EventDetail extends StatelessWidget {
                         SizedBox(height: 10),
                         Row(
                           children: <Widget>[
-                            Icon(Icons.description, size: 16, color: Colors.black.withAlpha(163)),
+                            Icon(
+                              Icons.description,
+                              size: 16,
+                              color: Colors.black.withAlpha(163),
+                            ),
                             SizedBox(width: 5.0),
                             Text(
                               AppString.description,
                               textScaler: TextScaler.linear(1.2),
-                              style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black.withAlpha(163)),
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: Colors.black.withAlpha(163),
+                              ),
                             ),
                           ],
                         ),
                         SizedBox(height: 10),
-                        Text(_eventDetailProvider.currentEvent.description ?? ""),
+                        Text(
+                          _eventDetailProvider.currentEvent.description ?? "",
+                        ),
                         SizedBox(height: 10),
                         if (_loginProvider.isMember) ...[
                           Divider(color: Colors.white),
                           SizedBox(height: 10),
                           Row(
                             children: <Widget>[
-                              Icon(Icons.group, size: 18, color: Colors.black.withAlpha(163)),
+                              Icon(
+                                Icons.group,
+                                size: 18,
+                                color: Colors.black.withAlpha(163),
+                              ),
                               SizedBox(width: 5.0),
                               Text(
                                 AppString.participants,
                                 textScaler: TextScaler.linear(1.2),
-                                style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black.withAlpha(163)),
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.black.withAlpha(163),
+                                ),
                               ),
                             ],
                           ),
                           SizedBox(height: 10),
-                          (_eventDetailProvider.currentEvent.participants?.length ?? 0) > 0
+                          (_eventDetailProvider
+                                          .currentEvent
+                                          .participants
+                                          ?.length ??
+                                      0) >
+                                  0
                               ? _ParticipantsList(
-                                  participants: _eventDetailProvider.currentEvent.participants!,
-                                  onTapMember: (Member m) => _navigateToMemberDetailScreen(context, m),
+                                  participants: _eventDetailProvider
+                                      .currentEvent
+                                      .participants!,
+                                  onTapMember: (Member m) =>
+                                      _navigateToMemberDetailScreen(context, m),
                                 )
                               : Text(AppString.noParticipant),
                           SizedBox(height: 10),
@@ -745,7 +951,11 @@ class EventDetail extends StatelessWidget {
 /// listener — and isolating that concern keeps [EventDetail] a
 /// pure [StatelessWidget].
 class _ParticipantsList extends StatefulWidget {
-  const _ParticipantsList({Key? key, required this.participants, required this.onTapMember}) : super(key: key);
+  const _ParticipantsList({
+    Key? key,
+    required this.participants,
+    required this.onTapMember,
+  }) : super(key: key);
 
   final List<EventMember> participants;
   final void Function(Member member) onTapMember;
@@ -786,7 +996,10 @@ class _ParticipantsListState extends State<_ParticipantsList> {
                     height: 80,
                     padding: const EdgeInsets.all(2.0),
                     margin: const EdgeInsets.symmetric(horizontal: 12.0),
-                    decoration: const ShapeDecoration(shape: CircleBorder(), color: Colors.white70),
+                    decoration: const ShapeDecoration(
+                      shape: CircleBorder(),
+                      color: Colors.white70,
+                    ),
                     child: AvatarImage(
                       memberId: member.id,
                       hasAvatar: member.hasAvatar == true,
@@ -815,15 +1028,24 @@ class _ParticipantsListState extends State<_ParticipantsList> {
 
 /// Single row of the bike picker bottom sheet.
 class _BikePickerTile extends StatelessWidget {
-  const _BikePickerTile({required this.label, required this.selected, required this.onTap, this.muted = false});
+  const _BikePickerTile({
+    required this.label,
+    required this.selected,
+    required this.onTap,
+    this.muted = false,
+    this.manufacturer,
+  });
 
   final String label;
   final bool selected;
   final VoidCallback onTap;
   final bool muted;
+  final String? manufacturer;
 
   @override
   Widget build(BuildContext context) {
+    final String? logoPath = BikeUtils.manufacturerLogoPath(manufacturer);
+
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 3.0),
       child: Material(
@@ -840,10 +1062,17 @@ class _BikePickerTile extends StatelessWidget {
             ),
             child: Row(
               children: <Widget>[
-                Icon(
-                  muted ? Icons.block : CustomIcons.motorbike_plain,
-                  size: 18.0,
-                  color: Colors.black.withAlpha(muted ? 110 : 160),
+                // ...existing code...
+                SizedBox(
+                  width: 28.0,
+                  height: 28.0,
+                  child: logoPath != null
+                      ? SvgPicture.asset(logoPath, fit: BoxFit.contain)
+                      : Icon(
+                          muted ? Icons.block : CustomIcons.motorbike_plain,
+                          size: 18.0,
+                          color: Colors.black.withAlpha(muted ? 110 : 160),
+                        ),
                 ),
                 const SizedBox(width: 10.0),
                 Expanded(
@@ -853,13 +1082,16 @@ class _BikePickerTile extends StatelessWidget {
                       color: Colors.black.withAlpha(muted ? 140 : 204),
                       fontSize: 13.5,
                       fontStyle: muted ? FontStyle.italic : FontStyle.normal,
-                      fontWeight: selected ? FontWeight.w700 : FontWeight.normal,
+                      fontWeight: selected
+                          ? FontWeight.w700
+                          : FontWeight.normal,
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
-                if (selected) Icon(Icons.check, size: 18.0, color: Colors.green[700]),
+                if (selected)
+                  Icon(Icons.check, size: 18.0, color: Colors.green[700]),
               ],
             ),
           ),

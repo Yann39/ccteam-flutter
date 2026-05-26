@@ -30,40 +30,22 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:provider/provider.dart';
 
-/// Set of manufacturers we have an SVG logo for in `images/manufacturers/`.
-const Set<String> _knownManufacturers = <String>{
-  'aprilia',
-  'bmw',
-  'ducati',
-  'honda',
-  'kawasaki',
-  'ktm',
-  'suzuki',
-  'triumph',
-  'yamaha',
-  'ohvale',
-};
-
-/// Return the asset path of the manufacturer logo, or null if we don't have
-/// one for that brand.
-String? _manufacturerLogoPath(String? manufacturer) {
-  if (manufacturer == null || manufacturer.isEmpty) return null;
-  final String normalized = manufacturer.toLowerCase().trim();
-  if (!_knownManufacturers.contains(normalized)) return null;
-  return 'images/manufacturers/logo-$normalized.svg';
-}
+import '../../utils/bike_utils.dart';
 
 /// Build the leading manufacturer logo (or a fallback motorbike icon) for a
 /// bike card. Sits in a slightly translucent white rounded square so the
 /// logo (typically designed for a light background) reads cleanly on top
 /// of the blue gradient card without looking like a hard white sticker.
 Widget _buildManufacturerLogo(String? manufacturer) {
-  final String? logoPath = _manufacturerLogoPath(manufacturer);
+  final String? logoPath = BikeUtils.manufacturerLogoPath(manufacturer);
   return Container(
     width: 60,
     height: 60,
     padding: const EdgeInsets.all(6.0),
-    decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.85), borderRadius: BorderRadius.circular(8.0)),
+    decoration: BoxDecoration(
+      color: Colors.white.withValues(alpha: 0.85),
+      borderRadius: BorderRadius.circular(8.0),
+    ),
     child: logoPath != null
         ? SvgPicture.asset(logoPath, fit: BoxFit.contain)
         : Icon(CustomIcons.motorbike_plain, color: Colors.deepPurple, size: 32),
@@ -73,12 +55,18 @@ Widget _buildManufacturerLogo(String? manufacturer) {
 class MyBikes extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    final LoginProvider _loginProvider = Provider.of<LoginProvider>(context, listen: false);
+    final LoginProvider _loginProvider = Provider.of<LoginProvider>(
+      context,
+      listen: false,
+    );
 
     if (!_loginProvider.isMember) {
       return Scaffold(
         appBar: AppBar(title: Text(AppString.myBikes)),
-        body: Container(decoration: CustomDecorations.mainContent, child: RestrictedContent()),
+        body: Container(
+          decoration: CustomDecorations.mainContent,
+          child: RestrictedContent(),
+        ),
       );
     }
 
@@ -150,7 +138,9 @@ class MyBikes extends StatelessWidget {
     return ListView.separated(
       // AlwaysScrollableScrollPhysics so pull-to-refresh works even when the list has only 1-2 bikes and doesn't fill the viewport
       physics: const AlwaysScrollableScrollPhysics(),
-      padding: EdgeInsets.only(bottom: MediaQuery.of(context).padding.bottom + 72.0),
+      padding: EdgeInsets.only(
+        bottom: MediaQuery.of(context).padding.bottom + 72.0,
+      ),
       separatorBuilder: (context, index) => SizedBox(height: 8.0),
       itemCount: provider.bikes.length,
       itemBuilder: (context, index) {
@@ -177,16 +167,26 @@ class MyBikes extends StatelessWidget {
                       Text(
                         "${bike.manufacturer?.toUpperCase()} ${bike.modelName}",
                         textScaler: TextScaler.linear(1.1),
-                        style: TextStyle(color: Colors.white, fontWeight: FontWeight.w500),
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w500,
+                        ),
                         overflow: TextOverflow.ellipsis,
                         maxLines: 1,
                       ),
                       SizedBox(height: 8.0),
                       Row(
                         children: <Widget>[
-                          Icon(CustomIcons.motorbike_plain, size: 16, color: Colors.deepPurple),
+                          Icon(
+                            CustomIcons.motorbike_plain,
+                            size: 16,
+                            color: Colors.deepPurple,
+                          ),
                           SizedBox(width: 5.0),
-                          Text("${bike.engineSize} cc - ${bike.year}", style: TextStyle(color: Colors.white)),
+                          Text(
+                            "${bike.engineSize} cc - ${bike.year}",
+                            style: TextStyle(color: Colors.white),
+                          ),
                         ],
                       ),
                     ],
@@ -198,15 +198,24 @@ class MyBikes extends StatelessWidget {
                   mainAxisSize: MainAxisSize.min,
                   children: <Widget>[
                     IconButton(
-                      tooltip: isCurrent ? "Moto courante" : "Définir comme moto courante",
+                      tooltip: isCurrent
+                          ? "Moto courante"
+                          : "Définir comme moto courante",
                       icon: Icon(
                         isCurrent ? Icons.star : Icons.star_border,
-                        color: isCurrent ? Colors.amber : Colors.white.withValues(alpha: 0.7),
+                        color: isCurrent
+                            ? Colors.amber
+                            : Colors.white.withValues(alpha: 0.7),
                         size: 26,
                       ),
                       padding: EdgeInsets.zero,
-                      constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
-                      onPressed: isCurrent ? null : () => provider.setCurrentBike(bike),
+                      constraints: const BoxConstraints(
+                        minWidth: 36,
+                        minHeight: 36,
+                      ),
+                      onPressed: isCurrent
+                          ? null
+                          : () => provider.setCurrentBike(bike),
                     ),
                     if (isCurrent) ...[
                       Transform.translate(
