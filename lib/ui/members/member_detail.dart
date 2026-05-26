@@ -949,6 +949,15 @@ class MemberDetail extends StatelessWidget {
                                       textScaler: TextScaler.linear(1.2),
                                       style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black.withAlpha(204)),
                                     ),
+                                    SizedBox(width: 4.0),
+                                    Text(
+                                      "(${_memberDetailProvider.currentMember?.eventMembers?.length ?? 0})",
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.normal,
+                                        color: Colors.black.withAlpha(204),
+                                        fontSize: 11.0,
+                                      ),
+                                    ),
                                   ],
                                 ),
                                 SizedBox(height: 10),
@@ -963,6 +972,15 @@ class MemberDetail extends StatelessWidget {
                                       textScaler: TextScaler.linear(1.2),
                                       style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black.withAlpha(204)),
                                     ),
+                                    SizedBox(width: 4.0),
+                                    Text(
+                                      "(${_recordListProvider.memberRecords.length})",
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.normal,
+                                        color: Colors.black.withAlpha(204),
+                                        fontSize: 11.0,
+                                      ),
+                                    ),
                                   ],
                                 ),
                                 SizedBox(height: 10),
@@ -976,6 +994,15 @@ class MemberDetail extends StatelessWidget {
                                       "Cotisations",
                                       textScaler: TextScaler.linear(1.2),
                                       style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black.withAlpha(204)),
+                                    ),
+                                    SizedBox(width: 4.0),
+                                    Text(
+                                      "(${_memberDetailProvider.currentMember?.membershipFees?.length ?? 0})",
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.normal,
+                                        color: Colors.black.withAlpha(204),
+                                        fontSize: 11.0,
+                                      ),
                                     ),
                                   ],
                                 ),

@@ -899,6 +899,15 @@ class EventDetail extends StatelessWidget {
                                   color: Colors.black.withAlpha(163),
                                 ),
                               ),
+                              SizedBox(width: 4.0),
+                              Text(
+                                "(${_eventDetailProvider.currentEvent.participants?.length ?? 0})",
+                                style: TextStyle(
+                                  fontWeight: FontWeight.normal,
+                                  color: Colors.black.withAlpha(163),
+                                  fontSize: 11.0,
+                                ),
+                              ),
                             ],
                           ),
                           SizedBox(height: 10),

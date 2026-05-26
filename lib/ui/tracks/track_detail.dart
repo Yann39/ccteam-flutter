@@ -1131,6 +1131,15 @@ class _TrackDetailState extends State<TrackDetail> {
                                   textScaler: TextScaler.linear(1.2),
                                   style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black.withAlpha(204)),
                                 ),
+                                SizedBox(width: 4.0),
+                                Text(
+                                  "(${_eventDetailProvider.allEvents.length})",
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.normal,
+                                    color: Colors.black.withAlpha(204),
+                                    fontSize: 11.0,
+                                  ),
+                                ),
                               ],
                             ),
                             SizedBox(height: 10),
@@ -1146,6 +1155,15 @@ class _TrackDetailState extends State<TrackDetail> {
                                   AppString.chronos,
                                   textScaler: TextScaler.linear(1.2),
                                   style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black.withAlpha(163)),
+                                ),
+                                SizedBox(width: 4.0),
+                                Text(
+                                  "(${_recordListProvider.trackRecords.length})",
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.normal,
+                                    color: Colors.black.withAlpha(163),
+                                    fontSize: 11.0,
+                                  ),
                                 ),
                               ],
                             ),
