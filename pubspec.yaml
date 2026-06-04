@@ -2,7 +2,7 @@ name: ccteam
 description: Flutter application for CCTeam moto club
 
 # Android build used in android/app/build.gradle (drives the Play Store + Android system settings)
-version: 1.0.1+6
+version: 1.0.2+7
 
 environment:
   sdk: ^3.11.0
