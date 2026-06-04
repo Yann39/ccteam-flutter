@@ -408,7 +408,7 @@ class NewsDetail extends StatelessWidget {
                       ThemeData(
                         textTheme: const TextTheme(
                           bodyMedium: TextStyle(
-                            fontSize: 16.0,
+                            fontSize: 14.0,
                             color: Colors.black87,
                           ),
                         ),

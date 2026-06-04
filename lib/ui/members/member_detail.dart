@@ -52,7 +52,7 @@ import '../../utils/track_utils.dart';
 class MemberDetail extends StatelessWidget {
   final ScrollController _scrollController = new ScrollController();
 
-  /// Dedicated controller for the horizontal events timeline — so we
+  /// Dedicated controller for the horizontal events timeline, so we
   /// can drive it imperatively (auto-scroll to the first upcoming
   /// event on initial render).
   final ScrollController _eventsTimelineController = new ScrollController();

@@ -96,33 +96,33 @@ class _AddEditNewsState extends State<AddEditNews> {
   }
 
   /// Validate the form then submit data to backend.
-  void submitForm(News news) {
+  Future<void> submitForm(News news) async {
     final FormState _form = _formKey.currentState!;
 
     if (!_form.validate()) {
       Provider.of<MessageProvider>(context, listen: false).setMessage(AppString.formNotValid, MessageType.ERROR);
-    } else {
-      // this invokes each onSaved event
-      _form.save();
-
-      final NewsCreationProvider _newsCreationProvider = Provider.of<NewsCreationProvider>(context, listen: false);
-      final NewsListProvider _newsListProvider = Provider.of<NewsListProvider>(context, listen: false);
-
-      // submit data to backend, if id is set this is an update, else a creation
-      if (news.id != null) {
-        _newsCreationProvider.updateNews().then((value) {
-          if (value != null) {
-            _newsListProvider.updateNewsInList(_newsCreationProvider.news);
-            Provider.of<NewsDetailProvider>(context, listen: false).setCurrentNews(value);
-          } else {}
-        });
-      } else {
-        _newsCreationProvider.createNews().then((value) {
-          _newsListProvider.addNewsInList(_newsCreationProvider.news);
-        });
-      }
-      Navigator.pop(context);
+      return;
     }
+    // this invokes each onSaved event
+    _form.save();
+
+    final NewsCreationProvider _newsCreationProvider = Provider.of<NewsCreationProvider>(context, listen: false);
+    final NewsListProvider _newsListProvider = Provider.of<NewsListProvider>(context, listen: false);
+    final NewsDetailProvider _newsDetailProvider = Provider.of<NewsDetailProvider>(context, listen: false);
+
+    // submit data to backend, if id is set this is an update, else a creation
+    if (news.id != null) {
+      final News? updated = await _newsCreationProvider.updateNews();
+      if (updated != null) {
+        _newsListProvider.updateNewsInList(_newsCreationProvider.news);
+        _newsDetailProvider.setCurrentNews(updated);
+      }
+    } else {
+      await _newsCreationProvider.createNews();
+      _newsListProvider.addNewsInList(_newsCreationProvider.news);
+    }
+    if (!mounted) return;
+    Navigator.pop(context);
   }
 
   Widget build(BuildContext context) {
