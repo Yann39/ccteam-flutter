@@ -64,6 +64,10 @@ class _ConfirmPasscodeFormState extends State<ConfirmPasscodeForm> {
 
   Widget build(BuildContext context) {
     final LoginProvider _loginProvider = Provider.of<LoginProvider>(context, listen: false);
+    final PasscodeProvider _passcodeProvider = Provider.of<PasscodeProvider>(context, listen: true);
+
+    // only allow validation button when the passcode has 6 digits
+    final bool _canValidate = (_passcodeProvider.secondPassCode?.length ?? 0) == 6;
 
     _log.info("Building ConfirmPasscodeForm...");
 
@@ -75,9 +79,7 @@ class _ConfirmPasscodeFormState extends State<ConfirmPasscodeForm> {
             padding: EdgeInsets.fromLTRB(16.0, 12.0, 16.0, 12.0),
             backgroundColor: Colors.blue[700],
           ),
-          onPressed: () {
-            _doCompleteRegistration(context);
-          },
+          onPressed: _canValidate ? () => _doCompleteRegistration(context) : null,
           child: _loginProvider.loginStatus == LoginStatus.Loading
               ? SizedBox(
                   child: CircularProgressIndicator(

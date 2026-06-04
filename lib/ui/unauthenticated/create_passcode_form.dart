@@ -18,6 +18,7 @@
  */
 
 import 'package:ccteam/providers/login_provider.dart';
+import 'package:ccteam/providers/passcode_provider.dart';
 import 'package:ccteam/utils/enums.dart';
 import 'package:ccteam/utils/strings.dart';
 import 'package:flutter/material.dart';
@@ -47,6 +48,10 @@ class _CreatePasscodeFormState extends State<CreatePasscodeForm> {
 
   Widget build(BuildContext context) {
     final LoginProvider _loginProvider = Provider.of<LoginProvider>(context, listen: false);
+    final PasscodeProvider _passcodeProvider = Provider.of<PasscodeProvider>(context, listen: true);
+
+    // validate is only enabled when the user has typed the full 6-digit passcode
+    final bool _canValidate = (_passcodeProvider.firstPassCode?.length ?? 0) == 6;
 
     _log.info("Building CreatePasscodeForm...");
 
@@ -60,9 +65,7 @@ class _CreatePasscodeFormState extends State<CreatePasscodeForm> {
             padding: EdgeInsets.fromLTRB(16.0, 12.0, 16.0, 12.0),
             backgroundColor: Colors.blue[700],
           ),
-          onPressed: () {
-            _goToConfirmPasscode();
-          },
+          onPressed: _canValidate ? () => _goToConfirmPasscode() : null,
           child: _loginProvider.loginStatus == LoginStatus.Loading
               ? SizedBox(
                   child: CircularProgressIndicator(
