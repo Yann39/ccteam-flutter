@@ -47,9 +47,8 @@ class _ChronoDetailState extends State<ChronoDetail> {
   @override
   void initState() {
     super.initState();
-    // Fetch the full list of records on this track right after the
-    // first frame, we need it to compute the chrono's ranking in
-    // the "Ranking" card below.
+    // fetch the full list of records on this track right after the first frame,
+    // we need it to compute the chrono's ranking in the "Ranking" card below.
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       final Record? record = Provider.of<RecordDetailProvider>(context, listen: false).currentRecord;
@@ -94,9 +93,8 @@ class _ChronoDetailState extends State<ChronoDetail> {
               onPressed: () async {
                 Navigator.of(dialogContext).pop();
                 final RecordDetailProvider detailProvider = Provider.of<RecordDetailProvider>(context, listen: false);
-                // grab the record up-front, deleteRecord() clears the
-                // provider, so we'd lose the member/track ids needed
-                // for the refresh otherwise
+                // grab the record up-front, deleteRecord() clears the provider,
+                // so we'd lose the member/track ids needed for the refresh otherwise
                 final Record? deletedRecord = detailProvider.currentRecord;
                 try {
                   await detailProvider.deleteRecord();
@@ -128,7 +126,7 @@ class _ChronoDetailState extends State<ChronoDetail> {
   ///    visited (when coming from track_detail). Refresh for the
   ///    chrono's track for the same reason.
   ///
-  /// Either fetch is a no-op when the underlying id is null — that
+  /// Either fetch is a no-op when the underlying id is null, that
   /// should never happen for a record that came from the server,
   /// but stays defensive.
   void _refreshParentLists(BuildContext context, Record record) {
@@ -387,7 +385,6 @@ class _ChronoDetailState extends State<ChronoDetail> {
     final String bikeLabel = record.bike != null
         ? "${StringUtils.capitalize(record.bike!.manufacturer ?? '')} ${record.bike!.modelName ?? ''}".trim()
         : AppString.notDefined;
-    final String comments = (record.comments ?? '').trim();
 
     return Scaffold(
       body: Container(

@@ -21,13 +21,12 @@ android {
     compileSdk 36
 
     defaultConfig {
-        // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
         applicationId "net.ccteam"
         minSdkVersion flutter.minSdkVersion
         targetSdkVersion 36
         multiDexEnabled true
-        versionCode 6
-        versionName "1.0.1"
+        versionCode flutter.versionCode
+        versionName flutter.versionName
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         // Required when setting minSdkVersion to 20 or lower
         multiDexEnabled true
@@ -52,9 +51,6 @@ android {
 
     buildTypes {
         release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
-            //signingConfig signingConfigs.debug
             signingConfig signingConfigs.release
         }
     }

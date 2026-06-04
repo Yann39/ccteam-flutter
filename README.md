@@ -263,14 +263,20 @@ flutter pub upgrade --major-versions
 
 ## Play Store
 
-To publish the app on the Play Store, you need to create a signed APK or AAB file. You can follow the official Flutter documentation for [building and releasing an Android app](https://flutter.dev/docs/deployment/android).
+To publish the app on the Play Store, you need to create a signed APK or AAB file.
+You can follow the official Flutter documentation for [building and releasing an Android app](https://flutter.dev/docs/deployment/android).
 
-Once done, for each release, in _build.gradle_, upgrade version code and name :
+Once done, on each release, in _pubspec.yaml_, upgrade version code and name
+in the format `<versionName>`+`<versionCode>`, i.e. :
 
-```gradle
-versionCode 2
-versionName "0.8.2"
+```yaml
+version: 1.0.1+6
 ```
+
+This is read by the _build.gradle_ file (drives the Play Store + Android system settings).
+
+> [!info]
+> Version code is a monotonically increasing integer required by the Play Store for each upload, bump it per release.
 
 Build the application bundle :
 

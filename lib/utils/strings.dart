@@ -31,7 +31,6 @@ class AppString {
   }
 
   static const String applicationTitle = 'CCTeam';
-  static const String applicationVersion = '1.0.0';
   static const String applicationTagline = 'L\'application officielle du motoclub CCTeam';
 
   // About page

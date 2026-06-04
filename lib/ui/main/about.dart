@@ -21,6 +21,7 @@ import 'package:ccteam/utils/custom_decorations.dart';
 import 'package:ccteam/utils/strings.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 
 /// Static "About" page reachable from the top-right quick-action menu.
 ///
@@ -33,12 +34,22 @@ import 'package:flutter_svg/svg.dart';
 /// Content is intentionally short — one paragraph per topic, no walls
 /// of text. The page is stateless, no provider plumbing, so it's safe
 /// to push as a regular named route.
-class About extends StatelessWidget {
+class About extends StatefulWidget {
   const About({Key? key}) : super(key: key);
 
-  /// One card row: a leading colored icon in a soft circle, a bold
-  /// title on top and a body paragraph underneath. Used both for the
-  /// "purpose" and "privacy" sections — keeps the visual rhythm.
+  @override
+  State<About> createState() => _AboutState();
+}
+
+class _AboutState extends State<About> {
+  late final Future<PackageInfo> _packageInfo;
+
+  @override
+  void initState() {
+    super.initState();
+    _packageInfo = PackageInfo.fromPlatform();
+  }
+
   Widget _buildSectionCard({
     required IconData icon,
     required Color iconColor,
@@ -113,7 +124,7 @@ class About extends StatelessWidget {
           child: ListView(
             padding: const EdgeInsets.fromLTRB(16.0, 20.0, 16.0, 24.0),
             children: <Widget>[
-              // Hero: logo + app name + version + tagline
+              // hero: logo + app name + version + tagline
               Center(
                 child: Container(
                   padding: const EdgeInsets.all(16.0),
@@ -137,15 +148,22 @@ class About extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 2.0),
+              // version read from pubspec.yaml at runtime
               Center(
-                child: Text(
-                  'v${AppString.applicationVersion}',
-                  style: TextStyle(
-                    color: Colors.black.withAlpha(140),
-                    fontSize: 12.5,
-                    fontWeight: FontWeight.w500,
-                    fontFeatures: const <FontFeature>[FontFeature.tabularFigures()],
-                  ),
+                child: FutureBuilder<PackageInfo>(
+                  future: _packageInfo,
+                  builder: (BuildContext context, AsyncSnapshot<PackageInfo> snapshot) {
+                    final String version = snapshot.hasData ? snapshot.data!.version : '';
+                    return Text(
+                      version.isEmpty ? '' : 'v$version',
+                      style: TextStyle(
+                        color: Colors.black.withAlpha(140),
+                        fontSize: 12.5,
+                        fontWeight: FontWeight.w500,
+                        fontFeatures: const <FontFeature>[FontFeature.tabularFigures()],
+                      ),
+                    );
+                  },
                 ),
               ),
               const SizedBox(height: 10.0),
@@ -166,7 +184,7 @@ class About extends StatelessWidget {
               ),
               const SizedBox(height: 20.0),
 
-              // Purpose
+              // purpose
               _buildSectionCard(
                 icon: Icons.info_outline,
                 iconColor: Colors.blue[700]!,
@@ -174,7 +192,7 @@ class About extends StatelessWidget {
                 body: Text(AppString.aboutPurposeBody),
               ),
 
-              // Features (bullet list)
+              // features (bullet list)
               _buildSectionCard(
                 icon: Icons.star_border,
                 iconColor: Colors.amber[800]!,
@@ -211,15 +229,17 @@ class About extends StatelessWidget {
                   children: <Widget>[
                     Text(AppString.aboutOpenSourceBody),
                     const SizedBox(height: 8.0),
-                    // Flutter ships a built-in license browser — surfacing it
-                    // satisfies the GPL "show users the licenses of bundled
-                    // dependencies" expectation without any extra plumbing.
+                    // Flutter ships a built-in license browser
                     InkWell(
-                      onTap: () => showLicensePage(
-                        context: context,
-                        applicationName: AppString.applicationTitle,
-                        applicationVersion: AppString.applicationVersion,
-                      ),
+                      onTap: () async {
+                        final PackageInfo info = await _packageInfo;
+                        if (!context.mounted) return;
+                        showLicensePage(
+                          context: context,
+                          applicationName: AppString.applicationTitle,
+                          applicationVersion: info.version,
+                        );
+                      },
                       child: Padding(
                         padding: const EdgeInsets.symmetric(vertical: 4.0),
                         child: Row(
@@ -246,7 +266,7 @@ class About extends StatelessWidget {
 
               const SizedBox(height: 20.0),
 
-              // Copyright footer
+              // copyright footer
               Center(
                 child: Text(
                   AppString.aboutCopyright,
