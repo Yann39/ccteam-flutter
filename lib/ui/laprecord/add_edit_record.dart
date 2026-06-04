@@ -60,20 +60,17 @@ class _AddEditRecordState extends State<AddEditRecord> {
 
     final record = Provider.of<RecordCreationProvider>(context, listen: false).record;
     if (record.recordDate != null) {
-      _datePickerController.text = DateFormat(DATE_FORMAT).format(record.recordDate!);
+      _datePickerController.text = DateFormat(DATE_FORMAT_DAY).format(record.recordDate!);
     }
   }
 
-  /// Initialize and display a Date picker related to the specified [controller] in the specified [context]
+  /// Initialize and display a Date picker related to the specified
+  /// [controller] in the specified [context]. The chrono form only
+  /// captures the day (time-of-day isn't meaningful for a chrono).
   Future _chooseDate(BuildContext context, TextEditingController controller, DateTime? defaultValue) async {
     final DateTime currentDate = DateTime.now();
-    final TimeOfDay currentTime = TimeOfDay.now();
-
-    // define initial date and time from the specified default DateTime value if set
     final DateTime initialDate = defaultValue ?? currentDate;
-    final TimeOfDay initialTime = defaultValue != null ? TimeOfDay.fromDateTime(defaultValue) : currentTime;
 
-    // show the date picker and await for the chosen date
     final DateTime? dateResult = await showDatePicker(
       context: context,
       initialDate: initialDate,
@@ -81,22 +78,9 @@ class _AddEditRecordState extends State<AddEditRecord> {
       lastDate: DateTime.now(),
     );
 
-    // show the time picker and await for the chosen time
-    final TimeOfDay? timeResult = await showTimePicker(context: context, initialTime: initialTime);
-
-    if (dateResult != null && timeResult != null) {
-      // build final date with time
-      final DateTime finalDateTime = DateTime(
-        dateResult.year,
-        dateResult.month,
-        dateResult.day,
-        timeResult.hour,
-        timeResult.minute,
-      );
-
-      // notify the framework that the internal state of this object has changed
+    if (dateResult != null) {
       setState(() {
-        controller.text = DateFormat(DATE_FORMAT).format(finalDateTime);
+        controller.text = DateFormat(DATE_FORMAT_DAY).format(dateResult);
       });
     }
   }
@@ -157,8 +141,8 @@ class _AddEditRecordState extends State<AddEditRecord> {
           keyboardType: TextInputType.datetime,
           validator: (val) => (val == null || val.isEmpty)
               ? AppString.recordDateMandatory
-              : (AppDateUtils.isAfterNow(val, DATE_FORMAT) ? AppString.recordDateNotValid : null),
-          onSaved: (val) => _recordCreationProvider.record.recordDate = DateFormat(DATE_FORMAT).parseStrict(val!),
+              : (AppDateUtils.isAfterNow(val, DATE_FORMAT_DAY) ? AppString.recordDateNotValid : null),
+          onSaved: (val) => _recordCreationProvider.record.recordDate = DateFormat(DATE_FORMAT_DAY).parseStrict(val!),
         ),
       ),
     );

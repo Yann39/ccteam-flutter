@@ -47,6 +47,7 @@ const String LYCHEE_ROOT_ALBUM_ID = String.fromEnvironment('LYCHEE_ROOT_ALBUM_ID
 
 const String DATE_FORMAT = 'dd/MM/yyyy HH:mm';
 const String DATE_FORMAT_TXT = 'dd MMM yyyy HH:mm';
+const String DATE_FORMAT_DAY = 'dd/MM/yyyy';
 const String PRICE_FORMAT = '####.##';
 const int OTP_VALIDITY = 600;
 const double UI_FORM_PADDING = 16.0;
