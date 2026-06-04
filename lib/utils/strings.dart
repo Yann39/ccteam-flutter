@@ -113,7 +113,7 @@ class AppString {
   static const String contact = 'Contact';
   static const String noMailAppFound = 'Aucune application de messagerie n\'a pu être ouverte';
   static const String logout = 'Se déconnecter';
-  static const String galleries = 'Galleries';
+  static const String galleries = 'Galeries';
 
   static const String emailTitle = 'Adresse e-mail';
   static const String forgotPassword = 'Mot de passe oublié?';
@@ -129,7 +129,7 @@ class AppString {
   static const String tabCalendar = 'Calendrier';
   static const String tabTeam = 'Équipe';
   static const String tabTracks = 'Circuits';
-  static const String tabGallery = 'Gallerie';
+  static const String tabGallery = 'Galerie';
 
   static const String loginEmailHint = 'Adresse e-mail';
   static const String loginOtpHint = 'Code';
@@ -443,7 +443,7 @@ class AppString {
   static const String membershipFeePaidLabel = 'Payée';
   static const String membershipFeeUnpaidLabel = 'Non payée';
 
-  static const String photoScreenTitle = 'Gallerie';
+  static const String photoScreenTitle = 'Galerie';
   static const String photoCreate = 'Ajouter une photo';
   static const String photoCreated = 'La photo à été créée avec succès !';
   static const String photoCreationFailed = 'Échec lors de la création de la photo';
@@ -526,7 +526,7 @@ class AppString {
   static const String selectPhoto = 'Sélectionnez une photo';
   static const String maxAvatarSize = 'Max. 500 Ko';
   static const String avatarFormats = 'Formats JPG, GIF, PNG';
-  static const String gallery = 'Gallerie';
+  static const String gallery = 'Galerie';
   static const String camera = 'Appareil photo';
   static const String initProfilePhoto = 'Réinitialiser la photo de profil';
   static const String confirmSelection = 'Confirmer la sélection';
