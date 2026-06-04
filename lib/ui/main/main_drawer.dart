@@ -57,14 +57,17 @@ class MainDrawer extends StatelessWidget {
                   decoration: BoxDecoration(color: Colors.red[700]),
                   accountName: Row(
                     children: <Widget>[
-                      Icon(Icons.person_outline, size: 12, color: Colors.white),
+                      Icon(Icons.person_outline, size: 13, color: Colors.white),
                       SizedBox(width: 5),
-                      Text("${_loginProvider.loggedMember!.firstName} ${_loginProvider.loggedMember!.lastName}"),
+                      Text(
+                        "${_loginProvider.loggedMember!.firstName} ${_loginProvider.loggedMember!.lastName}",
+                        style: TextStyle(fontWeight: FontWeight.w500),
+                      ),
                     ],
                   ),
                   accountEmail: Row(
                     children: <Widget>[
-                      Icon(Icons.mail_outline, size: 12, color: Colors.white),
+                      Icon(Icons.mail_outline, size: 13, color: Colors.white),
                       SizedBox(width: 5),
                       Text(_loginProvider.loggedMember!.email!),
                     ],

@@ -125,7 +125,9 @@ class Event {
       return "From " + formatterDate.format(this.endDate!);
     }
     // same day, display only one of the dates (i.e "24 Apr. 2020")
-    else if (this.startDate == this.endDate) {
+    else if (this.startDate!.year == this.endDate!.year &&
+        this.startDate!.month == this.endDate!.month &&
+        this.startDate!.day == this.endDate!.day) {
       return formatterDate.format(this.startDate!);
     } else {
       // 2 different years, display the complete 2 dates (i.e. "27 Dec. 2019 - 04 Jan. 2020")
