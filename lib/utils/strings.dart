@@ -223,6 +223,7 @@ class AppString {
   static const String newsLikeFailed = 'Erreur, impossible d\'aimer cette actualité';
   static const String newsEmpty = 'Aucune actualité à afficher';
 
+  static const String member = 'Membre';
   static const String memberScreenTitle = 'Équipe';
   static const String memberCreate = 'Ajouter un membre';
   static const String memberCreated = 'Le membre à été créée avec succès !';

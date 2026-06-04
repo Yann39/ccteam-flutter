@@ -69,7 +69,7 @@ class _AddEditNewsState extends State<AddEditNews> {
     final DateTime? _dateResult = await showDatePicker(
       context: context,
       initialDate: _initialDate,
-      firstDate: DateTime(2010, 1, 1),
+      firstDate: DateTime(2000, 1, 1),
       lastDate: DateTime(_currentDate.year + 1),
     );
 
