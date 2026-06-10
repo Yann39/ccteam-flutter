@@ -38,12 +38,18 @@ class RecordListProvider extends ChangeNotifier {
   // list of all member records
   List<Record> _memberRecords = [];
 
+  // list of all records of the logged member, private ones included. Kept in
+  // its own slot because `_memberRecords` only ever holds public records
+  List<Record> _myRecords = [];
+
   // current loading status
   LoadingStatus _loadingStatus = LoadingStatus.notLoaded;
 
   UnmodifiableListView<Record> get trackRecords => UnmodifiableListView(_trackRecords);
 
   UnmodifiableListView<Record> get memberRecords => UnmodifiableListView(_memberRecords);
+
+  UnmodifiableListView<Record> get myRecords => UnmodifiableListView(_myRecords);
 
   LoadingStatus get loadingStatus => _loadingStatus;
 
@@ -67,11 +73,12 @@ class RecordListProvider extends ChangeNotifier {
     if (_loginProvider.isMember &&
         _loginProvider.loggedMember?.id != null &&
         _loadingStatus == LoadingStatus.notLoaded) {
-      fetchMemberRecords(_loginProvider.loggedMember!.id!);
+      fetchMyRecords();
     } else if (!_loginProvider.isMember) {
       // clear the cached records on logout so the next user doesn't
       // see stale data
       _memberRecords = [];
+      _myRecords = [];
       _loadingStatus = LoadingStatus.notLoaded;
     }
     _log.info("LoginProvider injected into RecordListProvider");
@@ -143,7 +150,31 @@ class RecordListProvider extends ChangeNotifier {
     }
   }
 
-  /// Get the list of all records for the specified [memberId]
+  /// Get the list of all records (public and private) of the logged member.
+  Future<void> fetchMyRecords() async {
+    // guard against unauthorized access
+    if (!_loginProvider.isMember) {
+      _log.info("User not member, skipping my records fetch");
+      _myRecords = [];
+      _updateStatus(LoadingStatus.loaded);
+      return;
+    }
+    // clear stale data so the UI doesn't briefly show outdated records while the fresh ones are being fetched
+    _myRecords = [];
+    _updateStatus(LoadingStatus.loading);
+    await _recordsService.fetchMyRecords().then((value) async {
+      _log.fine("My records list retrieved successfully");
+      _myRecords = value;
+      _updateStatus(LoadingStatus.loaded);
+    }, onError: (error) {
+      _log.warning("Error when retrieving my records list ($error)");
+      _myRecords = [];
+      _updateStatus(LoadingStatus.notLoaded);
+      throw (error);
+    });
+  }
+
+  /// Get the list of all public records for the specified [memberId]
   Future<void> fetchMemberRecords(int memberId) async {
     // guard against unauthorized access
     if (!_loginProvider.isMember) {

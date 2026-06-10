@@ -31,6 +31,10 @@ class Record {
   DateTime? recordDate;
   String? conditions;
   String? comments;
+
+  /// Whether the record is visible to other members
+  bool? isPublic;
+
   DateTime? createdOn;
   DateTime? modifiedOn;
 
@@ -43,6 +47,7 @@ class Record {
     this.recordDate,
     this.conditions,
     this.comments,
+    this.isPublic,
     this.createdOn,
     this.modifiedOn,
   });
@@ -58,6 +63,7 @@ class Record {
       recordDate: ${this.recordDate?.toIso8601String()},
       conditions: ${this.conditions},
       comments: ${this.comments},
+      isPublic: ${this.isPublic},
       createdOn: ${this.createdOn?.toIso8601String()},
       modifiedOn: ${this.modifiedOn?.toIso8601String()},
     }""";
@@ -76,6 +82,7 @@ class Record {
               : null,
       conditions = json['conditions'],
       comments = json['comments'],
+      isPublic = json['isPublic'],
       createdOn =
           json['createdOn'] != null ? DateTime.parse(json['createdOn']) : null,
       modifiedOn =
@@ -93,6 +100,7 @@ class Record {
     "recordDate": recordDate?.toIso8601String(),
     "conditions": conditions,
     "comments": comments,
+    "isPublic": isPublic,
     "createdOn": createdOn?.toIso8601String(),
     "modifiedOn": modifiedOn?.toIso8601String(),
   };

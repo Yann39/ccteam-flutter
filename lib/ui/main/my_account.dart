@@ -532,7 +532,7 @@ class _MyAccountState extends State<MyAccount> {
     final int bikes = member.bikes?.length ?? 0;
     final int km = MemberStatsUtils.estimateKm(
       eventMembers: member.eventMembers,
-      records: recordListProvider.memberRecords,
+      records: recordListProvider.myRecords,
       now: now,
     );
     final MostRiddenTrack? favTrack = MemberStatsUtils.mostRiddenTrack(eventMembers: member.eventMembers, now: now);
@@ -543,9 +543,8 @@ class _MyAccountState extends State<MyAccount> {
     );
     final double spent = MemberStatsUtils.totalSpent(eventMembers: member.eventMembers, now: now);
 
-    // Chart-specific aggregations, computed here (rather than in the
-    // chart widgets) so they're easy to skip when the stats card is
-    // hidden for non-members.
+    // chart-specific aggregations, computed here (rather than in the chart widgets) so they're easy to skip
+    // when the stats card is hidden for non-members.
     final List<BikeUsage> bikeUsages = MemberStatsUtils.bikeUsageBreakdown(eventMembers: member.eventMembers, now: now);
     final List<TrackUsage> trackUsages = MemberStatsUtils.trackUsageBreakdown(
       eventMembers: member.eventMembers,

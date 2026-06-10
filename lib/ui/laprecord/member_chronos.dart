@@ -55,9 +55,7 @@ class _MemberChronosState extends State<MemberChronos> {
     Provider.of<RecordCreationProvider>(context, listen: false).setRecordToEdit(new Record());
     final result = await Navigator.pushNamed(context, '/addEditRecord');
     if (result != null) {
-      final _recordListProvider = Provider.of<RecordListProvider>(context, listen: false);
-      final _loginProvider = Provider.of<LoginProvider>(context, listen: false);
-      _recordListProvider.fetchMemberRecords(_loginProvider.loggedMember!.id!);
+      Provider.of<RecordListProvider>(context, listen: false).fetchMyRecords();
     }
   }
 
@@ -91,7 +89,7 @@ class _MemberChronosState extends State<MemberChronos> {
             const SizedBox(height: 8.0),
             Expanded(
               child: RefreshIndicator(
-                onRefresh: () => _recordListProvider.fetchMemberRecords(_loginProvider.loggedMember!.id!),
+                onRefresh: () => _recordListProvider.fetchMyRecords(),
                 child: LoadingContent(
                   defaultText: AppString.eventsNotFound,
                   emptyText: AppString.eventsNotFound,
@@ -99,15 +97,15 @@ class _MemberChronosState extends State<MemberChronos> {
                   child: ListView.separated(
                     padding: EdgeInsets.only(bottom: MediaQuery.of(context).padding.bottom + 72.0),
                     separatorBuilder: (context, index) => SizedBox(height: 8.0),
-                    itemCount: _recordListProvider.memberRecords.length,
+                    itemCount: _recordListProvider.myRecords.length,
                     itemBuilder: (context, index) {
-                      final record = _recordListProvider.memberRecords[index];
+                      final record = _recordListProvider.myRecords[index];
                       return InkWell(
                         onTap: () async {
                           Provider.of<RecordDetailProvider>(context, listen: false).setCurrentRecord(record);
                           await Navigator.pushNamed(context, '/chronoDetail');
                           if (!context.mounted) return;
-                          _recordListProvider.fetchMemberRecords(_loginProvider.loggedMember!.id!);
+                          _recordListProvider.fetchMyRecords();
                         },
                         child: Container(
                           padding: EdgeInsets.all(8.0),
@@ -181,6 +179,14 @@ class _MemberChronosState extends State<MemberChronos> {
                                 ),
                               ),
                               SizedBox(width: 8.0),
+                              // private chronos are only visible here, flag them with a lock
+                              if (record.isPublic == false) ...[
+                                Tooltip(
+                                  message: AppString.recordVisibilityPrivate,
+                                  child: Icon(Icons.lock, size: 18, color: Colors.red[700]),
+                                ),
+                                SizedBox(width: 8.0),
+                              ],
                               Container(
                                 padding: EdgeInsets.symmetric(horizontal: 4.0, vertical: 0.0),
                                 decoration: BoxDecoration(

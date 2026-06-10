@@ -116,12 +116,15 @@ class _ChronoDetailState extends State<ChronoDetail> {
 
   /// Refresh whichever list could plausibly be displaying the record
   /// when we pop back. [RecordListProvider] holds a single slot per
-  /// list type so we just overwrite both with the freshest data:
+  /// list type so we just overwrite each with the freshest data:
   ///
   ///  - `memberRecords` is whatever the previous screen filled it
-  ///    with (the chrono's owner, when coming from member_detail or
-  ///    "Mes chronos"). Re-fetching for the chrono's owner keeps
-  ///    that slot consistent.
+  ///    with (the chrono's owner, when coming from member_detail).
+  ///    Re-fetching for the chrono's owner keeps that slot
+  ///    consistent. It only ever holds public records.
+  ///  - `myRecords` backs "My lap times" view (the only list showing
+  ///    private records), refresh it when the chrono belongs to the
+  ///    logged member.
   ///  - `trackRecords` is the records of whichever track was last
   ///    visited (when coming from track_detail). Refresh for the
   ///    chrono's track for the same reason.
@@ -131,10 +134,14 @@ class _ChronoDetailState extends State<ChronoDetail> {
   /// but stays defensive.
   void _refreshParentLists(BuildContext context, Record record) {
     final RecordListProvider listProvider = Provider.of<RecordListProvider>(context, listen: false);
+    final int? loggedMemberId = Provider.of<LoginProvider>(context, listen: false).loggedMember?.id;
     final int? ownerId = record.member?.id;
     final int? trackId = record.track?.id;
     if (ownerId != null) {
       listProvider.fetchMemberRecords(ownerId);
+    }
+    if (ownerId != null && ownerId == loggedMemberId) {
+      listProvider.fetchMyRecords();
     }
     if (trackId != null) {
       listProvider.fetchTrackRecords(trackId);
@@ -581,6 +588,17 @@ class _ChronoDetailState extends State<ChronoDetail> {
                               iconColor: Colors.brown,
                               label: AppString.recordCommentsLabel,
                               value: record.comments!,
+                            ),
+                          ],
+                          // only flag private chronos, public is the norm and would be noise on every row
+                          if (record.isPublic == false) ...[
+                            _divider(),
+                            _detailRow(
+                              icon: Icons.lock,
+                              iconColor: Colors.amber[800]!,
+                              label: AppString.recordVisibilityLabel,
+                              value: AppString.recordVisibilityPrivate,
+                              subtitle: AppString.recordVisibilityPrivateInfo,
                             ),
                           ],
                         ],

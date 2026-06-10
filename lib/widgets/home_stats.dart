@@ -90,7 +90,7 @@ class HomeStats extends StatelessWidget {
     // estimated km ridden across all past events the user has been registered to
     final int myKm = MemberStatsUtils.estimateKm(
       eventMembers: loginProvider.loggedMember?.eventMembers,
-      records: recordListProvider.memberRecords,
+      records: recordListProvider.myRecords,
       now: now,
     );
 

@@ -424,6 +424,12 @@ class AppString {
   static const String recordCommentsLabel = 'Détails';
   static const String recordCommentsHint = 'Conditions particulières, pneus utilisés, etc.';
   static const String recordBikeMandatory = 'La moto doit être indiquée';
+  static const String recordIsPublicLabel = 'Chrono public';
+  static const String recordIsPublicHelp =
+      'Si privé, personne d\'autre ne pourra voir ce chrono. Si public, il sera affiché sur la page du circuit et sur la page du membre.';
+  static const String recordVisibilityLabel = 'Visibilité';
+  static const String recordVisibilityPrivate = 'Chrono privé';
+  static const String recordVisibilityPrivateInfo = 'Visible uniquement par vous, dans « Mes chronos »';
 
   // Membership fees
   static const String membershipFeeCreate = 'Ajouter une cotisation';

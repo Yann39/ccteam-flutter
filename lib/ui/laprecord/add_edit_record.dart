@@ -53,6 +53,9 @@ class _AddEditRecordState extends State<AddEditRecord> {
   Future<List<Track>>? _futureTracks;
   Track? _selectedTrack;
 
+  // local state for the record visibility switch
+  bool _isPublic = true;
+
   @override
   void initState() {
     super.initState();
@@ -62,6 +65,7 @@ class _AddEditRecordState extends State<AddEditRecord> {
     if (record.recordDate != null) {
       _datePickerController.text = DateFormat(DATE_FORMAT_DAY).format(record.recordDate!);
     }
+    _isPublic = record.isPublic ?? true;
   }
 
   /// Initialize and display a Date picker related to the specified
@@ -99,6 +103,9 @@ class _AddEditRecordState extends State<AddEditRecord> {
         context,
         listen: false,
       ).loggedMember;
+
+      // the visibility switch is not a form field, apply it explicitly
+      Provider.of<RecordCreationProvider>(context, listen: false).record.isPublic = _isPublic;
 
       // submit data to backend, if id is set this is an update, else a creation
       if (Provider.of<RecordCreationProvider>(context, listen: false).record.id != null) {
@@ -256,6 +263,15 @@ class _AddEditRecordState extends State<AddEditRecord> {
       initialValue: _recordCreationProvider.record.comments,
     );
 
+    final _isPublicField = SwitchListTile(
+      title: const Text(AppString.recordIsPublicLabel),
+      subtitle: const Text(AppString.recordIsPublicHelp),
+      value: _isPublic,
+      onChanged: (bool value) => setState(() => _isPublic = value),
+      secondary: Icon(_isPublic ? Icons.public : Icons.lock),
+      contentPadding: EdgeInsets.zero,
+    );
+
     return FormScaffold(
       title: AppString.recordEdit,
       formKey: _formKey,
@@ -269,6 +285,7 @@ class _AddEditRecordState extends State<AddEditRecord> {
         _lapTimeField,
         _conditions,
         _commentsField,
+        _isPublicField,
       ],
     );
   }

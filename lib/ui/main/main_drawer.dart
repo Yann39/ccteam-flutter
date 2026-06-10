@@ -54,7 +54,7 @@ class MainDrawer extends StatelessWidget {
               alignment: Alignment.centerRight,
               children: <Widget>[
                 UserAccountsDrawerHeader(
-                  decoration: BoxDecoration(color: Colors.red[700]),
+                  decoration: BoxDecoration(color: Colors.red[600]),
                   accountName: Row(
                     children: <Widget>[
                       Icon(Icons.person_outline, size: 13, color: Colors.white),
@@ -122,11 +122,11 @@ class MainDrawer extends StatelessWidget {
                     title: Text(AppString.myChronos, style: TextStyle(color: Colors.black)),
                     onTap: () {
                       Navigator.pop(context);
-                      // fetch member records
+                      // fetch the logged member's records, private ones included
                       Provider.of<RecordListProvider>(
                         context,
                         listen: false,
-                      ).fetchMemberRecords(_loginProvider.loggedMember!.id!);
+                      ).fetchMyRecords();
                       Navigator.pushNamed(context, '/memberChronos');
                     },
                   ),

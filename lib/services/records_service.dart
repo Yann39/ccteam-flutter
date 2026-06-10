@@ -38,6 +38,7 @@ class RecordsService {
           recordDate
           lapTime
           conditions
+          isPublic
           member {
             id
             email
@@ -104,6 +105,7 @@ class RecordsService {
           recordDate
           lapTime
           conditions
+          isPublic
           member {
             id
             firstName
@@ -175,6 +177,7 @@ class RecordsService {
           recordDate
           lapTime
           conditions
+          isPublic
           member {
             id
             email
@@ -233,6 +236,76 @@ class RecordsService {
         );
   }
 
+  /// Fetch all records (public and private) of the logged member from the database.
+  /// This is the only query returning private records, the server resolves the member from the authentication token.
+  Future<List<Record>> fetchMyRecords() async {
+    _log.info("Getting lap records from database for the logged member...");
+
+    final String query = """
+      query GetMyLapRecords {
+        getMyLapRecords {
+          id
+          recordDate
+          lapTime
+          conditions
+          isPublic
+          member {
+            id
+            email
+          }
+          bike {
+            id
+            manufacturer
+            modelName
+          }
+          track {
+            id
+            name
+            lapRecord
+          }
+          comments
+          createdOn
+          modifiedOn
+        }
+      }
+    """;
+
+    return GraphQLConnection().graphQLClient
+        .query(
+          QueryOptions(
+            document: parseString(query),
+            fetchPolicy: FetchPolicy.noCache,
+          ),
+        )
+        .then(
+          (result) {
+            final List<Record> records = [];
+            if (result.hasException) {
+              throw AppUtils.handleGraphQlException(result)!;
+            } else {
+              dynamic lapRecordList = result.data!['getMyLapRecords'];
+              if (lapRecordList == null) {
+                _log.info("getMyLapRecords returned null data");
+              } else if (lapRecordList is Map<String, dynamic> &&
+                  lapRecordList.isEmpty) {
+                _log.info("getMyLapRecords returned empty data");
+              } else {
+                for (dynamic record in lapRecordList) {
+                  records.add(Record.fromJson(record));
+                }
+              }
+              return records;
+            }
+          },
+          onError: (error) {
+            _log.severe(
+              "Error while fetching lap record list for the logged member: $error",
+            );
+            throw Exception(error);
+          },
+        );
+  }
+
   /// Create the specified [record] into the database.
   Future<Record> createRecord(Record record) async {
     _log.info(
@@ -240,7 +313,7 @@ class RecordsService {
     );
 
     final String newLapRecordMutation = """
-      mutation CreateLapRecord(\$memberId: Long!, \$trackId: Long!, \$bikeId: Long!, \$recordDate: String!, \$lapTime: Int!, \$conditions: String!, \$comments: String) {
+      mutation CreateLapRecord(\$memberId: Long!, \$trackId: Long!, \$bikeId: Long!, \$recordDate: String!, \$lapTime: Int!, \$conditions: String!, \$comments: String, \$isPublic: Boolean!) {
         createLapRecord(
           memberId: \$memberId
           trackId: \$trackId
@@ -249,11 +322,13 @@ class RecordsService {
           lapTime: \$lapTime
           conditions: \$conditions
           comments: \$comments
+          isPublic: \$isPublic
         ) {
           id
           recordDate
           lapTime
           conditions
+          isPublic
           member {
             id
             email
@@ -285,6 +360,8 @@ class RecordsService {
         'lapTime': record.lapTime,
         'conditions': record.conditions,
         'comments': record.comments,
+        // a record whose visibility was never set explicitly is public
+        'isPublic': record.isPublic ?? true,
       },
       fetchPolicy: FetchPolicy.noCache,
     );
@@ -305,7 +382,7 @@ class RecordsService {
     _log.info("Updating lap record with ID ${record.id} ...");
 
     final String newLapRecordMutation = """
-      mutation UpdateLapRecord(\$lapRecordId: Long!, \$trackId: Long!, \$bikeId: Long!, \$recordDate: String!, \$lapTime: Int!, \$conditions: String!, \$comments: String) {
+      mutation UpdateLapRecord(\$lapRecordId: Long!, \$trackId: Long!, \$bikeId: Long!, \$recordDate: String!, \$lapTime: Int!, \$conditions: String!, \$comments: String, \$isPublic: Boolean!) {
         updateLapRecord(
           lapRecordId: \$lapRecordId
           trackId: \$trackId
@@ -314,11 +391,13 @@ class RecordsService {
           lapTime: \$lapTime
           conditions: \$conditions
           comments: \$comments
+          isPublic: \$isPublic
         ) {
           id
           recordDate
           lapTime
           conditions
+          isPublic
           member {
             id
             email
@@ -350,6 +429,8 @@ class RecordsService {
         'lapTime': record.lapTime,
         'conditions': record.conditions,
         'comments': record.comments,
+        // a record whose visibility was never set explicitly is public
+        'isPublic': record.isPublic ?? true,
       },
       fetchPolicy: FetchPolicy.noCache,
     );
@@ -378,6 +459,7 @@ class RecordsService {
           recordDate
           lapTime
           conditions
+          isPublic
           member {
             id
             email
