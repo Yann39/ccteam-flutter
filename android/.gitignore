@@ -1,8 +1,11 @@
 *.iml
 *.class
 .gradle
+.kotlin
 /local.properties
 /key.properties
+# Firebase configuration, contains project identifiers, keep out of the public repo
+/app/google-services.json
 /.idea/workspace.xml
 /.idea/libraries
 .DS_Store

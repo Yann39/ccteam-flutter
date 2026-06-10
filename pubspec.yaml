@@ -67,6 +67,10 @@ dependencies:
   # Mocking
   mockito: ^5.5.1
 
+  # Firebase core + Cloud Messaging (push notifications)
+  firebase_core: ^4.10.0
+  firebase_messaging: ^16.3.0
+
   gql: any
   path: any
 
