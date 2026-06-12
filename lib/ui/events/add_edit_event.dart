@@ -109,7 +109,7 @@ class _AddEditEventState extends State<AddEditEvent> {
       context: context,
       initialDate: initialDate,
       firstDate: DateTime(2000, 1, 1),
-      lastDate: DateTime.now(),
+      lastDate: DateTime.now().add(Duration(days: 365))
     );
     if (dateResult == null) return;
 

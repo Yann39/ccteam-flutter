@@ -180,9 +180,7 @@ class _AddEditNewsState extends State<AddEditNews> {
           keyboardType: TextInputType.datetime,
           validator: (val) {
             if (val == null || val.isEmpty) return AppString.newsDateMandatory;
-            // only enforce "must be in the future" rule on creation —
-            // existing news may legitimately have a past date.
-            if (_newsCreationProvider.news.id == null && AppDateUtils.isBeforeNow(val, DATE_FORMAT)) {
+            if (_newsCreationProvider.news.id == null) {
               return AppString.newsDateMustBeFuture;
             }
             return null;
