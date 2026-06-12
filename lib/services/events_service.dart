@@ -466,6 +466,7 @@ class EventsService {
           startDate
           endDate
           track {
+            id
             name
             distance
             lapRecord
@@ -483,6 +484,22 @@ class EventsService {
             name
           }
           price
+          participants {
+            id
+            member {
+              id
+              firstName
+              lastName
+              hasAvatar
+            }
+            bike {
+              id
+              manufacturer
+              modelName
+              engineSize
+              year
+            }
+          }
           createdOn
           createdBy {
             id
