@@ -148,7 +148,7 @@ class MyBikes extends StatelessWidget {
         final bool isCurrent = bike.id == effectiveCurrent.id;
         return InkWell(
           onTap: () {
-            Navigator.pushNamed(context, '/addEditBike', arguments: bike);
+            Navigator.pushNamed(context, '/bikeDetail', arguments: bike);
           },
           child: Container(
             padding: EdgeInsets.all(8.0),

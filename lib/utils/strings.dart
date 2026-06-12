@@ -282,6 +282,10 @@ class AppString {
   static const String bikeEngineSizeMandatory = 'La cylindrée est obligatoire';
   static const String bikeYearMandatory = 'L\'année est obligatoire';
   static const String noBike = 'Aucune moto enregistrée';
+  static const String bikeDetailTitle = 'Détail de la moto';
+  static const String bikeStatusLabel = 'Statut';
+  static const String bikeCurrentLabel = 'Moto courante';
+  static const String bikeChronosTitle = 'Chronos avec cette moto';
   static const String bikeDeletionAreYouSure = 'Etes-vous sûr de vouloir supprimer cette moto ?';
 
   static const String tracksSearchHint = 'Nom du circuit';

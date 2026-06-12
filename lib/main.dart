@@ -60,6 +60,7 @@ import 'package:ccteam/ui/main/notification_settings.dart';
 import 'package:ccteam/ui/members/add_edit_bike.dart';
 import 'package:ccteam/ui/members/add_edit_member.dart';
 import 'package:ccteam/ui/members/add_edit_membership_fee.dart';
+import 'package:ccteam/ui/members/bike_detail.dart';
 import 'package:ccteam/ui/members/member_detail.dart';
 import 'package:ccteam/ui/members/member_events.dart';
 import 'package:ccteam/ui/members/member_list.dart';
@@ -300,6 +301,7 @@ class CCTeamApp extends StatelessWidget {
           '/memberDetail': (context) => MemberDetail(),
           '/myBikes': (context) => MyBikes(),
           '/addEditBike': (context) => AddEditBike(),
+          '/bikeDetail': (context) => const BikeDetail(),
           '/members': (context) => MemberList(),
           '/memberEvents': (context) => MemberEvents(),
           '/selectEventToJoin': (context) => SelectEventToJoin(),

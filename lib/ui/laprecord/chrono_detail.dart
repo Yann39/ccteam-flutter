@@ -439,11 +439,7 @@ class _ChronoDetailState extends State<ChronoDetail> {
                   return FlexibleSpaceBar(
                     title: Text(
                       AppString.recordDetailTitle,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                        shadows: [Shadow(offset: Offset(1.0, 1.0), blurRadius: 3.0, color: Colors.black)],
-                      ),
+                      style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
                     ),
                     background: Stack(
                       alignment: Alignment.center,
