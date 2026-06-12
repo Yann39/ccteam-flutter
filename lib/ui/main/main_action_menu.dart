@@ -59,8 +59,26 @@ class MainActionMenu extends StatelessWidget {
       onSelected: (QuickActions choice) => _handleSelection(context, choice),
       itemBuilder: (BuildContext context) {
         return [
-          PopupMenuItem<QuickActions>(child: Text(AppString.about), value: QuickActions.about),
-          PopupMenuItem<QuickActions>(child: Text(AppString.contact), value: QuickActions.contact),
+          PopupMenuItem<QuickActions>(
+            value: QuickActions.about,
+            child: Row(
+              children: <Widget>[
+                Icon(Icons.info_outline, color: Colors.blue[700], size: 20),
+                const SizedBox(width: 12.0),
+                Text(AppString.about),
+              ],
+            ),
+          ),
+          PopupMenuItem<QuickActions>(
+            value: QuickActions.contact,
+            child: Row(
+              children: <Widget>[
+                Icon(Icons.mail_outline, color: Colors.teal[700], size: 20),
+                const SizedBox(width: 12.0),
+                Text(AppString.contact),
+              ],
+            ),
+          ),
         ];
       },
     );
