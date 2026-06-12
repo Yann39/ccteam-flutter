@@ -104,14 +104,14 @@ class NewsList extends StatelessWidget {
   /// don't need to handle them here.
   Future<void> _refreshAll(BuildContext context, NewsListProvider newsListProvider) async {
     final loginProvider = Provider.of<LoginProvider>(context, listen: false);
-    final memberId = loginProvider.loggedMember?.id;
     await Future.wait<void>(<Future<void>>[
       newsListProvider.fetchNewsList(),
       Provider.of<MemberListProvider>(context, listen: false).fetchMemberList(null),
       Provider.of<EventListProvider>(context, listen: false).fetchEventList(),
       Provider.of<TrackListProvider>(context, listen: false).fetchTracks(),
       loginProvider.refreshLoggedMember(),
-      if (memberId != null) Provider.of<RecordListProvider>(context, listen: false).fetchMemberRecords(memberId),
+      // the home stats read the logged member's own records (myRecords slot)
+      Provider.of<RecordListProvider>(context, listen: false).fetchMyRecords(),
     ]);
   }
 

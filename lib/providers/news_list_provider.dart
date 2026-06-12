@@ -84,8 +84,8 @@ class NewsListProvider extends ChangeNotifier {
   void addNewsInList(News news) {
     _newsList.add(news);
 
-    // re-sort the list by date
-    _newsList.sort((a, b) => a.newsDate!.compareTo(b.newsDate!));
+    // re-sort the list by date, newest first (same order as the server query)
+    _newsList.sort((a, b) => b.newsDate!.compareTo(a.newsDate!));
 
     // flip the loading status back to `loaded` since the list is no longer empty
     _loadingStatus = LoadingStatus.loaded;
