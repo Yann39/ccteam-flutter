@@ -17,6 +17,8 @@
  * along with CCTeam. If not, see <http://www.gnu.org/licenses/>.
  */
 
+// prefixed import: the package exposes an Event class that clashes with our Event model
+import 'package:add_2_calendar/add_2_calendar.dart' as add_2_calendar;
 import 'package:ccteam/models/bike.dart';
 import 'package:ccteam/models/event.dart';
 import 'package:ccteam/models/event_member.dart';
@@ -27,9 +29,11 @@ import 'package:ccteam/providers/event_detail_provider.dart';
 import 'package:ccteam/providers/event_list_provider.dart';
 import 'package:ccteam/providers/login_provider.dart';
 import 'package:ccteam/providers/member_detail_provider.dart';
+import 'package:ccteam/providers/message_provider.dart';
 import 'package:ccteam/providers/track_detail_provider.dart';
 import 'package:ccteam/utils/custom_decorations.dart';
 import 'package:ccteam/utils/custom_icons.dart';
+import 'package:ccteam/utils/enums.dart';
 import 'package:ccteam/utils/string_utils.dart';
 import 'package:ccteam/utils/strings.dart';
 import 'package:ccteam/utils/track_utils.dart';
@@ -59,6 +63,31 @@ class EventDetail extends StatelessWidget {
 
     // navigate to the event creation form screen
     Navigator.pushNamed(context, '/addEditEvent');
+  }
+
+  /// Open the system "new calendar event" screen pre-filled with the
+  /// specified [event] data. The user picks their calendar (Google,
+  /// Outlook, local…) and saves from there, the insertion is done by
+  /// the calendar application itself, so no calendar permission is
+  /// needed on our side.
+  void _addToCalendar(BuildContext context, Event event) {
+    final add_2_calendar.Event calendarEvent = add_2_calendar.Event(
+      title: event.title ?? '',
+      // the description can contain HTML for rich formatting, strip the tags so the calendar gets plain text
+      description: (event.description ?? '').replaceAll(RegExp(r'<[^>]*>'), ' ').trim(),
+      location: event.track?.name ?? '',
+      startDate: event.startDate ?? DateTime.now(),
+      endDate: event.endDate ?? event.startDate ?? DateTime.now(),
+    );
+    add_2_calendar.Add2Calendar.addEvent2Cal(calendarEvent).then((bool success) {
+      // only failures need feedback (no calendar application available), on success the calendar UI itself is the feedback
+      if (!success && context.mounted) {
+        Provider.of<MessageProvider>(
+          context,
+          listen: false,
+        ).setMessage(AppString.eventAddToCalendarFailed, MessageType.ERROR);
+      }
+    });
   }
 
   /// Navigate to the detail screen of the event's track. The [track]
@@ -496,6 +525,12 @@ class EventDetail extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         actions: <Widget>[
+          // available to everyone, the event is inserted by the user's own calendar app
+          IconButton(
+            tooltip: AppString.eventAddToCalendar,
+            icon: Icon(Icons.calendar_month),
+            onPressed: () => _addToCalendar(context, _eventDetailProvider.currentEvent),
+          ),
           if (_loginProvider.isAdmin)
             Builder(
               builder: (context) => IconButton(

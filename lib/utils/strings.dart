@@ -365,6 +365,8 @@ class AppString {
   static const String eventEndDateMandatory = 'La date de fin est obligatoire';
   static const String eventDateNotValid = 'La date indiquée n\'est pas valide';
   static const String eventDetailScreenTitle = 'Roulage';
+  static const String eventAddToCalendar = 'Ajouter au calendrier';
+  static const String eventAddToCalendarFailed = 'Impossible d\'ouvrir le calendrier';
   static const String eventsNotFound = 'Aucun événement trouvé';
   static const String eventsNotFoundForYear = 'Aucun événement trouvé pour cette année';
   static const String eventsNotFoundForDate = 'Aucun événement trouvé pour cette date';

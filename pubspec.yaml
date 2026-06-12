@@ -71,6 +71,9 @@ dependencies:
   firebase_core: ^4.10.0
   firebase_messaging: ^16.3.0
 
+  # Open the system calendar "new event" screen pre-filled ("add to calendar")
+  add_2_calendar: ^3.1.0
+
   gql: any
   path: any
 
