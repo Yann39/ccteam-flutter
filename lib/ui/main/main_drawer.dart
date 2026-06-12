@@ -146,6 +146,7 @@ class MainDrawer extends StatelessWidget {
                     title: Text(AppString.notifications, style: TextStyle(color: Colors.black)),
                     onTap: () {
                       Navigator.pop(context);
+                      Navigator.pushNamed(context, '/notificationSettings');
                     },
                   ),
                   ListTile(

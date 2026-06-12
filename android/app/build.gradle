@@ -3,6 +3,15 @@ plugins {
     id "dev.flutter.flutter-gradle-plugin"
 }
 
+// Firebase (push notifications). Applied only when the configuration file
+// downloaded from the Firebase console is present, so the project still
+// builds on a machine without it (Firebase is then disabled at runtime).
+if (file('google-services.json').exists()) {
+    apply plugin: 'com.google.gms.google-services'
+} else {
+    logger.warn("google-services.json not found in android/app, Firebase (push notifications) will be disabled in this build")
+}
+
 def localProperties = new Properties()
 def localPropertiesFile = rootProject.file('local.properties')
 if (localPropertiesFile.exists()) {

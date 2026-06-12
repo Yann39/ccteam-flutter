@@ -548,8 +548,7 @@ class AppString {
   static const String accountActions = 'Actions';
   static const String membershipStatus = 'Statut de la cotisation';
 
-  // Banner shown to ROLE_USER members (not yet promoted to ROLE_MEMBER)
-  // on the "Mon compte" hub.
+  // Banner shown to ROLE_USER members (not yet promoted to ROLE_MEMBER) on the "My account" hub.
   static const String accountPendingTitle = 'Adhésion en attente de validation';
   static const String accountPendingMessage =
       'Votre compte a été créé avec succès. Pour accéder à toutes les fonctionnalités du club (inscription aux roulages, gestion de vos motos, chronos…), un administrateur doit valider votre adhésion.';
@@ -578,14 +577,30 @@ class AppString {
   static const String noRegisteredEvent = 'Vous n\'êtes inscrit à aucun roulage';
   static const String tapPlusToJoinEvent = 'Touchez le bouton + pour vous inscrire à un roulage';
 
-  // Help banners shown at the top of "Mes …" personal pages
+  // Help banners shown at the top of "My …" personal pages
   static const String myEventsHelp =
       'Retrouvez ici les roulages auxquels vous êtes inscrit. Touchez le bouton + pour vous inscrire à un nouveau roulage.';
   static const String myBikesHelp =
       'Retrouvez ici votre collection de motos. Touchez l\'étoile pour définir votre moto courante, ou le bouton + pour en ajouter une nouvelle.';
   static const String myChronosHelp =
       'Retrouvez ici vos meilleurs temps au tour, par circuit. Touchez le bouton + pour enregistrer un nouveau chrono.';
+
+  // Push notifications
   static const String notifications = 'Notifications';
+  static const String notificationsHelp =
+      'Choisissez les notifications que vous souhaitez recevoir sur cet appareil.';
+  static const String notificationsNewsLabel = 'Actualités';
+  static const String notificationsNewsSubtitle = 'Recevoir une notification à chaque nouvelle actualité';
+  static const String notificationsEventsLabel = 'Rappels d\'événement';
+  static const String notificationsEventsSubtitle =
+      'Recevoir un rappel avant chaque événement auquel vous êtes inscrit';
+  static const String notificationsEventDelaysLabel = 'Quand recevoir les rappels ?';
+  static const String notificationsOffset1h = 'Une heure avant';
+  static const String notificationsOffset12h = '12 heures avant';
+  static const String notificationsOffset1d = 'Un jour avant';
+  static const String notificationsOffset2d = 'Deux jours avant';
+  static const String notificationsOffset1w = 'Une semaine avant';
+
   static const String preferences = 'Préférences';
   static const String disconnect = 'Déconnexion';
   static const String news = 'Actualités';
