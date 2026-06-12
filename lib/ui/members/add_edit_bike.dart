@@ -69,7 +69,6 @@ class _AddEditBikeState extends State<AddEditBike> {
       title: _isEditing ? AppString.bikeEdit : AppString.bikeCreate,
       formKey: _formKey,
       onSave: _submit,
-      onDelete: _isEditing ? _deleteBike : null,
       fields: <Widget>[_buildManufacturerField(), _buildModelNameField(), _buildEngineSizeField(), _buildYearField()],
     );
   }
@@ -159,44 +158,4 @@ class _AddEditBikeState extends State<AddEditBike> {
     }
   }
 
-  void _deleteBike() {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text(AppString.confirmation),
-          // also warn that the bike will also be dereferenced from any participation
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
-              Text(AppString.bikeDeletionAreYouSure),
-              const SizedBox(height: 12.0),
-              Text(
-                AppString.bikeDeleteWarning,
-                style: TextStyle(
-                  fontSize: 13.0,
-                  fontStyle: FontStyle.italic,
-                  color: Colors.black.withAlpha(160),
-                  height: 1.35,
-                ),
-              ),
-            ],
-          ),
-          actions: <Widget>[
-            TextButton(child: Text(AppString.cancel), onPressed: () => Navigator.of(context).pop()),
-            TextButton(
-              child: Text(AppString.confirm),
-              onPressed: () {
-                Navigator.of(context).pop(); // close the dialog
-                _bikeListProvider.deleteBike(_bike).then((value) {
-                  Navigator.of(context).pop(); // close the page
-                });
-              },
-            ),
-          ],
-        );
-      },
-    );
-  }
 }
