@@ -2,7 +2,7 @@ name: ccteam
 description: Flutter application for CCTeam moto club
 
 # Android build used in android/app/build.gradle (drives the Play Store + Android system settings)
-version: 1.0.2+7
+version: 1.1.0+8
 
 environment:
   sdk: ^3.11.0
@@ -71,7 +71,7 @@ dependencies:
   firebase_core: ^4.10.0
   firebase_messaging: ^16.3.0
 
-  # Open the system calendar "new event" screen pre-filled ("add to calendar")
+  # Open the system calendar ("add to calendar")
   add_2_calendar: ^3.1.0
 
   gql: any
