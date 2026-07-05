@@ -577,7 +577,7 @@ class _ChronoDetailState extends State<ChronoDetail> {
                               value: conditionLabel,
                             ),
                           ],
-                          if (record.comments != null) ...[
+                          if (record.comments != null && record.comments!.trim().isNotEmpty) ...[
                             _divider(),
                             _detailRow(
                               icon: TrackUtils.trackConditionIconData(record.comments) ?? Icons.comment,
