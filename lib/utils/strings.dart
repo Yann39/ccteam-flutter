@@ -610,6 +610,10 @@ class AppString {
   static const String notifications = 'Notifications';
   static const String notificationsHelp =
       'Choisissez les notifications que vous souhaitez recevoir sur cet appareil.';
+  static const String notificationsPermissionDeniedTitle = 'Notifications désactivées';
+  static const String notificationsPermissionDeniedMessage =
+      'Les notifications sont désactivées pour l\'application. Activez-les pour recevoir les actualités et les rappels d\'événement, même lorsque vos préférences ci-dessous sont activées.';
+  static const String notificationsPermissionEnableButton = 'Activer les notifications';
   static const String notificationsNewsLabel = 'Actualités';
   static const String notificationsNewsSubtitle = 'Recevoir une notification à chaque nouvelle actualité';
   static const String notificationsEventsLabel = 'Rappels d\'événement';
