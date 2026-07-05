@@ -922,7 +922,8 @@ class _TrackDetailState extends State<TrackDetail> {
                           track != null ? (track.name ?? "") : "",
                           style: TextStyle(
                             color: Colors.white,
-                            fontWeight: FontWeight.bold,
+                            fontSize: 24.0 - t * 6.0,
+                            fontWeight: FontWeight.lerp(FontWeight.bold, FontWeight.normal, t),
                             shadows: t < 0.5
                                 ? const [Shadow(offset: Offset(1.0, 1.0), blurRadius: 3.0, color: Colors.black)]
                                 : null,

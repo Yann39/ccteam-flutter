@@ -802,7 +802,11 @@ class MemberDetail extends StatelessWidget {
                               children: <Widget>[
                                 Text(
                                   "${_memberDetailProvider.currentMember!.firstName} ${_memberDetailProvider.currentMember!.lastName}",
-                                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 24.0 - t * 6.0,
+                                    fontWeight: FontWeight.lerp(FontWeight.bold, FontWeight.normal, t),
+                                  ),
                                 ),
                                 if (_memberDetailProvider.currentMember!.riderNumber != null)
                                   ClipRect(

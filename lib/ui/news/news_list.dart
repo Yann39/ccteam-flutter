@@ -62,13 +62,11 @@ class NewsList extends StatelessWidget {
         );
   }
 
-  /// Section label above the news feed. Same visual style as the
-  /// "Actions" / "Statistiques" labels on the "Mon compte" page: a
-  /// small icon + tight uppercase-ish label, left-aligned, grey.
-  /// The previous large centered "ACTUALITÉS" with its underline
-  /// rule competed visually with the stats panel above and the
-  /// news cards below; this slimmer version reads as a discreet
-  /// section divider instead.
+  /// Section label above the news feed. Same visual style as the "Actions" / "Statistiques" labels
+  /// on the "Mon compte" page: a small icon + tight uppercase-ish label, left-aligned, grey.
+  /// The previous large centered "ACTUALITÉS" with its underline rule competed visually with the
+  /// stats panel above and the news cards below; this slimmer version reads as a discreet section
+  /// divider instead.
   Widget _buildNewsSectionHeader() {
     return Padding(
       padding: const EdgeInsets.fromLTRB(16.0, 14.0, 16.0, 6.0),
@@ -91,17 +89,14 @@ class NewsList extends StatelessWidget {
   }
 
   /// Pull-to-refresh handler for the whole home screen. Re-fetches:
-  ///  - the news feed (the obvious one — the user is pulling on it)
+  ///  - the news feed (the obvious one, the user is pulling on it)
   ///  - the members / events / tracks lists used by the "Le club" stats
-  ///  - the logged member (cascades to "Moi" stats: my events, bikes,
-  ///    membership fee, next ride)
-  ///  - the member's records (so the estimated-km figure recomputes
-  ///    with any newly added chrono)
+  ///  - the logged member (cascades to "Moi" stats: my events, bikes, membership fee, next ride)
+  ///  - the member's records (so the estimated-km figure recomputes with any newly added chrono)
   ///
-  /// Everything runs in parallel — the spinner stays only as long as
-  /// the slowest call. Errors on individual fetches are already
-  /// surfaced by each provider (snackbar / message-provider), so we
-  /// don't need to handle them here.
+  /// Everything runs in parallel, the spinner stays only as long as the slowest call.
+  /// Errors on individual fetches are already surfaced by each provider (snackbar / message-provider),
+  /// so we don't need to handle them here.
   Future<void> _refreshAll(BuildContext context, NewsListProvider newsListProvider) async {
     final loginProvider = Provider.of<LoginProvider>(context, listen: false);
     await Future.wait<void>(<Future<void>>[
