@@ -438,6 +438,17 @@ class AppString {
   static const String recordVisibilityPrivate = 'Chrono privé';
   static const String recordVisibilityPrivateInfo = 'Visible uniquement par vous, dans « Mes chronos »';
 
+  // "Mes chronos" filter (by track / bike / weather)
+  static const String chronoFilterTooltip = 'Filtrer les chronos';
+  static const String chronoFilterTitle = 'Filtrer les chronos';
+  static const String chronoFilterTrackSection = 'Circuit';
+  static const String chronoFilterBikeSection = 'Moto';
+  static const String chronoFilterWeatherSection = 'Météo';
+  static const String chronoFilterAll = 'Tous';
+  static const String chronoFilterReset = 'Réinitialiser';
+  static const String chronoFilterNoMatch = 'Aucun chrono ne correspond au filtre sélectionné';
+  static const String chronoFilterClear = 'Effacer les filtres';
+
   // Membership fees
   static const String membershipFeeCreate = 'Ajouter une cotisation';
   static const String membershipFeeEdit = 'Modifier la cotisation';
