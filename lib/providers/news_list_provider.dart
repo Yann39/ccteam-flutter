@@ -70,9 +70,9 @@ class NewsListProvider extends ChangeNotifier {
     // interceptor isn't necessarily wired up — so any constructor-time
     // failure (auth missing, etc.) used to leave the list stuck at
     // `notLoaded` forever. Mirrors what [MemberListProvider] already does
-    if (_loginProvider.isMember && _loadingStatus == LoadingStatus.notLoaded) {
+    if (_loginProvider.canView && _loadingStatus == LoadingStatus.notLoaded) {
       fetchNewsList();
-    } else if (!_loginProvider.isMember) {
+    } else if (!_loginProvider.canView) {
       // clear the list on logout so the next user doesn't see stale data
       _newsList = [];
       _loadingStatus = LoadingStatus.notLoaded;

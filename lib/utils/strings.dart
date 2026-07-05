@@ -257,6 +257,7 @@ class AppString {
   static const String memberRegistrationDateNotValid = 'La date indiquée n\'est pas valide';
   static const String memberRole = 'Rôle';
   static const String memberRoleUser = 'Utilisateur';
+  static const String memberRoleGuest = 'Membre invité';
   static const String memberRoleMember = 'Membre';
   static const String memberRoleAdmin = 'Administrateur';
   static const String memberPasswordMandatory = 'Le mot de passe est obligatoire';
@@ -558,6 +559,9 @@ class AppString {
   static const String accountPendingTitle = 'Adhésion en attente de validation';
   static const String accountPendingMessage =
       'Votre compte a été créé avec succès. Pour accéder à toutes les fonctionnalités du club (inscription aux roulages, gestion de vos motos, chronos…), un administrateur doit valider votre adhésion.';
+  static const String accountGuestTitle = 'Compte invité';
+  static const String accountGuestMessage =
+      'Vous avez un accès invité : vous pouvez consulter toute l\'activité du club, mais pas vous inscrire aux roulages ni enregistrer de motos ou de chronos. Vous pouvez modifier votre profil à tout moment.';
   static const String membershipPaidYear = 'Cotisation {0} payée';
   static const String membershipUnpaidYear = 'Cotisation {0} non payée';
   static const String membershipNoneYear = 'Aucune cotisation enregistrée pour {0}';

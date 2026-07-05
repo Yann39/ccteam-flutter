@@ -306,6 +306,53 @@ class _MyAccountState extends State<MyAccount> {
     );
   }
 
+  /// Read-only notice for guest accounts (blue/info style), mirroring the
+  /// pending-validation banner. A guest sees all club content but can't
+  /// participate and doesn't pay a membership fee.
+  Widget _buildGuestBanner() {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 12.0),
+      padding: const EdgeInsets.all(12.0),
+      decoration: BoxDecoration(
+        border: Border.all(color: Colors.blue[300]!, width: 1.0),
+        borderRadius: BorderRadius.circular(8.0),
+        color: Colors.blue[50],
+        boxShadow: [
+          BoxShadow(color: Colors.black.withAlpha(25), spreadRadius: 0.5, blurRadius: 0.5, offset: const Offset(2, 2)),
+        ],
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(shape: BoxShape.circle, color: Colors.blue[700]!.withValues(alpha: 0.15)),
+            child: Icon(Icons.visibility, color: Colors.blue[700], size: 22.0),
+          ),
+          const SizedBox(width: 12.0),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: <Widget>[
+                Text(
+                  AppString.accountGuestTitle,
+                  style: TextStyle(color: Colors.blue[900], fontWeight: FontWeight.bold, fontSize: 14.0, height: 1.2),
+                ),
+                const SizedBox(height: 4.0),
+                Text(
+                  AppString.accountGuestMessage,
+                  style: TextStyle(color: Colors.black.withAlpha(180), fontSize: 12.5, height: 1.35),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   /// Card that summarises the current year's membership fee.
   /// Three visual variants: paid (green), unpaid (orange), missing (grey).
   Widget _buildMembershipCard(Member member) {
@@ -810,10 +857,12 @@ class _MyAccountState extends State<MyAccount> {
                 children: <Widget>[
                   _buildHeader(context, member),
                   const SizedBox(height: 16.0),
-                  // pending-validation notice for ROLE_USER accounts
-                  if (!loginProvider.isMember) ...[_buildPendingValidationBanner(), const SizedBox(height: 16.0)],
-                  _buildMembershipCard(member),
-                  const SizedBox(height: 20.0),
+                  // pending-validation notice, only for ROLE_USER accounts awaiting approval
+                  if (loginProvider.isPending) ...[_buildPendingValidationBanner(), const SizedBox(height: 16.0)],
+                  // guest accounts: read-only notice (no membership fee, no participation)
+                  if (loginProvider.isGuest) ...[_buildGuestBanner(), const SizedBox(height: 16.0)],
+                  // membership fee card only concerns paying members
+                  if (loginProvider.isMember) ...[_buildMembershipCard(member), const SizedBox(height: 20.0)],
                   _buildSectionLabel(Icons.tune, AppString.accountActions),
                   _buildActionsSection(context, member),
                   // stats are hidden for non-members

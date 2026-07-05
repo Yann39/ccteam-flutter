@@ -97,10 +97,10 @@ class EventListProvider extends ChangeNotifier {
   void updateLoginProvider(LoginProvider loginProvider) {
     _loginProvider = loginProvider;
 
-    if (_loginProvider.isMember && _loadingStatus == LoadingStatus.notLoaded) {
-      // member just authenticated (or recovered from a failed earlier fetch), replay the query
+    if (_loginProvider.canView && _loadingStatus == LoadingStatus.notLoaded) {
+      // member/guest just authenticated (or recovered from a failed earlier fetch), replay the query
       refreshCurrentFilter();
-    } else if (!_loginProvider.isMember) {
+    } else if (!_loginProvider.canView) {
       // logout or downgrade — clear cached data so the next user doesn't inherit the previous one's events
       _allEvents = [];
       _yearEvents = [];

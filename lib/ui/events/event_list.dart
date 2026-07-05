@@ -226,7 +226,7 @@ class _EventListState extends State<EventList> {
         ],
       ),
       drawer: MainDrawer(),
-      body: !_loginProvider.isMember
+      body: !_loginProvider.canView
           ? Container(decoration: CustomDecorations.mainContent, child: RestrictedContent())
           : Container(
               decoration: CustomDecorations.mainContent,

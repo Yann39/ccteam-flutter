@@ -250,7 +250,7 @@ class MemberList extends StatelessWidget {
         ],
       ),
       drawer: MainDrawer(),
-      body: !_loginProvider.isMember
+      body: !_loginProvider.canView
           ? Container(decoration: CustomDecorations.mainContent, child: RestrictedContent())
           : Container(
               decoration: CustomDecorations.mainContent,

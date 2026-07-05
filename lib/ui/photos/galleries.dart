@@ -42,7 +42,7 @@ class Galleries extends StatelessWidget {
       ),
       drawer: MainDrawer(),
       body:
-          !_loginProvider.isMember
+          !_loginProvider.canView
               ? Container(
                 decoration: CustomDecorations.mainContent,
                 child: RestrictedContent(),

@@ -65,11 +65,11 @@ class MemberListProvider extends ChangeNotifier {
   void updateLoginProvider(LoginProvider loginProvider) {
     _loginProvider = loginProvider;
 
-    if (_loginProvider.isMember && _loadingStatus == LoadingStatus.notLoaded) {
-      // fetch members once the login provider is injected and user is a member
+    if (_loginProvider.canView && _loadingStatus == LoadingStatus.notLoaded) {
+      // fetch members once the login provider is injected and user can view content (member, admin or guest)
       fetchMemberList(null);
-    } else if (!_loginProvider.isMember) {
-      // clear the list if the user is not a member (e.g. logged out)
+    } else if (!_loginProvider.canView) {
+      // clear the list if the user can no longer view content (e.g. logged out)
       _memberList = [];
       _loadingStatus = LoadingStatus.notLoaded;
     }
@@ -126,9 +126,9 @@ class MemberListProvider extends ChangeNotifier {
 
   /// Fetch the list of all members according to the specified [text] filter.
   Future<void> fetchMemberList(String? text) async {
-    // guard against unauthorized access
-    if (!_loginProvider.isMember) {
-      _log.info("User not member, skipping member list fetch");
+    // guard against unauthorized access (members, admins and guests may view)
+    if (!_loginProvider.canView) {
+      _log.info("User cannot view content, skipping member list fetch");
       _memberList = [];
       _updateLoadingStatus(LoadingStatus.empty);
       return;

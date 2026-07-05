@@ -321,6 +321,9 @@ class _AddEditMemberState extends State<AddEditMember> {
           case MemberRole.ROLE_USER:
             label = AppString.memberRoleUser;
             break;
+          case MemberRole.ROLE_GUEST:
+            label = AppString.memberRoleGuest;
+            break;
           case MemberRole.ROLE_MEMBER:
             label = AppString.memberRoleMember;
             break;

@@ -126,6 +126,22 @@ class LoginProvider extends ChangeNotifier {
 
   bool get isAdmin => _loggedMember?.role == MemberRole.ROLE_ADMIN;
 
+  /// Guest member ([MemberRole.ROLE_GUEST]): can see all club content in
+  /// read-only, doesn't pay a membership fee and can't participate (no event
+  /// registration, no bikes/chronos). Distinct from [ROLE_USER] which is the
+  /// default pending-validation role that sees nothing.
+  bool get isGuest => _loggedMember?.role == MemberRole.ROLE_GUEST;
+
+  /// Whether the logged user may VIEW club content (events, members, tracks,
+  /// news, chronos…). True for members, admins and guests. Use this to gate
+  /// read-only content, keep [isMember] for the actions a guest must not do
+  /// (registering to events, adding bikes/chronos, liking news).
+  bool get canView => isMember || isGuest;
+
+  /// Whether the logged user is still awaiting validation ([ROLE_USER]):
+  /// authenticated but neither member nor guest, so they see no content yet.
+  bool get isPending => _loggedMember?.role == MemberRole.ROLE_USER;
+
   String? get loginPassCode => _loginPassCode;
 
   String? get firstPassCode => _firstPassCode;

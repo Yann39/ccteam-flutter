@@ -44,7 +44,7 @@ class Gallery extends StatelessWidget {
         actions: <Widget>[MainActionMenu()],
       ),
       body:
-          !_loginProvider.isMember
+          !_loginProvider.canView
               ? Container(
                 decoration: CustomDecorations.mainContent,
                 child: RestrictedContent(),

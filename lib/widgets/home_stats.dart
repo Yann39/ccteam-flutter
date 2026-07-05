@@ -153,7 +153,7 @@ class HomeStats extends StatelessWidget {
                 Expanded(
                   child: _GroupCard(
                     title: AppString.statsProfile,
-                    headerTrailing: _FeeStatusPill(paid: feePaid),
+                    headerTrailing: loginProvider.isMember ? _FeeStatusPill(paid: feePaid) : null,
                     onHeaderTap: () => _navigateToMyAccount(context),
                     rows: <_GroupCardRow>[
                       _GroupCardRow(

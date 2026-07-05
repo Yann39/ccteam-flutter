@@ -1143,7 +1143,7 @@ class _TrackDetailState extends State<TrackDetail> {
                               ],
                             ),
                             SizedBox(height: 10),
-                            _loginProvider.isMember
+                            _loginProvider.canView
                                 ? _eventsTable(_eventDetailProvider)
                                 : _buildMembersOnlyPlaceholder(),
                             SizedBox(height: 10),
@@ -1168,7 +1168,7 @@ class _TrackDetailState extends State<TrackDetail> {
                               ],
                             ),
                             SizedBox(height: 10),
-                            _loginProvider.isMember
+                            _loginProvider.canView
                                 ? _recordsTable(_recordListProvider)
                                 : _buildMembersOnlyPlaceholder(),
                           ],

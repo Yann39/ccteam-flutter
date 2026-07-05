@@ -19,7 +19,7 @@
 
 enum AuthStatus { Initializing, Unauthenticated, Authenticating, Authenticated }
 
-enum MemberRole { ROLE_USER, ROLE_MEMBER, ROLE_ADMIN }
+enum MemberRole { ROLE_USER, ROLE_GUEST, ROLE_MEMBER, ROLE_ADMIN }
 
 /// Position held by a member in the club's executive board (orthogonal to
 /// the security [MemberRole]). At most one member holds each role at a

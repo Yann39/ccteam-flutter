@@ -106,8 +106,8 @@ class MainDrawer extends StatelessWidget {
                       Navigator.pushNamed(context, '/myAccount');
                     },
                   ),
-                  Divider(color: Colors.white60),
-                  ListTile(
+                  if (_loginProvider.isMember) Divider(color: Colors.white60),
+                  if (_loginProvider.isMember) ListTile(
                     leading: Icon(Icons.event, color: Colors.purple[600]),
                     trailing: Icon(Icons.arrow_right, color: Colors.black),
                     title: Text(AppString.myTrackEvents, style: TextStyle(color: Colors.black)),
@@ -116,7 +116,7 @@ class MainDrawer extends StatelessWidget {
                       Navigator.pushNamed(context, '/memberEvents', arguments: _loginProvider.loggedMember);
                     },
                   ),
-                  ListTile(
+                  if (_loginProvider.isMember) ListTile(
                     leading: Icon(Icons.timer, color: Colors.orange[800]),
                     trailing: Icon(Icons.arrow_right, color: Colors.black),
                     title: Text(AppString.myChronos, style: TextStyle(color: Colors.black)),
@@ -130,7 +130,7 @@ class MainDrawer extends StatelessWidget {
                       Navigator.pushNamed(context, '/memberChronos');
                     },
                   ),
-                  ListTile(
+                  if (_loginProvider.isMember) ListTile(
                     leading: Icon(CustomIcons.motorbike_plain, color: Colors.blue[900]),
                     trailing: Icon(Icons.arrow_right, color: Colors.black),
                     title: Text(AppString.myBikes, style: TextStyle(color: Colors.black)),
@@ -140,7 +140,7 @@ class MainDrawer extends StatelessWidget {
                     },
                   ),
                   Divider(),
-                  ListTile(
+                  if (_loginProvider.isMember) ListTile(
                     leading: Icon(Icons.notifications, color: Colors.blue[700]),
                     trailing: Icon(Icons.arrow_right, color: Colors.black),
                     title: Text(AppString.notifications, style: TextStyle(color: Colors.black)),

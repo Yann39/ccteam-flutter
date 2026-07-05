@@ -70,11 +70,11 @@ class RecordListProvider extends ChangeNotifier {
   /// NewsListProvider / MemberListProvider.
   void updateLoginProvider(LoginProvider loginProvider) {
     _loginProvider = loginProvider;
-    if (_loginProvider.isMember &&
+    if (_loginProvider.canView &&
         _loginProvider.loggedMember?.id != null &&
         _loadingStatus == LoadingStatus.notLoaded) {
       fetchMyRecords();
-    } else if (!_loginProvider.isMember) {
+    } else if (!_loginProvider.canView) {
       // clear the cached records on logout so the next user doesn't
       // see stale data
       _memberRecords = [];
@@ -86,9 +86,9 @@ class RecordListProvider extends ChangeNotifier {
 
   /// Get the list of all records for the specified [trackId]
   void fetchTrackRecords(int trackId) async {
-    // guard against unauthorized access
-    if (!_loginProvider.isMember) {
-      _log.info("User not member, skipping track records fetch");
+    // guard against unauthorized access (members, admins and guests may view)
+    if (!_loginProvider.canView) {
+      _log.info("User cannot view content, skipping track records fetch");
       _trackRecords = [];
       _updateStatus(LoadingStatus.loaded);
       return;
@@ -152,9 +152,9 @@ class RecordListProvider extends ChangeNotifier {
 
   /// Get the list of all records (public and private) of the logged member.
   Future<void> fetchMyRecords() async {
-    // guard against unauthorized access
-    if (!_loginProvider.isMember) {
-      _log.info("User not member, skipping my records fetch");
+    // guard against unauthorized access (a guest simply has none, the query returns empty)
+    if (!_loginProvider.canView) {
+      _log.info("User cannot view content, skipping my records fetch");
       _myRecords = [];
       _updateStatus(LoadingStatus.loaded);
       return;
@@ -176,9 +176,9 @@ class RecordListProvider extends ChangeNotifier {
 
   /// Get the list of all public records for the specified [memberId]
   Future<void> fetchMemberRecords(int memberId) async {
-    // guard against unauthorized access
-    if (!_loginProvider.isMember) {
-      _log.info("User not member, skipping member records fetch");
+    // guard against unauthorized access (members, admins and guests may view)
+    if (!_loginProvider.canView) {
+      _log.info("User cannot view content, skipping member records fetch");
       _memberRecords = [];
       _updateStatus(LoadingStatus.loaded);
       return;

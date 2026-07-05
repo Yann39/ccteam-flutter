@@ -637,7 +637,7 @@ class MemberDetail extends StatelessWidget {
     final LoginProvider _loginProvider = Provider.of<LoginProvider>(context, listen: false);
     final bool _isAdmin = _loginProvider.loggedMember?.role == MemberRole.ROLE_ADMIN;
     final bool _isOwnProfile = _memberDetailProvider.currentMember?.id == _loginProvider.loggedMember?.id;
-    final bool _canView = _loginProvider.isMember || _isOwnProfile;
+    final bool _canView = _loginProvider.canView || _isOwnProfile;
 
     // if currentMember is null (e.g. after session expiration), don't render content
     if (_memberDetailProvider.currentMember == null) {
