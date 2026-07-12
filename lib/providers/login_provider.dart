@@ -25,6 +25,7 @@ import 'package:ccteam/models/member.dart';
 import 'package:ccteam/providers/message_provider.dart';
 import 'package:ccteam/services/members_service.dart';
 import 'package:ccteam/utils/custom_graphql_exception.dart';
+import 'package:ccteam/utils/device_identity.dart';
 import 'package:ccteam/utils/enums.dart';
 import 'package:ccteam/utils/graphql_connection.dart';
 import 'package:ccteam/utils/navigator_key.dart';
@@ -73,6 +74,16 @@ class LoginProvider extends ChangeNotifier {
 
   // current JWT token
   String? _jwtToken;
+
+  // device binding: when a passcode login succeeds from an unrecognized
+  // device, the server asks for an e-mail OTP. While that step is active,
+  // [_deviceVerification] is true (so the shared OTP screen validates the
+  // device instead of confirming a registration), [_deviceVerifyEmail] holds
+  // the e-mail being verified, and [_pendingPasscode] holds the passcode to
+  // replay once the device is trusted.
+  bool _deviceVerification = false;
+  String? _deviceVerifyEmail;
+  String? _pendingPasscode;
 
   // passcode rate-limit lockout state. Populated after a 423 response
   // from the authenticate endpoint; cleared on success or once the
@@ -149,6 +160,10 @@ class LoginProvider extends ChangeNotifier {
   String? get secondPassCode => _secondPassCode;
 
   String? get jwtToken => _jwtToken;
+
+  /// Whether the current OTP step is a device verification (new device) rather
+  /// than a registration e-mail confirmation. Drives the shared OTP screen.
+  bool get isDeviceVerification => _deviceVerification;
 
   /// Wall-clock time when the current lockout expires. `null` if the
   /// account is not locked. Compare against [DateTime.now] to know
@@ -231,6 +246,14 @@ class LoginProvider extends ChangeNotifier {
 
   /// Change the login status so that it goes back to the previous login step.
   void goToPreviousLoginStep() {
+    // in device-verification mode the OTP step comes after the passcode, so
+    // "back" returns there (and cancels the device verification)
+    if (_deviceVerification && _loginStatus == LoginStatus.OtpStep) {
+      _deviceVerification = false;
+      _pendingPasscode = null;
+      _setLoginStatus(LoginStatus.PasscodeStep);
+      return;
+    }
     switch (_loginStatus) {
       case LoginStatus.EmailStep:
         _loginStatus = LoginStatus.EmailStep;
@@ -314,6 +337,9 @@ class LoginProvider extends ChangeNotifier {
             );
             _loggedMember = value;
             _setAuthStatus(AuthStatus.Authenticated);
+            // this device already holds a valid session → grandfather it as a
+            // trusted device so device binding doesn't force an OTP on it later
+            _ensureCurrentDeviceTrusted();
           },
           onError: (error) {
             _log.info(
@@ -782,6 +808,9 @@ class LoginProvider extends ChangeNotifier {
     _setAuthStatus(AuthStatus.Authenticating);
     _setLoginStatus(LoginStatus.Loading);
 
+    // keep the passcode so we can replay the login after a device verification
+    _pendingPasscode = passcode;
+
     // get email from shared preferences if present
     String? email;
     final SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -795,10 +824,14 @@ class LoginProvider extends ChangeNotifier {
       email = _email;
     }
 
+    // device-binding secret sent along the passcode so the server can tell
+    // whether this device is already trusted
+    final String deviceSecret = await DeviceIdentity.getOrCreateSecret();
+
     _log.info("Logging in user $email");
 
     await _membersService
-        .authenticate(email!, passcode)
+        .authenticate(email!, passcode, deviceSecret)
         .timeout(Duration(seconds: 10))
         .then(
           (response) async {
@@ -854,8 +887,15 @@ class LoginProvider extends ChangeNotifier {
                       // any pending auto-unlock timer so we don't
                       // leak it across logins.
                       clearPasscodeLockout();
+                      // device binding done for this login, clear transient state
+                      _deviceVerification = false;
+                      _pendingPasscode = null;
                       _setAuthStatus(AuthStatus.Authenticated);
                       _setLoginStatus(LoginStatus.EmailStep);
+                      // make sure this device is registered as trusted (grandfathers
+                      // an already-authenticated device, and enrolls a member's first
+                      // device after registration). Best-effort, never blocks login.
+                      _ensureCurrentDeviceTrusted();
                     },
                     onError: (error) {
                       _log.info(
@@ -959,6 +999,22 @@ class LoginProvider extends ChangeNotifier {
                 );
               }
             }
+            // device verification required: the passcode is correct, but this
+            // device is not trusted yet. Switch to the OTP screen (device mode)
+            // and send a code so the user can enroll this device.
+            else if (response.statusCode == 428) {
+              _log.info("Device not trusted for $email, e-mail verification required");
+              _email = email;
+              _deviceVerifyEmail = email;
+              _deviceVerification = true;
+              _setAuthStatus(AuthStatus.Unauthenticated);
+              _setLoginStatus(LoginStatus.OtpStep);
+              try {
+                await _membersService.resendOtp(email!);
+              } catch (e) {
+                _log.warning("Failed to send device-verification OTP ($e)");
+              }
+            }
             // account locked due to too many failed attempts
             else if (response.statusCode == 423) {
               _log.info(
@@ -1033,6 +1089,81 @@ class LoginProvider extends ChangeNotifier {
             }
           },
         );
+  }
+
+  /// Called by the shared OTP screen when the user submits a code. Routes to
+  /// the device-verification flow when a new-device login is in progress,
+  /// otherwise to the registration e-mail confirmation.
+  Future<void> submitOtp() async {
+    if (_deviceVerification) {
+      await _verifyDeviceAndLogin();
+    } else {
+      await confirmEmail();
+    }
+  }
+
+  /// Validate the OTP to trust this device, then replay the pending passcode
+  /// login (now that the device is trusted, the server issues a token).
+  Future<void> _verifyDeviceAndLogin() async {
+    _setLoginStatus(LoginStatus.Loading);
+    final String deviceSecret = await DeviceIdentity.getOrCreateSecret();
+    await _membersService
+        .verifyDevice(_deviceVerifyEmail!, otp!, deviceSecret, DeviceIdentity.label)
+        .timeout(Duration(seconds: 10))
+        .then(
+          (response) async {
+            // device trusted → mark it locally and replay the passcode login
+            if (response.statusCode == 200) {
+              await DeviceIdentity.setEnrolled();
+              _deviceVerification = false;
+              await loginMember(_pendingPasscode!);
+            }
+            // OTP does not match
+            else if (response.statusCode == 401) {
+              _setLoginStatus(LoginStatus.OtpStep);
+              _messageProvider.setMessage(AppString.confirmEmailWrongOtp, MessageType.ERROR);
+            }
+            // OTP expired
+            else if (response.statusCode == 406) {
+              _setLoginStatus(LoginStatus.OtpStep);
+              _messageProvider.setMessage(AppString.confirmEmailOtpExpired, MessageType.ERROR);
+            }
+            // e-mail not found
+            else if (response.statusCode == 404) {
+              _setLoginStatus(LoginStatus.OtpStep);
+              _messageProvider.setMessage(AppString.confirmEmailNoAccountFound, MessageType.ERROR);
+            }
+            // unexpected
+            else {
+              _log.severe("Failed to verify device for $_deviceVerifyEmail : ${response.body}");
+              _setLoginStatus(LoginStatus.OtpStep);
+              _messageProvider.setMessage(AppString.confirmEmailUnexpectedResponse, MessageType.ERROR);
+            }
+          },
+          onError: (error) {
+            _log.severe("Error while verifying device for $_deviceVerifyEmail : $error");
+            _setLoginStatus(LoginStatus.OtpStep);
+            if (error is TimeoutException) {
+              _messageProvider.setMessage(AppString.errorServerTimeOut, MessageType.ERROR);
+            } else {
+              _messageProvider.setMessage(AppString.confirmEmailError, MessageType.ERROR);
+            }
+          },
+        );
+  }
+
+  /// Register the current device as trusted on the backend if not already done
+  /// (device-binding "grandfathering"). Best-effort: silently retried on the
+  /// next launch if it fails, and never surfaces an error to the user.
+  Future<void> _ensureCurrentDeviceTrusted() async {
+    try {
+      if (await DeviceIdentity.isEnrolled()) return;
+      final String deviceSecret = await DeviceIdentity.getOrCreateSecret();
+      final bool ok = await _membersService.trustCurrentDevice(deviceSecret, DeviceIdentity.label);
+      if (ok) await DeviceIdentity.setEnrolled();
+    } catch (error) {
+      _log.warning("Failed to enroll current device as trusted ($error)");
+    }
   }
 
   /// Sync the in-memory logged member with the version returned from a

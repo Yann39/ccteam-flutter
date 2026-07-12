@@ -103,6 +103,9 @@ class AppString {
   static const String infoRegister =
       'Complétez le formulaire ci-dessous pour commencer le processus d\'inscription. Un code vous sera envoyé afin de vérifier votre adresse e-mail.';
   static const String infoLoginOtp = 'Indiquez le code qui vous a été envoyé à l\'adresse';
+  static const String deviceVerificationTitle = 'Nouvel appareil détecté';
+  static const String deviceVerificationInfo =
+      'Pour votre sécurité, cet appareil doit être confirmé. Indiquez le code qui vient d\'être envoyé à l\'adresse';
   static const String timeLeft = 'Temps restant';
   static const String passcodeInfo = 'Veuillez définir un code vous permettant de sécuriser votre compte';
   static const String confirmPasscodeInfo = 'Veuillez confirmer le code';

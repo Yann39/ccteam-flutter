@@ -40,6 +40,7 @@ const String API_RESEND_OTP_ENDPOINT = '/rest/resendOtp';
 const String API_CONFIRM_EMAIL_ENDPOINT = '/rest/confirmEmail';
 const String API_COMPLETE_REGISTRATION_ENDPOINT = '/rest/completeRegistration';
 const String API_AUTHENTICATE_ENDPOINT = '/rest/authenticate';
+const String API_VERIFY_DEVICE_ENDPOINT = '/rest/verifyDevice';
 
 const String LYCHEE_BASE_URL = String.fromEnvironment('LYCHEE_BASE_URL');
 const String LYCHEE_ALBUM_ENDPOINT = '/api/v2/Album';

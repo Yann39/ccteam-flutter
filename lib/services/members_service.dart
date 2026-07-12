@@ -104,14 +104,59 @@ class MembersService {
 
   /// Authenticate the user according to the the specified [email] and [password].
   /// The response will contains the issued JWT token.
-  Future<http.Response> authenticate(String email, String password) {
+  ///
+  /// [deviceSecret] identifies this device for device binding: when the member
+  /// already trusts at least one device and this one isn't recognized, the
+  /// server replies 428 (device verification required) instead of a token.
+  Future<http.Response> authenticate(String email, String password, String deviceSecret) {
     return http.post(
       Uri.parse(API_BASE_URL + API_AUTHENTICATE_ENDPOINT),
       headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
       },
-      body: jsonEncode(<String, String>{'email': email, 'password': password}),
+      body: jsonEncode(<String, String>{'email': email, 'password': password, 'deviceSecret': deviceSecret}),
     );
+  }
+
+  /// Enroll this device as trusted, by validating the one-time password sent
+  /// to the account [email]. Used after a 428 from [authenticate]. Never
+  /// returns a token, so possession of the e-mail alone doesn't grant access.
+  Future<http.Response> verifyDevice(String email, String otp, String deviceSecret, String deviceLabel) {
+    return http.post(
+      Uri.parse(API_BASE_URL + API_VERIFY_DEVICE_ENDPOINT),
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
+      body: jsonEncode(<String, String>{
+        'email': email,
+        'otp': otp,
+        'deviceSecret': deviceSecret,
+        'deviceLabel': deviceLabel,
+      }),
+    );
+  }
+
+  /// Trust the current device for the authenticated member (device binding
+  /// "grandfathering"): enrolls the device the member is already logged in on,
+  /// so it keeps working without an e-mail re-verification after the feature
+  /// ships. Returns true on success.
+  Future<bool> trustCurrentDevice(String deviceSecret, String deviceLabel) async {
+    _log.info("Trusting current device for the logged member...");
+    final String mutation = """
+      mutation TrustCurrentDevice(\$deviceSecret: String!, \$deviceLabel: String) {
+        trustCurrentDevice(deviceSecret: \$deviceSecret, deviceLabel: \$deviceLabel)
+      }
+    """;
+    final MutationOptions mutationOptions = new MutationOptions(
+      document: parseString(mutation),
+      variables: {'deviceSecret': deviceSecret, 'deviceLabel': deviceLabel},
+      fetchPolicy: FetchPolicy.noCache,
+    );
+    final QueryResult result = await GraphQLConnection().graphQLClient.mutate(mutationOptions);
+    if (result.hasException) {
+      throw AppUtils.handleGraphQlException(result)!;
+    }
+    return result.data != null && result.data!['trustCurrentDevice'] == true;
   }
 
   /// Lightweight count of all members. Used by the home stats panel
