@@ -180,9 +180,6 @@ class _AddEditNewsState extends State<AddEditNews> {
           keyboardType: TextInputType.datetime,
           validator: (val) {
             if (val == null || val.isEmpty) return AppString.newsDateMandatory;
-            if (_newsCreationProvider.news.id == null) {
-              return AppString.newsDateMustBeFuture;
-            }
             return null;
           },
           onSaved: (val) => _newsCreationProvider.news.newsDate = DateFormat(DATE_FORMAT).parseStrict(val!),

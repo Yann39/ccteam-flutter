@@ -2,8 +2,8 @@
 
 **Flutter** mobile application for the **CCTeam** motorcycle racing club
 
-![Version](https://img.shields.io/badge/Version-1.1.0-2AAB92.svg)
-![Static Badge](https://img.shields.io/badge/Last_update-12_June_2026-blue)
+![Version](https://img.shields.io/badge/Version-1.1.1-2AAB92.svg)
+![Static Badge](https://img.shields.io/badge/Last_update-06_July_2026-blue)
 
 ![Version](https://img.shields.io/badge/Flutter-3.41.9-red.svg)
 ![Version](https://img.shields.io/badge/Dart-3.11.5-green.svg)
