@@ -72,8 +72,8 @@ class _OtpFormState extends State<OtpForm> {
 
       _log.info("OTP to be sent ${Provider.of<LoginProvider>(context, listen: false).otp}");
 
-      // check OTP
-      Provider.of<LoginProvider>(context, listen: false).confirmEmail();
+      // check OTP, routes to registration confirmation or device verification
+      Provider.of<LoginProvider>(context, listen: false).submitOtp();
     }
   }
 
@@ -185,13 +185,17 @@ class _OtpFormState extends State<OtpForm> {
       autovalidateMode: AutovalidateMode.disabled,
       key: _otpFormKey,
       child: UnauthenticatedLayout(
-        title: AppString.emailAddressVerification,
+        title: _loginProvider.isDeviceVerification
+            ? AppString.deviceVerificationTitle
+            : AppString.emailAddressVerification,
         description: RichText(
           textAlign: TextAlign.center,
           text: TextSpan(
             style: TextStyle(fontSize: 14.0, color: Colors.black),
             children: <TextSpan>[
-              TextSpan(text: AppString.infoLoginOtp),
+              TextSpan(
+                text: _loginProvider.isDeviceVerification ? AppString.deviceVerificationInfo : AppString.infoLoginOtp,
+              ),
               TextSpan(
                 text: " ${_loginProvider.email}".toLowerCase(),
                 style: TextStyle(fontWeight: FontWeight.bold),

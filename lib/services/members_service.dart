@@ -21,6 +21,7 @@ import 'dart:convert';
 
 import 'package:ccteam/models/member.dart';
 import 'package:ccteam/models/membership_fee.dart';
+import 'package:ccteam/models/trusted_device.dart';
 import 'package:ccteam/utils/app_utils.dart';
 import 'package:ccteam/utils/constants.dart';
 import 'package:ccteam/utils/custom_graphql_exception.dart';
@@ -104,14 +105,118 @@ class MembersService {
 
   /// Authenticate the user according to the the specified [email] and [password].
   /// The response will contains the issued JWT token.
-  Future<http.Response> authenticate(String email, String password) {
+  ///
+  /// [deviceSecret] identifies this device for device binding: when the member
+  /// already trusts at least one device and this one isn't recognized, the
+  /// server replies 428 (device verification required) instead of a token.
+  Future<http.Response> authenticate(String email, String password, String deviceSecret) {
     return http.post(
       Uri.parse(API_BASE_URL + API_AUTHENTICATE_ENDPOINT),
       headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
       },
-      body: jsonEncode(<String, String>{'email': email, 'password': password}),
+      body: jsonEncode(<String, String>{'email': email, 'password': password, 'deviceSecret': deviceSecret}),
     );
+  }
+
+  /// Enroll this device as trusted, by validating the one-time password sent
+  /// to the account [email]. Used after a 428 from [authenticate]. Never
+  /// returns a token, so possession of the e-mail alone doesn't grant access.
+  Future<http.Response> verifyDevice(String email, String otp, String deviceSecret, String deviceLabel) {
+    return http.post(
+      Uri.parse(API_BASE_URL + API_VERIFY_DEVICE_ENDPOINT),
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
+      body: jsonEncode(<String, String>{
+        'email': email,
+        'otp': otp,
+        'deviceSecret': deviceSecret,
+        'deviceLabel': deviceLabel,
+      }),
+    );
+  }
+
+  /// Fetch the authenticated member's trusted devices. [deviceSecret] lets the
+  /// server flag the current device in the returned list.
+  Future<List<TrustedDevice>> getMyTrustedDevices(String deviceSecret) async {
+    _log.info("Getting trusted devices for the logged member...");
+    final String query = """
+      query GetMyTrustedDevices(\$deviceSecret: String) {
+        getMyTrustedDevices(deviceSecret: \$deviceSecret) {
+          id
+          label
+          createdOn
+          lastUsedOn
+          current
+        }
+      }
+    """;
+    return GraphQLConnection().graphQLClient
+        .query(
+          QueryOptions(
+            document: parseString(query),
+            variables: {'deviceSecret': deviceSecret},
+            fetchPolicy: FetchPolicy.noCache,
+          ),
+        )
+        .then((result) {
+          final List<TrustedDevice> devices = [];
+          if (result.hasException) {
+            throw AppUtils.handleGraphQlException(result)!;
+          }
+          final dynamic list = result.data?['getMyTrustedDevices'];
+          if (list is Iterable) {
+            for (final dynamic d in list) {
+              devices.add(TrustedDevice.fromJson(d));
+            }
+          }
+          return devices;
+        }, onError: (error) => throw Exception(error));
+  }
+
+  /// Revoke (delete) one of the member's trusted devices. That device will
+  /// then require an e-mail verification again on its next login.
+  Future<bool> revokeTrustedDevice(int deviceId) async {
+    _log.info("Revoking trusted device $deviceId ...");
+    final String mutation = """
+      mutation RevokeTrustedDevice(\$deviceId: Long!) {
+        revokeTrustedDevice(deviceId: \$deviceId)
+      }
+    """;
+    final MutationOptions mutationOptions = new MutationOptions(
+      document: parseString(mutation),
+      variables: {'deviceId': deviceId},
+      fetchPolicy: FetchPolicy.noCache,
+    );
+    final QueryResult result = await GraphQLConnection().graphQLClient.mutate(mutationOptions);
+    if (result.hasException) {
+      throw AppUtils.handleGraphQlException(result)!;
+    }
+    return result.data != null && result.data!['revokeTrustedDevice'] == true;
+  }
+
+  /// Trust the current device for the authenticated member (device binding
+  /// "grandfathering"): enrolls the device the member is already logged in on,
+  /// so it keeps working without an e-mail re-verification after the feature
+  /// ships. Returns true on success.
+  Future<bool> trustCurrentDevice(String deviceSecret, String deviceLabel) async {
+    _log.info("Trusting current device for the logged member...");
+    final String mutation = """
+      mutation TrustCurrentDevice(\$deviceSecret: String!, \$deviceLabel: String) {
+        trustCurrentDevice(deviceSecret: \$deviceSecret, deviceLabel: \$deviceLabel)
+      }
+    """;
+    final MutationOptions mutationOptions = new MutationOptions(
+      document: parseString(mutation),
+      variables: {'deviceSecret': deviceSecret, 'deviceLabel': deviceLabel},
+      fetchPolicy: FetchPolicy.noCache,
+    );
+    final QueryResult result = await GraphQLConnection().graphQLClient.mutate(mutationOptions);
+    if (result.hasException) {
+      throw AppUtils.handleGraphQlException(result)!;
+    }
+    return result.data != null && result.data!['trustCurrentDevice'] == true;
   }
 
   /// Lightweight count of all members. Used by the home stats panel
