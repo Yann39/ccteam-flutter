@@ -567,6 +567,22 @@ class AppString {
   static const String editMyProfile = 'Modifier mon profil';
   static const String changeMyPasscode = 'Changer mon passcode';
   static const String accountActions = 'Actions';
+
+  // Trusted devices (device binding management)
+  static const String trustedDevices = 'Appareils de confiance';
+  static const String trustedDevicesHelp =
+      'Ces appareils peuvent se connecter avec le passcode seul. Révoquez ceux que vous ne reconnaissez pas ou que vous n\'utilisez plus : ils devront alors être re-validés par e-mail à la prochaine connexion.';
+  static const String trustedDevicesEmpty = 'Aucun appareil de confiance';
+  static const String trustedDevicesLoadFailed = 'Impossible de charger les appareils de confiance';
+  static const String trustedDeviceCurrent = 'Cet appareil';
+  static const String trustedDeviceAddedOn = 'Ajouté le {0}';
+  static const String trustedDeviceLastUsed = 'Dernière utilisation : {0}';
+  static const String trustedDeviceRevoke = 'Révoquer';
+  static const String trustedDeviceRevokeTitle = 'Révoquer l\'appareil';
+  static const String trustedDeviceRevokeConfirm =
+      'Révoquer cet appareil ? Il devra être re-validé par e-mail lors de sa prochaine connexion.';
+  static const String trustedDeviceRevoked = 'Appareil révoqué';
+  static const String trustedDeviceRevokeFailed = 'Échec de la révocation de l\'appareil';
   static const String membershipStatus = 'Statut de la cotisation';
 
   // Banner shown to ROLE_USER members (not yet promoted to ROLE_MEMBER) on the "My account" hub.

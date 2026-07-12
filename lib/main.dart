@@ -57,6 +57,7 @@ import 'package:ccteam/ui/main/home.dart';
 import 'package:ccteam/ui/main/image_crop.dart';
 import 'package:ccteam/ui/main/my_account.dart';
 import 'package:ccteam/ui/main/notification_settings.dart';
+import 'package:ccteam/ui/main/trusted_devices.dart';
 import 'package:ccteam/ui/members/add_edit_bike.dart';
 import 'package:ccteam/ui/members/add_edit_member.dart';
 import 'package:ccteam/ui/members/add_edit_membership_fee.dart';
@@ -289,6 +290,7 @@ class CCTeamApp extends StatelessWidget {
           '/myAccount': (context) => MyAccount(),
           '/changePasscode': (context) => ChangePasscode(),
           '/notificationSettings': (context) => const NotificationSettings(),
+          '/trustedDevices': (context) => const TrustedDevices(),
           '/about': (context) => const About(),
           '/addEditNews': (context) => AddEditNews(),
           '/addEditEvent': (context) => AddEditEvent(),

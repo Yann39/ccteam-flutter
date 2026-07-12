@@ -517,6 +517,13 @@ class _MyAccountState extends State<MyAccount> {
               iconColor: Colors.blue[700]!,
               label: AppString.changeMyPasscode,
               onTap: () => Navigator.pushNamed(context, '/changePasscode'),
+            ),
+            Container(height: 1, color: Colors.white.withValues(alpha: 0.6)),
+            _buildActionTile(
+              icon: Icons.devices,
+              iconColor: Colors.deepPurple,
+              label: AppString.trustedDevices,
+              onTap: () => Navigator.pushNamed(context, '/trustedDevices'),
               isLast: true,
             ),
           ],

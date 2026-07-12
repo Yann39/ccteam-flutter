@@ -21,6 +21,7 @@ import 'dart:convert';
 
 import 'package:ccteam/models/member.dart';
 import 'package:ccteam/models/membership_fee.dart';
+import 'package:ccteam/models/trusted_device.dart';
 import 'package:ccteam/utils/app_utils.dart';
 import 'package:ccteam/utils/constants.dart';
 import 'package:ccteam/utils/custom_graphql_exception.dart';
@@ -134,6 +135,65 @@ class MembersService {
         'deviceLabel': deviceLabel,
       }),
     );
+  }
+
+  /// Fetch the authenticated member's trusted devices. [deviceSecret] lets the
+  /// server flag the current device in the returned list.
+  Future<List<TrustedDevice>> getMyTrustedDevices(String deviceSecret) async {
+    _log.info("Getting trusted devices for the logged member...");
+    final String query = """
+      query GetMyTrustedDevices(\$deviceSecret: String) {
+        getMyTrustedDevices(deviceSecret: \$deviceSecret) {
+          id
+          label
+          createdOn
+          lastUsedOn
+          current
+        }
+      }
+    """;
+    return GraphQLConnection().graphQLClient
+        .query(
+          QueryOptions(
+            document: parseString(query),
+            variables: {'deviceSecret': deviceSecret},
+            fetchPolicy: FetchPolicy.noCache,
+          ),
+        )
+        .then((result) {
+          final List<TrustedDevice> devices = [];
+          if (result.hasException) {
+            throw AppUtils.handleGraphQlException(result)!;
+          }
+          final dynamic list = result.data?['getMyTrustedDevices'];
+          if (list is Iterable) {
+            for (final dynamic d in list) {
+              devices.add(TrustedDevice.fromJson(d));
+            }
+          }
+          return devices;
+        }, onError: (error) => throw Exception(error));
+  }
+
+  /// Revoke (delete) one of the member's trusted devices. That device will
+  /// then require an e-mail verification again on its next login.
+  Future<bool> revokeTrustedDevice(int deviceId) async {
+    _log.info("Revoking trusted device $deviceId ...");
+    final String mutation = """
+      mutation RevokeTrustedDevice(\$deviceId: Long!) {
+        revokeTrustedDevice(deviceId: \$deviceId)
+      }
+    """;
+    final MutationOptions mutationOptions = new MutationOptions(
+      document: parseString(mutation),
+      variables: {'deviceId': deviceId},
+      fetchPolicy: FetchPolicy.noCache,
+    );
+    final QueryResult result = await GraphQLConnection().graphQLClient.mutate(mutationOptions);
+    if (result.hasException) {
+      throw AppUtils.handleGraphQlException(result)!;
+    }
+    return result.data != null && result.data!['revokeTrustedDevice'] == true;
   }
 
   /// Trust the current device for the authenticated member (device binding
