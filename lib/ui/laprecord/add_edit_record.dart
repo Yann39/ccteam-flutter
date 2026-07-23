@@ -25,6 +25,7 @@ import 'package:ccteam/providers/record_creation_provider.dart';
 import 'package:ccteam/services/tracks_service.dart';
 import 'package:ccteam/utils/constants.dart';
 import 'package:ccteam/utils/custom_icons.dart';
+import 'package:ccteam/utils/track_utils.dart';
 import 'package:ccteam/utils/date_utils.dart';
 import 'package:ccteam/utils/strings.dart';
 import 'package:ccteam/widgets/form_scaffold.dart';
@@ -176,8 +177,18 @@ class _AddEditRecordState extends State<AddEditRecord> {
                   hintText: AppString.eventTrackIdHint,
                   labelText: AppString.eventTrackId,
                 ),
+                isExpanded: true,
                 items: snapshot.data!.map((Track val) {
-                  return DropdownMenuItem<Track>(value: val, child: Text(val.name!));
+                  return DropdownMenuItem<Track>(
+                    value: val,
+                    child: Row(
+                      children: <Widget>[
+                        Icon(TrackUtils.trackIconFromName(val.name), size: 20.0, color: Colors.red[600]),
+                        const SizedBox(width: 8.0),
+                        Flexible(child: Text(val.name ?? '', overflow: TextOverflow.ellipsis)),
+                      ],
+                    ),
+                  );
                 }).toList(),
                 onChanged: (Track? val) {
                   setState(() {
