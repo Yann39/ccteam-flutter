@@ -23,6 +23,7 @@ import 'package:ccteam/providers/login_provider.dart';
 import 'package:ccteam/providers/message_provider.dart';
 import 'package:ccteam/providers/record_creation_provider.dart';
 import 'package:ccteam/services/tracks_service.dart';
+import 'package:ccteam/utils/bike_utils.dart';
 import 'package:ccteam/utils/constants.dart';
 import 'package:ccteam/utils/custom_icons.dart';
 import 'package:ccteam/utils/track_utils.dart';
@@ -31,6 +32,7 @@ import 'package:ccteam/utils/strings.dart';
 import 'package:ccteam/widgets/form_scaffold.dart';
 import 'package:ccteam/widgets/info_banner.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
@@ -131,6 +133,18 @@ class _AddEditRecordState extends State<AddEditRecord> {
         );
       }
     }
+  }
+
+  /// Small leading widget for a bike dropdown item: the manufacturer logo when known, otherwise the generic motorbike icon.
+  Widget _bikeLogo(String? manufacturer) {
+    final String? logoPath = BikeUtils.manufacturerLogoPath(manufacturer);
+    return SizedBox(
+      width: 24.0,
+      height: 24.0,
+      child: logoPath != null
+          ? SvgPicture.asset(logoPath, fit: BoxFit.contain)
+          : Icon(CustomIcons.motorbike_plain, size: 20.0, color: Colors.deepPurple),
+    );
   }
 
   Widget build(BuildContext context) {
@@ -248,13 +262,23 @@ class _AddEditRecordState extends State<AddEditRecord> {
 
     final _bikeField = DropdownButtonFormField<Bike>(
       initialValue: _recordCreationProvider.selectedBike,
+      isExpanded: true,
       decoration: const InputDecoration(
         icon: Icon(CustomIcons.motorbike_plain),
         hintText: AppString.recordBikeHint,
         labelText: AppString.recordBikeLabel,
       ),
       items: Provider.of<LoginProvider>(context, listen: false).loggedMember!.bikes!.map((Bike bike) {
-        return DropdownMenuItem<Bike>(value: bike, child: Text("${bike.manufacturer} ${bike.modelName}"));
+        return DropdownMenuItem<Bike>(
+          value: bike,
+          child: Row(
+            children: <Widget>[
+              _bikeLogo(bike.manufacturer),
+              const SizedBox(width: 8.0),
+              Flexible(child: Text("${bike.manufacturer} ${bike.modelName}", overflow: TextOverflow.ellipsis)),
+            ],
+          ),
+        );
       }).toList(),
       onChanged: (Bike? val) {
         _recordCreationProvider.selectBike(val!);
