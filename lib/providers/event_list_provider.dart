@@ -188,9 +188,17 @@ class EventListProvider extends ChangeNotifier {
 
   /// Update the specified [event] in the current event list.
   void updateEventInList(Event event) {
-    final int index = _allEvents.indexWhere((n) => n.id == event.id);
-    if (index != -1) {
-      _allEvents[index] = event;
+    // the calendar shows one of three cached lists depending on the mode (all / year / day),
+    // so refresh the event in every list that holds it
+    bool changed = false;
+    for (final List<Event> list in <List<Event>>[_allEvents, _yearEvents, _dayEvents]) {
+      final int index = list.indexWhere((n) => n.id == event.id);
+      if (index != -1) {
+        list[index] = event;
+        changed = true;
+      }
+    }
+    if (changed) {
       _notifyListeners();
     }
   }

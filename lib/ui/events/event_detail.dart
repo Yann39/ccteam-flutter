@@ -90,6 +90,26 @@ class EventDetail extends StatelessWidget {
     });
   }
 
+  /// Register (or unregister) the caller for [event], then push the refreshed
+  /// event into the [EventListProvider] so the calendar card's participant
+  /// count is up to date when the user navigates back to the list. Without
+  /// this the calendar keeps a separate, stale copy of the event.
+  Future<void> _toggleRegistration(
+    BuildContext context,
+    EventDetailProvider provider,
+    Event event,
+    int memberId, {
+    required bool register,
+  }) async {
+    if (register) {
+      await provider.registerToEvent(event, memberId);
+    } else {
+      await provider.unregisterFromEvent(event, memberId);
+    }
+    if (!context.mounted) return;
+    Provider.of<EventListProvider>(context, listen: false).updateEventInList(provider.currentEvent);
+  }
+
   /// Navigate to the detail screen of the event's track. The [track]
   /// embedded in an Event only carries `id` + `name` (limited GraphQL
   /// projection), so we also fire a full `fetchTrack` so the stat
@@ -396,8 +416,7 @@ class EventDetail extends StatelessWidget {
               // (less aggressive) when already registered
               isRegistered
                   ? OutlinedButton.icon(
-                      onPressed: () =>
-                          provider.unregisterFromEvent(event, memberId),
+                      onPressed: () => _toggleRegistration(context, provider, event, memberId, register: false),
                       icon: const Icon(Icons.event_busy, size: 16.0),
                       label: Text(AppString.eventUnregister),
                       style: OutlinedButton.styleFrom(
@@ -417,8 +436,7 @@ class EventDetail extends StatelessWidget {
                       ),
                     )
                   : ElevatedButton.icon(
-                      onPressed: () =>
-                          provider.registerToEvent(event, memberId),
+                      onPressed: () => _toggleRegistration(context, provider, event, memberId, register: true),
                       icon: const Icon(Icons.event_available, size: 16.0),
                       label: Text(AppString.eventParticipated),
                       style: ElevatedButton.styleFrom(
