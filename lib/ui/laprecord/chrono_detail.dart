@@ -393,6 +393,10 @@ class _ChronoDetailState extends State<ChronoDetail> {
         ? "${StringUtils.capitalize(record.bike!.manufacturer ?? '')} ${record.bike!.modelName ?? ''}".trim()
         : AppString.notDefined;
 
+    final String pilotName = record.member != null
+        ? "${record.member!.firstName ?? ''} ${record.member!.lastName ?? ''}".trim()
+        : '';
+
     return Scaffold(
       body: Container(
         decoration: CustomDecorations.mainContent,
@@ -401,6 +405,8 @@ class _ChronoDetailState extends State<ChronoDetail> {
             SliverAppBar(
               pinned: true,
               expandedHeight: 220,
+              foregroundColor: Colors.white,
+              title: const Text(AppString.recordDetailTitle),
               actions: <Widget>[
                 if (canMutate) ...[
                   IconButton(
@@ -419,11 +425,9 @@ class _ChronoDetailState extends State<ChronoDetail> {
                 builder: (BuildContext context, BoxConstraints constraints) {
                   // `t` runs from 0.0 (header fully deployed) to 1.0
                   // (fully collapsed). We use it to fade out the hero
-                  // content (chrono + track name) as the user scrolls,
-                  // so by the time the "Détail du chrono" title settles
-                  // on the collapsed bar it never overlaps the lap-time
-                  // figure underneath. Same idiom as TrackDetail's
-                  // country line.
+                  // content (chrono, track, pilot) as the user scrolls so
+                  // that, once collapsed, it doesn't bleed past the pinned
+                  // toolbar title.
                   final FlexibleSpaceBarSettings? settings = context
                       .dependOnInheritedWidgetOfExactType<FlexibleSpaceBarSettings>();
                   double t = 0.0;
@@ -437,14 +441,6 @@ class _ChronoDetailState extends State<ChronoDetail> {
                   final double heroOpacity = ((1.0 - (t - 0.3) * 2.5).clamp(0.0, 1.0)).toDouble();
 
                   return FlexibleSpaceBar(
-                    title: Text(
-                      AppString.recordDetailTitle,
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 24.0 - t * 6.0,
-                        fontWeight: FontWeight.lerp(FontWeight.bold, FontWeight.normal, t),
-                      ),
-                    ),
                     background: Stack(
                       alignment: Alignment.center,
                       fit: StackFit.expand,
@@ -473,36 +469,63 @@ class _ChronoDetailState extends State<ChronoDetail> {
                             ),
                           ),
                         ),
+                        // extra darkening concentrated at the very top so the pinned
+                        // title stays legible over bright cover images
+                        DecoratedBox(
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.topCenter,
+                              end: Alignment(0.0, -0.3),
+                              colors: <Color>[Colors.black.withAlpha(140), Colors.transparent],
+                            ),
+                          ),
+                        ),
                         Opacity(
                           opacity: heroOpacity,
-                          child: Center(
-                            child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: <Widget>[
-                                Text(
-                                  AppDateUtils.toLapTimeString(record.lapTime) ?? '—',
-                                  style: const TextStyle(
-                                    fontFamily: 'AlarmClock',
-                                    fontSize: 56.0,
-                                    color: Colors.white,
-                                    letterSpacing: -2.0,
-                                    height: 1.0,
-                                    shadows: [Shadow(color: Colors.black, blurRadius: 6.0, offset: Offset(0, 2))],
-                                  ),
-                                ),
-                                if (trackName != null) ...[
-                                  const SizedBox(height: 8.0),
+                          child: Align(
+                            alignment: Alignment.bottomCenter,
+                            child: Padding(
+                              padding: const EdgeInsets.only(bottom: 20.0),
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: <Widget>[
                                   Text(
-                                    trackName,
+                                    AppDateUtils.toLapTimeString(record.lapTime) ?? '—',
                                     style: const TextStyle(
+                                      fontFamily: 'AlarmClock',
+                                      fontSize: 56.0,
                                       color: Colors.white,
-                                      fontSize: 16.0,
-                                      fontWeight: FontWeight.w600,
-                                      shadows: [Shadow(color: Colors.black, blurRadius: 4.0, offset: Offset(0, 1))],
+                                      letterSpacing: -2.0,
+                                      height: 1.0,
+                                      shadows: [Shadow(color: Colors.black, blurRadius: 6.0, offset: Offset(0, 2))],
                                     ),
                                   ),
+                                  if (trackName != null) ...[
+                                    const SizedBox(height: 8.0),
+                                    Text(
+                                      trackName,
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 16.0,
+                                        fontWeight: FontWeight.w600,
+                                        shadows: [Shadow(color: Colors.black, blurRadius: 4.0, offset: Offset(0, 1))],
+                                      ),
+                                    ),
+                                  ],
+                                  if (pilotName.isNotEmpty) ...[
+                                    const SizedBox(height: 6.0),
+                                    Text(
+                                      pilotName,
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 20.0,
+                                        fontWeight: FontWeight.w700,
+                                        shadows: [Shadow(color: Colors.black, blurRadius: 4.0, offset: Offset(0, 1))],
+                                      ),
+                                    ),
+                                  ],
                                 ],
-                              ],
+                              ),
                             ),
                           ),
                         ),

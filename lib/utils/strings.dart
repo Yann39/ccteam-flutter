@@ -449,6 +449,9 @@ class AppString {
   static const String chronoFilterTrackSection = 'Circuit';
   static const String chronoFilterBikeSection = 'Moto';
   static const String chronoFilterWeatherSection = 'Météo';
+  static const String chronoFilterVisibilitySection = 'Visibilité';
+  static const String chronoFilterVisibilityPublic = 'Public';
+  static const String chronoFilterVisibilityPrivate = 'Privé';
   static const String chronoFilterAll = 'Tous';
   static const String chronoFilterReset = 'Réinitialiser';
   static const String chronoFilterNoMatch = 'Aucun chrono ne correspond au filtre sélectionné';
@@ -629,8 +632,7 @@ class AppString {
 
   // Push notifications
   static const String notifications = 'Notifications';
-  static const String notificationsHelp =
-      'Choisissez les notifications que vous souhaitez recevoir sur cet appareil.';
+  static const String notificationsHelp = 'Choisissez les notifications que vous souhaitez recevoir sur cet appareil.';
   static const String notificationsPermissionDeniedTitle = 'Notifications désactivées';
   static const String notificationsPermissionDeniedMessage =
       'Les notifications sont désactivées pour l\'application. Activez-les pour recevoir les actualités et les rappels d\'événement, même lorsque vos préférences ci-dessous sont activées.';
@@ -665,7 +667,8 @@ class AppString {
 
   static const String errorEmailNotFoundInDatabase = 'Aucune donnée n\' a été trouvé pour l\'adresse e-mail {0}';
   static const String errorTokenExpired = 'Votre session a expirée, veuillez vous reconnecter';
-  static const String errorRoleChanged = 'Votre rôle a été mis à jour, veuillez ressaisir votre code pour rafraîchir votre session';
+  static const String errorRoleChanged =
+      'Votre rôle a été mis à jour, veuillez ressaisir votre code pour rafraîchir votre session';
   static const String errorTokenNotFound = 'Votre session n\'est pas valide';
   static const String errorTokenWrongFormat = 'Votre identifiant de session n\'est pas valide';
   static const String errorBadCredentials = 'Nom d\'utilisateur ou mot de passe incorrect';
