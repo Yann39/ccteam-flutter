@@ -41,6 +41,8 @@ class RecordsService {
           isPublic
           member {
             id
+            firstName
+            lastName
             email
           }
           bike {
@@ -180,6 +182,8 @@ class RecordsService {
           isPublic
           member {
             id
+            firstName
+            lastName
             email
           }
           bike {
@@ -251,6 +255,8 @@ class RecordsService {
           isPublic
           member {
             id
+            firstName
+            lastName
             email
           }
           bike {
@@ -331,6 +337,8 @@ class RecordsService {
           isPublic
           member {
             id
+            firstName
+            lastName
             email
           }
           bike {
@@ -400,6 +408,8 @@ class RecordsService {
           isPublic
           member {
             id
+            firstName
+            lastName
             email
           }
           bike {
@@ -462,6 +472,8 @@ class RecordsService {
           isPublic
           member {
             id
+            firstName
+            lastName
             email
           }
           track {
