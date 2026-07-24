@@ -2,17 +2,18 @@
 
 **Flutter** mobile application for the **CCTeam** motorcycle racing club
 
-![Version](https://img.shields.io/badge/Version-1.1.1-2AAB92.svg)
-![Static Badge](https://img.shields.io/badge/Last_update-06_July_2026-blue)
+![Version](https://img.shields.io/badge/Version-1.2.0-2AAB92.svg)
+![Static Badge](https://img.shields.io/badge/Last_update-24_July_2026-blue)
 
-![Version](https://img.shields.io/badge/Flutter-3.44.8-yellow.svg)
-![Version](https://img.shields.io/badge/Dart-3.12.2-green.svg)
+![Version](https://img.shields.io/badge/Flutter-3.44.8-44D1FD.svg)
+![Version](https://img.shields.io/badge/Dart-3.12.2-08589C.svg)
 
 ---
 
 # Table of Contents
 
 * [About](#about)
+* [Prerequisites](#prerequisites)
 * [Installation](#installation)
 * [Usage](#usage)
 * [Contributing](#contributing)
@@ -76,6 +77,31 @@ It also allows members to manage their profiles, bikes, lap records, and organiz
 ![Track details page screenshot](doc/track_detail.jpg "Track detail page")
 ![Photo gallery page screenshot](doc/gallery.jpg "Photo gallery page")
 
+# Prerequisites
+
+Before starting, ensure you have the following installed on your system:
+
+## Java Development Kit (JDK)
+
+- **Minimum:** Java 21 (LTS recommended)
+- **Gradle 9.6.1** requires Java 21 or higher
+- **NOT compatible with Java 25+** (will fail with "Incompatible Gradle JVM version" error)
+- Download from [Adoptium](https://adoptium.net/) or use your IDE's bundled JBR
+
+## Android SDK
+
+- **compileSdk:** 37 (configured in `build.gradle`)
+- **minSdk:** 21 (or Flutter's default)
+- **targetSdk:** 36
+- **Android Gradle Plugin (AGP):** 9.1.1
+
+## Build Tools
+
+- **Gradle:** 9.6.1 (defined in `gradle-wrapper.properties`)
+- **Kotlin:** 2.4.10 (defined in `settings.gradle`)
+- **Dart:** 3.12.2+
+- **Flutter:** 3.44.8+
+
 # Installation
 
 To install the application, follow these steps:
@@ -89,15 +115,24 @@ To install the application, follow these steps:
 3. Install the flutter SDK on your machine
 4. Install the Flutter plugin (Intellij IDE)
 5. In the project settings, set the Flutter SDK path (Intellij IDE)
-6. Create a _local.properties_ files inside the android folder and set :
+6. Create a _local.properties_ file inside the `android` folder and set:
    ```properties
     sdk.dir=C:\\android
     flutter.sdk=C:\\flutter
     flutter.buildMode=debug
     ```
 7. Run `flutter pub get`
-8. Run `gradle app:build`
+8. Run `./gradlew app:build` (or `gradlew.bat app:build` on Windows)
 9. Run the application on an emulator or a physical device, see [Usage](#usage) section.
+
+## Firebase Configuration (Optional)
+
+Push notifications require a Firebase configuration file:
+
+1. Create `google-services.json` in `android/app/`
+2. Download from [Firebase Console](https://console.firebase.google.com)
+3. The build will warn if this file is missing, but won't fail
+4. Without it, push notifications will be disabled at runtime
 
 # Usage
 
@@ -160,110 +195,6 @@ or any other method with the owners.
 
 See [Installation](#installation) and [Usage](#usage) sections to set up the project on your machine
 and make sure the [Tests](#tests) are passing.
-
-## Upgrading Dart
-
-In Intellij, check the version and download new one if necessary, from the menu
-_Settings > Languages & Frameworks > Dart_.
-
-Updates the Dart plugin if necessary.
-
-Then modify the SDK version in the _pubspec.yaml_ file accordingly :
-
-```yaml
-environment:
-  sdk: ^3.7.2
-```
-
-To verify :
-
-```bash
-dart --version
-```
-
-> Dart SDK version: 3.7.2 (stable) (Tue Mar 11 04:27:50 2025 -0700) on "windows_x64"
-
-## Upgrading Flutter
-
-In Intellij, check the version from the menu _Settings > Languages & Frameworks > Flutter_.
-
-Updates the Flutter plugin if necessary.
-
-Then run `flutter upgrade` in the terminal to get the latest stable version of Flutter :
-
-```bash
-flutter channel stable
-flutter upgrade --force
-```
-
-To verify :
-
-```bash
-flutter --version
-```
-
-> Flutter 3.29.2 • channel stable • https://github.com/flutter/flutter.git<br>
-> Engine • revision 18b71d647a<br>
-> Tools • Dart 3.7.2 • DevTools 2.42.3
-
-## Upgrading Gradle
-
-> [!WARNING]
-> Please pay attention to version compatibility between Gradle and Android Gradle Plugin
-
-From the project's root directory :
-
-```bash
-cd android
-./gradlew wrapper --gradle-version=8.7
-```
-
-This will reload the file _gradle-wrapper.properties_ with the new version of Gradle, specially this line :
-
-```properties
-distributionUrl=https\://services.gradle.org/distributions/gradle-8.7-bin.zip
-```
-
-For AGP, modify the version in _android/build.gradle_ :
-
-```groovy
-dependencies {
-  classpath 'com.android.tools.build:gradle:8.6.0'
-}
-```
-
-Then also change the version in _android/settings.gradle_ :
-
-```groovy
-id "com.android.application" version '8.6.0' apply false
-```
-
-To verify :
-
-```bash
-./gradlew --version
-```
-
-> ------------------------------------------------------------<br>
-> Gradle 8.7<br>
-> ------------------------------------------------------------<br>
-> <br>
-> Build time:   2024-03-22 15:52:46 UTC<br>
-> Revision:     650af14d7653aa949fce5e886e685efc9cf97c10<br>
-> <br>
-> Kotlin:       1.9.22<br>
-> Groovy:       3.0.17<br>
-> Ant:          Apache Ant(TM) version 1.10.13 compiled on January 4 2023<br>
-> JVM:          17.0.2 (Oracle Corporation 17.0.2+8-86)<br>
-> OS:           Windows 11 10.0 amd64<br>
-
-## Upgrading dependencies
-
-To upgrade all project dependencies to their latest versions, run :
-
-```bash
-flutter pub upgrade --major-versions
-```
 
 ## Play Store
 
