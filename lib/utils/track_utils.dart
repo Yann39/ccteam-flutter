@@ -48,6 +48,10 @@ class TrackUtils {
       return Icon(CustomIcons.mirecourt_track, color: Colors.red[700], size: 65);
     } else if (trackName == 'Misano') {
       return Icon(CustomIcons.misano_track, color: Colors.red[700], size: 52);
+    } else if (trackName == 'Paul Ricard (3.8 km)') {
+      return Icon(CustomIcons.paul_ricard_38_track, color: Colors.red[700], size: 65);
+    } else if (trackName == 'Paul Ricard (5.8 km)') {
+      return Icon(CustomIcons.paul_ricard_58_track, color: Colors.red[700], size: 65);
     } else if (trackName == 'Portimão') {
       return Icon(CustomIcons.portimao_track, color: Colors.red[700], size: 52);
     } else if (trackName == 'Pouilly-en-Auxois') {
@@ -85,6 +89,10 @@ class TrackUtils {
       return CustomIcons.mirecourt_track;
     } else if (trackName == 'Misano') {
       return CustomIcons.misano_track;
+    } else if (trackName == 'Paul Ricard (3.8 km)') {
+      return CustomIcons.paul_ricard_38_track;
+    } else if (trackName == 'Paul Ricard (5.8 km)') {
+      return CustomIcons.paul_ricard_58_track;
     } else if (trackName == 'Portimão') {
       return CustomIcons.portimao_track;
     } else if (trackName == 'Pouilly-en-Auxois') {
@@ -156,6 +164,10 @@ class TrackUtils {
       return "images/tracks/mirecourt_cover.jpg";
     } else if (trackName == 'Misano') {
       return "images/tracks/misano_cover.jpg";
+    } else if (trackName == 'Paul Ricard (3.8 km)') {
+      return "images/tracks/paul-ricard_cover.jpg";
+    } else if (trackName == 'Paul Ricard (5.8 km)') {
+      return "images/tracks/paul-ricard_cover.jpg";
     } else if (trackName == 'Portimão') {
       return "images/tracks/portimao_cover.jpg";
     } else if (trackName == 'Pouilly-en-Auxois') {

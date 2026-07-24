@@ -44,4 +44,6 @@ class CustomIcons {
   static const IconData portimao_track = IconData(0xe814, fontFamily: _kFontFam, fontPackage: _kFontPkg);
   static const IconData pouilly_en_auxois_track = IconData(0xe815, fontFamily: _kFontFam, fontPackage: _kFontPkg);
   static const IconData vaison_track = IconData(0xe816, fontFamily: _kFontFam, fontPackage: _kFontPkg);
+  static const IconData paul_ricard_38_track = IconData(0xe817, fontFamily: _kFontFam, fontPackage: _kFontPkg);
+  static const IconData paul_ricard_58_track = IconData(0xe818, fontFamily: _kFontFam, fontPackage: _kFontPkg);
 }
