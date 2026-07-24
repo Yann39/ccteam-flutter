@@ -5,8 +5,8 @@
 ![Version](https://img.shields.io/badge/Version-1.1.1-2AAB92.svg)
 ![Static Badge](https://img.shields.io/badge/Last_update-06_July_2026-blue)
 
-![Version](https://img.shields.io/badge/Flutter-3.41.9-red.svg)
-![Version](https://img.shields.io/badge/Dart-3.11.5-green.svg)
+![Version](https://img.shields.io/badge/Flutter-3.44.8-yellow.svg)
+![Version](https://img.shields.io/badge/Dart-3.12.2-green.svg)
 
 ---
 
@@ -24,6 +24,9 @@
 
 <table>
   <tr>
+    <td>
+        <img alt="Dart logo" src="doc/dart_logo.svg" height="72"/>
+    </td>
     <td>
         <img alt="Flutter logo" src="doc/flutter_logo.svg" height="72"/>
     </td>
