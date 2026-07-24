@@ -47,10 +47,13 @@ class MemberChronos extends StatefulWidget {
 
 class _MemberChronosState extends State<MemberChronos> {
   // active filters. Tracks are multi-select (empty set = "all circuits");
-  // bike (by id) and condition (raw code, 'dry' etc.) are single-select (null = "all").
+  // bike (by id), condition (raw code, 'dry' etc.) and visibility are single-select (null = "all").
   final Set<int> _filterTrackIds = {};
   int? _filterBikeId;
   String? _filterCondition;
+
+  // visibility: null = all, true = public only, false = private only
+  bool? _filterIsPublic;
 
   @override
   void initState() {
@@ -67,7 +70,8 @@ class _MemberChronosState extends State<MemberChronos> {
     }
   }
 
-  bool get _filterActive => _filterTrackIds.isNotEmpty || _filterBikeId != null || _filterCondition != null;
+  bool get _filterActive =>
+      _filterTrackIds.isNotEmpty || _filterBikeId != null || _filterCondition != null || _filterIsPublic != null;
 
   /// Keep only the records matching every active filter (AND across dimensions,
   /// a record matches the circuit filter when its track is any of the selected ones).
@@ -76,6 +80,8 @@ class _MemberChronosState extends State<MemberChronos> {
       if (_filterTrackIds.isNotEmpty && !_filterTrackIds.contains(r.track?.id)) return false;
       if (_filterBikeId != null && r.bike?.id != _filterBikeId) return false;
       if (_filterCondition != null && r.conditions != _filterCondition) return false;
+      // a null isPublic is treated as public (public is the default), matching the detail page
+      if (_filterIsPublic != null && (r.isPublic != false) != _filterIsPublic) return false;
       return true;
     }).toList();
   }
@@ -155,7 +161,7 @@ class _MemberChronosState extends State<MemberChronos> {
     );
   }
 
-  /// Open the filter as a modal bottom sheet with three sections (circuit / bike / weather).
+  /// Open the filter as a modal bottom sheet with four sections (circuit / bike / weather / visibility).
   /// Selecting a chip applies the filter live to the list behind the sheet,
   /// tapping "Tous" (or the active chip again) clears that dimension.
   void _openFilterSheet(List<Record> records) {
@@ -220,6 +226,7 @@ class _MemberChronosState extends State<MemberChronos> {
                             _filterTrackIds.clear();
                             _filterBikeId = null;
                             _filterCondition = null;
+                            _filterIsPublic = null;
                           }),
                           icon: const Icon(Icons.filter_alt_off, size: 18.0),
                           label: Text(AppString.chronoFilterReset),
@@ -310,6 +317,36 @@ class _MemberChronosState extends State<MemberChronos> {
                                 ),
                             ],
                           ),
+                          const SizedBox(height: 12.0),
+                          // visibility (single-select): all / public / private
+                          _buildFilterSectionLabel(AppString.chronoFilterVisibilitySection),
+                          Wrap(
+                            spacing: 8.0,
+                            runSpacing: 8.0,
+                            children: <Widget>[
+                              _FilterTile(
+                                icon: Icons.done_all,
+                                iconColor: Colors.black.withAlpha(140),
+                                label: AppString.chronoFilterAll,
+                                selected: _filterIsPublic == null,
+                                onTap: () => apply(() => _filterIsPublic = null),
+                              ),
+                              _FilterTile(
+                                icon: Icons.public,
+                                iconColor: Colors.green[700]!,
+                                label: AppString.chronoFilterVisibilityPublic,
+                                selected: _filterIsPublic == true,
+                                onTap: () => apply(() => _filterIsPublic = _filterIsPublic == true ? null : true),
+                              ),
+                              _FilterTile(
+                                icon: Icons.lock,
+                                iconColor: Colors.amber[800]!,
+                                label: AppString.chronoFilterVisibilityPrivate,
+                                selected: _filterIsPublic == false,
+                                onTap: () => apply(() => _filterIsPublic = _filterIsPublic == false ? null : false),
+                              ),
+                            ],
+                          ),
                         ],
                       ),
                     ),
@@ -356,6 +393,7 @@ class _MemberChronosState extends State<MemberChronos> {
               _filterTrackIds.clear();
               _filterBikeId = null;
               _filterCondition = null;
+              _filterIsPublic = null;
             }),
             icon: const Icon(Icons.clear),
             label: Text(AppString.chronoFilterClear),
