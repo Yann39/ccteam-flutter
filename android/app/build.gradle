@@ -27,7 +27,7 @@ if (keystorePropertiesFile.exists()) {
 }
 
 android {
-    compileSdk 36
+    compileSdk = 36
 
     defaultConfig {
         applicationId "net.ccteam"
@@ -36,7 +36,7 @@ android {
         multiDexEnabled true
         versionCode flutter.versionCode
         versionName flutter.versionName
-        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         // Required when setting minSdkVersion to 20 or lower
         multiDexEnabled true
     }
@@ -80,9 +80,9 @@ flutter {
 dependencies {
     // For AGP 7.4+
     testImplementation 'junit:junit:4.13.2'
-    androidTestImplementation 'com.android.support.test:runner:1.0.2'
-    androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
+    androidTestImplementation 'androidx.test:runner:1.7.0'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.7.0'
     coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.1.5' // required by flutter_local_notifications package
-    implementation("com.google.android.material:material:1.13.0")
+    implementation("com.google.android.material:material:1.14.0")
     implementation "androidx.multidex:multidex:2.0.1"
 }

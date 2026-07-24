@@ -1,3 +1,4 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 buildscript {
@@ -32,7 +33,7 @@ subprojects {
     afterEvaluate { project ->
         if (project.hasProperty('android')) {
             android {
-                compileSdkVersion 37
+                compileSdk 37
 
                 compileOptions {
                     sourceCompatibility JavaVersion.VERSION_17
@@ -41,18 +42,20 @@ subprojects {
             }
         }
 
+        // Align Kotlin bytecode target with Java compile target across plugins.
         tasks.withType(KotlinCompile).configureEach {
-            kotlinOptions {
-                jvmTarget = JavaVersion.VERSION_17.toString()
+            compilerOptions {
+                jvmTarget.set(JvmTarget.JVM_17)
             }
         }
+
     }
 }
 
-rootProject.buildDir = '../build'
+rootProject.layout.buildDirectory.set(rootProject.file('../build'))
 
 subprojects {
-    project.buildDir = "${rootProject.buildDir}/${project.name}"
+    project.layout.buildDirectory.set(rootProject.layout.buildDirectory.dir(project.name))
 }
 
 subprojects {
@@ -60,5 +63,5 @@ subprojects {
 }
 
 tasks.register("clean", Delete) {
-    delete rootProject.buildDir
+    delete rootProject.layout.buildDirectory
 }
