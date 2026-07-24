@@ -211,11 +211,12 @@ class TracksService {
 
     final String mutation =
         """
-      mutation CreateTrack(\$name: String!, \$distance: Int!, \$lapRecord: Int!, \$website: String!, \$latitude: Float!, \$longitude: Float!, \$countryCode: String!) {
+      mutation CreateTrack(\$name: String!, \$distance: Int!, \$lapRecord: Int!, \$lapRecordInfo: String, \$website: String!, \$latitude: Float!, \$longitude: Float!, \$countryCode: String!) {
         createTrack(
           name: \$name
           distance: \$distance
           lapRecord: \$lapRecord
+          lapRecordInfo: \$lapRecordInfo
           website: \$website
           latitude: \$latitude
           longitude: \$longitude
@@ -232,6 +233,7 @@ $_trackOutputFields
         'name': track.name,
         'distance': track.distance,
         'lapRecord': track.lapRecord ?? 0,
+        'lapRecordInfo': track.lapRecordInfo,
         'website': track.website ?? '',
         'latitude': track.latitude,
         'longitude': track.longitude,
@@ -255,12 +257,13 @@ $_trackOutputFields
 
     final String mutation =
         """
-      mutation UpdateTrack(\$trackId: Long!, \$name: String!, \$distance: Int!, \$lapRecord: Int!, \$website: String!, \$latitude: Float!, \$longitude: Float!, \$countryCode: String!) {
+      mutation UpdateTrack(\$trackId: Long!, \$name: String!, \$distance: Int!, \$lapRecord: Int!, \$lapRecordInfo: String, \$website: String!, \$latitude: Float!, \$longitude: Float!, \$countryCode: String!) {
         updateTrack(
           trackId: \$trackId
           name: \$name
           distance: \$distance
           lapRecord: \$lapRecord
+          lapRecordInfo: \$lapRecordInfo
           website: \$website
           latitude: \$latitude
           longitude: \$longitude
@@ -278,6 +281,7 @@ $_trackOutputFields
         'name': track.name,
         'distance': track.distance,
         'lapRecord': track.lapRecord ?? 0,
+        'lapRecordInfo': track.lapRecordInfo,
         'website': track.website ?? '',
         'latitude': track.latitude,
         'longitude': track.longitude,
