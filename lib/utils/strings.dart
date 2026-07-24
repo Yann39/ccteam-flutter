@@ -325,6 +325,8 @@ class AppString {
   static const String trackLapRecord = 'Record du tour';
   static const String trackLapRecordHint = 'MM\'SS"mmm';
   static const String trackLapRecordInvalid = 'Format invalide (attendu MM\'SS"mmm)';
+  static const String trackLapRecordInfo = 'Détail du record';
+  static const String trackLapRecordInfoHint = 'Pilote, moto, année…';
   static const String trackWebsite = 'Site web';
   static const String trackWebsiteHint = 'https://…';
   static const String trackLatitude = 'Latitude';

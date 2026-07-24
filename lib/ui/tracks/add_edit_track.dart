@@ -261,6 +261,20 @@ class _AddEditTrackState extends State<AddEditTrack> {
       initialValue: AppDateUtils.toLapTimeString(track.lapRecord),
     );
 
+    // Free-form context about the lap record (rider, bike, year, …). Optional,
+    // shown as a subtitle under the lap-record value in the track detail page.
+    final _lapRecordInfoField = TextFormField(
+      decoration: const InputDecoration(
+        icon: Icon(Icons.person_outline),
+        hintText: AppString.trackLapRecordInfoHint,
+        labelText: AppString.trackLapRecordInfo,
+      ),
+      maxLines: 1,
+      inputFormatters: [LengthLimitingTextInputFormatter(255)],
+      onSaved: (val) => track.lapRecordInfo = (val == null || val.trim().isEmpty) ? null : val.trim(),
+      initialValue: track.lapRecordInfo,
+    );
+
     final _websiteField = TextFormField(
       decoration: const InputDecoration(
         icon: Icon(Icons.public),
@@ -360,6 +374,7 @@ class _AddEditTrackState extends State<AddEditTrack> {
         _countryField,
         _distanceField,
         _lapRecordField,
+        _lapRecordInfoField,
         _websiteField,
         _latitudeField,
         _longitudeField,
