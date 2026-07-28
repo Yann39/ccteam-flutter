@@ -254,7 +254,7 @@ class _MemberChronosState extends State<MemberChronos> {
                               ),
                               for (final Track t in tracks)
                                 _FilterTile(
-                                  icon: TrackUtils.trackIconFromName(t.name),
+                                  icon: TrackUtils.iconForTrack(t),
                                   iconColor: Colors.red[600]!,
                                   label: t.name ?? AppString.notDefined,
                                   selected: t.id != null && _filterTrackIds.contains(t.id),
@@ -425,11 +425,11 @@ class _MemberChronosState extends State<MemberChronos> {
                 children: <Widget>[
                   Row(
                     children: <Widget>[
-                      Icon(TrackUtils.trackIconFromName(record.track!.name), size: 22, color: Colors.red[600]),
+                      Icon(TrackUtils.iconForTrack(record.track), size: 22, color: Colors.red[600]),
                       SizedBox(width: 8.0),
                       Expanded(
                         child: Text(
-                          record.track!.name!,
+                          record.track?.name ?? AppString.notDefined,
                           textScaler: TextScaler.linear(1.3),
                           style: TextStyle(color: Colors.white, fontWeight: FontWeight.w500),
                           maxLines: 1,

@@ -17,11 +17,26 @@
  * along with CCTeam. If not, see <http://www.gnu.org/licenses/>.
  */
 
+import 'package:ccteam/models/circuit.dart';
+import 'package:ccteam/models/track.dart';
 import 'package:ccteam/utils/custom_icons.dart';
 import 'package:flutter/material.dart';
 
 /// Track utility functions
 class TrackUtils {
+  /// Map / shape icon for a track (version): its explicit [Track.iconKey] when
+  /// set, otherwise derived from the parent circuit name so existing circuits
+  /// keep their icon without any per-version configuration.
+  static IconData iconForTrack(Track? track) {
+    return trackIconFromName(track?.iconKey ?? track?.circuit?.name);
+  }
+
+  /// Cover image for a circuit (venue). The cover is shared by every version,
+  /// so it is keyed on the circuit name.
+  static String coverImageForCircuit(Circuit? circuit) {
+    return trackCoverImageUrlFromName(circuit?.name);
+  }
+
   /// Get the right track icon according to the specified [trackName]
   static Icon getTrackIcon(String trackName) {
     if (trackName == 'Alès') {
@@ -164,9 +179,9 @@ class TrackUtils {
       return "images/tracks/mirecourt_cover.jpg";
     } else if (trackName == 'Misano') {
       return "images/tracks/misano_cover.jpg";
-    } else if (trackName == 'Paul Ricard (3.8 km)') {
-      return "images/tracks/paul-ricard_cover.jpg";
-    } else if (trackName == 'Paul Ricard (5.8 km)') {
+    } else if (trackName == 'Paul Ricard' ||
+        trackName == 'Paul Ricard (3.8 km)' ||
+        trackName == 'Paul Ricard (5.8 km)') {
       return "images/tracks/paul-ricard_cover.jpg";
     } else if (trackName == 'Portimão') {
       return "images/tracks/portimao_cover.jpg";

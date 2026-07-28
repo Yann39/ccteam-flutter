@@ -127,8 +127,7 @@ class _TrackDetailState extends State<TrackDetail> {
       );
     }
 
-    // sort by lap time ascending (fastest first); records without a lap
-    // time go last
+    // sort by lap time ascending (fastest first); records without a lap time go last
     final List<Record> records = List<Record>.of(recordListProvider.trackRecords)
       ..sort((a, b) {
         final int? aLap = a.lapTime;
@@ -387,10 +386,7 @@ class _TrackDetailState extends State<TrackDetail> {
                   Container(height: 1, color: Colors.black.withValues(alpha: 0.12)),
                   const SizedBox(height: 14.0),
                   Text(info, style: TextStyle(fontSize: 13.5, color: Colors.black.withAlpha(204), height: 1.35)),
-                  // Member's own chrono on this track, when available.
-                  // Rendered as a small card-in-card with a subtle white
-                  // background so it has its own visual identity without
-                  // competing with the hero record figure above.
+                  // Member's own chrono on this track, when available
                   if (memberLapTimeStr != null) ...[
                     const SizedBox(height: 16.0),
                     Container(
@@ -954,7 +950,7 @@ class _TrackDetailState extends State<TrackDetail> {
                       children: <Widget>[
                         _trackDetailProvider.currentTrack != null
                             ? Image.asset(
-                                TrackUtils.trackCoverImageUrlFromName(_trackDetailProvider.currentTrack!.name),
+                                TrackUtils.coverImageForCircuit(_trackDetailProvider.currentTrack!.circuit),
                                 fit: BoxFit.fitWidth,
                               )
                             : Container(),
@@ -971,9 +967,7 @@ class _TrackDetailState extends State<TrackDetail> {
                             ),
                           ),
                         ),
-                        // circular badge with the track-shape silhouette,
-                        // anchored to the bottom-left, fading out as the
-                        // header collapses
+                        // circular badge with the track-shape silhouette
                         if (_trackDetailProvider.currentTrack != null)
                           Positioned(
                             bottom: 12.0,
@@ -999,7 +993,11 @@ class _TrackDetailState extends State<TrackDetail> {
                                 ),
                                 child: FittedBox(
                                   fit: BoxFit.contain,
-                                  child: TrackUtils.getTrackIcon(_trackDetailProvider.currentTrack!.name ?? ""),
+                                  child: Icon(
+                                    TrackUtils.iconForTrack(_trackDetailProvider.currentTrack),
+                                    color: Colors.red[700],
+                                    size: 60,
+                                  ),
                                 ),
                               ),
                             ),

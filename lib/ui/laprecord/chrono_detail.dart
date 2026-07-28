@@ -447,7 +447,7 @@ class _ChronoDetailState extends State<ChronoDetail> {
                       children: <Widget>[
                         // track cover image as backdrop, falls back to a blue gradient if the asset isn't bundled
                         Image.asset(
-                          TrackUtils.trackCoverImageUrlFromName(trackName),
+                          TrackUtils.coverImageForCircuit(record.track?.circuit),
                           fit: BoxFit.cover,
                           errorBuilder: (_, __, ___) => Container(
                             decoration: BoxDecoration(
@@ -582,7 +582,7 @@ class _ChronoDetailState extends State<ChronoDetail> {
                           ),
                           _divider(),
                           _detailRow(
-                            icon: TrackUtils.trackIconFromName(trackName),
+                            icon: TrackUtils.iconForTrack(record.track),
                             iconColor: Colors.red[700]!,
                             label: AppString.eventTrackId,
                             value: trackName ?? '—',

@@ -104,26 +104,6 @@ class TrackListProvider extends ChangeNotifier {
     );
   }
 
-  /// Search for tracks according to the specified [text].
-  void searchTracks(String text) async {
-    _updateStatus(LoadingStatus.loading);
-    await _tracksService
-        .searchTracks(text)
-        .then(
-          (value) async {
-            _log.fine("Tracks search list retrieved successfully");
-            _tracks = value;
-            _updateStatus(_tracks.isEmpty ? LoadingStatus.empty : LoadingStatus.loaded);
-          },
-          onError: (error) {
-            _log.warning("Error when searching tracks ($error)");
-            _tracks = [];
-            _updateStatus(LoadingStatus.notLoaded);
-            throw (error);
-          },
-        );
-  }
-
   /// Insert the server-persisted [track] into the in-memory list and
   /// re-sort alphabetically so the list looks like a freshly fetched
   /// one. Memory-only: callers run the GraphQL mutation via

@@ -52,8 +52,21 @@ class RecordsService {
           }
           track {
             id
-            name
+            variantName
             lapRecord
+            iconKey
+            circuit {
+              id
+              name
+              latitude
+              longitude
+              website
+              country {
+                code
+                nameFr
+                nameEn
+              }
+            }
           }
           comments
           createdOn
@@ -63,12 +76,7 @@ class RecordsService {
     """;
 
     return GraphQLConnection().graphQLClient
-        .query(
-          QueryOptions(
-            document: parseString(query),
-            fetchPolicy: FetchPolicy.noCache,
-          ),
-        )
+        .query(QueryOptions(document: parseString(query), fetchPolicy: FetchPolicy.noCache))
         .then(
           (result) {
             final List<Record> records = [];
@@ -78,8 +86,7 @@ class RecordsService {
               dynamic lapRecordList = result.data!['getAllLapRecords'];
               if (lapRecordList == null) {
                 _log.info("getAllLapRecords returned null data");
-              } else if (lapRecordList is Map<String, dynamic> &&
-                  lapRecordList.isEmpty) {
+              } else if (lapRecordList is Map<String, dynamic> && lapRecordList.isEmpty) {
                 _log.info("getAllLapRecords returned empty data");
               } else {
                 for (dynamic record in lapRecordList) {
@@ -121,8 +128,21 @@ class RecordsService {
           }
           track {
             id
-            name
+            variantName
             lapRecord
+            iconKey
+            circuit {
+              id
+              name
+              latitude
+              longitude
+              website
+              country {
+                code
+                nameFr
+                nameEn
+              }
+            }
           }
           comments
           createdOn
@@ -133,11 +153,7 @@ class RecordsService {
 
     return GraphQLConnection().graphQLClient
         .query(
-          QueryOptions(
-            document: parseString(query),
-            variables: {'trackId': trackId},
-            fetchPolicy: FetchPolicy.noCache,
-          ),
+          QueryOptions(document: parseString(query), variables: {'trackId': trackId}, fetchPolicy: FetchPolicy.noCache),
         )
         .then(
           (result) {
@@ -148,8 +164,7 @@ class RecordsService {
               dynamic lapRecordList = result.data!['getTrackLapRecords'];
               if (lapRecordList == null) {
                 _log.info("getTrackLapRecords returned null data");
-              } else if (lapRecordList is Map<String, dynamic> &&
-                  lapRecordList.isEmpty) {
+              } else if (lapRecordList is Map<String, dynamic> && lapRecordList.isEmpty) {
                 _log.info("getTrackLapRecords returned empty data");
               } else {
                 for (dynamic record in lapRecordList) {
@@ -160,9 +175,7 @@ class RecordsService {
             }
           },
           onError: (error) {
-            _log.severe(
-              "Error while fetching lap record list for track ID $trackId: $error",
-            );
+            _log.severe("Error while fetching lap record list for track ID $trackId: $error");
             throw Exception(error);
           },
         );
@@ -193,8 +206,21 @@ class RecordsService {
           }
           track {
             id
-            name
+            variantName
             lapRecord
+            iconKey
+            circuit {
+              id
+              name
+              latitude
+              longitude
+              website
+              country {
+                code
+                nameFr
+                nameEn
+              }
+            }
           }
           comments
           createdOn
@@ -220,8 +246,7 @@ class RecordsService {
               dynamic lapRecordList = result.data!['getMemberLapRecords'];
               if (lapRecordList == null) {
                 _log.info("getMemberLapRecords returned null data");
-              } else if (lapRecordList is Map<String, dynamic> &&
-                  lapRecordList.isEmpty) {
+              } else if (lapRecordList is Map<String, dynamic> && lapRecordList.isEmpty) {
                 _log.info("getMemberLapRecords returned empty data");
               } else {
                 for (dynamic record in lapRecordList) {
@@ -232,9 +257,7 @@ class RecordsService {
             }
           },
           onError: (error) {
-            _log.severe(
-              "Error while fetching lap record list for member ID $memberId: $error",
-            );
+            _log.severe("Error while fetching lap record list for member ID $memberId: $error");
             throw Exception(error);
           },
         );
@@ -266,8 +289,21 @@ class RecordsService {
           }
           track {
             id
-            name
+            variantName
             lapRecord
+            iconKey
+            circuit {
+              id
+              name
+              latitude
+              longitude
+              website
+              country {
+                code
+                nameFr
+                nameEn
+              }
+            }
           }
           comments
           createdOn
@@ -277,12 +313,7 @@ class RecordsService {
     """;
 
     return GraphQLConnection().graphQLClient
-        .query(
-          QueryOptions(
-            document: parseString(query),
-            fetchPolicy: FetchPolicy.noCache,
-          ),
-        )
+        .query(QueryOptions(document: parseString(query), fetchPolicy: FetchPolicy.noCache))
         .then(
           (result) {
             final List<Record> records = [];
@@ -292,8 +323,7 @@ class RecordsService {
               dynamic lapRecordList = result.data!['getMyLapRecords'];
               if (lapRecordList == null) {
                 _log.info("getMyLapRecords returned null data");
-              } else if (lapRecordList is Map<String, dynamic> &&
-                  lapRecordList.isEmpty) {
+              } else if (lapRecordList is Map<String, dynamic> && lapRecordList.isEmpty) {
                 _log.info("getMyLapRecords returned empty data");
               } else {
                 for (dynamic record in lapRecordList) {
@@ -304,9 +334,7 @@ class RecordsService {
             }
           },
           onError: (error) {
-            _log.severe(
-              "Error while fetching lap record list for the logged member: $error",
-            );
+            _log.severe("Error while fetching lap record list for the logged member: $error");
             throw Exception(error);
           },
         );
@@ -314,9 +342,7 @@ class RecordsService {
 
   /// Create the specified [record] into the database.
   Future<Record> createRecord(Record record) async {
-    _log.info(
-      "Creating lap record for member ID ${record.member!.id} on track ID ${record.track!.id} ...",
-    );
+    _log.info("Creating lap record for member ID ${record.member!.id} on track ID ${record.track!.id} ...");
 
     final String newLapRecordMutation = """
       mutation CreateLapRecord(\$memberId: Long!, \$trackId: Long!, \$bikeId: Long!, \$recordDate: String!, \$lapTime: Int!, \$conditions: String!, \$comments: String, \$isPublic: Boolean!) {
@@ -348,8 +374,21 @@ class RecordsService {
           }
           track {
             id
-            name
+            variantName
             lapRecord
+            iconKey
+            circuit {
+              id
+              name
+              latitude
+              longitude
+              website
+              country {
+                code
+                nameFr
+                nameEn
+              }
+            }
           }
           comments
           createdOn
@@ -374,9 +413,7 @@ class RecordsService {
       fetchPolicy: FetchPolicy.noCache,
     );
 
-    final QueryResult result = await GraphQLConnection().graphQLClient.mutate(
-      mutationOptions,
-    );
+    final QueryResult result = await GraphQLConnection().graphQLClient.mutate(mutationOptions);
 
     if (result.hasException) {
       throw AppUtils.handleGraphQlException(result)!;
@@ -419,8 +456,21 @@ class RecordsService {
           }
           track {
             id
-            name
+            variantName
             lapRecord
+            iconKey
+            circuit {
+              id
+              name
+              latitude
+              longitude
+              website
+              country {
+                code
+                nameFr
+                nameEn
+              }
+            }
           }
           comments
           createdOn
@@ -445,9 +495,7 @@ class RecordsService {
       fetchPolicy: FetchPolicy.noCache,
     );
 
-    final QueryResult result = await GraphQLConnection().graphQLClient.mutate(
-      mutationOptions,
-    );
+    final QueryResult result = await GraphQLConnection().graphQLClient.mutate(mutationOptions);
 
     if (result.hasException) {
       throw AppUtils.handleGraphQlException(result)!;
@@ -478,8 +526,21 @@ class RecordsService {
           }
           track {
             id
-            name
+            variantName
             lapRecord
+            iconKey
+            circuit {
+              id
+              name
+              latitude
+              longitude
+              website
+              country {
+                code
+                nameFr
+                nameEn
+              }
+            }
           }
           comments
           createdOn
@@ -494,9 +555,7 @@ class RecordsService {
       fetchPolicy: FetchPolicy.noCache,
     );
 
-    final QueryResult result = await GraphQLConnection().graphQLClient.mutate(
-      mutationOptions,
-    );
+    final QueryResult result = await GraphQLConnection().graphQLClient.mutate(mutationOptions);
 
     if (result.hasException) {
       throw AppUtils.handleGraphQlException(result)!;

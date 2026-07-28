@@ -304,16 +304,38 @@ class AppString {
 
   static const String eventScreenTitle = 'Calendrier';
 
-  // Track create / edit
-  static const String trackEdit = 'Modifier le circuit';
-  static const String trackCreate = 'Ajouter un circuit';
-  static const String trackCreated = 'Le circuit a été créé avec succès !';
-  static const String trackCreationFailed = 'Échec lors de la création du circuit';
-  static const String trackUpdated = 'Le circuit a été mis à jour avec succès !';
-  static const String trackUpdateFailed = 'Échec lors de la mise à jour du circuit';
-  static const String trackDeleted = 'Le circuit a été supprimé avec succès !';
-  static const String trackDeletionFailed = 'Échec lors de la suppression du circuit';
-  static const String trackDeletionAreYouSure = 'Êtes-vous sûr de vouloir supprimer ce circuit ?';
+  // Circuit (venue) create / edit
+  static const String circuitEdit = 'Modifier le circuit';
+  static const String circuitCreate = 'Ajouter un circuit';
+  static const String circuitCreated = 'Le circuit a été créé avec succès !';
+  static const String circuitCreationFailed = 'Échec lors de la création du circuit';
+  static const String circuitUpdated = 'Le circuit a été mis à jour avec succès !';
+  static const String circuitUpdateFailed = 'Échec lors de la mise à jour du circuit';
+  static const String circuitDeleted = 'Le circuit a été supprimé avec succès !';
+  static const String circuitDeletionFailed = 'Échec lors de la suppression du circuit';
+  static const String circuitDeletionAreYouSure = 'Êtes-vous sûr de vouloir supprimer ce circuit ?';
+  static const String circuitDeletionHasVersions = 'Supprimez d\'abord toutes les versions de ce circuit.';
+  static const String circuitVersionsSectionTitle = 'Versions';
+  static const String circuitNoVersion = 'Ce circuit n\'a aucune version';
+  static const String circuitAddVersion = 'Ajouter une version';
+  static const String circuitSingleVersion = 'Version unique';
+
+  // Version (track) create / edit
+  static const String trackEdit = 'Modifier la version';
+  static const String trackCreate = 'Ajouter une version';
+  static const String trackCreated = 'La version a été créée avec succès !';
+  static const String trackCreationFailed = 'Échec lors de la création de la version';
+  static const String trackUpdated = 'La version a été mise à jour avec succès !';
+  static const String trackUpdateFailed = 'Échec lors de la mise à jour de la version';
+  static const String trackDeleted = 'La version a été supprimée avec succès !';
+  static const String trackDeletionFailed = 'Échec lors de la suppression de la version';
+  static const String trackDeletionAreYouSure = 'Êtes-vous sûr de vouloir supprimer cette version ?';
+  static const String trackCircuitLabel = 'Circuit';
+  static const String trackCircuitMandatory = 'Le circuit est obligatoire';
+  static const String trackVariantName = 'Version';
+  static const String trackVariantNameHint = 'ex. 5,8 km GP (laisser vide si une seule version)';
+  static const String trackIconKey = 'Icône du tracé';
+  static const String trackIconKeyHint = 'Clé de l\'icône (optionnel)';
   static const String trackName = 'Nom';
   static const String trackNameHint = 'Nom du circuit';
   static const String trackNameMandatory = 'Le nom est obligatoire';

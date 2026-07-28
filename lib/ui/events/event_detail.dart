@@ -810,11 +810,8 @@ class EventDetail extends StatelessWidget {
                                                   children: <Widget>[
                                                     Center(
                                                       child: Icon(
-                                                        TrackUtils.trackIconFromName(
-                                                          _eventDetailProvider
-                                                              .currentEvent
-                                                              .track
-                                                              ?.name,
+                                                        TrackUtils.iconForTrack(
+                                                          _eventDetailProvider.currentEvent.track,
                                                         ),
                                                         size: 38,
                                                         color: Colors.red[700],

@@ -19,13 +19,13 @@
 
 import 'package:ccteam/models/event.dart';
 import 'package:ccteam/models/membership_fee.dart';
+import 'package:ccteam/providers/circuit_list_provider.dart';
 import 'package:ccteam/providers/event_detail_provider.dart';
 import 'package:ccteam/providers/event_list_provider.dart';
 import 'package:ccteam/providers/home_provider.dart';
 import 'package:ccteam/providers/login_provider.dart';
 import 'package:ccteam/providers/member_list_provider.dart';
 import 'package:ccteam/providers/record_list_provider.dart';
-import 'package:ccteam/providers/track_list_provider.dart';
 import 'package:ccteam/utils/custom_icons.dart';
 import 'package:ccteam/utils/date_utils.dart';
 import 'package:ccteam/utils/enums.dart';
@@ -56,7 +56,7 @@ class HomeStats extends StatelessWidget {
   Widget build(BuildContext context) {
     final memberListProvider = Provider.of<MemberListProvider>(context, listen: true);
     final eventListProvider = Provider.of<EventListProvider>(context, listen: true);
-    final trackListProvider = Provider.of<TrackListProvider>(context, listen: true);
+    final circuitListProvider = Provider.of<CircuitListProvider>(context, listen: true);
     final recordListProvider = Provider.of<RecordListProvider>(context, listen: true);
     final loginProvider = Provider.of<LoginProvider>(context, listen: true);
 
@@ -66,8 +66,8 @@ class HomeStats extends StatelessWidget {
     final String membersValue = memberListProvider.totalCount?.toString() ?? '—';
     final String eventsValue = eventListProvider.totalCount?.toString() ?? '—';
 
-    final String tracksValue = trackListProvider.loadingStatus == LoadingStatus.loaded
-        ? trackListProvider.tracks.length.toString()
+    final String tracksValue = circuitListProvider.loadingStatus == LoadingStatus.loaded
+        ? circuitListProvider.circuits.length.toString()
         : '—';
 
     // personal values

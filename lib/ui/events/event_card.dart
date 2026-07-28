@@ -188,7 +188,7 @@ class EventCard extends StatelessWidget {
                     child: Stack(
                       fit: StackFit.expand,
                       children: [
-                        Image.asset(TrackUtils.trackCoverImageUrlFromName(event.track?.name), fit: BoxFit.cover),
+                        Image.asset(TrackUtils.coverImageForCircuit(event.track?.circuit), fit: BoxFit.cover),
                         // dark overlay for date readability
                         Container(color: Colors.black.withValues(alpha: 0.4)),
                         // stacked date (single day or range, see helper)

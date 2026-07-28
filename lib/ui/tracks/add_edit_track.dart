@@ -17,27 +17,29 @@
  * along with CCTeam. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import 'package:ccteam/models/country.dart';
+import 'package:ccteam/models/circuit.dart';
 import 'package:ccteam/models/track.dart';
-import 'package:ccteam/providers/country_list_provider.dart';
+import 'package:ccteam/providers/circuit_detail_provider.dart';
+import 'package:ccteam/providers/circuit_list_provider.dart';
 import 'package:ccteam/providers/message_provider.dart';
 import 'package:ccteam/providers/track_creation_provider.dart';
 import 'package:ccteam/providers/track_detail_provider.dart';
 import 'package:ccteam/providers/track_list_provider.dart';
-import 'package:ccteam/ui/laprecord/add_edit_record.dart';
+import 'package:ccteam/ui/laprecord/add_edit_record.dart' show LapTimeTextInputFormatter;
 import 'package:ccteam/utils/custom_icons.dart';
 import 'package:ccteam/utils/date_utils.dart';
 import 'package:ccteam/utils/enums.dart';
 import 'package:ccteam/utils/strings.dart';
+import 'package:ccteam/utils/track_utils.dart';
 import 'package:ccteam/widgets/form_scaffold.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
-/// Add / edit form for a [Track]. Mirrors [AddEditEvent] / [AddEditNews]
-/// in shape and contract: the caller seeds [TrackCreationProvider] with
-/// either a fresh `Track()` (creation flow) or a cloned existing
-/// instance (edit flow) before pushing this route.
+/// Add / edit form for a [Track], a single version (layout) of a circuit. The
+/// caller seeds [TrackCreationProvider] with either a fresh `Track()` (creation,
+/// optionally with its `circuit` pre-set when adding from a circuit) or a cloned
+/// existing instance (edit).
 class AddEditTrack extends StatefulWidget {
   const AddEditTrack({Key? key}) : super(key: key);
 
@@ -50,68 +52,51 @@ class AddEditTrack extends StatefulWidget {
 class _AddEditTrackState extends State<AddEditTrack> {
   final GlobalKey<FormState> _formKey = new GlobalKey<FormState>();
 
-  /// Currently selected country in the dropdown. We track it locally so
-  /// the dropdown re-renders immediately on change (the
-  /// [TrackCreationProvider] copy only matters at save time).
-  Country? _selectedCountry;
-
-  /// Prime the country list once, after the State is attached to the
-  /// tree (initState can't safely call providers that need a context
-  /// hop). The provider keeps the list cached, so reopening the form
-  /// later doesn't re-fetch.
-  bool _countriesBootstrapped = false;
+  /// Currently selected parent circuit, tracked locally so the dropdown
+  /// re-renders immediately on change.
+  Circuit? _selectedCircuit;
 
   @override
   void initState() {
     super.initState();
-    final TrackCreationProvider trackCreationProvider = Provider.of<TrackCreationProvider>(context, listen: false);
-    _selectedCountry = trackCreationProvider.track.country;
+    _selectedCircuit = Provider.of<TrackCreationProvider>(context, listen: false).track.circuit;
   }
 
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    if (_countriesBootstrapped) return;
-    _countriesBootstrapped = true;
-    // kick off the country fetch the first time the page is built.
-    // The provider's `ensureLoaded` is a no-op when already cached.
-    final CountryListProvider countryListProvider = Provider.of<CountryListProvider>(context, listen: false);
-    countryListProvider.ensureLoaded();
-  }
-
-  /// Validate the form then submit data to backend. On success the new
-  /// or updated track is pushed to the list / detail providers so the
-  /// rest of the app picks it up without an extra fetch.
+  /// Validate + submit. On success the new / updated version is mirrored into
+  /// the version list, the currently-shown version detail (edit flow) and the
+  /// parent circuit detail so its versions list refreshes.
   void submitForm(Track track) async {
     final FormState _form = _formKey.currentState!;
-
     if (!_form.validate()) {
       Provider.of<MessageProvider>(context, listen: false).setMessage(AppString.formNotValid, MessageType.ERROR);
       return;
     }
-    // this invokes each onSaved event
     _form.save();
 
-    final TrackCreationProvider _trackCreationProvider = Provider.of<TrackCreationProvider>(context, listen: false);
-    final TrackListProvider _trackListProvider = Provider.of<TrackListProvider>(context, listen: false);
-    final TrackDetailProvider _trackDetailProvider = Provider.of<TrackDetailProvider>(context, listen: false);
+    final TrackCreationProvider _creationProvider = Provider.of<TrackCreationProvider>(context, listen: false);
+    final TrackListProvider _listProvider = Provider.of<TrackListProvider>(context, listen: false);
+    final TrackDetailProvider _detailProvider = Provider.of<TrackDetailProvider>(context, listen: false);
+    final CircuitDetailProvider _circuitDetailProvider = Provider.of<CircuitDetailProvider>(context, listen: false);
 
-    // submit data to backend, if id is set this is an update, else a creation
     if (track.id != null) {
-      await _trackCreationProvider.updateTrack();
-      // mirror server response into the list + currently-displayed detail
-      _trackListProvider.updateTrackInList(_trackCreationProvider.track);
-      _trackDetailProvider.setCurrentTrack(_trackCreationProvider.track);
+      await _creationProvider.updateTrack();
+      _listProvider.updateTrackInList(_creationProvider.track);
+      _detailProvider.setCurrentTrack(_creationProvider.track);
     } else {
-      await _trackCreationProvider.createTrack();
-      _trackListProvider.addTrackInList(_trackCreationProvider.track);
+      await _creationProvider.createTrack();
+      _listProvider.addTrackInList(_creationProvider.track);
     }
+
+    // refresh the parent circuit detail so the new / updated version shows up
+    final Circuit? shownCircuit = _circuitDetailProvider.currentCircuit;
+    if (shownCircuit != null && _creationProvider.track.circuit?.id == shownCircuit.id) {
+      _circuitDetailProvider.fetchCircuit(shownCircuit);
+    }
+
     if (mounted) Navigator.pop(context);
   }
 
-  /// Delete the current track after user confirmation. Only reachable
-  /// in the edit flow (the FormScaffold only shows the trash icon when
-  /// [onDelete] is non-null, which we only wire when `track.id != null`).
+  /// Delete the current version after confirmation. Only reachable in the edit flow.
   void _deleteTrack() {
     showDialog(
       context: context,
@@ -120,26 +105,31 @@ class _AddEditTrackState extends State<AddEditTrack> {
           title: Text(AppString.confirmation),
           content: Text(AppString.trackDeletionAreYouSure),
           actions: <Widget>[
-            TextButton(
-              child: Text(AppString.cancel),
-              onPressed: () => Navigator.of(dialogContext).pop(),
-            ),
+            TextButton(child: Text(AppString.cancel), onPressed: () => Navigator.of(dialogContext).pop()),
             TextButton(
               child: Text(AppString.confirm),
               onPressed: () async {
-                Navigator.of(dialogContext).pop(); // close the dialog
-                final TrackCreationProvider trackCreationProvider = Provider.of<TrackCreationProvider>(
+                Navigator.of(dialogContext).pop();
+                final TrackCreationProvider creationProvider = Provider.of<TrackCreationProvider>(
                   context,
                   listen: false,
                 );
-                final TrackListProvider trackListProvider = Provider.of<TrackListProvider>(context, listen: false);
-                final int trackId = trackCreationProvider.track.id!;
+                final TrackListProvider listProvider = Provider.of<TrackListProvider>(context, listen: false);
+                final CircuitDetailProvider circuitDetailProvider = Provider.of<CircuitDetailProvider>(
+                  context,
+                  listen: false,
+                );
+                final Track track = creationProvider.track;
+                final int trackId = track.id!;
+                final Circuit? shownCircuit = circuitDetailProvider.currentCircuit;
                 try {
-                  await trackCreationProvider.deleteTrack();
-                  trackListProvider.removeTrackFromList(trackId);
-                  // back to the track list (pop the form AND the detail page)
+                  await creationProvider.deleteTrack();
+                  listProvider.removeTrackFromList(trackId);
+                  if (shownCircuit != null && track.circuit?.id == shownCircuit.id) {
+                    circuitDetailProvider.fetchCircuit(shownCircuit);
+                  }
                   if (!mounted) return;
-                  Navigator.pop(context);
+                  // back to whatever opened the form (circuit detail refreshes itself above)
                   Navigator.pop(context);
                 } catch (_) {
                   // snackbar already raised by TrackCreationProvider.deleteTrack
@@ -158,57 +148,51 @@ class _AddEditTrackState extends State<AddEditTrack> {
     final Track track = _trackCreationProvider.track;
     final bool isEditing = track.id != null;
 
-    final _nameField = TextFormField(
-      decoration: const InputDecoration(
-        icon: Icon(CustomIcons.track),
-        hintText: AppString.trackNameHint,
-        labelText: AppString.trackName,
-      ),
-      maxLines: 1,
-      inputFormatters: [LengthLimitingTextInputFormatter(128)],
-      validator: (val) => (val == null || val.trim().isEmpty) ? AppString.trackNameMandatory : null,
-      onSaved: (val) => track.name = val?.trim(),
-      initialValue: track.name,
-    );
-
-    final _countryField = Consumer<CountryListProvider>(
-      builder: (_, countryListProvider, __) {
-        if (countryListProvider.loadingStatus == LoadingStatus.loading && countryListProvider.countries.isEmpty) {
+    final _circuitField = Consumer<CircuitListProvider>(
+      builder: (_, circuitListProvider, __) {
+        if (circuitListProvider.loadingStatus == LoadingStatus.loading && circuitListProvider.circuits.isEmpty) {
           return const Padding(
             padding: EdgeInsets.symmetric(vertical: 12.0),
             child: Center(child: CircularProgressIndicator()),
           );
         }
-        final List<Country> options = countryListProvider.countries;
-        // Look up the current value in the freshly loaded list so the
-        // dropdown can match by identity (the saved track may carry an
-        // older Country instance with the same code).
-        final Country? currentValue = _selectedCountry == null
+        final List<Circuit> options = circuitListProvider.circuits;
+        // resolve the seeded circuit against the freshly-loaded list so the
+        // dropdown matches by identity (id) even across instances
+        final Circuit? currentValue = _selectedCircuit == null
             ? null
-            : options.firstWhere(
-                (c) => c.code == _selectedCountry!.code,
-                orElse: () => _selectedCountry!,
-              );
-        final String lang = Localizations.localeOf(context).languageCode;
-        return DropdownButtonFormField<Country>(
+            : options.firstWhere((c) => c.id == _selectedCircuit!.id, orElse: () => _selectedCircuit!);
+        return DropdownButtonFormField<Circuit>(
           initialValue: currentValue,
-          decoration: const InputDecoration(
-            icon: Icon(Icons.public),
-            hintText: AppString.trackCountry,
-            labelText: AppString.trackCountry,
-          ),
           isExpanded: true,
-          items: options.map((Country c) {
-            return DropdownMenuItem<Country>(
+          decoration: const InputDecoration(
+            icon: Icon(CustomIcons.track),
+            hintText: AppString.trackCircuitLabel,
+            labelText: AppString.trackCircuitLabel,
+          ),
+          items: options.map((Circuit c) {
+            return DropdownMenuItem<Circuit>(
               value: c,
-              child: Text("${c.flagEmoji}  ${c.localizedName(lang)}", overflow: TextOverflow.ellipsis),
+              child: Text(c.name ?? '', overflow: TextOverflow.ellipsis),
             );
           }).toList(),
-          onChanged: (Country? val) => setState(() => _selectedCountry = val),
-          onSaved: (val) => track.country = val,
-          validator: (val) => val == null ? AppString.trackCountryMandatory : null,
+          onChanged: (Circuit? val) => setState(() => _selectedCircuit = val),
+          onSaved: (val) => track.circuit = val,
+          validator: (val) => val == null ? AppString.trackCircuitMandatory : null,
         );
       },
+    );
+
+    final _variantNameField = TextFormField(
+      decoration: const InputDecoration(
+        icon: Icon(Icons.alt_route),
+        hintText: AppString.trackVariantNameHint,
+        labelText: AppString.trackVariantName,
+      ),
+      maxLines: 1,
+      inputFormatters: [LengthLimitingTextInputFormatter(128)],
+      onSaved: (val) => track.variantName = (val == null || val.trim().isEmpty) ? null : val.trim(),
+      initialValue: track.variantName,
     );
 
     final _distanceField = TextFormField(
@@ -220,10 +204,7 @@ class _AddEditTrackState extends State<AddEditTrack> {
       ),
       maxLines: 1,
       keyboardType: const TextInputType.numberWithOptions(decimal: false, signed: false),
-      inputFormatters: [
-        FilteringTextInputFormatter.digitsOnly,
-        LengthLimitingTextInputFormatter(6),
-      ],
+      inputFormatters: [FilteringTextInputFormatter.digitsOnly, LengthLimitingTextInputFormatter(6)],
       validator: (val) {
         if (val == null || val.isEmpty) return AppString.trackDistanceMandatory;
         final int? parsed = int.tryParse(val);
@@ -261,8 +242,6 @@ class _AddEditTrackState extends State<AddEditTrack> {
       initialValue: AppDateUtils.toLapTimeString(track.lapRecord),
     );
 
-    // Free-form context about the lap record (rider, bike, year, …). Optional,
-    // shown as a subtitle under the lap-record value in the track detail page.
     final _lapRecordInfoField = TextFormField(
       decoration: const InputDecoration(
         icon: Icon(Icons.person_outline),
@@ -275,90 +254,16 @@ class _AddEditTrackState extends State<AddEditTrack> {
       initialValue: track.lapRecordInfo,
     );
 
-    final _websiteField = TextFormField(
-      decoration: const InputDecoration(
-        icon: Icon(Icons.public),
-        hintText: AppString.trackWebsiteHint,
-        labelText: AppString.trackWebsite,
+    final _iconKeyField = TextFormField(
+      decoration: InputDecoration(
+        icon: Icon(TrackUtils.iconForTrack(track)),
+        hintText: AppString.trackIconKeyHint,
+        labelText: AppString.trackIconKey,
       ),
       maxLines: 1,
-      keyboardType: TextInputType.url,
-      inputFormatters: [LengthLimitingTextInputFormatter(255)],
-      onSaved: (val) => track.website = (val == null || val.trim().isEmpty) ? null : val.trim(),
-      initialValue: track.website,
-    );
-
-    final _latitudeField = TextFormField(
-      decoration: const InputDecoration(
-        icon: Icon(Icons.place),
-        hintText: '46.5197',
-        labelText: AppString.trackLatitude,
-      ),
-      maxLines: 1,
-      keyboardType: const TextInputType.numberWithOptions(decimal: true, signed: true),
-      inputFormatters: [
-        FilteringTextInputFormatter.allow(RegExp(r'^-?\d*\.?\d*$')),
-        LengthLimitingTextInputFormatter(16),
-      ],
-      validator: (val) {
-        if (val == null || val.isEmpty) return AppString.trackLatitudeMandatory;
-        final double? parsed = double.tryParse(val);
-        if (parsed == null || parsed < -90.0 || parsed > 90.0) return AppString.trackLatitudeInvalid;
-        return null;
-      },
-      onSaved: (val) => track.latitude = double.parse(val!),
-      initialValue: track.latitude?.toString(),
-    );
-
-    final _longitudeField = TextFormField(
-      decoration: const InputDecoration(
-        icon: Icon(Icons.place_outlined),
-        hintText: '6.6323',
-        labelText: AppString.trackLongitude,
-      ),
-      maxLines: 1,
-      keyboardType: const TextInputType.numberWithOptions(decimal: true, signed: true),
-      inputFormatters: [
-        FilteringTextInputFormatter.allow(RegExp(r'^-?\d*\.?\d*$')),
-        LengthLimitingTextInputFormatter(16),
-      ],
-      validator: (val) {
-        if (val == null || val.isEmpty) return AppString.trackLongitudeMandatory;
-        final double? parsed = double.tryParse(val);
-        if (parsed == null || parsed < -180.0 || parsed > 180.0) return AppString.trackLongitudeInvalid;
-        return null;
-      },
-      onSaved: (val) => track.longitude = double.parse(val!),
-      initialValue: track.longitude?.toString(),
-    );
-
-    // Reminder shown only on the creation flow — once a track exists
-    // the icon / cover image are presumably already bundled (or the
-    // default ones are used) so we don't need to nag on every edit.
-    final Widget _assetsReminder = Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 10.0),
-      decoration: BoxDecoration(
-        color: Colors.amber[50],
-        border: Border.all(color: Colors.amber[300]!),
-        borderRadius: BorderRadius.circular(8.0),
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: <Widget>[
-          Icon(Icons.info_outline, size: 18.0, color: Colors.amber[800]),
-          const SizedBox(width: 8.0),
-          Expanded(
-            child: Text(
-              AppString.trackAssetsReminder,
-              style: TextStyle(
-                color: Colors.amber[900],
-                fontSize: 12.5,
-                height: 1.35,
-              ),
-            ),
-          ),
-        ],
-      ),
+      inputFormatters: [LengthLimitingTextInputFormatter(64)],
+      onSaved: (val) => track.iconKey = (val == null || val.trim().isEmpty) ? null : val.trim(),
+      initialValue: track.iconKey,
     );
 
     return FormScaffold(
@@ -366,18 +271,14 @@ class _AddEditTrackState extends State<AddEditTrack> {
       formKey: _formKey,
       loadingStatus: _trackCreationProvider.loadingStatus,
       onSave: () => submitForm(track),
-      // delete action only when editing an existing track
       onDelete: isEditing ? _deleteTrack : null,
       fields: <Widget>[
-        if (!isEditing) _assetsReminder,
-        _nameField,
-        _countryField,
+        _circuitField,
+        _variantNameField,
         _distanceField,
         _lapRecordField,
         _lapRecordInfoField,
-        _websiteField,
-        _latitudeField,
-        _longitudeField,
+        _iconKeyField,
       ],
     );
   }
