@@ -289,7 +289,6 @@ class CircuitDetail extends StatelessWidget {
               pinned: true,
               expandedHeight: 200,
               foregroundColor: Colors.white,
-              title: Text(circuit.name ?? ''),
               actions: <Widget>[
                 if (circuit.website != null && circuit.website!.isNotEmpty)
                   IconButton(
@@ -304,38 +303,81 @@ class CircuitDetail extends StatelessWidget {
                     onPressed: () => _editCircuit(context, circuit),
                   ),
               ],
-              flexibleSpace: FlexibleSpaceBar(
-                background: Stack(
-                  fit: StackFit.expand,
-                  children: <Widget>[
-                    Image.asset(
-                      TrackUtils.coverImageForCircuit(circuit),
-                      fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) => Container(
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            colors: [Colors.blue[400]!, Colors.blue[700]!],
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
+              flexibleSpace: LayoutBuilder(
+                builder: (BuildContext context, BoxConstraints constraints) {
+                  final FlexibleSpaceBarSettings settings = context
+                      .dependOnInheritedWidgetOfExactType<
+                        FlexibleSpaceBarSettings
+                      >()!;
+                  final double deltaExtent =
+                      settings.maxExtent - settings.minExtent;
+                  // t is 0.0 when fully deployed, 1.0 when fully collapsed
+                  final double t =
+                      (1.0 -
+                              (settings.currentExtent - settings.minExtent) /
+                                  deltaExtent)
+                          .clamp(0.0, 1.0);
+                  return FlexibleSpaceBar(
+                    titlePadding: EdgeInsetsDirectional.only(
+                      start: 16.0 + t * 40.0,
+                      bottom: 16.0,
+                    ),
+                    title: Text(
+                      circuit.name ?? '',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 24.0 - t * 6.0,
+                        fontWeight: FontWeight.lerp(
+                          FontWeight.bold,
+                          FontWeight.normal,
+                          t,
+                        ),
+                        shadows: t < 0.5
+                            ? const [
+                                Shadow(
+                                  offset: Offset(1.0, 1.0),
+                                  blurRadius: 3.0,
+                                  color: Colors.black,
+                                ),
+                              ]
+                            : null,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    background: Stack(
+                      fit: StackFit.expand,
+                      children: <Widget>[
+                        Image.asset(
+                          TrackUtils.coverImageForCircuit(circuit),
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, __, ___) => Container(
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: [Colors.blue[400]!, Colors.blue[700]!],
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                              ),
+                            ),
                           ),
                         ),
-                      ),
-                    ),
-                    DecoratedBox(
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topCenter,
-                          end: Alignment.bottomCenter,
-                          colors: <Color>[
-                            Colors.black.withAlpha(120),
-                            Colors.black.withAlpha(40),
-                            Colors.black.withAlpha(150),
-                          ],
+                        DecoratedBox(
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomCenter,
+                              colors: <Color>[
+                                Colors.black.withAlpha(120),
+                                Colors.black.withAlpha(40),
+                                Colors.black.withAlpha(150),
+                              ],
+                            ),
+                          ),
                         ),
-                      ),
+                      ],
                     ),
-                  ],
-                ),
+                  );
+                },
               ),
             ),
             SliverPadding(

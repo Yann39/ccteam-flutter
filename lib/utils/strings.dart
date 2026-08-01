@@ -319,6 +319,7 @@ class AppString {
   static const String circuitNoVersion = 'Ce circuit n\'a aucune version';
   static const String circuitAddVersion = 'Ajouter une version';
   static const String circuitSingleVersion = 'Version unique';
+  static const String circuitManage = 'Gérer le circuit';
 
   // Version (track) create / edit
   static const String trackEdit = 'Modifier la version';

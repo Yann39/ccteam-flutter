@@ -38,47 +38,6 @@ class TrackUtils {
   }
 
   /// Get the right track icon according to the specified [trackName]
-  static Icon getTrackIcon(String trackName) {
-    if (trackName == 'Alès') {
-      return Icon(CustomIcons.ales_track, color: Colors.red[700], size: 90);
-    } else if (trackName == 'Barcelone') {
-      return Icon(CustomIcons.barcelone_track, color: Colors.red[700], size: 60);
-    } else if (trackName == 'Bresse') {
-      return Icon(CustomIcons.bresse_track, color: Colors.red[700], size: 60);
-    } else if (trackName == 'Bourbonnais') {
-      return Icon(CustomIcons.bourbonnais_track, color: Colors.red[700], size: 70);
-    } else if (trackName == 'Carole') {
-      return Icon(CustomIcons.carole_track, color: Colors.red[700], size: 60);
-    } else if (trackName == 'Dijon-Prenois') {
-      return Icon(CustomIcons.dijon_prenois_track, color: Colors.red[700], size: 90);
-    } else if (trackName == 'La Ferté-Gaucher') {
-      return Icon(CustomIcons.la_ferte_gaucher_track, color: Colors.red[700], size: 78);
-    } else if (trackName == 'Le Mans') {
-      return Icon(CustomIcons.le_mans_track, color: Colors.red[700], size: 80);
-    } else if (trackName == 'Lédenon') {
-      return Icon(CustomIcons.ledenon_track, color: Colors.red[700], size: 70);
-    } else if (trackName == 'Magny-Cours') {
-      return Icon(CustomIcons.magny_cours_track, color: Colors.red[700], size: 65);
-    } else if (trackName == 'Mirecourt') {
-      return Icon(CustomIcons.mirecourt_track, color: Colors.red[700], size: 65);
-    } else if (trackName == 'Misano') {
-      return Icon(CustomIcons.misano_track, color: Colors.red[700], size: 52);
-    } else if (trackName == 'Paul Ricard (3.8 km)') {
-      return Icon(CustomIcons.paul_ricard_38_track, color: Colors.red[700], size: 65);
-    } else if (trackName == 'Paul Ricard (5.8 km)') {
-      return Icon(CustomIcons.paul_ricard_58_track, color: Colors.red[700], size: 65);
-    } else if (trackName == 'Portimão') {
-      return Icon(CustomIcons.portimao_track, color: Colors.red[700], size: 52);
-    } else if (trackName == 'Pouilly-en-Auxois') {
-      return Icon(CustomIcons.pouilly_en_auxois_track, color: Colors.red[700], size: 52);
-    } else if (trackName == 'Vaison') {
-      return Icon(CustomIcons.vaison_track, color: Colors.red[700], size: 52);
-    } else {
-      return Icon(CustomIcons.default_track, color: Colors.red[700], size: 40);
-    }
-  }
-
-  /// Get the right track icon according to the specified [trackName]
   static IconData trackIconFromName(String? trackName) {
     if (trackName == 'Alès') {
       return CustomIcons.ales_track;
@@ -104,9 +63,9 @@ class TrackUtils {
       return CustomIcons.mirecourt_track;
     } else if (trackName == 'Misano') {
       return CustomIcons.misano_track;
-    } else if (trackName == 'Paul Ricard (3.8 km)') {
+    } else if (trackName == 'Paul Ricard' || trackName == 'paul_ricard_38_track') {
       return CustomIcons.paul_ricard_38_track;
-    } else if (trackName == 'Paul Ricard (5.8 km)') {
+    } else if (trackName == 'paul_ricard_58_track)') {
       return CustomIcons.paul_ricard_58_track;
     } else if (trackName == 'Portimão') {
       return CustomIcons.portimao_track;
@@ -179,9 +138,7 @@ class TrackUtils {
       return "images/tracks/mirecourt_cover.jpg";
     } else if (trackName == 'Misano') {
       return "images/tracks/misano_cover.jpg";
-    } else if (trackName == 'Paul Ricard' ||
-        trackName == 'Paul Ricard (3.8 km)' ||
-        trackName == 'Paul Ricard (5.8 km)') {
+    } else if (trackName == 'Paul Ricard') {
       return "images/tracks/paul-ricard_cover.jpg";
     } else if (trackName == 'Portimão') {
       return "images/tracks/portimao_cover.jpg";

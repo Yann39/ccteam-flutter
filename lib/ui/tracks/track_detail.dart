@@ -18,9 +18,11 @@
  */
 
 import 'package:ccteam/models/bike.dart';
+import 'package:ccteam/models/circuit.dart';
 import 'package:ccteam/models/event.dart';
 import 'package:ccteam/models/record.dart';
 import 'package:ccteam/models/track.dart';
+import 'package:ccteam/providers/circuit_detail_provider.dart';
 import 'package:ccteam/providers/event_detail_provider.dart';
 import 'package:ccteam/providers/login_provider.dart';
 import 'package:ccteam/providers/record_detail_provider.dart';
@@ -878,6 +880,19 @@ class _TrackDetailState extends State<TrackDetail> {
                     icon: const Icon(Icons.public, color: Colors.white),
                     onPressed: () => AppUtils.launchURL(_trackDetailProvider.currentTrack!.website!),
                   ),
+                if (_loginProvider.isAdmin && _trackDetailProvider.currentTrack?.circuit != null)
+                  IconButton(
+                    tooltip: AppString.circuitManage,
+                    icon: const Icon(Icons.stadium, color: Colors.white),
+                    onPressed: () {
+                      // reach the parent circuit page (edit venue / add another version),
+                      // notably when this version was opened straight from the list
+                      final Circuit circuit = _trackDetailProvider.currentTrack!.circuit!;
+                      Provider.of<CircuitDetailProvider>(context, listen: false).setCurrentCircuit(circuit);
+                      Provider.of<CircuitDetailProvider>(context, listen: false).fetchCircuit(circuit);
+                      Navigator.pushNamed(context, '/circuitDetail');
+                    },
+                  ),
                 if (_loginProvider.isAdmin)
                   IconButton(
                     tooltip: AppString.trackEdit,
@@ -905,17 +920,18 @@ class _TrackDetailState extends State<TrackDetail> {
                   final double countryOpacity = ((1.0 - t * 2.0).clamp(0.0, 1.0)).toDouble();
                   final track = _trackDetailProvider.currentTrack;
                   final bool showCountry = track?.country != null && countryOpacity > 0.0;
+                  final String variantLabel = track?.variantName?.trim() ?? '';
+                  final bool showVariant = variantLabel.isNotEmpty && countryOpacity > 0.0;
                   return FlexibleSpaceBar(
-                    // shift the title to the right of the circular badge
-                    // when expanded; slide it back to the standard AppBar
-                    // position as the header collapses
+                    // shift the title to the right of the circular badge when expanded,
+                    // slide it back to the standard AppBar position as the header collapses
                     titlePadding: EdgeInsetsDirectional.only(start: 90.0 - t * 30.0, bottom: 16.0),
                     title: Column(
                       mainAxisSize: MainAxisSize.min,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: <Widget>[
                         Text(
-                          track != null ? (track.name ?? "") : "",
+                          track?.circuit?.name ?? (track?.name ?? ""),
                           style: TextStyle(
                             color: Colors.white,
                             fontSize: 24.0 - t * 6.0,
@@ -925,6 +941,25 @@ class _TrackDetailState extends State<TrackDetail> {
                                 : null,
                           ),
                         ),
+                        if (showVariant)
+                          Opacity(
+                            opacity: countryOpacity,
+                            child: Padding(
+                              padding: const EdgeInsets.only(top: 1.0),
+                              child: Text(
+                                variantLabel,
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 13.0,
+                                  fontWeight: FontWeight.w500,
+                                  height: 1.1,
+                                  shadows: [Shadow(offset: Offset(1.0, 1.0), blurRadius: 3.0, color: Colors.black)],
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ),
                         if (showCountry)
                           Opacity(
                             opacity: countryOpacity,

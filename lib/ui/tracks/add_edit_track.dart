@@ -77,6 +77,7 @@ class _AddEditTrackState extends State<AddEditTrack> {
     final TrackListProvider _listProvider = Provider.of<TrackListProvider>(context, listen: false);
     final TrackDetailProvider _detailProvider = Provider.of<TrackDetailProvider>(context, listen: false);
     final CircuitDetailProvider _circuitDetailProvider = Provider.of<CircuitDetailProvider>(context, listen: false);
+    final CircuitListProvider _circuitListProvider = Provider.of<CircuitListProvider>(context, listen: false);
 
     if (track.id != null) {
       await _creationProvider.updateTrack();
@@ -92,6 +93,8 @@ class _AddEditTrackState extends State<AddEditTrack> {
     if (shownCircuit != null && _creationProvider.track.circuit?.id == shownCircuit.id) {
       _circuitDetailProvider.fetchCircuit(shownCircuit);
     }
+    // keep the circuits list's version counts fresh (it drives the list's direct-to-version navigation)
+    _circuitListProvider.fetchCircuits();
 
     if (mounted) Navigator.pop(context);
   }
@@ -119,6 +122,10 @@ class _AddEditTrackState extends State<AddEditTrack> {
                   context,
                   listen: false,
                 );
+                final CircuitListProvider circuitListProvider = Provider.of<CircuitListProvider>(
+                  context,
+                  listen: false,
+                );
                 final Track track = creationProvider.track;
                 final int trackId = track.id!;
                 final Circuit? shownCircuit = circuitDetailProvider.currentCircuit;
@@ -128,6 +135,8 @@ class _AddEditTrackState extends State<AddEditTrack> {
                   if (shownCircuit != null && track.circuit?.id == shownCircuit.id) {
                     circuitDetailProvider.fetchCircuit(shownCircuit);
                   }
+                  // keep the circuits list's version counts fresh (drives direct-to-version navigation)
+                  circuitListProvider.fetchCircuits();
                   if (!mounted) return;
                   // back to whatever opened the form (circuit detail refreshes itself above)
                   Navigator.pop(context);

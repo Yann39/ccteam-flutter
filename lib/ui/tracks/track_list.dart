@@ -18,10 +18,12 @@
  */
 
 import 'package:ccteam/models/circuit.dart';
+import 'package:ccteam/models/track.dart';
 import 'package:ccteam/providers/circuit_creation_provider.dart';
 import 'package:ccteam/providers/circuit_detail_provider.dart';
 import 'package:ccteam/providers/circuit_list_provider.dart';
 import 'package:ccteam/providers/login_provider.dart';
+import 'package:ccteam/providers/track_detail_provider.dart';
 import 'package:ccteam/ui/main/main_action_menu.dart';
 import 'package:ccteam/ui/main/main_drawer.dart';
 import 'package:ccteam/utils/custom_decorations.dart';
@@ -73,8 +75,21 @@ class _TracksState extends State<Tracks> {
     );
   }
 
-  /// Launch the circuit detail screen.
-  void _navigateToCircuitDetailScreen(BuildContext context, Circuit circuit) async {
+  /// Open a circuit from the list. A circuit with a single version has no useful
+  /// intermediate page (it would list just that one version), so we jump straight
+  /// to the version detail; circuits with several versions (or none) open the
+  /// circuit detail so the user can pick a version / an admin can manage them.
+  void _openCircuit(BuildContext context, Circuit circuit) {
+    final List<Track> versions = circuit.tracks ?? <Track>[];
+    if (versions.length == 1) {
+      final Track version = versions.first;
+      Provider.of<TrackDetailProvider>(context, listen: false).setCurrentTrack(version);
+      if (version.id != null) {
+        Provider.of<TrackDetailProvider>(context, listen: false).fetchTrack(version); // fire-and-forget
+      }
+      Navigator.pushNamed(context, '/trackDetail');
+      return;
+    }
     Provider.of<CircuitDetailProvider>(context, listen: false).setCurrentCircuit(circuit);
     Provider.of<CircuitDetailProvider>(context, listen: false).fetchCircuit(circuit); // fire-and-forget
     Navigator.pushNamed(context, '/circuitDetail');
@@ -91,7 +106,13 @@ class _TracksState extends State<Tracks> {
   /// sits in the top-right corner of the photo.
   Widget _buildCircuitCard(BuildContext context, Circuit circuit) {
     final int versionCount = circuit.tracks?.length ?? 0;
-    final String versionsLabel = versionCount == 0
+    // with a single version, show its length under the name, with several, show the version count instead
+    final int? soleDistance = versionCount == 1 ? circuit.tracks!.first.distance : null;
+    final bool showDistance = soleDistance != null;
+    final IconData subtitleIcon = showDistance ? Icons.straighten : Icons.alt_route;
+    final String subtitleLabel = showDistance
+        ? "${(soleDistance / 1000).toStringAsFixed(2)} km"
+        : versionCount == 0
         ? AppString.circuitNoVersion
         : versionCount == 1
         ? AppString.circuitSingleVersion
@@ -102,7 +123,7 @@ class _TracksState extends State<Tracks> {
       clipBehavior: Clip.antiAlias,
       elevation: 3,
       child: InkWell(
-        onTap: () => _navigateToCircuitDetailScreen(context, circuit),
+        onTap: () => _openCircuit(context, circuit),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: <Widget>[
@@ -188,11 +209,11 @@ class _TracksState extends State<Tracks> {
                     const SizedBox(height: 3.0),
                     Row(
                       children: <Widget>[
-                        const Icon(Icons.alt_route, color: Colors.white, size: 12.0),
+                        Icon(subtitleIcon, color: Colors.white, size: 12.0),
                         const SizedBox(width: 4.0),
                         Flexible(
                           child: Text(
-                            versionsLabel,
+                            subtitleLabel,
                             style: const TextStyle(color: Colors.white, fontSize: 11.0, height: 1.1),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
