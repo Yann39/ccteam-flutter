@@ -17,6 +17,7 @@
  * along with CCTeam. If not, see <http://www.gnu.org/licenses/>.
  */
 
+import 'package:ccteam/utils/app_utils.dart';
 import 'package:ccteam/utils/custom_decorations.dart';
 import 'package:ccteam/utils/strings.dart';
 import 'package:flutter/material.dart';
@@ -92,6 +93,35 @@ class _AboutState extends State<About> {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  /// Tappable external link row (icon + underlined label) that opens [url]
+  /// in the browser. Used for the source-code repositories.
+  Widget _externalLink(IconData icon, String label, String url) {
+    return InkWell(
+      onTap: () => AppUtils.launchURL(url),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 4.0),
+        child: Row(
+          children: <Widget>[
+            Icon(icon, size: 16.0, color: Colors.deepPurple[400]),
+            const SizedBox(width: 6.0),
+            Expanded(
+              child: Text(
+                label,
+                style: TextStyle(
+                  color: Colors.deepPurple[400],
+                  fontSize: 13.5,
+                  fontWeight: FontWeight.w600,
+                  decoration: TextDecoration.underline,
+                  decorationColor: Colors.deepPurple[400],
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -229,6 +259,9 @@ class _AboutState extends State<About> {
                   children: <Widget>[
                     Text(AppString.aboutOpenSourceBody),
                     const SizedBox(height: 8.0),
+                    _externalLink(Icons.open_in_new, AppString.aboutSourceApp, AppString.aboutSourceAppUrl),
+                    _externalLink(Icons.open_in_new, AppString.aboutSourceServer, AppString.aboutSourceServerUrl),
+                    const SizedBox(height: 2.0),
                     // Flutter ships a built-in license browser
                     InkWell(
                       onTap: () async {

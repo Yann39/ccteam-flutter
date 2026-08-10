@@ -58,6 +58,10 @@ class AppString {
       'CCTeam est un projet open source, conçu avec Flutter et distribué sous licence GNU GPL v3. '
       'Le code source est librement consultable et améliorable par la communauté.';
   static const String aboutThirdPartyLicenses = 'Licences des composants tiers';
+  static const String aboutSourceApp = 'Code source de l\'application';
+  static const String aboutSourceServer = 'Code source du serveur';
+  static const String aboutSourceAppUrl = 'https://github.com/Yann39/ccteam-flutter';
+  static const String aboutSourceServerUrl = 'https://github.com/Yann39/ccteam-graphql';
   static const String aboutCopyright = '© 2019–2026 Yann39';
 
   static const String formNotValid = 'Le formulaire n\'est pas valide. Corrigez les erreurs puis essayer à nouveau.';
