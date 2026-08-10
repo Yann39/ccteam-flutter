@@ -210,6 +210,9 @@ class AppString {
   static const String newsDeleted = 'L\'actualité à été supprimé avec succès !';
   static const String newsDeletionFailed = 'Echec lors de la suppression de l\'actualité';
   static const String newsDeletionAreYouSure = 'Etes-vous sûr de vouloir supprimer cette actualité ?';
+  static const String newsLikersTitle = 'Ils ont aimé';
+  static const String newsNoLikers = 'Personne n\'a encore aimé cette actualité';
+  static const String newsLikesCount = '{0} j\'aime';
   static const String newsTitle = 'Titre';
   static const String newsTitleHint = 'Saisissez le titre de l\'actualité';
   static const String newsTitleMandatory = 'Le titre est obligatoire';

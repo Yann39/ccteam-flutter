@@ -34,10 +34,8 @@ class NewsCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final NewsListProvider newsListProvider =
-        Provider.of<NewsListProvider>(context, listen: true);
-    final LoginProvider loginProvider =
-        Provider.of<LoginProvider>(context, listen: false);
+    final NewsListProvider newsListProvider = Provider.of<NewsListProvider>(context, listen: true);
+    final LoginProvider loginProvider = Provider.of<LoginProvider>(context, listen: false);
 
     final News news = newsListProvider.newsList[index];
     final Color accentColor = _accentColorFor(index);
@@ -52,11 +50,7 @@ class NewsCard extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: <Widget>[
-          _buildLeading(
-            accentColor: accentColor,
-            isLiked: isLiked,
-            likesCount: likesCount,
-          ),
+          _buildLeading(accentColor: accentColor, isLiked: isLiked, likesCount: likesCount),
           const SizedBox(width: 8.0),
           Expanded(child: _buildContent(news)),
           const SizedBox(width: 8.0),
@@ -80,19 +74,12 @@ class NewsCard extends StatelessWidget {
   }
 
   bool _isLikedByCurrentUser(News news, LoginProvider loginProvider) {
-    return news.likedNews?.any(
-          (element) => element.member!.id == loginProvider.loggedMember!.id,
-        ) ??
-        false;
+    return news.likedNews?.any((element) => element.member!.id == loginProvider.loggedMember!.id) ?? false;
   }
 
   /// Left column of the card: helmet icon (gradient-tinted) on top, like
   /// counter at the bottom.
-  Widget _buildLeading({
-    required Color accentColor,
-    required bool isLiked,
-    required int likesCount,
-  }) {
+  Widget _buildLeading({required Color accentColor, required bool isLiked, required int likesCount}) {
     return Column(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: <Widget>[
@@ -104,11 +91,7 @@ class NewsCard extends StatelessWidget {
             stops: const [0.0, 1.0],
             colors: [accentColor, Colors.purple[700]!],
           ).createShader(bounds),
-          child: Icon(
-            CustomIcons.helmet,
-            size: 35,
-            color: accentColor,
-          ),
+          child: Icon(CustomIcons.helmet, size: 35, color: accentColor),
         ),
         _buildMetaItem(
           icon: isLiked ? Icons.favorite : Icons.favorite_border,
@@ -128,10 +111,7 @@ class NewsCard extends StatelessWidget {
         Text(
           news.title ?? "",
           textScaler: const TextScaler.linear(1.2),
-          style: const TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.w500,
-          ),
+          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w500),
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
         ),
@@ -147,9 +127,7 @@ class NewsCard extends StatelessWidget {
         _buildMetaItem(
           icon: Icons.access_time,
           iconColor: Colors.lime,
-          text: news.newsDate != null
-              ? (AppDateUtils.convertToString(news.newsDate!, DATE_FORMAT) ?? "")
-              : "",
+          text: news.newsDate != null ? (AppDateUtils.convertToString(news.newsDate!, DATE_FORMAT) ?? "") : "",
         ),
       ],
     );
@@ -157,11 +135,7 @@ class NewsCard extends StatelessWidget {
 
   /// Reusable "small icon + caption" pair used for both the like counter
   /// (left column) and the date (middle column).
-  Widget _buildMetaItem({
-    required IconData icon,
-    required Color iconColor,
-    required String text,
-  }) {
+  Widget _buildMetaItem({required IconData icon, required Color iconColor, required String text}) {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: <Widget>[

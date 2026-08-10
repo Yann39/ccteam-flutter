@@ -23,6 +23,7 @@ import 'package:ccteam/providers/login_provider.dart';
 import 'package:ccteam/providers/news_creation_provider.dart';
 import 'package:ccteam/providers/news_detail_provider.dart';
 import 'package:ccteam/providers/news_list_provider.dart';
+import 'package:ccteam/ui/news/news_likers_sheet.dart';
 import 'package:ccteam/utils/constants.dart';
 import 'package:ccteam/utils/custom_decorations.dart';
 import 'package:ccteam/utils/date_utils.dart';
@@ -41,10 +42,7 @@ class NewsDetail extends StatelessWidget {
   /// Navigate to the news creation form screen to edit the specified [news].
   _navigateToEditNewsScreen(BuildContext context, News news) async {
     // need deep copy here else the reference will be updated even on error
-    Provider.of<NewsCreationProvider>(
-      context,
-      listen: false,
-    ).setNewsToEdit(News.clone(news));
+    Provider.of<NewsCreationProvider>(context, listen: false).setNewsToEdit(News.clone(news));
 
     // navigate to the news creation form screen
     Navigator.pushNamed(context, '/addEditNews');
@@ -52,10 +50,7 @@ class NewsDetail extends StatelessWidget {
 
   /// Set the specified [news] as liked by the current logged member.
   _likeNews(BuildContext context, News news) async {
-    final Member member = Provider.of<LoginProvider>(
-      context,
-      listen: false,
-    ).loggedMember!;
+    final Member member = Provider.of<LoginProvider>(context, listen: false).loggedMember!;
     Provider.of<NewsDetailProvider>(context, listen: false)
         .likeNews(news, member)
         .then(
@@ -64,22 +59,14 @@ class NewsDetail extends StatelessWidget {
             Provider.of<NewsListProvider>(
               context,
               listen: false,
-            ).updateNewsInList(
-              Provider.of<NewsDetailProvider>(
-                context,
-                listen: false,
-              ).currentNews!,
-            ),
+            ).updateNewsInList(Provider.of<NewsDetailProvider>(context, listen: false).currentNews!),
           },
         );
   }
 
   /// Set the specified [news] as not liked by the current logged member.
   _unlikeNews(BuildContext context, News news) async {
-    final Member member = Provider.of<LoginProvider>(
-      context,
-      listen: false,
-    ).loggedMember!;
+    final Member member = Provider.of<LoginProvider>(context, listen: false).loggedMember!;
     Provider.of<NewsDetailProvider>(context, listen: false)
         .unlikeNews(news, member)
         .then(
@@ -88,12 +75,7 @@ class NewsDetail extends StatelessWidget {
             Provider.of<NewsListProvider>(
               context,
               listen: false,
-            ).updateNewsInList(
-              Provider.of<NewsDetailProvider>(
-                context,
-                listen: false,
-              ).currentNews!,
-            ),
+            ).updateNewsInList(Provider.of<NewsDetailProvider>(context, listen: false).currentNews!),
           },
         );
   }
@@ -108,10 +90,8 @@ class NewsDetail extends StatelessWidget {
         actions: <Widget>[
           TextButton(
             onPressed: () {
-              final NewsDetailProvider newsDetailProvider =
-                  Provider.of<NewsDetailProvider>(context, listen: false);
-              final NewsListProvider newsListProvider =
-                  Provider.of<NewsListProvider>(context, listen: false);
+              final NewsDetailProvider newsDetailProvider = Provider.of<NewsDetailProvider>(context, listen: false);
+              final NewsListProvider newsListProvider = Provider.of<NewsListProvider>(context, listen: false);
               final News newsToDelete = newsDetailProvider.currentNews!;
               // delete news
               newsDetailProvider.deleteNews(newsToDelete).then((value) {
@@ -147,11 +127,7 @@ class NewsDetail extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.18),
-            blurRadius: 12.0,
-            offset: const Offset(0, 4),
-          ),
+          BoxShadow(color: Colors.black.withValues(alpha: 0.18), blurRadius: 12.0, offset: const Offset(0, 4)),
         ],
       ),
       clipBehavior: Clip.antiAlias,
@@ -168,10 +144,7 @@ class NewsDetail extends StatelessWidget {
                 gradient: LinearGradient(
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
-                  colors: [
-                    Colors.transparent,
-                    Colors.black.withValues(alpha: 0.22),
-                  ],
+                  colors: [Colors.transparent, Colors.black.withValues(alpha: 0.22)],
                 ),
               ),
             ),
@@ -191,11 +164,7 @@ class NewsDetail extends StatelessWidget {
                     fontWeight: FontWeight.bold,
                     height: 1.2,
                     shadows: [
-                      Shadow(
-                        color: Colors.black.withValues(alpha: 0.35),
-                        blurRadius: 4.0,
-                        offset: const Offset(0, 1),
-                      ),
+                      Shadow(color: Colors.black.withValues(alpha: 0.35), blurRadius: 4.0, offset: const Offset(0, 1)),
                     ],
                   ),
                   textAlign: TextAlign.center,
@@ -224,18 +193,11 @@ class NewsDetail extends StatelessWidget {
                   runSpacing: 6.0,
                   children: <Widget>[
                     if (news.createdBy != null)
-                      _metadataChip(
-                        Icons.person,
-                        "${news.createdBy!.firstName} ${news.createdBy!.lastName}",
-                      ),
+                      _metadataChip(Icons.person, "${news.createdBy!.firstName} ${news.createdBy!.lastName}"),
                     _metadataChip(
                       Icons.access_time,
                       news.newsDate != null
-                          ? (AppDateUtils.convertToString(
-                                  news.newsDate!,
-                                  DATE_FORMAT_TXT,
-                                ) ??
-                                "")
+                          ? (AppDateUtils.convertToString(news.newsDate!, DATE_FORMAT_TXT) ?? "")
                           : "",
                     ),
                   ],
@@ -253,10 +215,7 @@ class NewsDetail extends StatelessWidget {
   Widget _metadataChip(IconData icon, String text) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 4.0),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.20),
-        borderRadius: BorderRadius.circular(14.0),
-      ),
+      decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.20), borderRadius: BorderRadius.circular(14.0)),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: <Widget>[
@@ -264,13 +223,46 @@ class NewsDetail extends StatelessWidget {
           const SizedBox(width: 4.0),
           Text(
             text,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 12.0,
-              fontWeight: FontWeight.w500,
-            ),
+            style: const TextStyle(color: Colors.white, fontSize: 12.0, fontWeight: FontWeight.w500),
           ),
         ],
+      ),
+    );
+  }
+
+  /// A small tappable line under the action buttons showing the number of
+  /// likes; tapping it (like long-pressing the heart) reveals who liked.
+  Widget _buildLikersLine(BuildContext context, News news) {
+    final int count = news.likedNews?.length ?? 0;
+    if (count <= 0) return const SizedBox.shrink();
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16.0, 8.0, 16.0, 16.0),
+      child: Align(
+        alignment: Alignment.centerLeft,
+        child: InkWell(
+          onTap: () => showNewsLikersSheet(context, news),
+          borderRadius: BorderRadius.circular(6.0),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 6.0, vertical: 4.0),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: <Widget>[
+                Icon(Icons.favorite, size: 14.0, color: Colors.pink[400]),
+                const SizedBox(width: 5.0),
+                Text(
+                  AppString.format(AppString.newsLikesCount, [count]),
+                  style: TextStyle(
+                    color: Colors.blue[700],
+                    fontSize: 13.0,
+                    fontWeight: FontWeight.w500,
+                    decoration: TextDecoration.underline,
+                    decorationColor: Colors.blue[700],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }
@@ -289,41 +281,32 @@ class NewsDetail extends StatelessWidget {
                 foregroundColor: Colors.blue[700],
                 side: BorderSide(color: Colors.blue[700]!),
                 padding: const EdgeInsets.symmetric(vertical: 10.0),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8.0),
-                ),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.0)),
               ),
-              onPressed: () => SharePlus.instance.share(
-                ShareParams(
-                  subject: news.title,
-                  text: news.catchLine,
-                  title: news.title,
-                ),
-              ),
+              onPressed: () =>
+                  SharePlus.instance.share(ShareParams(subject: news.title, text: news.catchLine, title: news.title)),
             ),
           ),
           const SizedBox(width: 12.0),
           Expanded(
-            child: OutlinedButton.icon(
-              icon: Icon(
-                isLiked ? Icons.favorite : Icons.favorite_border,
-                size: 18.0,
-                color: isLiked ? Colors.pink[400] : Colors.blue[700],
-              ),
-              label: Text(isLiked ? AppString.unlike : AppString.like),
-              style: OutlinedButton.styleFrom(
-                foregroundColor: isLiked ? Colors.pink[400] : Colors.blue[700],
-                side: BorderSide(
-                  color: isLiked ? Colors.pink[400]! : Colors.blue[700]!,
+            // long-press the like button to see who liked this news
+            child: GestureDetector(
+              onLongPress: () => showNewsLikersSheet(context, news),
+              child: OutlinedButton.icon(
+                icon: Icon(
+                  isLiked ? Icons.favorite : Icons.favorite_border,
+                  size: 18.0,
+                  color: isLiked ? Colors.pink[400] : Colors.blue[700],
                 ),
-                padding: const EdgeInsets.symmetric(vertical: 10.0),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8.0),
+                label: Text(isLiked ? AppString.unlike : AppString.like),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: isLiked ? Colors.pink[400] : Colors.blue[700],
+                  side: BorderSide(color: isLiked ? Colors.pink[400]! : Colors.blue[700]!),
+                  padding: const EdgeInsets.symmetric(vertical: 10.0),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.0)),
                 ),
+                onPressed: () => isLiked ? _unlikeNews(context, news) : _likeNews(context, news),
               ),
-              onPressed: () => isLiked
-                  ? _unlikeNews(context, news)
-                  : _likeNews(context, news),
             ),
           ),
         ],
@@ -334,55 +317,38 @@ class NewsDetail extends StatelessWidget {
   Widget build(BuildContext context) {
     _log.info("Building News detail...");
 
-    final NewsDetailProvider _newsDetailProvider =
-        Provider.of<NewsDetailProvider>(context, listen: true);
-    final LoginProvider _loginProvider = Provider.of<LoginProvider>(
-      context,
-      listen: false,
-    );
+    final NewsDetailProvider _newsDetailProvider = Provider.of<NewsDetailProvider>(context, listen: true);
+    final LoginProvider _loginProvider = Provider.of<LoginProvider>(context, listen: false);
 
     // if currentNews is null (e.g. after session expiration), don't render content
     if (_newsDetailProvider.currentNews == null) {
-      return Scaffold(
-        body: Container(decoration: CustomDecorations.mainContent),
-      );
+      return Scaffold(body: Container(decoration: CustomDecorations.mainContent));
     }
 
     final News news = _newsDetailProvider.currentNews!;
 
     // get if that news is liked for current logged member
     final bool isLiked =
-        news.likedNews?.any(
-          (element) => element.member!.id == _loginProvider.loggedMember!.id,
-        ) ??
-        false;
+        news.likedNews?.any((element) => element.member!.id == _loginProvider.loggedMember!.id) ?? false;
 
     return Scaffold(
       appBar: AppBar(
         actions: <Widget>[
           if (_loginProvider.isAdmin)
             Builder(
-              builder: (context) => IconButton(
-                icon: const Icon(Icons.edit),
-                onPressed: () => _navigateToEditNewsScreen(context, news),
-              ),
+              builder: (context) =>
+                  IconButton(icon: const Icon(Icons.edit), onPressed: () => _navigateToEditNewsScreen(context, news)),
             ),
           if (_loginProvider.isAdmin)
             Builder(
               builder: (context) => IconButton(
                 icon: const Icon(Icons.delete_forever),
-                onPressed: () => _showDeleteNewsConfirmation(
-                  context,
-                  AppString.newsDeletionAreYouSure,
-                ),
+                onPressed: () => _showDeleteNewsConfirmation(context, AppString.newsDeletionAreYouSure),
               ),
             ),
         ],
         title: Text(AppString.detail),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => Navigator.pop(context),
-        ),
+        leading: IconButton(icon: const Icon(Icons.arrow_back), onPressed: () => Navigator.pop(context)),
       ),
       body: Container(
         decoration: CustomDecorations.mainContent,
@@ -397,8 +363,8 @@ class NewsDetail extends StatelessWidget {
               children: <Widget>[
                 // hero header pinned at the top
                 _buildHeroHeader(news),
-                if (_loginProvider.isMember)
-                  _buildActionButtons(context, news, isLiked),
+                if (_loginProvider.isMember) _buildActionButtons(context, news, isLiked),
+                _buildLikersLine(context, news),
                 // news content takes all remaining vertical space and scrolls internally if it overflows
                 Expanded(
                   child: Markdown(
@@ -406,12 +372,7 @@ class NewsDetail extends StatelessWidget {
                     data: news.content ?? "",
                     styleSheet: MarkdownStyleSheet.fromTheme(
                       ThemeData(
-                        textTheme: const TextTheme(
-                          bodyMedium: TextStyle(
-                            fontSize: 14.0,
-                            color: Colors.black87,
-                          ),
-                        ),
+                        textTheme: const TextTheme(bodyMedium: TextStyle(fontSize: 14.0, color: Colors.black87)),
                       ),
                     ),
                   ),
