@@ -322,6 +322,8 @@ class MembersService {
               track {
                 id
                 variantName
+                distance
+                lapRecord
                 iconKey
                 circuit {
                   id
@@ -419,6 +421,8 @@ class MembersService {
               track {
                 id
                 variantName
+                distance
+                lapRecord
                 iconKey
                 circuit {
                   id
@@ -535,6 +539,8 @@ class MembersService {
               track {
                 id
                 variantName
+                distance
+                lapRecord
                 iconKey
                 circuit {
                   id
@@ -654,6 +660,8 @@ class MembersService {
               track {
                 id
                 variantName
+                distance
+                lapRecord
                 iconKey
                 circuit {
                   id
