@@ -18,9 +18,11 @@
  */
 
 import 'package:ccteam/models/bike.dart';
+import 'package:ccteam/models/circuit.dart';
 import 'package:ccteam/models/event.dart';
 import 'package:ccteam/models/record.dart';
 import 'package:ccteam/models/track.dart';
+import 'package:ccteam/providers/circuit_detail_provider.dart';
 import 'package:ccteam/providers/event_detail_provider.dart';
 import 'package:ccteam/providers/login_provider.dart';
 import 'package:ccteam/providers/record_detail_provider.dart';
@@ -127,8 +129,7 @@ class _TrackDetailState extends State<TrackDetail> {
       );
     }
 
-    // sort by lap time ascending (fastest first); records without a lap
-    // time go last
+    // sort by lap time ascending (fastest first); records without a lap time go last
     final List<Record> records = List<Record>.of(recordListProvider.trackRecords)
       ..sort((a, b) {
         final int? aLap = a.lapTime;
@@ -387,10 +388,7 @@ class _TrackDetailState extends State<TrackDetail> {
                   Container(height: 1, color: Colors.black.withValues(alpha: 0.12)),
                   const SizedBox(height: 14.0),
                   Text(info, style: TextStyle(fontSize: 13.5, color: Colors.black.withAlpha(204), height: 1.35)),
-                  // Member's own chrono on this track, when available.
-                  // Rendered as a small card-in-card with a subtle white
-                  // background so it has its own visual identity without
-                  // competing with the hero record figure above.
+                  // Member's own chrono on this track, when available
                   if (memberLapTimeStr != null) ...[
                     const SizedBox(height: 16.0),
                     Container(
@@ -882,6 +880,19 @@ class _TrackDetailState extends State<TrackDetail> {
                     icon: const Icon(Icons.public, color: Colors.white),
                     onPressed: () => AppUtils.launchURL(_trackDetailProvider.currentTrack!.website!),
                   ),
+                if (_loginProvider.isAdmin && _trackDetailProvider.currentTrack?.circuit != null)
+                  IconButton(
+                    tooltip: AppString.circuitManage,
+                    icon: const Icon(Icons.stadium, color: Colors.white),
+                    onPressed: () {
+                      // reach the parent circuit page (edit venue / add another version),
+                      // notably when this version was opened straight from the list
+                      final Circuit circuit = _trackDetailProvider.currentTrack!.circuit!;
+                      Provider.of<CircuitDetailProvider>(context, listen: false).setCurrentCircuit(circuit);
+                      Provider.of<CircuitDetailProvider>(context, listen: false).fetchCircuit(circuit);
+                      Navigator.pushNamed(context, '/circuitDetail');
+                    },
+                  ),
                 if (_loginProvider.isAdmin)
                   IconButton(
                     tooltip: AppString.trackEdit,
@@ -909,17 +920,18 @@ class _TrackDetailState extends State<TrackDetail> {
                   final double countryOpacity = ((1.0 - t * 2.0).clamp(0.0, 1.0)).toDouble();
                   final track = _trackDetailProvider.currentTrack;
                   final bool showCountry = track?.country != null && countryOpacity > 0.0;
+                  final String variantLabel = track?.variantName?.trim() ?? '';
+                  final bool showVariant = variantLabel.isNotEmpty && countryOpacity > 0.0;
                   return FlexibleSpaceBar(
-                    // shift the title to the right of the circular badge
-                    // when expanded; slide it back to the standard AppBar
-                    // position as the header collapses
+                    // shift the title to the right of the circular badge when expanded,
+                    // slide it back to the standard AppBar position as the header collapses
                     titlePadding: EdgeInsetsDirectional.only(start: 90.0 - t * 30.0, bottom: 16.0),
                     title: Column(
                       mainAxisSize: MainAxisSize.min,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: <Widget>[
                         Text(
-                          track != null ? (track.name ?? "") : "",
+                          track?.circuit?.name ?? (track?.name ?? ""),
                           style: TextStyle(
                             color: Colors.white,
                             fontSize: 24.0 - t * 6.0,
@@ -929,6 +941,25 @@ class _TrackDetailState extends State<TrackDetail> {
                                 : null,
                           ),
                         ),
+                        if (showVariant)
+                          Opacity(
+                            opacity: countryOpacity,
+                            child: Padding(
+                              padding: const EdgeInsets.only(top: 1.0),
+                              child: Text(
+                                variantLabel,
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 13.0,
+                                  fontWeight: FontWeight.w500,
+                                  height: 1.1,
+                                  shadows: [Shadow(offset: Offset(1.0, 1.0), blurRadius: 3.0, color: Colors.black)],
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ),
                         if (showCountry)
                           Opacity(
                             opacity: countryOpacity,
@@ -954,7 +985,7 @@ class _TrackDetailState extends State<TrackDetail> {
                       children: <Widget>[
                         _trackDetailProvider.currentTrack != null
                             ? Image.asset(
-                                TrackUtils.trackCoverImageUrlFromName(_trackDetailProvider.currentTrack!.name),
+                                TrackUtils.coverImageForCircuit(_trackDetailProvider.currentTrack!.circuit),
                                 fit: BoxFit.fitWidth,
                               )
                             : Container(),
@@ -971,9 +1002,7 @@ class _TrackDetailState extends State<TrackDetail> {
                             ),
                           ),
                         ),
-                        // circular badge with the track-shape silhouette,
-                        // anchored to the bottom-left, fading out as the
-                        // header collapses
+                        // circular badge with the track-shape silhouette
                         if (_trackDetailProvider.currentTrack != null)
                           Positioned(
                             bottom: 12.0,
@@ -999,7 +1028,11 @@ class _TrackDetailState extends State<TrackDetail> {
                                 ),
                                 child: FittedBox(
                                   fit: BoxFit.contain,
-                                  child: TrackUtils.getTrackIcon(_trackDetailProvider.currentTrack!.name ?? ""),
+                                  child: Icon(
+                                    TrackUtils.iconForTrack(_trackDetailProvider.currentTrack),
+                                    color: Colors.red[700],
+                                    size: 60,
+                                  ),
                                 ),
                               ),
                             ),

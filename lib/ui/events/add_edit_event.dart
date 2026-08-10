@@ -241,7 +241,7 @@ class _AddEditEventState extends State<AddEditEvent> {
                 value: val,
                 child: Row(
                   children: <Widget>[
-                    Icon(TrackUtils.trackIconFromName(val.name), size: 20.0, color: Colors.red[600]),
+                    Icon(TrackUtils.iconForTrack(val), size: 20.0, color: Colors.red[600]),
                     const SizedBox(width: 8.0),
                     Flexible(child: Text(val.name ?? '', overflow: TextOverflow.ellipsis)),
                   ],

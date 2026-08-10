@@ -17,11 +17,13 @@
  * along with CCTeam. If not, see <http://www.gnu.org/licenses/>.
  */
 
+import 'package:ccteam/models/circuit.dart';
 import 'package:ccteam/models/track.dart';
+import 'package:ccteam/providers/circuit_creation_provider.dart';
+import 'package:ccteam/providers/circuit_detail_provider.dart';
+import 'package:ccteam/providers/circuit_list_provider.dart';
 import 'package:ccteam/providers/login_provider.dart';
-import 'package:ccteam/providers/track_creation_provider.dart';
 import 'package:ccteam/providers/track_detail_provider.dart';
-import 'package:ccteam/providers/track_list_provider.dart';
 import 'package:ccteam/ui/main/main_action_menu.dart';
 import 'package:ccteam/ui/main/main_drawer.dart';
 import 'package:ccteam/utils/custom_decorations.dart';
@@ -31,7 +33,8 @@ import 'package:ccteam/widgets/loading_content.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-/// We need stateful widget to keep search field value
+/// "Circuits" tab: lists the circuits (venues). Each circuit groups one or more
+/// versions (layouts). We keep the stateful widget to preserve the search field.
 class Tracks extends StatefulWidget {
   @override
   State<StatefulWidget> createState() {
@@ -41,7 +44,7 @@ class Tracks extends StatefulWidget {
 
 class _TracksState extends State<Tracks> {
   /// Build the search field
-  Widget buildSearchField(TrackListProvider _trackListProvider) {
+  Widget buildSearchField(CircuitListProvider _circuitListProvider) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(8.0, 8.0, 8.0, 4.0),
       child: TextField(
@@ -66,45 +69,71 @@ class _TracksState extends State<Tracks> {
         ),
         maxLines: 1,
         onChanged: (String text) {
-          _trackListProvider.searchTracks(text);
+          _circuitListProvider.searchCircuits(text);
         },
       ),
     );
   }
 
-  /// Method that launches the Track detail screen and awaits the result from Navigator.pop
-  void _navigateToTrackDetailScreen(BuildContext context, Track track) async {
-    Provider.of<TrackDetailProvider>(context, listen: false).setCurrentTrack(track);
-    Navigator.pushNamed(context, '/trackDetail');
+  /// Open a circuit from the list. A circuit with a single version has no useful
+  /// intermediate page (it would list just that one version), so we jump straight
+  /// to the version detail; circuits with several versions (or none) open the
+  /// circuit detail so the user can pick a version / an admin can manage them.
+  void _openCircuit(BuildContext context, Circuit circuit) {
+    final List<Track> versions = circuit.tracks ?? <Track>[];
+    if (versions.length == 1) {
+      final Track version = versions.first;
+      Provider.of<TrackDetailProvider>(context, listen: false).setCurrentTrack(version);
+      if (version.id != null) {
+        Provider.of<TrackDetailProvider>(context, listen: false).fetchTrack(version); // fire-and-forget
+      }
+      Navigator.pushNamed(context, '/trackDetail');
+      return;
+    }
+    Provider.of<CircuitDetailProvider>(context, listen: false).setCurrentCircuit(circuit);
+    Provider.of<CircuitDetailProvider>(context, listen: false).fetchCircuit(circuit); // fire-and-forget
+    Navigator.pushNamed(context, '/circuitDetail');
   }
 
-  /// Seed the creation provider with a fresh, empty [Track] and open the add / edit form.
-  void _navigateToAddTrackScreen(BuildContext context) {
-    Provider.of<TrackCreationProvider>(context, listen: false).setTrackToEdit(Track());
-    Navigator.pushNamed(context, '/addEditTrack');
+  /// Seed the creation provider with a fresh, empty [Circuit] and open the form.
+  void _navigateToAddCircuitScreen(BuildContext context) {
+    Provider.of<CircuitCreationProvider>(context, listen: false).setCircuitToEdit(Circuit());
+    Navigator.pushNamed(context, '/addEditCircuit');
   }
 
-  /// Build a single track card for the grid: cover photo on top half + info
-  /// (name, length, lap record) on a blue gradient on the bottom half. A
-  /// circular track-shape badge sits in the top-right corner of the photo.
-  Widget _buildTrackCard(BuildContext context, Track track) {
+  /// Build a single circuit card: cover photo on top half + info (name, country,
+  /// number of versions) on a blue gradient bottom half. A circular icon badge
+  /// sits in the top-right corner of the photo.
+  Widget _buildCircuitCard(BuildContext context, Circuit circuit) {
+    final int versionCount = circuit.tracks?.length ?? 0;
+    // with a single version, show its length under the name, with several, show the version count instead
+    final int? soleDistance = versionCount == 1 ? circuit.tracks!.first.distance : null;
+    final bool showDistance = soleDistance != null;
+    final IconData subtitleIcon = showDistance ? Icons.straighten : Icons.alt_route;
+    final String subtitleLabel = showDistance
+        ? "${(soleDistance / 1000).toStringAsFixed(2)} km"
+        : versionCount == 0
+        ? AppString.circuitNoVersion
+        : versionCount == 1
+        ? AppString.circuitSingleVersion
+        : "$versionCount ${AppString.circuitVersionsSectionTitle.toLowerCase()}";
+
     return Card(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.0)),
       clipBehavior: Clip.antiAlias,
       elevation: 3,
       child: InkWell(
-        onTap: () => _navigateToTrackDetailScreen(context, track),
+        onTap: () => _openCircuit(context, circuit),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: <Widget>[
-            // top: cover photo (with track-shape badge)
             Expanded(
               flex: 6,
               child: Stack(
                 fit: StackFit.expand,
                 children: <Widget>[
                   Image.asset(
-                    TrackUtils.trackCoverImageUrlFromName(track.name),
+                    TrackUtils.coverImageForCircuit(circuit),
                     fit: BoxFit.cover,
                     errorBuilder: (_, __, ___) => Container(
                       decoration: BoxDecoration(
@@ -116,7 +145,6 @@ class _TracksState extends State<Tracks> {
                       ),
                     ),
                   ),
-                  // track-shape silhouette as a circular badge in top-right
                   Positioned(
                     top: 6.0,
                     right: 6.0,
@@ -136,7 +164,15 @@ class _TracksState extends State<Tracks> {
                       child: SizedBox(
                         width: 32.0,
                         height: 32.0,
-                        child: FittedBox(fit: BoxFit.contain, child: TrackUtils.getTrackIcon(track.name ?? "")),
+                        child: FittedBox(
+                          fit: BoxFit.contain,
+                          child: Icon(
+                            TrackUtils.iconForTrack(
+                              (circuit.tracks != null && circuit.tracks!.isNotEmpty) ? circuit.tracks!.first : null,
+                            ),
+                            color: Colors.red[700],
+                          ),
+                        ),
                       ),
                     ),
                   ),
@@ -160,7 +196,7 @@ class _TracksState extends State<Tracks> {
                   mainAxisSize: MainAxisSize.min,
                   children: <Widget>[
                     Text(
-                      track.name ?? "",
+                      circuit.name ?? "",
                       style: const TextStyle(
                         color: Colors.white,
                         fontSize: 15.0,
@@ -171,26 +207,29 @@ class _TracksState extends State<Tracks> {
                       overflow: TextOverflow.ellipsis,
                     ),
                     const SizedBox(height: 3.0),
-                    if (track.distance != null)
-                      Row(
-                        children: <Widget>[
-                          const Icon(Icons.straighten, color: Colors.white, size: 12.0),
-                          const SizedBox(width: 4.0),
-                          Text(
-                            "${(track.distance! / 1000).toStringAsFixed(2)} km",
+                    Row(
+                      children: <Widget>[
+                        Icon(subtitleIcon, color: Colors.white, size: 12.0),
+                        const SizedBox(width: 4.0),
+                        Flexible(
+                          child: Text(
+                            subtitleLabel,
                             style: const TextStyle(color: Colors.white, fontSize: 11.0, height: 1.1),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                           ),
-                        ],
-                      ),
-                    if (track.country != null) ...[
+                        ),
+                      ],
+                    ),
+                    if (circuit.country != null) ...[
                       const SizedBox(height: 1.0),
                       Row(
                         children: <Widget>[
-                          Text(track.country!.flagEmoji, style: const TextStyle(fontSize: 12.0, height: 1.0)),
+                          Text(circuit.country!.flagEmoji, style: const TextStyle(fontSize: 12.0, height: 1.0)),
                           const SizedBox(width: 4.0),
                           Flexible(
                             child: Text(
-                              track.country!.localizedName(Localizations.localeOf(context).languageCode),
+                              circuit.country!.localizedName(Localizations.localeOf(context).languageCode),
                               style: const TextStyle(color: Colors.white, fontSize: 11.0, height: 1.1),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
@@ -210,7 +249,7 @@ class _TracksState extends State<Tracks> {
   }
 
   Widget build(BuildContext context) {
-    final _trackListProvider = Provider.of<TrackListProvider>(context, listen: true);
+    final _circuitListProvider = Provider.of<CircuitListProvider>(context, listen: true);
     final LoginProvider _loginProvider = Provider.of<LoginProvider>(context, listen: false);
 
     return Scaffold(
@@ -218,7 +257,7 @@ class _TracksState extends State<Tracks> {
         title: Text(AppString.tabTracks),
         actions: <Widget>[
           if (_loginProvider.isAdmin)
-            IconButton(icon: const Icon(Icons.add), onPressed: () => _navigateToAddTrackScreen(context)),
+            IconButton(icon: const Icon(Icons.add), onPressed: () => _navigateToAddCircuitScreen(context)),
           MainActionMenu(),
         ],
       ),
@@ -227,12 +266,12 @@ class _TracksState extends State<Tracks> {
         decoration: CustomDecorations.mainContent,
         child: Column(
           children: <Widget>[
-            buildSearchField(_trackListProvider),
+            buildSearchField(_circuitListProvider),
             Expanded(
               child: RefreshIndicator(
-                onRefresh: () => _trackListProvider.fetchTracks(),
+                onRefresh: () => _circuitListProvider.fetchCircuits(),
                 child: LoadingContent(
-                  loadingStatus: _trackListProvider.loadingStatus,
+                  loadingStatus: _circuitListProvider.loadingStatus,
                   defaultText: AppString.tracksNotFound,
                   emptyText: AppString.tracksNotFound,
                   child: GridView.builder(
@@ -244,9 +283,9 @@ class _TracksState extends State<Tracks> {
                       mainAxisSpacing: 8,
                       childAspectRatio: 1,
                     ),
-                    itemCount: _trackListProvider.tracks.length,
+                    itemCount: _circuitListProvider.circuits.length,
                     itemBuilder: (BuildContext context, int index) =>
-                        _buildTrackCard(context, _trackListProvider.tracks[index]),
+                        _buildCircuitCard(context, _circuitListProvider.circuits[index]),
                   ),
                 ),
               ),

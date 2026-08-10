@@ -200,7 +200,7 @@ class _BikeDetailState extends State<BikeDetail> {
                   padding: const EdgeInsets.symmetric(horizontal: 14.0, vertical: 10.0),
                   child: Row(
                     children: <Widget>[
-                      Icon(TrackUtils.trackIconFromName(records[i].track?.name), size: 18.0, color: Colors.red[700]),
+                      Icon(TrackUtils.iconForTrack(records[i].track), size: 18.0, color: Colors.red[700]),
                       const SizedBox(width: 8.0),
                       Expanded(
                         child: Text(

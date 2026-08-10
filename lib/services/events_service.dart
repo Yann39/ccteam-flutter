@@ -65,7 +65,20 @@ class EventsService {
           endDate
           track {
             id
-            name
+            variantName
+            iconKey
+            circuit {
+              id
+              name
+              latitude
+              longitude
+              website
+              country {
+                code
+                nameFr
+                nameEn
+              }
+            }
           }
           organizer {
             id
@@ -135,7 +148,20 @@ class EventsService {
           endDate
           track {
             id
-            name
+            variantName
+            iconKey
+            circuit {
+              id
+              name
+              latitude
+              longitude
+              website
+              country {
+                code
+                nameFr
+                nameEn
+              }
+            }
           }
           organizer {
             id
@@ -190,7 +216,20 @@ class EventsService {
           endDate
           track {
             id
-            name
+            variantName
+            iconKey
+            circuit {
+              id
+              name
+              latitude
+              longitude
+              website
+              country {
+                code
+                nameFr
+                nameEn
+              }
+            }
           }
           organizer {
             id
@@ -251,7 +290,20 @@ class EventsService {
           endDate
           track {
             id
-            name
+            variantName
+            iconKey
+            circuit {
+              id
+              name
+              latitude
+              longitude
+              website
+              country {
+                code
+                nameFr
+                nameEn
+              }
+            }
           }
           organizer {
             id
@@ -313,7 +365,20 @@ class EventsService {
           endDate
           track {
             id
-            name
+            variantName
+            iconKey
+            circuit {
+              id
+              name
+              latitude
+              longitude
+              website
+              country {
+                code
+                nameFr
+                nameEn
+              }
+            }
           }
           organizer {
             id
@@ -384,16 +449,20 @@ class EventsService {
           startDate
           endDate
           track {
-            name
-            distance
-            lapRecord
-            website
-            latitude
-            longitude
-            country {
-              code
-              nameFr
-              nameEn
+            id
+            variantName
+            iconKey
+            circuit {
+              id
+              name
+              latitude
+              longitude
+              website
+              country {
+                code
+                nameFr
+                nameEn
+              }
             }
           }
           organizer {
@@ -467,16 +536,19 @@ class EventsService {
           endDate
           track {
             id
-            name
-            distance
-            lapRecord
-            website
-            latitude
-            longitude
-            country {
-              code
-              nameFr
-              nameEn
+            variantName
+            iconKey
+            circuit {
+              id
+              name
+              latitude
+              longitude
+              website
+              country {
+                code
+                nameFr
+                nameEn
+              }
             }
           }
           organizer {
@@ -558,16 +630,20 @@ class EventsService {
           startDate
           endDate
           track {
-            name
-            distance
-            lapRecord
-            website
-            latitude
-            longitude
-            country {
-              code
-              nameFr
-              nameEn
+            id
+            variantName
+            iconKey
+            circuit {
+              id
+              name
+              latitude
+              longitude
+              website
+              country {
+                code
+                nameFr
+                nameEn
+              }
             }
           }
           organizer {
@@ -629,7 +705,20 @@ class EventsService {
           endDate
           track {
             id
-            name
+            variantName
+            iconKey
+            circuit {
+              id
+              name
+              latitude
+              longitude
+              website
+              country {
+                code
+                nameFr
+                nameEn
+              }
+            }
           }
           organizer {
             id
@@ -692,7 +781,20 @@ class EventsService {
           endDate
           track {
             id
-            name
+            variantName
+            iconKey
+            circuit {
+              id
+              name
+              latitude
+              longitude
+              website
+              country {
+                code
+                nameFr
+                nameEn
+              }
+            }
           }
           organizer {
             id
@@ -753,7 +855,20 @@ class EventsService {
           endDate
           track {
             id
-            name
+            variantName
+            iconKey
+            circuit {
+              id
+              name
+              latitude
+              longitude
+              website
+              country {
+                code
+                nameFr
+                nameEn
+              }
+            }
           }
           organizer {
             id

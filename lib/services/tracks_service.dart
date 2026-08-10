@@ -24,29 +24,42 @@ import 'package:gql/language.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:logging/logging.dart';
 
+/// Service for tracks, a track is a single version (layout) of a circuit.
 class TracksService {
   static final Logger _log = new Logger('TracksService');
 
-  /// Fetch all tracks from the database.
-  Future<List<Track>> fetchTracks() async {
-    _log.info("Getting all tracks from database...");
-
-    final String allTracksQuery = """
-      query GetAllTracks() {
-        getAllTracks() {
+  /// GraphQL projection for a Track (version), including its parent circuit
+  /// (venue) so the label and the venue delegates on the model resolve.
+  static const String _trackOutputFields = """
+        id
+        variantName
+        distance
+        lapRecord
+        lapRecordInfo
+        iconKey
+        circuit {
           id
           name
-          distance
-          lapRecord
-          lapRecordInfo
-          website
           latitude
           longitude
+          website
           country {
             code
             nameFr
             nameEn
           }
+        }
+  """;
+
+  /// Fetch all tracks (versions) from the database.
+  Future<List<Track>> fetchTracks() async {
+    _log.info("Getting all tracks from database...");
+
+    final String allTracksQuery =
+        """
+      query GetAllTracks {
+        getAllTracks {
+$_trackOutputFields
         }
       }
     """;
@@ -79,86 +92,15 @@ class TracksService {
         );
   }
 
-  /// Search for tracks according to the specified [text]
-  /// Send a POST request to the Restful API
-  /// Throw an exception if response status code is different from 200
-  Future<List<Track>> searchTracks(String text) async {
-    _log.info("Searching tracks with text: $text...");
-
-    final String searchTracksQuery = """
-      query GetTracksFiltered(\$text: String) {
-        getTracksFiltered(text: \$text) {
-          id
-          name
-          distance
-          lapRecord
-          lapRecordInfo
-          website
-          latitude
-          longitude
-          country {
-            code
-            nameFr
-            nameEn
-          }
-        }
-      }
-    """;
-
-    return GraphQLConnection().graphQLClient
-        .query(
-          QueryOptions(
-            document: parseString(searchTracksQuery),
-            variables: {'text': text},
-            fetchPolicy: FetchPolicy.noCache,
-          ),
-        )
-        .then(
-          (result) {
-            final List<Track> tracks = [];
-            if (result.hasException) {
-              throw AppUtils.handleGraphQlException(result)!;
-            } else {
-              dynamic trackList = result.data!['getTracksFiltered'];
-              if (trackList == null) {
-                _log.info("getTracksFiltered returned null data");
-              } else if (trackList is Map<String, dynamic> && trackList.isEmpty) {
-                _log.info("getTracksFiltered returned empty data");
-              } else {
-                for (dynamic oneTrack in trackList) {
-                  tracks.add(Track.fromJson(oneTrack));
-                }
-              }
-              return tracks;
-            }
-          },
-          onError: (error) {
-            _log.severe("Error while searching tracks : $error");
-            throw Exception(error);
-          },
-        );
-  }
-
-  /// Get a track from the database given its [id].
+  /// Get a track (version) from the database given its [id].
   Future<Track?> getTrackById(int id) async {
     _log.info("Getting track $id from database...");
 
-    final String trackByIdQuery = """
+    final String trackByIdQuery =
+        """
       query GetTrackById(\$id: Long!) {
         getTrackById(id: \$id) {
-          id
-          name
-          distance
-          lapRecord
-          lapRecordInfo
-          website
-          latitude
-          longitude
-          country {
-            code
-            nameFr
-            nameEn
-          }
+$_trackOutputFields
         }
       }
     """;
@@ -184,43 +126,22 @@ class TracksService {
         );
   }
 
-  /// GraphQL projection shared between the create / update / delete
-  /// mutations on Track. Mirrors what [fetchTracks] returns so the
-  /// caller can update its in-memory list with the returned entity.
-  static const String _trackOutputFields = """
-        id
-        name
-        distance
-        lapRecord
-        lapRecordInfo
-        website
-        latitude
-        longitude
-        country {
-          code
-          nameFr
-          nameEn
-        }
-  """;
-
-  /// Create the specified [track] via the GraphQL mutation. Returns
-  /// the persisted entity with its server-assigned id so the caller
-  /// can stash it in the in-memory list. Throws on server error.
+  /// Create the specified [track] (version) via the GraphQL mutation. The
+  /// version is attached to its `circuit`. Returns the persisted entity with
+  /// its server-assigned id. Throws on server error.
   Future<Track> createTrack(Track track) async {
-    _log.info("Creating track ${track.name}...");
+    _log.info("Creating track ${track.displayName}...");
 
     final String mutation =
         """
-      mutation CreateTrack(\$name: String!, \$distance: Int!, \$lapRecord: Int!, \$lapRecordInfo: String, \$website: String!, \$latitude: Float!, \$longitude: Float!, \$countryCode: String!) {
+      mutation CreateTrack(\$circuitId: Long!, \$variantName: String, \$distance: Int!, \$lapRecord: Int!, \$lapRecordInfo: String, \$iconKey: String) {
         createTrack(
-          name: \$name
+          circuitId: \$circuitId
+          variantName: \$variantName
           distance: \$distance
           lapRecord: \$lapRecord
           lapRecordInfo: \$lapRecordInfo
-          website: \$website
-          latitude: \$latitude
-          longitude: \$longitude
-          countryCode: \$countryCode
+          iconKey: \$iconKey
         ) {
 $_trackOutputFields
         }
@@ -230,14 +151,12 @@ $_trackOutputFields
     final MutationOptions options = MutationOptions(
       document: parseString(mutation),
       variables: <String, dynamic>{
-        'name': track.name,
+        'circuitId': track.circuit?.id,
+        'variantName': track.variantName,
         'distance': track.distance,
         'lapRecord': track.lapRecord ?? 0,
         'lapRecordInfo': track.lapRecordInfo,
-        'website': track.website ?? '',
-        'latitude': track.latitude,
-        'longitude': track.longitude,
-        'countryCode': track.country?.code,
+        'iconKey': track.iconKey,
       },
       fetchPolicy: FetchPolicy.noCache,
     );
@@ -249,25 +168,22 @@ $_trackOutputFields
     return Track.fromJson(result.data!['createTrack']);
   }
 
-  /// Update the specified [track]. Same GraphQL projection / shape as
-  /// [createTrack]; the server returns the up-to-date entity which
-  /// the caller swaps in its in-memory list.
+  /// Update the specified [track] (version). Same projection / shape as
+  /// [createTrack]; the server returns the up-to-date entity.
   Future<Track> updateTrack(Track track) async {
-    _log.info("Updating track ${track.name}...");
+    _log.info("Updating track ${track.displayName}...");
 
     final String mutation =
         """
-      mutation UpdateTrack(\$trackId: Long!, \$name: String!, \$distance: Int!, \$lapRecord: Int!, \$lapRecordInfo: String, \$website: String!, \$latitude: Float!, \$longitude: Float!, \$countryCode: String!) {
+      mutation UpdateTrack(\$trackId: Long!, \$circuitId: Long!, \$variantName: String, \$distance: Int!, \$lapRecord: Int!, \$lapRecordInfo: String, \$iconKey: String) {
         updateTrack(
           trackId: \$trackId
-          name: \$name
+          circuitId: \$circuitId
+          variantName: \$variantName
           distance: \$distance
           lapRecord: \$lapRecord
           lapRecordInfo: \$lapRecordInfo
-          website: \$website
-          latitude: \$latitude
-          longitude: \$longitude
-          countryCode: \$countryCode
+          iconKey: \$iconKey
         ) {
 $_trackOutputFields
         }
@@ -278,14 +194,12 @@ $_trackOutputFields
       document: parseString(mutation),
       variables: <String, dynamic>{
         'trackId': track.id,
-        'name': track.name,
+        'circuitId': track.circuit?.id,
+        'variantName': track.variantName,
         'distance': track.distance,
         'lapRecord': track.lapRecord ?? 0,
         'lapRecordInfo': track.lapRecordInfo,
-        'website': track.website ?? '',
-        'latitude': track.latitude,
-        'longitude': track.longitude,
-        'countryCode': track.country?.code,
+        'iconKey': track.iconKey,
       },
       fetchPolicy: FetchPolicy.noCache,
     );
@@ -297,8 +211,8 @@ $_trackOutputFields
     return Track.fromJson(result.data!['updateTrack']);
   }
 
-  /// Delete the specified [track]. Returns the deleted entity (mostly
-  /// useful for logging / success snackbars referring to the name).
+  /// Delete the track (version) with the given [trackId]. Returns the deleted
+  /// entity (useful for logging / success snackbars).
   Future<Track> deleteTrack(int trackId) async {
     _log.info("Deleting track $trackId...");
 

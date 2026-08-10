@@ -278,7 +278,7 @@ class MemberDetail extends StatelessWidget {
               flex: 2,
               child: Row(
                 children: <Widget>[
-                  Icon(TrackUtils.trackIconFromName(trackName), size: 16.0, color: Colors.red[700]),
+                  Icon(TrackUtils.iconForTrack(record.track), size: 16.0, color: Colors.red[700]),
                   const SizedBox(width: 6.0),
                   Flexible(
                     child: Text(
@@ -546,7 +546,7 @@ class MemberDetail extends StatelessWidget {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: <Widget>[
-                      Icon(TrackUtils.trackIconFromName(event.track!.name), size: 30, color: accent),
+                      Icon(TrackUtils.iconForTrack(event.track), size: 30, color: accent),
                       Text(
                         "${event.track!.name}",
                         textAlign: TextAlign.center,

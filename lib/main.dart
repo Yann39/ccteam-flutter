@@ -20,6 +20,9 @@
 import 'package:ccteam/providers/avatar_provider.dart';
 import 'package:ccteam/providers/bike_list_provider.dart';
 import 'package:ccteam/providers/change_passcode_provider.dart';
+import 'package:ccteam/providers/circuit_creation_provider.dart';
+import 'package:ccteam/providers/circuit_detail_provider.dart';
+import 'package:ccteam/providers/circuit_list_provider.dart';
 import 'package:ccteam/providers/country_list_provider.dart';
 import 'package:ccteam/providers/event_creation_provider.dart';
 import 'package:ccteam/providers/event_detail_provider.dart';
@@ -72,7 +75,9 @@ import 'package:ccteam/ui/news/news_detail.dart';
 import 'package:ccteam/ui/news/news_list.dart';
 import 'package:ccteam/ui/photos/gallery.dart';
 import 'package:ccteam/ui/photos/photo_detail.dart';
+import 'package:ccteam/ui/tracks/add_edit_circuit.dart';
 import 'package:ccteam/ui/tracks/add_edit_track.dart';
+import 'package:ccteam/ui/tracks/circuit_detail.dart';
 import 'package:ccteam/ui/tracks/track_detail.dart';
 import 'package:ccteam/ui/unauthenticated/loading.dart';
 import 'package:ccteam/ui/unauthenticated/login.dart';
@@ -221,6 +226,27 @@ void main() async {
             ..updateMessageProvider(messageProvider)
             ..updateLoginProvider(loginProvider),
         ),
+        // circuits (venues) list
+        ChangeNotifierProxyProvider2<MessageProvider, LoginProvider, CircuitListProvider>(
+          create: (context) => CircuitListProvider(),
+          update: (context, messageProvider, loginProvider, circuitListProvider) => circuitListProvider!
+            ..updateMessageProvider(messageProvider)
+            ..updateLoginProvider(loginProvider),
+        ),
+        // current circuit detail (venue + its versions)
+        ChangeNotifierProxyProvider2<MessageProvider, LoginProvider, CircuitDetailProvider>(
+          create: (context) => CircuitDetailProvider(),
+          update: (context, messageProvider, loginProvider, circuitDetailProvider) => circuitDetailProvider!
+            ..updateMessageProvider(messageProvider)
+            ..updateLoginProvider(loginProvider),
+        ),
+        // circuit create / edit
+        ChangeNotifierProxyProvider2<MessageProvider, LoginProvider, CircuitCreationProvider>(
+          create: (context) => CircuitCreationProvider(),
+          update: (context, messageProvider, loginProvider, circuitCreationProvider) => circuitCreationProvider!
+            ..updateMessageProvider(messageProvider)
+            ..updateLoginProvider(loginProvider),
+        ),
         // so that we can set messages and logout user from TrackDetailProvider
         ChangeNotifierProxyProvider2<MessageProvider, LoginProvider, TrackDetailProvider>(
           create: (context) => TrackDetailProvider(),
@@ -312,6 +338,8 @@ class CCTeamApp extends StatelessWidget {
           '/photoDetail': (context) => PhotoDetail(),
           '/trackDetail': (context) => TrackDetail(),
           '/addEditTrack': (context) => AddEditTrack(),
+          '/circuitDetail': (context) => const CircuitDetail(),
+          '/addEditCircuit': (context) => AddEditCircuit(),
         },
         home: Consumer2<LoginProvider, MessageProvider>(
           builder: (context, loginProvider, messageProvider, child) {
