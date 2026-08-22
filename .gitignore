@@ -14,3 +14,4 @@ packages
 *.iml
 android/key.properties
 **/.cxx
+.flutter-plugins-dependencies
