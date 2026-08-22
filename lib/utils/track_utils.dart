@@ -24,6 +24,27 @@ import 'package:flutter/material.dart';
 
 /// Track utility functions
 class TrackUtils {
+  static const Map<String, IconData> _trackIconsByName = {
+    'ales': CustomIcons.ales_track,
+    'barcelone': CustomIcons.barcelone_track,
+    'bresse': CustomIcons.bresse_track,
+    'bourbonnais': CustomIcons.bourbonnais_track,
+    'carole': CustomIcons.carole_track,
+    'dijon_prenois': CustomIcons.dijon_prenois_track,
+    'jura_sud': CustomIcons.jura_sud_track,
+    'la_ferte_gaucher': CustomIcons.la_ferte_gaucher_track,
+    'le_mans': CustomIcons.le_mans_track,
+    'ledenon': CustomIcons.ledenon_track,
+    'magny_cours': CustomIcons.magny_cours_track,
+    'mirecourt': CustomIcons.mirecourt_track,
+    'misano': CustomIcons.misano_track,
+    'paul_ricard_38': CustomIcons.paul_ricard_38_track,
+    'paul_ricard_58': CustomIcons.paul_ricard_58_track,
+    'portimao': CustomIcons.portimao_track,
+    'pouilly_en_auxois': CustomIcons.pouilly_en_auxois_track,
+    'vaison': CustomIcons.vaison_track,
+  };
+
   /// Map / shape icon for a track (version): its explicit [Track.iconKey] when
   /// set, otherwise derived from the parent circuit name so existing circuits
   /// keep their icon without any per-version configuration.
@@ -37,50 +58,14 @@ class TrackUtils {
     return trackCoverImageUrlFromName(circuit?.name);
   }
 
-  /// Get the right track icon according to the specified [trackName]
-  static IconData trackIconFromName(String? trackName) {
-    if (trackName == 'Alès') {
-      return CustomIcons.ales_track;
-    } else if (trackName == 'Barcelone') {
-      return CustomIcons.barcelone_track;
-    } else if (trackName == 'Bresse') {
-      return CustomIcons.bresse_track;
-    } else if (trackName == 'Bourbonnais') {
-      return CustomIcons.bourbonnais_track;
-    } else if (trackName == 'Carole') {
-      return CustomIcons.carole_track;
-    } else if (trackName == 'Dijon-Prenois') {
-      return CustomIcons.dijon_prenois_track;
-    } else if (trackName == 'La Ferté-Gaucher') {
-      return CustomIcons.la_ferte_gaucher_track;
-    } else if (trackName == 'Le Mans') {
-      return CustomIcons.le_mans_track;
-    } else if (trackName == 'Lédenon') {
-      return CustomIcons.ledenon_track;
-    } else if (trackName == 'Magny-Cours') {
-      return CustomIcons.magny_cours_track;
-    } else if (trackName == 'Mirecourt') {
-      return CustomIcons.mirecourt_track;
-    } else if (trackName == 'Misano') {
-      return CustomIcons.misano_track;
-    } else if (trackName == 'Paul Ricard' || trackName == 'paul_ricard_38_track') {
-      return CustomIcons.paul_ricard_38_track;
-    } else if (trackName == 'paul_ricard_58_track)') {
-      return CustomIcons.paul_ricard_58_track;
-    } else if (trackName == 'Portimão') {
-      return CustomIcons.portimao_track;
-    } else if (trackName == 'Pouilly-en-Auxois') {
-      return CustomIcons.pouilly_en_auxois_track;
-    } else if (trackName == 'Vaison') {
-      return CustomIcons.vaison_track;
-    } else {
-      return CustomIcons.default_track;
-    }
+  /// Get the right track icon according to the specified [trackIconName]
+  static IconData trackIconFromName(String? trackIconName) {
+    return _trackIconsByName[trackIconName] ?? CustomIcons.default_track;
   }
 
   /// Map a [TrackCondition] enum name (as stored on `Record.conditions`)
   /// to a representative weather icon. Returns `null` when the condition
-  /// is unknown / not set — callers should treat that as "don't render
+  /// is unknown / not set, callers should treat that as "don't render
   /// anything" rather than fall back to a default, so missing data
   /// stays visibly missing.
   static IconData? trackConditionIconData(String? condition) {
@@ -128,6 +113,8 @@ class TrackUtils {
       return "images/tracks/dijon-prenois_cover.jpg";
     } else if (trackName == 'La Ferté-Gaucher') {
       return "images/tracks/la-ferte-gaucher_cover.jpg";
+    } else if (trackName == 'Jura Sud') {
+      return "images/tracks/jura-sud_cover.jpg";
     } else if (trackName == 'Le Mans') {
       return "images/tracks/le-mans_cover.jpg";
     } else if (trackName == 'Lédenon') {

@@ -46,4 +46,5 @@ class CustomIcons {
   static const IconData vaison_track = IconData(0xe816, fontFamily: _kFontFam, fontPackage: _kFontPkg);
   static const IconData paul_ricard_38_track = IconData(0xe817, fontFamily: _kFontFam, fontPackage: _kFontPkg);
   static const IconData paul_ricard_58_track = IconData(0xe818, fontFamily: _kFontFam, fontPackage: _kFontPkg);
+  static const IconData jura_sud_track = IconData(0xe819, fontFamily: _kFontFam, fontPackage: _kFontPkg);
 }
