@@ -36,8 +36,84 @@ import 'package:ccteam/widgets/restricted_content.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-/// We need stateful widget to keep search field value
-class MemberList extends StatelessWidget {
+/// Stateful so we can keep the search field value and the (admin-only) role filter.
+class MemberList extends StatefulWidget {
+  const MemberList({Key? key}) : super(key: key);
+
+  @override
+  State<MemberList> createState() => _MemberListState();
+}
+
+class _MemberListState extends State<MemberList> {
+  /// Roles shown by default, for everyone: every non-USER role. Plain USER
+  /// accounts (pending validations, the Play Store test account created with
+  /// playstore@example.com, …) are hidden unless an admin explicitly enables
+  /// them through the role filter.
+  static const Set<MemberRole> _defaultRoles = <MemberRole>{
+    MemberRole.ROLE_MEMBER,
+    MemberRole.ROLE_GUEST,
+    MemberRole.ROLE_ADMIN,
+  };
+
+  /// Display order of the role chips in the filter sheet (non-USER first).
+  static const List<MemberRole> _roleOrder = <MemberRole>[
+    MemberRole.ROLE_MEMBER,
+    MemberRole.ROLE_GUEST,
+    MemberRole.ROLE_ADMIN,
+    MemberRole.ROLE_USER,
+  ];
+
+  /// Roles the list is currently filtered to. Only admins can change it.
+  final Set<MemberRole> _visibleRoles = <MemberRole>{..._defaultRoles};
+
+  /// Whether the current role selection differs from the default (drives the
+  /// little red dot on the filter icon).
+  bool get _filterActive => !(_visibleRoles.length == _defaultRoles.length && _visibleRoles.containsAll(_defaultRoles));
+
+  /// Keep only the members whose role is currently enabled.
+  List<Member> _applyRoleFilter(List<Member> members) {
+    return members.where((Member m) => m.role != null && _visibleRoles.contains(m.role)).toList();
+  }
+
+  String _roleLabel(MemberRole role) {
+    switch (role) {
+      case MemberRole.ROLE_USER:
+        return AppString.memberRoleUser;
+      case MemberRole.ROLE_GUEST:
+        return AppString.memberRoleGuest;
+      case MemberRole.ROLE_MEMBER:
+        return AppString.memberRoleMember;
+      case MemberRole.ROLE_ADMIN:
+        return AppString.memberRoleAdmin;
+    }
+  }
+
+  IconData _roleIcon(MemberRole role) {
+    switch (role) {
+      case MemberRole.ROLE_USER:
+        return Icons.hourglass_empty;
+      case MemberRole.ROLE_GUEST:
+        return Icons.person_outline;
+      case MemberRole.ROLE_MEMBER:
+        return Icons.person;
+      case MemberRole.ROLE_ADMIN:
+        return Icons.admin_panel_settings;
+    }
+  }
+
+  Color _roleColor(MemberRole role) {
+    switch (role) {
+      case MemberRole.ROLE_USER:
+        return Colors.blueGrey;
+      case MemberRole.ROLE_GUEST:
+        return Colors.teal[600]!;
+      case MemberRole.ROLE_MEMBER:
+        return Colors.blue[700]!;
+      case MemberRole.ROLE_ADMIN:
+        return Colors.red[700]!;
+    }
+  }
+
   /// Navigate to the member creation form screen to create a new member.
   _navigateToAddMemberScreen(BuildContext context) async {
     // set a new member to be created
@@ -236,14 +312,177 @@ class MemberList extends StatelessWidget {
     );
   }
 
+  /// AppBar filter icon (admin only), with a small red dot when the role filter
+  /// differs from the default (non-USER) selection.
+  Widget _buildFilterAction() {
+    return IconButton(
+      tooltip: AppString.membersFilterTooltip,
+      onPressed: _openFilterSheet,
+      icon: Stack(
+        clipBehavior: Clip.none,
+        children: <Widget>[
+          const Icon(Icons.filter_list),
+          if (_filterActive)
+            Positioned(
+              top: -2,
+              right: -2,
+              child: Container(
+                width: 9,
+                height: 9,
+                decoration: BoxDecoration(
+                  color: Colors.red[700],
+                  shape: BoxShape.circle,
+                  border: Border.all(color: Colors.white, width: 1.0),
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFilterSectionLabel(String label) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 6.0),
+      child: Text(
+        label,
+        style: TextStyle(fontSize: 13.0, fontWeight: FontWeight.w600, color: Colors.black.withValues(alpha: 0.6)),
+      ),
+    );
+  }
+
+  /// Open the role filter as a modal bottom sheet with one multi-select chip
+  /// per role. Selecting a chip applies the filter live to the list behind it.
+  void _openFilterSheet() {
+    showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (BuildContext sheetContext) {
+        return StatefulBuilder(
+          builder: (BuildContext context, StateSetter setSheetState) {
+            // apply a change both to the page (list refreshes behind the sheet) and to the sheet (chips refresh)
+            void apply(VoidCallback change) {
+              setState(change);
+              setSheetState(() {});
+            }
+
+            return Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [Colors.blue[100]!, Colors.blue[200]!],
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                ),
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(16.0)),
+              ),
+              padding: EdgeInsets.only(
+                left: 16.0,
+                right: 16.0,
+                top: 12.0,
+                bottom: MediaQuery.of(sheetContext).padding.bottom + 16.0,
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  // grab handle
+                  Center(
+                    child: Container(
+                      width: 40,
+                      height: 4,
+                      margin: const EdgeInsets.only(bottom: 12.0),
+                      decoration: BoxDecoration(color: Colors.black26, borderRadius: BorderRadius.circular(2.0)),
+                    ),
+                  ),
+                  Row(
+                    children: <Widget>[
+                      Icon(Icons.filter_list, color: Colors.blue[700]),
+                      const SizedBox(width: 8.0),
+                      Expanded(
+                        child: Text(
+                          AppString.membersFilterTitle,
+                          style: const TextStyle(fontSize: 16.0, fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                      if (_filterActive)
+                        TextButton.icon(
+                          onPressed: () => apply(
+                            () => _visibleRoles
+                              ..clear()
+                              ..addAll(_defaultRoles),
+                          ),
+                          icon: const Icon(Icons.filter_alt_off, size: 18.0),
+                          label: Text(AppString.membersFilterReset),
+                        ),
+                    ],
+                  ),
+                  const SizedBox(height: 8.0),
+                  _buildFilterSectionLabel(AppString.membersFilterRoleSection),
+                  Wrap(
+                    spacing: 8.0,
+                    runSpacing: 8.0,
+                    children: <Widget>[
+                      for (final MemberRole role in _roleOrder)
+                        _FilterTile(
+                          icon: _roleIcon(role),
+                          iconColor: _roleColor(role),
+                          label: _roleLabel(role),
+                          selected: _visibleRoles.contains(role),
+                          onTap: () => apply(() {
+                            if (_visibleRoles.contains(role)) {
+                              _visibleRoles.remove(role);
+                            } else {
+                              _visibleRoles.add(role);
+                            }
+                          }),
+                        ),
+                    ],
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  /// Placeholder shown when the role filter hides every fetched member.
+  Widget _buildNoMatchPlaceholder() {
+    return SingleChildScrollView(
+      physics: const AlwaysScrollableScrollPhysics(),
+      child: Padding(
+        padding: const EdgeInsets.only(top: 60.0),
+        child: Center(
+          child: Column(
+            children: <Widget>[
+              Icon(Icons.filter_alt_off, size: 48.0, color: Colors.black.withValues(alpha: 0.35)),
+              const SizedBox(height: 12.0),
+              Text(
+                AppString.membersFilterNoMatch,
+                textAlign: TextAlign.center,
+                style: TextStyle(color: Colors.black.withValues(alpha: 0.6)),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  @override
   Widget build(BuildContext context) {
     final MemberListProvider _memberListProvider = Provider.of<MemberListProvider>(context, listen: true);
     final LoginProvider _loginProvider = Provider.of<LoginProvider>(context, listen: false);
+
+    final List<Member> members = _applyRoleFilter(_memberListProvider.memberList);
 
     return Scaffold(
       appBar: AppBar(
         title: Text(AppString.tabTeam),
         actions: <Widget>[
+          if (_loginProvider.isAdmin) _buildFilterAction(),
           if (_loginProvider.isAdmin)
             IconButton(icon: Icon(Icons.add), onPressed: () => _navigateToAddMemberScreen(context)),
           MainActionMenu(),
@@ -264,20 +503,80 @@ class MemberList extends StatelessWidget {
                         loadingStatus: _memberListProvider.loadingStatus,
                         defaultText: AppString.membersNotFound,
                         emptyText: AppString.membersNotFound,
-                        child: ListView.separated(
-                          physics: const AlwaysScrollableScrollPhysics(),
-                          padding: EdgeInsets.only(bottom: MediaQuery.of(context).padding.bottom + 8.0),
-                          separatorBuilder: (context, index) => Divider(color: Colors.white.withAlpha(50), height: 4),
-                          itemCount: _memberListProvider.memberList.length,
-                          itemBuilder: (context, index) =>
-                              _buildMemberTile(context, _memberListProvider.memberList[index]),
-                        ),
+                        child: members.isEmpty
+                            ? _buildNoMatchPlaceholder()
+                            : ListView.separated(
+                                physics: const AlwaysScrollableScrollPhysics(),
+                                padding: EdgeInsets.only(bottom: MediaQuery.of(context).padding.bottom + 8.0),
+                                separatorBuilder: (context, index) =>
+                                    Divider(color: Colors.white.withAlpha(50), height: 4),
+                                itemCount: members.length,
+                                itemBuilder: (context, index) => _buildMemberTile(context, members[index]),
+                              ),
                       ),
                     ),
                   ),
                 ],
               ),
             ),
+    );
+  }
+}
+
+/// Selectable chip used in the role filter sheet (icon + label, green outline +
+/// check when selected). Mirrors the filter chip used on the "Mes chronos" page.
+class _FilterTile extends StatelessWidget {
+  const _FilterTile({
+    required this.icon,
+    required this.iconColor,
+    required this.label,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final IconData icon;
+  final Color iconColor;
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.white.withValues(alpha: 0.55),
+      borderRadius: BorderRadius.circular(10.0),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(10.0),
+        child: Container(
+          padding: const EdgeInsets.fromLTRB(10.0, 8.0, 10.0, 8.0),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(10.0),
+            border: Border.all(color: selected ? Colors.green[700]! : Colors.white, width: 1.0),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              Icon(icon, size: 18.0, color: iconColor),
+              const SizedBox(width: 8.0),
+              ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 180.0),
+                child: Text(
+                  label,
+                  style: TextStyle(
+                    color: Colors.black.withAlpha(204),
+                    fontSize: 13.5,
+                    fontWeight: selected ? FontWeight.w700 : FontWeight.normal,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              if (selected) ...[const SizedBox(width: 6.0), Icon(Icons.check, size: 18.0, color: Colors.green[700])],
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

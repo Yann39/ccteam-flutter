@@ -25,13 +25,17 @@ class AppString {
   static format(String source, List<dynamic> arguments) {
     int index = 0;
     arguments.forEach(
-      (element) => source = source.replaceFirst("{${index++}}", element != null ? element.toString() : "null"),
+      (element) => source = source.replaceFirst(
+        "{${index++}}",
+        element != null ? element.toString() : "null",
+      ),
     );
     return source;
   }
 
   static const String applicationTitle = 'CCTeam';
-  static const String applicationTagline = 'L\'application officielle du motoclub CCTeam';
+  static const String applicationTagline =
+      'L\'application officielle du motoclub CCTeam';
 
   // About page
   static const String aboutTitle = 'A propos';
@@ -41,11 +45,15 @@ class AppString {
       'profils des membres et de leurs motos, fiches détaillées des circuits, chronos et records personnels, '
       'galeries photos des sorties, et actualités du club.';
   static const String aboutFeaturesTitle = 'Fonctionnalités principales';
-  static const String aboutFeatureCalendar = 'Calendrier des roulages et inscriptions';
-  static const String aboutFeatureMembers = 'Annuaire des membres et de leurs motos';
-  static const String aboutFeatureTracks = 'Fiches des circuits et records du tour';
+  static const String aboutFeatureCalendar =
+      'Calendrier des roulages et inscriptions';
+  static const String aboutFeatureMembers =
+      'Annuaire des membres et de leurs motos';
+  static const String aboutFeatureTracks =
+      'Fiches des circuits et records du tour';
   static const String aboutFeatureChronos = 'Suivi de vos chronos personnels';
-  static const String aboutFeatureStats = 'Statistiques personnelles et diagrammes';
+  static const String aboutFeatureStats =
+      'Statistiques personnelles et diagrammes';
   static const String aboutFeatureGalleries = 'Galeries photos des sorties';
   static const String aboutFeatureNews = 'Actualités du club';
   static const String aboutPrivacyTitle = 'Confidentialité et données';
@@ -60,11 +68,14 @@ class AppString {
   static const String aboutThirdPartyLicenses = 'Licences des composants tiers';
   static const String aboutSourceApp = 'Code source de l\'application';
   static const String aboutSourceServer = 'Code source du serveur';
-  static const String aboutSourceAppUrl = 'https://github.com/Yann39/ccteam-flutter';
-  static const String aboutSourceServerUrl = 'https://github.com/Yann39/ccteam-graphql';
+  static const String aboutSourceAppUrl =
+      'https://github.com/Yann39/ccteam-flutter';
+  static const String aboutSourceServerUrl =
+      'https://github.com/Yann39/ccteam-graphql';
   static const String aboutCopyright = '© 2019–2026 Yann39';
 
-  static const String formNotValid = 'Le formulaire n\'est pas valide. Corrigez les erreurs puis essayer à nouveau.';
+  static const String formNotValid =
+      'Le formulaire n\'est pas valide. Corrigez les erreurs puis essayer à nouveau.';
 
   static const String error = 'Erreur';
   static const String warning = 'Attention';
@@ -84,18 +95,22 @@ class AppString {
   static const String continue1 = 'Continuer';
   static const String resendOtp = 'Renvoyer';
   static const String resendOtpCooldown = 'Renvoyer ({0}s)';
-  static const String resendOtpTooSoon = 'Patientez encore {0}s avant de renvoyer un code';
+  static const String resendOtpTooSoon =
+      'Patientez encore {0}s avant de renvoyer un code';
   static const String verify = 'Vérifier';
   static const String finish = 'Terminer';
   static const String createAccount = 'Créer un compte';
   static const String enterPasscode = 'Saisissez votre passcode';
   static const String createYourPasscode = 'Création de votre passcode';
-  static const String useAnotherEmailAddress = 'Utiliser une autre adresse e-mail';
-  static const String emailAddressVerification = 'Vérification de l\'adresse e-mail';
+  static const String useAnotherEmailAddress =
+      'Utiliser une autre adresse e-mail';
+  static const String emailAddressVerification =
+      'Vérification de l\'adresse e-mail';
   static const String codeNotReceived = 'Code non reçu ?';
   static const String contentNotLoaded = 'Le contenu n\'a pas pu être chargé';
   static const String noContentToDisplay = 'Aucun contenu à afficher';
-  static const String contentReservedForMembers = 'This content is available only for members';
+  static const String contentReservedForMembers =
+      'This content is available only for members';
 
   static const String notDefined = 'Non-défini';
   static const String confirmation = 'Confirmation';
@@ -106,18 +121,22 @@ class AppString {
       'Pour vous connecter, indiquez l\'adresse e-mail liée à votre compte. Si vous n\'avez pas de compte, vous devez en créer un.';
   static const String infoRegister =
       'Complétez le formulaire ci-dessous pour commencer le processus d\'inscription. Un code vous sera envoyé afin de vérifier votre adresse e-mail.';
-  static const String infoLoginOtp = 'Indiquez le code qui vous a été envoyé à l\'adresse';
+  static const String infoLoginOtp =
+      'Indiquez le code qui vous a été envoyé à l\'adresse';
   static const String deviceVerificationTitle = 'Nouvel appareil détecté';
   static const String deviceVerificationInfo =
       'Pour votre sécurité, cet appareil doit être confirmé. Indiquez le code qui vient d\'être envoyé à l\'adresse';
   static const String timeLeft = 'Temps restant';
-  static const String passcodeInfo = 'Veuillez définir un code vous permettant de sécuriser votre compte';
+  static const String passcodeInfo =
+      'Veuillez définir un code vous permettant de sécuriser votre compte';
   static const String confirmPasscodeInfo = 'Veuillez confirmer le code';
-  static const String confirmPasscodeMismatch = 'Les passcodes ne correspondent pas, veuillez réessayer';
+  static const String confirmPasscodeMismatch =
+      'Les passcodes ne correspondent pas, veuillez réessayer';
 
   static const String about = 'A propos';
   static const String contact = 'Contact';
-  static const String noMailAppFound = 'Aucune application de messagerie n\'a pu être ouverte';
+  static const String noMailAppFound =
+      'Aucune application de messagerie n\'a pu être ouverte';
   static const String logout = 'Se déconnecter';
   static const String galleries = 'Galeries';
 
@@ -139,13 +158,17 @@ class AppString {
 
   static const String loginEmailHint = 'Adresse e-mail';
   static const String loginOtpHint = 'Code';
-  static const String loginOtpMandatory = 'Veuillez saisir le code à 6 chiffres reçu par e-mail';
+  static const String loginOtpMandatory =
+      'Veuillez saisir le code à 6 chiffres reçu par e-mail';
   static const String loginPasswordHint = 'Mot de passe';
   static const String loginFailed =
       'L\'dentification a échouée, vérifiez vos informations et assurez-vous que votre compte soit actif';
-  static const String loginNoAccountFound = "Aucun compte trouvé avec l'adresse e-mail spécifiée";
-  static const String loginAccountEmailAlreadyExist = "Un compte existe déjà avec cette adresse e-mail";
-  static const String loginEmailMissing = "L'adresse e-mail doit être spécifiée";
+  static const String loginNoAccountFound =
+      "Aucun compte trouvé avec l'adresse e-mail spécifiée";
+  static const String loginAccountEmailAlreadyExist =
+      "Un compte existe déjà avec cette adresse e-mail";
+  static const String loginEmailMissing =
+      "L'adresse e-mail doit être spécifiée";
 
   static const String checkAccountUnexpectedResponse =
       "Une erreur inattendue est survenue lors de la vérification de votre compte. Si le problème persite, contactez un administrateur";
@@ -163,7 +186,8 @@ class AppString {
 
   static const String resendOtpMissingData =
       "Des données sont manquantes, vérifiez que vous avez bien rempli tous les champs obligatoires. Si le problème persite, contactez un administrateur";
-  static const String resendOtpNoAccountFound = "Aucun compte trouvé avec l'adresse e-mail spécifiée";
+  static const String resendOtpNoAccountFound =
+      "Aucun compte trouvé avec l'adresse e-mail spécifiée";
   static const String resendOtpEmailNotSent =
       "Le code de confirmation n\'a pas pu être envoyé à l'adresse {0}. Veuillez vérifier que l\'adresse e-mail est correcte puis renvoyez le code";
   static const String resendOtpUnexpectedResponse =
@@ -173,7 +197,8 @@ class AppString {
 
   static const String confirmEmailMissingData =
       "Des données sont manquantes, vérifiez que vous avez bien rempli tous les champs obligatoires. Si le problème persite, contactez un administrateur";
-  static const String confirmEmailNoAccountFound = "Aucun compte trouvé avec l'adresse e-mail spécifiée";
+  static const String confirmEmailNoAccountFound =
+      "Aucun compte trouvé avec l'adresse e-mail spécifiée";
   static const String confirmEmailOtpExpired = "Le code indiqué a expiré";
   static const String confirmEmailWrongOtp = "Le code indiqué n'est pas valide";
   static const String confirmEmailUnexpectedResponse =
@@ -183,7 +208,8 @@ class AppString {
 
   static const String completeRegistrationMissingData =
       "Des données sont manquantes, vérifiez que vous avez bien rempli tous les champs obligatoires. Si le problème persite, contactez un administrateur";
-  static const String completeRegistrationNoAccountFound = "Aucun compte trouvé avec l'adresse e-mail spécifiée";
+  static const String completeRegistrationNoAccountFound =
+      "Aucun compte trouvé avec l'adresse e-mail spécifiée";
   static const String completeRegistrationUnexpectedResponse =
       "Une erreur inattendue est survenue lors de la finalisation de votre inscription. Si le problème persite, contactez un administrateur";
   static const String completeRegistrationError =
@@ -201,21 +227,28 @@ class AppString {
   static const String registrationLastNameHint = 'Votre nom';
   static const String registrationEmailHint = 'Votre adresse e-mail';
   static const String registrationPasswordHint = 'Choisissez un mot de passe';
-  static const String registrationPasswordConfirmHint = 'Confirmez votre mot de passe';
+  static const String registrationPasswordConfirmHint =
+      'Confirmez votre mot de passe';
 
   static const String profileEdit = 'Modification de profil';
 
   static const String newsCreate = 'Ajouter une actualité';
   static const String newsCreated = 'L\'actualité à été créée avec succès !';
-  static const String newsCreationFailed = 'Echec lors de la création de l\'actualité';
+  static const String newsCreationFailed =
+      'Echec lors de la création de l\'actualité';
   static const String newsEdit = 'Modifier une actualité';
-  static const String newsUpdated = 'L\'actualité à été mise à jour avec succès !';
-  static const String newsUpdateFailed = 'Echec lors de la mise à jour de l\'actualité';
+  static const String newsUpdated =
+      'L\'actualité à été mise à jour avec succès !';
+  static const String newsUpdateFailed =
+      'Echec lors de la mise à jour de l\'actualité';
   static const String newsDeleted = 'L\'actualité à été supprimé avec succès !';
-  static const String newsDeletionFailed = 'Echec lors de la suppression de l\'actualité';
-  static const String newsDeletionAreYouSure = 'Etes-vous sûr de vouloir supprimer cette actualité ?';
+  static const String newsDeletionFailed =
+      'Echec lors de la suppression de l\'actualité';
+  static const String newsDeletionAreYouSure =
+      'Etes-vous sûr de vouloir supprimer cette actualité ?';
   static const String newsLikersTitle = 'Ils ont aimé';
-  static const String newsNoLikers = 'Personne n\'a encore aimé cette actualité';
+  static const String newsNoLikers =
+      'Personne n\'a encore aimé cette actualité';
   static const String newsLikesCount = '{0} j\'aime';
   static const String newsTitle = 'Titre';
   static const String newsTitleHint = 'Saisissez le titre de l\'actualité';
@@ -228,20 +261,27 @@ class AppString {
   static const String newsDate = 'Date';
   static const String newsDateHint = 'JJ/MM/AAAA';
   static const String newsDateMandatory = 'La date est obligatoire';
-  static const String newsDateMustBeFuture = 'La date indiquée doit être supérieure à la date courante';
-  static const String newsLikeFailed = 'Erreur, impossible d\'aimer cette actualité';
+  static const String newsDateMustBeFuture =
+      'La date indiquée doit être supérieure à la date courante';
+  static const String newsLikeFailed =
+      'Erreur, impossible d\'aimer cette actualité';
   static const String newsEmpty = 'Aucune actualité à afficher';
 
   static const String member = 'Membre';
   static const String memberScreenTitle = 'Équipe';
   static const String memberCreate = 'Ajouter un membre';
   static const String memberCreated = 'Le membre à été créée avec succès !';
-  static const String memberCreationFailed = 'Echec lors de la création du membre';
-  static const String memberUpdated = 'Le membre à été mise à jour avec succès !';
-  static const String memberUpdateFailed = 'Echec lors de la mise à jour du membre';
+  static const String memberCreationFailed =
+      'Echec lors de la création du membre';
+  static const String memberUpdated =
+      'Le membre à été mise à jour avec succès !';
+  static const String memberUpdateFailed =
+      'Echec lors de la mise à jour du membre';
   static const String memberDeleted = 'Le membre à été supprimé avec succès !';
-  static const String memberDeletionFailed = 'Echec lors de la suppression du membre';
-  static const String memberDeletionAreYouSure = 'Etes-vous sûr de vouloir supprimer ce membre ?';
+  static const String memberDeletionFailed =
+      'Echec lors de la suppression du membre';
+  static const String memberDeletionAreYouSure =
+      'Etes-vous sûr de vouloir supprimer ce membre ?';
   static const String memberFirstName = 'Prénom';
   static const String memberFirstNameHint = 'Prénom';
   static const String memberFirstNameMandatory = 'Le prénom est obligatoire';
@@ -250,31 +290,45 @@ class AppString {
   static const String memberLastNameMandatory = 'Le nom est obligatoire';
   static const String memberEmail = 'E-mail';
   static const String memberEmailHint = 'Adresse e-mail du membre';
-  static const String memberEmailMandatory = 'L\'adresse e-mail est obligatoire';
-  static const String memberEmailNotValid = 'L\'adresse e-mail indiquée n\'est pas valide';
+  static const String memberEmailMandatory =
+      'L\'adresse e-mail est obligatoire';
+  static const String memberEmailNotValid =
+      'L\'adresse e-mail indiquée n\'est pas valide';
   static const String memberPhone = 'Téléphone';
   static const String memberPhoneHint = 'Numéro de téléphone';
-  static const String memberPhoneMandatory = 'Le numéro de téléphone est obligatoire';
-  static const String memberPhoneNotValid = 'Le numéro de téléphone indiqué n\'est pas valide';
+  static const String memberPhoneMandatory =
+      'Le numéro de téléphone est obligatoire';
+  static const String memberPhoneNotValid =
+      'Le numéro de téléphone indiqué n\'est pas valide';
   static const String memberRiderNumber = 'Numéro de pilote';
   static const String memberRiderNumberHint = 'Numéro de pilote (ex: 46)';
   static const String memberBike = 'Moto';
   static const String memberBikeHint = 'Moto du membre';
   static const String memberBikeMandatory = 'La moto est obligatoire';
   static const String memberRegistrationDate = 'Date d\'inscription';
-  static const String memberRegistrationDateHint = 'Date d\'inscription du membre';
-  static const String memberRegistrationDateMandatory = 'La date d\'inscription est obligatoire';
-  static const String memberRegistrationDateNotValid = 'La date indiquée n\'est pas valide';
+  static const String memberRegistrationDateHint =
+      'Date d\'inscription du membre';
+  static const String memberRegistrationDateMandatory =
+      'La date d\'inscription est obligatoire';
+  static const String memberRegistrationDateNotValid =
+      'La date indiquée n\'est pas valide';
   static const String memberRole = 'Rôle';
   static const String memberRoleUser = 'Utilisateur';
   static const String memberRoleGuest = 'Membre invité';
   static const String memberRoleMember = 'Membre';
   static const String memberRoleAdmin = 'Administrateur';
-  static const String memberPasswordMandatory = 'Le mot de passe est obligatoire';
+  static const String memberPasswordMandatory =
+      'Le mot de passe est obligatoire';
   static const String memberLoginFailed =
       'Connexion impossible, vérifiez vos informations et assurez-vous que votre compte est actif';
   static const String membersSearchHint = 'Nom / Prénom';
   static const String membersNotFound = 'Aucun membre trouvé';
+  static const String membersFilterTitle = 'Filtrer les membres';
+  static const String membersFilterTooltip = 'Filtrer par rôle';
+  static const String membersFilterRoleSection = 'Rôle';
+  static const String membersFilterReset = 'Réinitialiser';
+  static const String membersFilterNoMatch =
+      'Aucun membre ne correspond au filtre';
   static const String memberNoEvent = 'Ce membre n\'a aucun roulage';
   static const String memberNoChrono = 'Ce membre n\'a aucun chrono';
 
@@ -288,7 +342,8 @@ class AppString {
   static const String bikeModel = 'Modèle';
   static const String bikeEngineSize = 'Cylindrée';
   static const String bikeYear = 'Année';
-  static const String bikeManufacturerMandatory = 'Le constructeur est obligatoire';
+  static const String bikeManufacturerMandatory =
+      'Le constructeur est obligatoire';
   static const String bikeModelMandatory = 'Le modèle est obligatoire';
   static const String bikeEngineSizeMandatory = 'La cylindrée est obligatoire';
   static const String bikeYearMandatory = 'L\'année est obligatoire';
@@ -297,15 +352,18 @@ class AppString {
   static const String bikeStatusLabel = 'Statut';
   static const String bikeCurrentLabel = 'Moto courante';
   static const String bikeChronosTitle = 'Chronos avec cette moto';
-  static const String bikeDeletionAreYouSure = 'Etes-vous sûr de vouloir supprimer cette moto ?';
+  static const String bikeDeletionAreYouSure =
+      'Etes-vous sûr de vouloir supprimer cette moto ?';
 
   static const String tracksSearchHint = 'Nom du circuit';
   static const String tracksNotFound = 'Aucun circuit trouvé';
   static const String trackNoEvent = 'Ce circuit n\'a aucun roulage prévu';
   static const String trackNoChrono = 'Ce circuit n\'a aucun chrono';
 
-  static const String avatarUploadFailed = 'Échec, la taille du fichier ne doit pas dépasser 500Ko';
-  static const String avatarDeleteFailed = 'Échec de la suppression de l\'avatar';
+  static const String avatarUploadFailed =
+      'Échec, la taille du fichier ne doit pas dépasser 500Ko';
+  static const String avatarDeleteFailed =
+      'Échec de la suppression de l\'avatar';
   static const String avatarResetAreYouSure =
       'Cette action va supprimer votre photo de profil et remettre celle par défaut, êtes-vous sûr de vouloir continuer ?';
 
@@ -315,13 +373,20 @@ class AppString {
   static const String circuitEdit = 'Modifier le circuit';
   static const String circuitCreate = 'Ajouter un circuit';
   static const String circuitCreated = 'Le circuit a été créé avec succès !';
-  static const String circuitCreationFailed = 'Échec lors de la création du circuit';
-  static const String circuitUpdated = 'Le circuit a été mis à jour avec succès !';
-  static const String circuitUpdateFailed = 'Échec lors de la mise à jour du circuit';
-  static const String circuitDeleted = 'Le circuit a été supprimé avec succès !';
-  static const String circuitDeletionFailed = 'Échec lors de la suppression du circuit';
-  static const String circuitDeletionAreYouSure = 'Êtes-vous sûr de vouloir supprimer ce circuit ?';
-  static const String circuitDeletionHasVersions = 'Supprimez d\'abord toutes les versions de ce circuit.';
+  static const String circuitCreationFailed =
+      'Échec lors de la création du circuit';
+  static const String circuitUpdated =
+      'Le circuit a été mis à jour avec succès !';
+  static const String circuitUpdateFailed =
+      'Échec lors de la mise à jour du circuit';
+  static const String circuitDeleted =
+      'Le circuit a été supprimé avec succès !';
+  static const String circuitDeletionFailed =
+      'Échec lors de la suppression du circuit';
+  static const String circuitDeletionAreYouSure =
+      'Êtes-vous sûr de vouloir supprimer ce circuit ?';
+  static const String circuitDeletionHasVersions =
+      'Supprimez d\'abord toutes les versions de ce circuit.';
   static const String circuitVersionsSectionTitle = 'Versions';
   static const String circuitNoVersion = 'Ce circuit n\'a aucune version';
   static const String circuitAddVersion = 'Ajouter une version';
@@ -332,16 +397,22 @@ class AppString {
   static const String trackEdit = 'Modifier la version';
   static const String trackCreate = 'Ajouter une version';
   static const String trackCreated = 'La version a été créée avec succès !';
-  static const String trackCreationFailed = 'Échec lors de la création de la version';
-  static const String trackUpdated = 'La version a été mise à jour avec succès !';
-  static const String trackUpdateFailed = 'Échec lors de la mise à jour de la version';
+  static const String trackCreationFailed =
+      'Échec lors de la création de la version';
+  static const String trackUpdated =
+      'La version a été mise à jour avec succès !';
+  static const String trackUpdateFailed =
+      'Échec lors de la mise à jour de la version';
   static const String trackDeleted = 'La version a été supprimée avec succès !';
-  static const String trackDeletionFailed = 'Échec lors de la suppression de la version';
-  static const String trackDeletionAreYouSure = 'Êtes-vous sûr de vouloir supprimer cette version ?';
+  static const String trackDeletionFailed =
+      'Échec lors de la suppression de la version';
+  static const String trackDeletionAreYouSure =
+      'Êtes-vous sûr de vouloir supprimer cette version ?';
   static const String trackCircuitLabel = 'Circuit';
   static const String trackCircuitMandatory = 'Le circuit est obligatoire';
   static const String trackVariantName = 'Version';
-  static const String trackVariantNameHint = 'ex. 5,8 km GP (laisser vide si une seule version)';
+  static const String trackVariantNameHint =
+      'ex. 5,8 km GP (laisser vide si une seule version)';
   static const String trackIconKey = 'Icône du tracé';
   static const String trackIconKeyHint = 'Clé de l\'icône (optionnel)';
   static const String trackName = 'Nom';
@@ -354,7 +425,8 @@ class AppString {
   static const String trackDistanceMandatory = 'La longueur est obligatoire';
   static const String trackLapRecord = 'Record du tour';
   static const String trackLapRecordHint = 'MM\'SS"mmm';
-  static const String trackLapRecordInvalid = 'Format invalide (attendu MM\'SS"mmm)';
+  static const String trackLapRecordInvalid =
+      'Format invalide (attendu MM\'SS"mmm)';
   static const String trackLapRecordInfo = 'Détail du record';
   static const String trackLapRecordInfoHint = 'Pilote, moto, année…';
   static const String trackWebsite = 'Site web';
@@ -370,18 +442,25 @@ class AppString {
 
   static const String eventCreate = 'Ajouter un événement';
   static const String eventCreated = 'L\'événement à été créée avec succès !';
-  static const String eventCreationFailed = 'Échec lors de la création de l\'événement';
-  static const String eventUpdated = 'L\'événement à été mise à jour avec succès !';
-  static const String eventUpdateFailed = 'Échec lors de la mise à jour de l\'événement';
-  static const String eventDeleted = 'L\'événement à été supprimé avec succès !';
-  static const String eventDeletionFailed = 'Échec lors de la suppression de l\'événement';
-  static const String eventDeletionAreYouSure = 'Êtes-vous sûr de vouloir supprimer cet événement ?';
+  static const String eventCreationFailed =
+      'Échec lors de la création de l\'événement';
+  static const String eventUpdated =
+      'L\'événement à été mise à jour avec succès !';
+  static const String eventUpdateFailed =
+      'Échec lors de la mise à jour de l\'événement';
+  static const String eventDeleted =
+      'L\'événement à été supprimé avec succès !';
+  static const String eventDeletionFailed =
+      'Échec lors de la suppression de l\'événement';
+  static const String eventDeletionAreYouSure =
+      'Êtes-vous sûr de vouloir supprimer cet événement ?';
   static const String eventTitle = 'Titre';
   static const String eventTitleHint = 'Titre de l\'événement';
   static const String eventTitleMandatory = 'Le titre est obligatoire';
   static const String eventDescription = 'Description';
   static const String eventDescriptionHint = 'Description de l\'événement';
-  static const String eventDescriptionMandatory = 'La description est obligatoire';
+  static const String eventDescriptionMandatory =
+      'La description est obligatoire';
   static const String eventPrice = 'Prix';
   static const String eventPriceHint = 'Prix de l\'événement';
   static const String eventPriceMandatory = 'Le prix est obligatoire';
@@ -389,24 +468,31 @@ class AppString {
   static const String eventTrackId = 'Circuit';
   static const String eventTrackIdHint = 'Circuit';
   static const String eventTrackIdMandatory = 'Le circuit est obligatoire';
-  static const String eventTrackIdNotValid = 'Le circuit indiqué n\'est pas valide';
+  static const String eventTrackIdNotValid =
+      'Le circuit indiqué n\'est pas valide';
   static const String eventOrganizer = 'Organisateur';
   static const String eventOrganizerHint = 'Organisateur de l\'événement';
-  static const String eventOrganizerMandatory = 'L\'organisateur est obligatoire';
+  static const String eventOrganizerMandatory =
+      'L\'organisateur est obligatoire';
   static const String eventStartDate = 'Date de début';
   static const String eventEndDate = 'Date de fin';
   static const String eventStartDateHint = 'Date de début de l\'événement';
   static const String eventEndDateHint = 'Date de fin de l\'événement';
-  static const String eventStartDateMandatory = 'La date de début est obligatoire';
+  static const String eventStartDateMandatory =
+      'La date de début est obligatoire';
   static const String eventEndDateMandatory = 'La date de fin est obligatoire';
   static const String eventDateNotValid = 'La date indiquée n\'est pas valide';
   static const String eventDetailScreenTitle = 'Roulage';
   static const String eventAddToCalendar = 'Ajouter au calendrier';
-  static const String eventAddToCalendarFailed = 'Impossible d\'ouvrir le calendrier';
+  static const String eventAddToCalendarFailed =
+      'Impossible d\'ouvrir le calendrier';
   static const String eventsNotFound = 'Aucun événement trouvé';
-  static const String eventsNotFoundForYear = 'Aucun événement trouvé pour cette année';
-  static const String eventsNotFoundForDate = 'Aucun événement trouvé pour cette date';
-  static const String eventRegistered = 'Votre participation à été enregistrée !';
+  static const String eventsNotFoundForYear =
+      'Aucun événement trouvé pour cette année';
+  static const String eventsNotFoundForDate =
+      'Aucun événement trouvé pour cette date';
+  static const String eventRegistered =
+      'Votre participation à été enregistrée !';
   static const String eventUnregistered = 'Votre participation à été annulée !';
   static const String eventBikeUpdated = 'Moto mise à jour pour ce roulage';
   static const String eventBikeLabel = 'Moto';
@@ -419,14 +505,16 @@ class AppString {
   static const String filterByBikeTooltip = 'Filtrer par moto';
   static const String filterByBikeClear = 'Effacer le filtre';
   static const String eventBikeNoneOption = 'Aucune (effacer)';
-  static const String eventBikeNoBikes = 'Vous n\'avez pas encore enregistré de moto.';
+  static const String eventBikeNoBikes =
+      'Vous n\'avez pas encore enregistré de moto.';
   static const String bikeDeleteWarning =
       'Cette moto sera également retirée de tous les roulages où vous l\'aviez sélectionnée. Vos inscriptions restent en place, seule l\'info "avec quelle moto" sera effacée.';
   static const String eventParticipated = 'Je participe';
   static const String eventUnregister = 'Se désister';
   static const String joinEvent = 'S\'inscrire à un roulage';
   static const String noEventToJoin = 'Aucun roulage disponible';
-  static const String joinEventConfirmation = 'Voulez-vous vraiment vous inscrire à ce roulage ?';
+  static const String joinEventConfirmation =
+      'Voulez-vous vraiment vous inscrire à ce roulage ?';
   static const String pullToRefresh = 'Tirez vers le bas pour rafraîchir';
 
   static const String recordCreate = 'Ajouter un chrono';
@@ -441,37 +529,46 @@ class AppString {
   static const String recordConditionDrying = 'Séchant';
   static const String recordConditionWet = 'Mouillé';
   static const String recordRankingTitle = 'Classement';
-  static const String recordGapFromFirstMember = 'Écart au meilleur des membres';
+  static const String recordGapFromFirstMember =
+      'Écart au meilleur des membres';
   static const String recordGapFromTrackRecord = 'Écart au record du circuit';
   static const String recordCreated = 'Le chrono à été ajouté avec succès !';
   static const String recordCreationFailed = 'Échec lors de l\'ajout du chrono';
-  static const String recordUpdated = 'Le chrono à été mis à jour avec succès !';
-  static const String recordUpdateFailed = 'Échec lors de la mise à jour du chrono';
+  static const String recordUpdated =
+      'Le chrono à été mis à jour avec succès !';
+  static const String recordUpdateFailed =
+      'Échec lors de la mise à jour du chrono';
   static const String recordDeleted = 'Le chrono à été supprimé avec succès !';
-  static const String recordDeletionFailed = 'Échec lors de la suppression du chrono';
-  static const String recordDeletionAreYouSure = 'Êtes-vous sûr de vouloir supprimer ce chrono ?';
+  static const String recordDeletionFailed =
+      'Échec lors de la suppression du chrono';
+  static const String recordDeletionAreYouSure =
+      'Êtes-vous sûr de vouloir supprimer ce chrono ?';
   static const String recordDate = 'Date';
   static const String recordDateHint = 'Date du chrono';
   static const String recordDateMandatory = 'La date du chrono est obligatoire';
-  static const String recordDateNotValid = 'La date du chrono n\'est pas valide';
+  static const String recordDateNotValid =
+      'La date du chrono n\'est pas valide';
   static const String recordLapTime = 'Chrono';
   static const String recordLapTimeHint = 'MM\'SS"mmm';
   static const String recordLapTimeMandatory = 'Le chrono est obligatoire';
   static const String recordLapTimeNotValid = 'Le chrono n\'est pas valide';
   static const String recordConditionLabel = 'Conditions';
   static const String recordConditionHint = 'Conditions de la piste';
-  static const String recordConditionMandatory = 'La condition de la piste doit être indiquée';
+  static const String recordConditionMandatory =
+      'La condition de la piste doit être indiquée';
   static const String recordBikeLabel = 'Moto';
   static const String recordBikeHint = 'Moto utilisée';
   static const String recordCommentsLabel = 'Détails';
-  static const String recordCommentsHint = 'Conditions particulières, pneus utilisés, etc.';
+  static const String recordCommentsHint =
+      'Conditions particulières, pneus utilisés, etc.';
   static const String recordBikeMandatory = 'La moto doit être indiquée';
   static const String recordIsPublicLabel = 'Chrono public';
   static const String recordIsPublicHelp =
       'Si privé, personne d\'autre ne pourra voir ce chrono. Si public, il sera affiché sur la page du circuit et sur la page du membre.';
   static const String recordVisibilityLabel = 'Visibilité';
   static const String recordVisibilityPrivate = 'Chrono privé';
-  static const String recordVisibilityPrivateInfo = 'Visible uniquement par vous, dans « Mes chronos »';
+  static const String recordVisibilityPrivateInfo =
+      'Visible uniquement par vous, dans « Mes chronos »';
 
   // "Mes chronos" filter (by track / bike / weather)
   static const String chronoFilterTooltip = 'Filtrer les chronos';
@@ -484,23 +581,30 @@ class AppString {
   static const String chronoFilterVisibilityPrivate = 'Privé';
   static const String chronoFilterAll = 'Tous';
   static const String chronoFilterReset = 'Réinitialiser';
-  static const String chronoFilterNoMatch = 'Aucun chrono ne correspond au filtre sélectionné';
+  static const String chronoFilterNoMatch =
+      'Aucun chrono ne correspond au filtre sélectionné';
   static const String chronoFilterClear = 'Effacer les filtres';
 
   // Membership fees
   static const String membershipFeeCreate = 'Ajouter une cotisation';
   static const String membershipFeeEdit = 'Modifier la cotisation';
   static const String membershipFeeSaved = 'Cotisation enregistrée avec succès';
-  static const String membershipFeeSaveFailed = 'Erreur lors de l\'enregistrement de la cotisation';
+  static const String membershipFeeSaveFailed =
+      'Erreur lors de l\'enregistrement de la cotisation';
   static const String membershipFeeDeleted = 'Cotisation supprimée avec succès';
-  static const String membershipFeeDeleteFailed = 'Erreur lors de la suppression de la cotisation';
-  static const String membershipFeeDeletionAreYouSure = 'Êtes-vous sûr de vouloir supprimer cette cotisation ?';
+  static const String membershipFeeDeleteFailed =
+      'Erreur lors de la suppression de la cotisation';
+  static const String membershipFeeDeletionAreYouSure =
+      'Êtes-vous sûr de vouloir supprimer cette cotisation ?';
   static const String membershipFeeYear = 'Année';
   static const String membershipFeeYearMandatory = 'Veuillez entrer une année';
-  static const String membershipFeeYearNotValid = 'Veuillez entrer une année valide';
+  static const String membershipFeeYearNotValid =
+      'Veuillez entrer une année valide';
   static const String membershipFeeAmount = 'Montant (€)';
-  static const String membershipFeeAmountMandatory = 'Veuillez entrer un montant';
-  static const String membershipFeeAmountNotValid = 'Veuillez entrer un montant valide';
+  static const String membershipFeeAmountMandatory =
+      'Veuillez entrer un montant';
+  static const String membershipFeeAmountNotValid =
+      'Veuillez entrer un montant valide';
   static const String membershipFeePaid = 'Payée ?';
   static const String membershipFeePaidLabel = 'Payée';
   static const String membershipFeeUnpaidLabel = 'Non payée';
@@ -508,21 +612,27 @@ class AppString {
   static const String photoScreenTitle = 'Galerie';
   static const String photoCreate = 'Ajouter une photo';
   static const String photoCreated = 'La photo à été créée avec succès !';
-  static const String photoCreationFailed = 'Échec lors de la création de la photo';
+  static const String photoCreationFailed =
+      'Échec lors de la création de la photo';
   static const String photoUpdated = 'La photo à été mise à jour avec succès !';
-  static const String photoUpdateFailed = 'Échec lors de la mise à jour de la photo';
+  static const String photoUpdateFailed =
+      'Échec lors de la mise à jour de la photo';
   static const String photoDeleted = 'La photo à été supprimé avec succès !';
-  static const String photoDeletionFailed = 'Échec lors de la suppression de la photo';
-  static const String photoDeletionAreYouSure = 'Êtes-vous sûr de vouloir supprimer cette photo ?';
+  static const String photoDeletionFailed =
+      'Échec lors de la suppression de la photo';
+  static const String photoDeletionAreYouSure =
+      'Êtes-vous sûr de vouloir supprimer cette photo ?';
   static const String photoTitle = 'Titre';
   static const String photoTitleHint = 'Titre de la photo';
   static const String photoTitleMandatory = 'Le titre est obligatoire';
   static const String photoDescription = 'Description';
   static const String photoDescriptionHint = 'Description de la photo';
-  static const String photoDescriptionMandatory = 'La description est obligatoire';
+  static const String photoDescriptionMandatory =
+      'La description est obligatoire';
   static const String photoLink = 'Lien';
   static const String photoLinkHint = 'Lien de la photo';
-  static const String photoLinkMandatory = 'Le lien de la photo est obligatoire';
+  static const String photoLinkMandatory =
+      'Le lien de la photo est obligatoire';
   static const String photosNotFound = 'Aucune photo trouvée';
 
   static const String participant = 'participant';
@@ -581,7 +691,8 @@ class AppString {
   static const String statsNextRideToday = 'C\'est aujourd\'hui !';
   static const String statsNextRideTomorrow = 'Demain';
   static const String statsNextRideInDays = 'Dans {0} jours';
-  static const String statsNoUpcomingRide = 'Aucun roulage prévu — inscrivez-vous !';
+  static const String statsNoUpcomingRide =
+      'Aucun roulage prévu — inscrivez-vous !';
   static const String description = 'Description';
   static const String noParticipant = 'Aucun participant';
   static const String profilePhoto = 'Photo de profil';
@@ -595,7 +706,8 @@ class AppString {
   static const String cancelSelection = 'Annuler la sélection';
   static const String removePhoto = 'Retirer la photo';
   static const String zoomAndCrop = 'Zoom et recadrage';
-  static const String imageCropFailed = 'Le recadrage de l\'image a échoué : {0}';
+  static const String imageCropFailed =
+      'Le recadrage de l\'image a échoué : {0}';
   static const String profile = 'Profil';
   static const String myAccount = 'Mon compte';
   static const String myAccountTitle = 'Mon compte';
@@ -608,7 +720,8 @@ class AppString {
   static const String trustedDevicesHelp =
       'Ces appareils peuvent se connecter avec le passcode seul. Révoquez ceux que vous ne reconnaissez pas ou que vous n\'utilisez plus : ils devront alors être re-validés par e-mail à la prochaine connexion.';
   static const String trustedDevicesEmpty = 'Aucun appareil de confiance';
-  static const String trustedDevicesLoadFailed = 'Impossible de charger les appareils de confiance';
+  static const String trustedDevicesLoadFailed =
+      'Impossible de charger les appareils de confiance';
   static const String trustedDeviceCurrent = 'Cet appareil';
   static const String trustedDeviceAddedOn = 'Ajouté le {0}';
   static const String trustedDeviceLastUsed = 'Dernière utilisation : {0}';
@@ -617,7 +730,8 @@ class AppString {
   static const String trustedDeviceRevokeConfirm =
       'Révoquer cet appareil ? Il devra être re-validé par e-mail lors de sa prochaine connexion.';
   static const String trustedDeviceRevoked = 'Appareil révoqué';
-  static const String trustedDeviceRevokeFailed = 'Échec de la révocation de l\'appareil';
+  static const String trustedDeviceRevokeFailed =
+      'Échec de la révocation de l\'appareil';
   static const String membershipStatus = 'Statut de la cotisation';
 
   // Banner shown to ROLE_USER members (not yet promoted to ROLE_MEMBER) on the "My account" hub.
@@ -629,28 +743,38 @@ class AppString {
       'Vous avez un accès invité : vous pouvez consulter toute l\'activité du club, mais pas vous inscrire aux roulages ni enregistrer de motos ou de chronos. Vous pouvez modifier votre profil à tout moment.';
   static const String membershipPaidYear = 'Cotisation {0} payée';
   static const String membershipUnpaidYear = 'Cotisation {0} non payée';
-  static const String membershipNoneYear = 'Aucune cotisation enregistrée pour {0}';
+  static const String membershipNoneYear =
+      'Aucune cotisation enregistrée pour {0}';
   static const String membershipAmountEur = '{0} EUR';
 
   // Change-passcode screen
   static const String changePasscodeTitle = 'Changer mon passcode';
-  static const String changePasscodeStepCurrent = 'Saisissez votre passcode actuel';
-  static const String changePasscodeStepNew = 'Choisissez votre nouveau passcode';
-  static const String changePasscodeStepConfirm = 'Confirmez votre nouveau passcode';
+  static const String changePasscodeStepCurrent =
+      'Saisissez votre passcode actuel';
+  static const String changePasscodeStepNew =
+      'Choisissez votre nouveau passcode';
+  static const String changePasscodeStepConfirm =
+      'Confirmez votre nouveau passcode';
   static const String changePasscodeSubmit = 'Valider';
   static const String changePasscodeSuccess = 'Passcode modifié avec succès';
-  static const String changePasscodeErrorCurrentWrong = 'Le passcode actuel est incorrect';
-  static const String changePasscodeErrorMismatch = 'La confirmation ne correspond pas au nouveau passcode';
-  static const String changePasscodeErrorSame = 'Le nouveau passcode doit être différent du passcode actuel';
-  static const String changePasscodeErrorNetwork = 'Une erreur est survenue, réessayez plus tard';
+  static const String changePasscodeErrorCurrentWrong =
+      'Le passcode actuel est incorrect';
+  static const String changePasscodeErrorMismatch =
+      'La confirmation ne correspond pas au nouveau passcode';
+  static const String changePasscodeErrorSame =
+      'Le nouveau passcode doit être différent du passcode actuel';
+  static const String changePasscodeErrorNetwork =
+      'Une erreur est survenue, réessayez plus tard';
 
   static const String myTrackEvents = 'Mes roulages';
   static const String myChronos = 'Mes chronos';
   static const String upcomingEvents = 'Événements à venir';
   static const String pastEvents = 'Événements passés';
   static const String noUpcomingEvent = 'Aucun événement à venir';
-  static const String noRegisteredEvent = 'Vous n\'êtes inscrit à aucun roulage';
-  static const String tapPlusToJoinEvent = 'Touchez le bouton + pour vous inscrire à un roulage';
+  static const String noRegisteredEvent =
+      'Vous n\'êtes inscrit à aucun roulage';
+  static const String tapPlusToJoinEvent =
+      'Touchez le bouton + pour vous inscrire à un roulage';
 
   // Help banners shown at the top of "My …" personal pages
   static const String myEventsHelp =
@@ -662,17 +786,22 @@ class AppString {
 
   // Push notifications
   static const String notifications = 'Notifications';
-  static const String notificationsHelp = 'Choisissez les notifications que vous souhaitez recevoir sur cet appareil.';
-  static const String notificationsPermissionDeniedTitle = 'Notifications désactivées';
+  static const String notificationsHelp =
+      'Choisissez les notifications que vous souhaitez recevoir sur cet appareil.';
+  static const String notificationsPermissionDeniedTitle =
+      'Notifications désactivées';
   static const String notificationsPermissionDeniedMessage =
       'Les notifications sont désactivées pour l\'application. Activez-les pour recevoir les actualités et les rappels d\'événement, même lorsque vos préférences ci-dessous sont activées.';
-  static const String notificationsPermissionEnableButton = 'Activer les notifications';
+  static const String notificationsPermissionEnableButton =
+      'Activer les notifications';
   static const String notificationsNewsLabel = 'Actualités';
-  static const String notificationsNewsSubtitle = 'Recevoir une notification à chaque nouvelle actualité';
+  static const String notificationsNewsSubtitle =
+      'Recevoir une notification à chaque nouvelle actualité';
   static const String notificationsEventsLabel = 'Rappels d\'événement';
   static const String notificationsEventsSubtitle =
       'Recevoir un rappel avant chaque événement auquel vous êtes inscrit';
-  static const String notificationsEventDelaysLabel = 'Quand recevoir les rappels ?';
+  static const String notificationsEventDelaysLabel =
+      'Quand recevoir les rappels ?';
   static const String notificationsOffset1h = 'Une heure avant';
   static const String notificationsOffset12h = '12 heures avant';
   static const String notificationsOffset1d = 'Un jour avant';
@@ -695,18 +824,25 @@ class AppString {
   static const String trackEvents = 'Roulages';
   static const String currentBike = 'Actuelle';
 
-  static const String errorEmailNotFoundInDatabase = 'Aucune donnée n\' a été trouvé pour l\'adresse e-mail {0}';
-  static const String errorTokenExpired = 'Votre session a expirée, veuillez vous reconnecter';
+  static const String errorEmailNotFoundInDatabase =
+      'Aucune donnée n\' a été trouvé pour l\'adresse e-mail {0}';
+  static const String errorTokenExpired =
+      'Votre session a expirée, veuillez vous reconnecter';
   static const String errorRoleChanged =
       'Votre rôle a été mis à jour, veuillez ressaisir votre code pour rafraîchir votre session';
   static const String errorTokenNotFound = 'Votre session n\'est pas valide';
-  static const String errorTokenWrongFormat = 'Votre identifiant de session n\'est pas valide';
-  static const String errorBadCredentials = 'Nom d\'utilisateur ou mot de passe incorrect';
+  static const String errorTokenWrongFormat =
+      'Votre identifiant de session n\'est pas valide';
+  static const String errorBadCredentials =
+      'Nom d\'utilisateur ou mot de passe incorrect';
 
   // Passcode rate-limit messages on the login screen.
-  static const String passcodeAttemptsLeft = 'Passcode incorrect. Il vous reste {0} essais avant blocage.';
-  static const String passcodeOneAttemptLeft = 'Passcode incorrect. Dernière tentative avant blocage.';
-  static const String passcodeLocked = 'Trop de tentatives. Réessayez dans {0}.';
+  static const String passcodeAttemptsLeft =
+      'Passcode incorrect. Il vous reste {0} essais avant blocage.';
+  static const String passcodeOneAttemptLeft =
+      'Passcode incorrect. Dernière tentative avant blocage.';
+  static const String passcodeLocked =
+      'Trop de tentatives. Réessayez dans {0}.';
   static const String passcodeLockedFallback = 'quelques instants';
   static const String errorServerInternal =
       'Erreur interne au serveur. Si le problème persiste, contactez un administrateur';
