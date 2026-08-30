@@ -404,103 +404,206 @@ class _MemberChronosState extends State<MemberChronos> {
   }
 
   Widget _buildRecordRow(BuildContext context, Record record, RecordListProvider recordListProvider) {
-    return InkWell(
-      onTap: () async {
-        Provider.of<RecordDetailProvider>(context, listen: false).setCurrentRecord(record);
-        await Navigator.pushNamed(context, '/chronoDetail');
-        if (!context.mounted) return;
-        recordListProvider.fetchMyRecords();
-      },
-      child: Container(
-        padding: EdgeInsets.all(8.0),
-        decoration: CustomDecorations.cardFull,
-        height: 90,
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: <Widget>[
-            Expanded(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>[
-                  Row(
-                    children: <Widget>[
-                      Icon(TrackUtils.iconForTrack(record.track), size: 22, color: Colors.red[600]),
-                      SizedBox(width: 8.0),
-                      Expanded(
-                        child: Text(
-                          record.track?.name ?? AppString.notDefined,
-                          textScaler: TextScaler.linear(1.3),
-                          style: TextStyle(color: Colors.white, fontWeight: FontWeight.w500),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                    ],
-                  ),
-                  SizedBox(height: 8.0),
-                  Row(
-                    children: <Widget>[
-                      Icon(Icons.event, size: 16, color: Colors.teal[700]),
-                      SizedBox(width: 5.0),
-                      Text(
-                        AppDateUtils.convertToString(record.recordDate!, 'dd MMM yyyy') ?? "",
-                        style: TextStyle(color: Colors.white),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      if (TrackUtils.trackConditionIconData(record.conditions) != null) ...[
-                        SizedBox(width: 8.0),
-                        Icon(
-                          TrackUtils.trackConditionIconData(record.conditions),
-                          size: 18,
-                          color: TrackUtils.trackConditionColor(record.conditions),
-                        ),
-                      ],
-                    ],
-                  ),
-                  Row(
-                    children: <Widget>[
-                      Icon(CustomIcons.motorbike_plain, size: 16, color: Colors.deepPurple),
-                      SizedBox(width: 5.0),
-                      Expanded(
-                        child: Text(
-                          record.bike != null
-                              ? "${StringUtils.capitalize(record.bike!.manufacturer ?? '')} ${record.bike!.modelName ?? ''}"
-                              : AppString.notDefined,
-                          style: TextStyle(color: Colors.white),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
+    final String lapTime = AppDateUtils.toLapTimeString(record.lapTime) ?? '—';
+    final IconData? weatherIcon = TrackUtils.trackConditionIconData(record.conditions);
+    final String bikeLabel = record.bike != null
+        ? "${StringUtils.capitalize(record.bike!.manufacturer ?? '')} ${record.bike!.modelName ?? ''}".trim()
+        : AppString.notDefined;
+    final String dateLabel = record.recordDate != null
+        ? (AppDateUtils.convertToString(record.recordDate!, 'dd MMM yyyy') ?? '')
+        : '';
+
+    return Card(
+      margin: EdgeInsets.zero,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.0)),
+      elevation: 4,
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: () async {
+          Provider.of<RecordDetailProvider>(context, listen: false).setCurrentRecord(record);
+          await Navigator.pushNamed(context, '/chronoDetail');
+          if (!context.mounted) return;
+          recordListProvider.fetchMyRecords();
+        },
+        child: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              colors: <Color>[Colors.lightBlueAccent, Colors.blueAccent],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
             ),
-            SizedBox(width: 8.0),
-            // private chronos are only visible here, flag them with a lock
-            if (record.isPublic == false) ...[
-              Tooltip(
-                message: AppString.recordVisibilityPrivate,
-                child: Icon(Icons.lock, size: 18, color: Colors.red[700]),
-              ),
-              SizedBox(width: 8.0),
-            ],
-            Container(
-              padding: EdgeInsets.symmetric(horizontal: 4.0, vertical: 0.0),
-              decoration: BoxDecoration(
-                shape: BoxShape.rectangle,
-                borderRadius: BorderRadius.circular(4.0),
-                border: Border.all(color: Colors.white),
-              ),
-              child: Text(
-                AppDateUtils.toLapTimeString(record.lapTime) ?? "",
-                style: TextStyle(fontFamily: "AlarmClock", color: Colors.white),
-                textScaler: TextScaler.linear(1.6),
-              ),
+          ),
+          child: SizedBox(
+            height: 92,
+            child: Stack(
+              children: <Widget>[
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: <Widget>[
+                    // left: circuit cover with the circuit name + date laid over it
+                    SizedBox(
+                      width: 118,
+                      child: Stack(
+                        fit: StackFit.expand,
+                        children: <Widget>[
+                          Image.asset(
+                            TrackUtils.coverImageForCircuit(record.track?.circuit),
+                            fit: BoxFit.cover,
+                            errorBuilder: (_, __, ___) => Container(color: Colors.blueGrey),
+                          ),
+                          // darken the photo so the overlaid name/date stay readable
+                          DecoratedBox(
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                begin: Alignment.topCenter,
+                                end: Alignment.bottomCenter,
+                                colors: <Color>[
+                                  Colors.black.withValues(alpha: 0.30),
+                                  Colors.black.withValues(alpha: 0.60),
+                                ],
+                              ),
+                            ),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: <Widget>[
+                                Text(
+                                  record.track?.name ?? AppString.notDefined,
+                                  textAlign: TextAlign.center,
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 16.0,
+                                    fontWeight: FontWeight.bold,
+                                    height: 1.15,
+                                    shadows: [Shadow(color: Colors.black, blurRadius: 4.0, offset: Offset(0, 1))],
+                                  ),
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                const SizedBox(height: 5.0),
+                                Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: <Widget>[
+                                    Icon(Icons.event, size: 12.0, color: Colors.white.withValues(alpha: 0.9)),
+                                    const SizedBox(width: 4.0),
+                                    Flexible(
+                                      child: Text(
+                                        dateLabel,
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 11.0,
+                                          shadows: [Shadow(color: Colors.black, blurRadius: 4.0, offset: Offset(0, 1))],
+                                        ),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                if (weatherIcon != null) ...[
+                                  const SizedBox(height: 3.0),
+                                  Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: <Widget>[
+                                      Icon(
+                                        weatherIcon,
+                                        size: 13.0,
+                                        color: TrackUtils.trackConditionColor(record.conditions),
+                                      ),
+                                      const SizedBox(width: 4.0),
+                                      Flexible(
+                                        child: Text(
+                                          _conditionLabel(record.conditions),
+                                          style: const TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 11.0,
+                                            shadows: [
+                                              Shadow(color: Colors.black, blurRadius: 4.0, offset: Offset(0, 1)),
+                                            ],
+                                          ),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    // right: the chrono (big) with the bike below it
+                    Expanded(
+                      child: Padding(
+                        // extra right room so the top-right private lock never sits over the chrono
+                        padding: const EdgeInsets.fromLTRB(18.0, 8.0, 30.0, 4.0),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: <Widget>[
+                            FittedBox(
+                              fit: BoxFit.scaleDown,
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 4.0),
+                                decoration: BoxDecoration(
+                                  color: Colors.black.withValues(alpha: 0.3),
+                                  borderRadius: BorderRadius.circular(6.0),
+                                  border: Border.all(color: Colors.white.withValues(alpha: 0.8), width: 1.0),
+                                ),
+                                child: Text(
+                                  lapTime,
+                                  style: const TextStyle(
+                                    fontFamily: 'AlarmClock',
+                                    color: Colors.white,
+                                    fontSize: 28.0,
+                                    height: 1.0,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 6.0),
+                            Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: <Widget>[
+                                const Icon(CustomIcons.motorbike_plain, size: 13.0, color: Colors.deepPurple),
+                                const SizedBox(width: 5.0),
+                                Flexible(
+                                  child: Text(
+                                    bikeLabel,
+                                    style: const TextStyle(color: Colors.white, fontSize: 12.5),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                // private chronos are only visible here, flag them with a discreet lock badge
+                if (record.isPublic == false)
+                  Positioned(
+                    top: 6.0,
+                    right: 6.0,
+                    child: Tooltip(
+                      message: AppString.recordVisibilityPrivate,
+                      child: Container(
+                        padding: const EdgeInsets.all(4.0),
+                        decoration: BoxDecoration(color: Colors.black.withValues(alpha: 0.45), shape: BoxShape.circle),
+                        child: const Icon(Icons.lock, size: 13.0, color: Colors.white),
+                      ),
+                    ),
+                  ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );
