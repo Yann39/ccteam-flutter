@@ -77,6 +77,18 @@ flutter {
     source '../..'
 }
 
+// The integration_test plugin pulls in an old Espresso (3.2.0) whose espresso-core
+// and espresso-idling-resource share the same legacy manifest package, which AGP 8+
+// rejects ("Namespace 'androidx.test.espresso' is used in multiple libraries").
+// Force the modern Espresso (the same version used for androidTest below) so every
+// artifact carries a unique namespace and the manifest merger succeeds.
+configurations.all {
+    resolutionStrategy {
+        force 'androidx.test.espresso:espresso-core:3.7.0'
+        force 'androidx.test.espresso:espresso-idling-resource:3.7.0'
+    }
+}
+
 dependencies {
     // For AGP 7.4+
     testImplementation 'junit:junit:4.13.2'
