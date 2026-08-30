@@ -60,6 +60,15 @@ class _AddEditEventState extends State<AddEditEvent> {
 
   Organizer? _selectedOrganizer;
 
+  /// Bumped to force the organizer dropdown to re-seed its displayed value:
+  /// after picking the "add organizer" entry (to drop the sentinel) or after a
+  /// new organizer is created (to select it).
+  int _organizerFieldEpoch = 0;
+
+  /// Sentinel value for the "add new organizer" entry appended to the dropdown
+  /// (identified by its id == -1).
+  static final Organizer _addOrganizerSentinel = Organizer(id: -1);
+
   /// Prime the organizer list once, after the State is attached to the
   /// tree (initState can't safely call providers that need a context
   /// hop). The provider keeps the list cached, so reopening the form
@@ -96,6 +105,28 @@ class _AddEditEventState extends State<AddEditEvent> {
     organizerListProvider.ensureLoaded();
   }
 
+  /// Prompt for a name and create a new organizer via [provider], then select it
+  /// in the dropdown. Reached from the "Ajouter un organisateur…" entry (admins only).
+  Future<void> _openAddOrganizerDialog(OrganizerListProvider provider) async {
+    // revert the dropdown from the "add" sentinel back to the current selection
+    setState(() => _organizerFieldEpoch++);
+
+    // the dialog owns its own TextEditingController (disposed in its State) so we
+    // never dispose a controller while its TextField is still animating out
+    final String? name = await showDialog<String>(
+      context: context,
+      builder: (BuildContext dialogContext) => const _AddOrganizerDialog(),
+    );
+
+    if (name == null || name.isEmpty) return;
+    final Organizer? created = await provider.createOrganizer(name);
+    if (!mounted || created == null) return;
+    setState(() {
+      _selectedOrganizer = created;
+      _organizerFieldEpoch++;
+    });
+  }
+
   /// Initialize and display a Date picker related to the specified [controller] in the specified [context]
   Future _chooseDate(BuildContext context, TextEditingController controller, DateTime? defaultValue) async {
     final DateTime currentDate = DateTime.now();
@@ -110,7 +141,7 @@ class _AddEditEventState extends State<AddEditEvent> {
       context: context,
       initialDate: initialDate,
       firstDate: DateTime(2000, 1, 1),
-      lastDate: DateTime.now().add(Duration(days: 365))
+      lastDate: DateTime.now().add(Duration(days: 365)),
     );
     if (dateResult == null) return;
 
@@ -267,21 +298,47 @@ class _AddEditEventState extends State<AddEditEvent> {
             child: Center(child: CircularProgressIndicator()),
           );
         }
+        final bool isAdmin = Provider.of<LoginProvider>(context, listen: false).isAdmin;
         final List<Organizer> options = organizerListProvider.organizers;
         final Organizer? currentValue = _selectedOrganizer == null
             ? null
             : options.firstWhere((o) => o.id == _selectedOrganizer!.id, orElse: () => _selectedOrganizer!);
         return DropdownButtonFormField<Organizer>(
+          // re-seed the displayed value after the "add organizer" sentinel is picked or a new one is created
+          key: ValueKey<int>(_organizerFieldEpoch),
           initialValue: currentValue,
           decoration: const InputDecoration(
             icon: Icon(Icons.perm_contact_calendar),
             hintText: AppString.eventOrganizerHint,
             labelText: AppString.eventOrganizer,
           ),
-          items: options.map((Organizer o) {
-            return DropdownMenuItem<Organizer>(value: o, child: Text(o.name ?? '—'));
-          }).toList(),
-          onChanged: (Organizer? val) => setState(() => _selectedOrganizer = val),
+          items: <DropdownMenuItem<Organizer>>[
+            ...options.map((Organizer o) {
+              return DropdownMenuItem<Organizer>(value: o, child: Text(o.name ?? '—'));
+            }),
+            // admins can create a new organizer straight from the picker
+            if (isAdmin)
+              DropdownMenuItem<Organizer>(
+                value: _addOrganizerSentinel,
+                child: Row(
+                  children: <Widget>[
+                    Icon(Icons.add, size: 18.0, color: Colors.blue[700]),
+                    const SizedBox(width: 6.0),
+                    Text(
+                      AppString.eventOrganizerAddOption,
+                      style: TextStyle(color: Colors.blue[700], fontWeight: FontWeight.w600),
+                    ),
+                  ],
+                ),
+              ),
+          ],
+          onChanged: (Organizer? val) {
+            if (val != null && val.id == _addOrganizerSentinel.id) {
+              _openAddOrganizerDialog(organizerListProvider);
+            } else {
+              setState(() => _selectedOrganizer = val);
+            }
+          },
           onSaved: (val) => _eventCreationProvider.event.organizer = val,
           validator: (val) => val == null ? AppString.eventOrganizerMandatory : null,
         );
@@ -335,6 +392,48 @@ class _AddEditEventState extends State<AddEditEvent> {
         _organizerField,
         _startDateField,
         _endDateField,
+      ],
+    );
+  }
+}
+
+/// Small dialog to enter a new organizer name. It owns its [TextEditingController]
+/// so the framework disposes it with the dialog's element (after the exit
+/// animation), instead of us disposing it early — which triggered a "dirty widget
+/// in the wrong build scope" while the TextField was still animating out.
+class _AddOrganizerDialog extends StatefulWidget {
+  const _AddOrganizerDialog();
+
+  @override
+  State<_AddOrganizerDialog> createState() => _AddOrganizerDialogState();
+}
+
+class _AddOrganizerDialogState extends State<_AddOrganizerDialog> {
+  final TextEditingController _controller = TextEditingController();
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _submit() => Navigator.of(context).pop(_controller.text.trim());
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: Text(AppString.eventOrganizerAddTitle),
+      content: TextField(
+        controller: _controller,
+        autofocus: true,
+        textCapitalization: TextCapitalization.words,
+        textInputAction: TextInputAction.done,
+        decoration: const InputDecoration(hintText: AppString.eventOrganizerAddHint),
+        onSubmitted: (_) => _submit(),
+      ),
+      actions: <Widget>[
+        TextButton(onPressed: () => Navigator.of(context).pop(), child: Text(AppString.cancel)),
+        TextButton(onPressed: _submit, child: Text(AppString.eventOrganizerAddConfirm)),
       ],
     );
   }

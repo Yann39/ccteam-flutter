@@ -474,6 +474,10 @@ class AppString {
   static const String eventOrganizerHint = 'Organisateur de l\'événement';
   static const String eventOrganizerMandatory =
       'L\'organisateur est obligatoire';
+  static const String eventOrganizerAddOption = 'Ajouter un organisateur…';
+  static const String eventOrganizerAddTitle = 'Nouvel organisateur';
+  static const String eventOrganizerAddHint = 'Nom de l\'organisateur';
+  static const String eventOrganizerAddConfirm = 'Ajouter';
   static const String eventStartDate = 'Date de début';
   static const String eventEndDate = 'Date de fin';
   static const String eventStartDateHint = 'Date de début de l\'événement';
