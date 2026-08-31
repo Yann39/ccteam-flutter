@@ -76,6 +76,11 @@ class RecordCreationProvider extends ChangeNotifier {
   void setRecordToEdit(Record record) {
     _record = record;
     _selectedBike = _record.bike;
+    // seed the dropdown with the record's own condition
+    _selectedTrackCondition = TrackCondition.values.firstWhere(
+      (condition) => condition.name == _record.conditions,
+      orElse: () => TrackCondition.dry,
+    );
     _updateStatus(LoadingStatus.loaded);
   }
 
