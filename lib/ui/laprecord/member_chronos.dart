@@ -87,18 +87,7 @@ class _MemberChronosState extends State<MemberChronos> {
   }
 
   /// Localized label for a track-condition code, falling back to the raw code.
-  String _conditionLabel(String? code) {
-    switch (code) {
-      case 'dry':
-        return AppString.recordConditionDry;
-      case 'drying':
-        return AppString.recordConditionDrying;
-      case 'wet':
-        return AppString.recordConditionWet;
-      default:
-        return code ?? '';
-    }
-  }
+  String _conditionLabel(String? code) => TrackUtils.trackConditionLabel(code) ?? code ?? '';
 
   String _bikeLabel(Bike bike) => "${StringUtils.capitalize(bike.manufacturer ?? '')} ${bike.modelName ?? ''}".trim();
 

@@ -251,7 +251,10 @@ class _AddEditRecordState extends State<AddEditRecord> {
         labelText: AppString.recordConditionLabel,
       ),
       items: TrackCondition.values.map((TrackCondition value) {
-        return DropdownMenuItem<TrackCondition>(value: value, child: Text(value.name));
+        return DropdownMenuItem<TrackCondition>(
+          value: value,
+          child: Text(TrackUtils.trackConditionLabel(value.name) ?? value.name),
+        );
       }).toList(),
       onChanged: (TrackCondition? value) {
         _recordCreationProvider.selectTrackCondition(value!);

@@ -107,22 +107,12 @@ class RecordCreationProvider extends ChangeNotifier {
             _log.fine("Record created successfully");
             //_record = value;
             _updateStatus(LoadingStatus.loaded);
-            _messageProvider.setMessage(
-              AppString.recordCreated,
-              MessageType.SUCCESS,
-            );
+            _messageProvider.setMessage(AppString.recordCreated, MessageType.SUCCESS);
           },
           onError: (error) {
             _log.warning("Error when creating record ($error)");
-            _messageProvider.setMessage(
-              AppString.recordCreationFailed,
-              MessageType.ERROR,
-            );
-            AppUtils.handleServiceException(
-              error,
-              _messageProvider,
-              _loginProvider,
-            );
+            _messageProvider.setMessage(AppString.recordCreationFailed, MessageType.ERROR);
+            AppUtils.handleServiceException(error, _messageProvider, _loginProvider);
             _updateStatus(LoadingStatus.notLoaded);
           },
         );
@@ -138,23 +128,13 @@ class RecordCreationProvider extends ChangeNotifier {
             _log.fine("Record successfully updated : ${_record.id}");
             //_record = value;
             _updateStatus(LoadingStatus.loaded);
-            _messageProvider.setMessage(
-              AppString.recordUpdated,
-              MessageType.SUCCESS,
-            );
+            _messageProvider.setMessage(AppString.recordUpdated, MessageType.SUCCESS);
           },
           onError: (error) {
             // todo here we should reload the original record as it has not been updated in db ?
             _log.warning("Error when updating record ($error)");
-            _messageProvider.setMessage(
-              AppString.recordUpdateFailed,
-              MessageType.ERROR,
-            );
-            AppUtils.handleServiceException(
-              error,
-              _messageProvider,
-              _loginProvider,
-            );
+            _messageProvider.setMessage(AppString.recordUpdateFailed, MessageType.ERROR);
+            AppUtils.handleServiceException(error, _messageProvider, _loginProvider);
             _updateStatus(LoadingStatus.notLoaded);
           },
         );
@@ -169,22 +149,12 @@ class RecordCreationProvider extends ChangeNotifier {
           (value) {
             _log.fine("Record successfully deleted : ${_record.id}");
             _updateStatus(LoadingStatus.loaded);
-            _messageProvider.setMessage(
-              AppString.recordDeleted,
-              MessageType.SUCCESS,
-            );
+            _messageProvider.setMessage(AppString.recordDeleted, MessageType.SUCCESS);
           },
           onError: (error) {
             _log.warning("Error when deleting record ($error)");
-            _messageProvider.setMessage(
-              AppString.recordDeletionFailed,
-              MessageType.ERROR,
-            );
-            AppUtils.handleServiceException(
-              error,
-              _messageProvider,
-              _loginProvider,
-            );
+            _messageProvider.setMessage(AppString.recordDeletionFailed, MessageType.ERROR);
+            AppUtils.handleServiceException(error, _messageProvider, _loginProvider);
             _updateStatus(LoadingStatus.notLoaded);
           },
         );

@@ -173,22 +173,6 @@ class _ChronoDetailState extends State<ChronoDetail> {
     Navigator.pushNamed(context, '/trackDetail');
   }
 
-  /// Localized label for the raw track-condition code stored on
-  /// [Record.conditions]. Returns null for an unknown / null code so
-  /// the caller can collapse the row entirely.
-  String? _conditionLabel(String? code) {
-    switch (code) {
-      case 'dry':
-        return AppString.recordConditionDry;
-      case 'drying':
-        return AppString.recordConditionDrying;
-      case 'wet':
-        return AppString.recordConditionWet;
-      default:
-        return null;
-    }
-  }
-
   /// Single info row inside the details card. When [onTap] is
   /// provided, the row becomes tappable (InkWell ripple) and a
   /// chevron is rendered at the right end to advertise that the
@@ -387,7 +371,7 @@ class _ChronoDetailState extends State<ChronoDetail> {
     final bool isOwner = loggedMemberId != null && record.member?.id == loggedMemberId;
     final bool canMutate = isOwner || _loginProvider.isAdmin;
 
-    final String? conditionLabel = _conditionLabel(record.conditions);
+    final String? conditionLabel = TrackUtils.trackConditionLabel(record.conditions);
     final String? trackName = record.track?.name;
     final String bikeLabel = record.bike != null
         ? "${StringUtils.capitalize(record.bike!.manufacturer ?? '')} ${record.bike!.modelName ?? ''}".trim()

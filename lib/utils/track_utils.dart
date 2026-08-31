@@ -20,6 +20,7 @@
 import 'package:ccteam/models/circuit.dart';
 import 'package:ccteam/models/track.dart';
 import 'package:ccteam/utils/custom_icons.dart';
+import 'package:ccteam/utils/strings.dart';
 import 'package:flutter/material.dart';
 
 /// Track utility functions
@@ -94,6 +95,23 @@ class TrackUtils {
         return Colors.lightBlue[300]!;
       default:
         return Colors.white;
+    }
+  }
+
+  /// Localized (French) label for the raw track-condition code stored on
+  /// `Record.conditions`. Returns `null` for an unknown / null code, like
+  /// [trackConditionIconData], so callers can collapse the row entirely
+  /// or fall back to the raw code themselves.
+  static String? trackConditionLabel(String? condition) {
+    switch (condition) {
+      case 'dry':
+        return AppString.recordConditionDry;
+      case 'drying':
+        return AppString.recordConditionDrying;
+      case 'wet':
+        return AppString.recordConditionWet;
+      default:
+        return null;
     }
   }
 
