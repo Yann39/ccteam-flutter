@@ -18,6 +18,7 @@
  */
 
 import 'package:ccteam/models/event_member.dart';
+import 'package:ccteam/models/event_session.dart';
 import 'package:ccteam/models/member.dart';
 import 'package:ccteam/models/organizer.dart';
 import 'package:ccteam/models/track.dart';
@@ -34,6 +35,12 @@ class Event {
   Organizer? organizer;
   double? price;
   List<EventMember>? participants;
+
+  /// Track sessions scheduled for this event, ordered by rank in the day.
+  /// Null or empty when no schedule has been entered, participants then
+  /// have nothing to tick and the estimation heuristics take over.
+  List<EventSession>? sessions;
+
   DateTime? createdOn;
   Member? createdBy;
   DateTime? modifiedOn;
@@ -49,6 +56,7 @@ class Event {
     this.organizer,
     this.price,
     this.participants,
+    this.sessions,
     this.createdOn,
     this.createdBy,
     this.modifiedOn,
@@ -67,6 +75,7 @@ class Event {
       organizer: ${this.organizer},
       price: ${this.price},
       participants: ${this.participants?.map((eventMember) => eventMember.toString())},
+      sessions: ${this.sessions?.map((session) => session.toString())},
       createdOn: ${this.createdOn?.toIso8601String()},
       createdBy: ${this.createdBy.toString()},
       modifiedOn: ${this.modifiedOn?.toIso8601String()},
@@ -87,6 +96,9 @@ class Event {
       participants = json['participants'] != null
           ? (json['participants'] as Iterable).map((i) => EventMember.fromJson(i)).toList()
           : null,
+      sessions = json['sessions'] != null
+          ? (json['sessions'] as Iterable).map((i) => EventSession.fromJson(i)).toList()
+          : null,
       createdOn = json['createdOn'] != null ? DateTime.parse(json['createdOn']) : null,
       createdBy = json['createdBy'] != null ? Member.fromJson(json['createdBy']) : null,
       modifiedOn = json['modifiedOn'] != null ? DateTime.parse(json['modifiedOn']) : null,
@@ -103,6 +115,7 @@ class Event {
     "organizer": organizer?.toJson(),
     "price": price,
     "participants": participants?.map((i) => i.toJson()).toList(),
+    "sessions": sessions?.map((i) => i.toJson()).toList(),
     "createdOn": createdOn?.toIso8601String(),
     "createdBy": createdBy?.toJson(),
     "modifiedOn": modifiedOn?.toIso8601String(),

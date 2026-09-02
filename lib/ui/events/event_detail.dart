@@ -22,6 +22,7 @@ import 'package:add_2_calendar/add_2_calendar.dart' as add_2_calendar;
 import 'package:ccteam/models/bike.dart';
 import 'package:ccteam/models/event.dart';
 import 'package:ccteam/models/event_member.dart';
+import 'package:ccteam/models/event_session.dart';
 import 'package:ccteam/models/member.dart';
 import 'package:ccteam/models/track.dart';
 import 'package:ccteam/providers/event_creation_provider.dart';
@@ -56,10 +57,7 @@ class EventDetail extends StatelessWidget {
   _navigateToEditEventScreen(BuildContext context, Event event) async {
     // set the event to be edited
     // todo : need deep copy here else the reference will be updated even on error ?
-    Provider.of<EventCreationProvider>(
-      context,
-      listen: false,
-    ).setEventToEdit(event);
+    Provider.of<EventCreationProvider>(context, listen: false).setEventToEdit(event);
 
     // navigate to the event creation form screen
     Navigator.pushNamed(context, '/addEditEvent');
@@ -118,25 +116,16 @@ class EventDetail extends StatelessWidget {
   /// sees the hero (cover + name) without waiting; the cards fill
   /// in once the fetch lands.
   void _navigateToTrackDetailScreen(BuildContext context, Track track) {
-    final TrackDetailProvider provider = Provider.of<TrackDetailProvider>(
-      context,
-      listen: false,
-    );
+    final TrackDetailProvider provider = Provider.of<TrackDetailProvider>(context, listen: false);
     provider.setCurrentTrack(track);
     if (track.id != null) provider.fetchTrack(track); // fire-and-forget
     Navigator.pushNamed(context, '/trackDetail');
   }
 
   /// Navigate to the detail screen of the specified [member].
-  void _navigateToMemberDetailScreen(
-    BuildContext context,
-    Member member,
-  ) async {
+  void _navigateToMemberDetailScreen(BuildContext context, Member member) async {
     // fetch member records
-    Provider.of<RecordListProvider>(
-      context,
-      listen: false,
-    ).fetchMemberRecords(member.id!);
+    Provider.of<RecordListProvider>(context, listen: false).fetchMemberRecords(member.id!);
     // fetch the member to get complete data
     Provider.of<MemberDetailProvider>(context, listen: false)
         .fetchMember(member)
@@ -158,10 +147,8 @@ class EventDetail extends StatelessWidget {
         actions: <Widget>[
           TextButton(
             onPressed: () {
-              final EventDetailProvider eventDetailProvider =
-                  Provider.of<EventDetailProvider>(context, listen: false);
-              final EventListProvider eventListProvider =
-                  Provider.of<EventListProvider>(context, listen: false);
+              final EventDetailProvider eventDetailProvider = Provider.of<EventDetailProvider>(context, listen: false);
+              final EventListProvider eventListProvider = Provider.of<EventListProvider>(context, listen: false);
               // delete event
               final Event eventToDelete = eventDetailProvider.currentEvent;
               eventDetailProvider.deleteEvent(eventToDelete).then((value) {
@@ -188,35 +175,22 @@ class EventDetail extends StatelessWidget {
 
   /// Short human-readable label for a bike.
   String _bikeLabel(Bike bike) {
-    final String base =
-        "${bike.manufacturer?.toUpperCase() ?? ''} ${bike.modelName ?? ''}"
-            .trim();
+    final String base = "${bike.manufacturer?.toUpperCase() ?? ''} ${bike.modelName ?? ''}".trim();
     if (bike.year == null) return base.isEmpty ? '—' : base;
     if (base.isEmpty) return bike.year!.toString();
     return "$base (${bike.year})";
   }
 
   /// Open the bike picker for the caller's participation in [event].
-  void _openBikePicker(
-    BuildContext context,
-    Event event,
-    EventDetailProvider provider,
-    Bike? currentBike,
-  ) {
-    final LoginProvider loginProvider = Provider.of<LoginProvider>(
-      context,
-      listen: false,
-    );
-    final List<Bike> bikes =
-        loginProvider.loggedMember?.bikes ?? const <Bike>[];
+  void _openBikePicker(BuildContext context, Event event, EventDetailProvider provider, Bike? currentBike) {
+    final LoginProvider loginProvider = Provider.of<LoginProvider>(context, listen: false);
+    final List<Bike> bikes = loginProvider.loggedMember?.bikes ?? const <Bike>[];
 
     showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(16.0)),
-      ),
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(16.0))),
       builder: (BuildContext sheetCtx) {
         return Container(
           decoration: BoxDecoration(
@@ -225,9 +199,7 @@ class EventDetail extends StatelessWidget {
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
             ),
-            borderRadius: const BorderRadius.vertical(
-              top: Radius.circular(16.0),
-            ),
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(16.0)),
           ),
           child: SafeArea(
             top: false,
@@ -252,11 +224,7 @@ class EventDetail extends StatelessWidget {
                     ),
                     Text(
                       AppString.eventBikePickerTitle,
-                      style: const TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w700,
-                        color: Colors.black87,
-                      ),
+                      style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: Colors.black87),
                     ),
                     const SizedBox(height: 12.0),
                     if (bikes.isEmpty)
@@ -304,6 +272,131 @@ class EventDetail extends StatelessWidget {
     );
   }
 
+  /// Format a total number of minutes the way a rider says it, e.g.
+  /// "45 min" or "2h05".
+  String _durationLabel(int minutes) {
+    if (minutes < 60) return "$minutes min";
+    final int hours = minutes ~/ 60;
+    final int remainder = minutes % 60;
+    if (remainder == 0) return "${hours}h";
+    return "${hours}h${remainder.toString().padLeft(2, '0')}";
+  }
+
+  /// Open the ridden-sessions picker for the caller's participation in
+  /// [event]: every scheduled session with a checkbox, all ticked unless
+  /// the member declared otherwise.
+  ///
+  /// The selection is edited locally and only submitted when the sheet is
+  /// validated, so unticking several sessions costs one round-trip rather
+  /// than one per tap.
+  void _openSessionsPicker(BuildContext context, Event event, EventDetailProvider provider, EventMember participation) {
+    final List<EventSession> sessions = event.sessions ?? const <EventSession>[];
+    final Set<int> skippedIds = (participation.skippedSessions ?? const <EventSession>[])
+        .map((session) => session.id)
+        .whereType<int>()
+        .toSet();
+
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(16.0))),
+      builder: (BuildContext sheetCtx) {
+        return StatefulBuilder(
+          builder: (BuildContext ctx, StateSetter setSheetState) {
+            return Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [Colors.blue[100]!, Colors.blue[200]!],
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                ),
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(16.0)),
+              ),
+              child: SafeArea(
+                top: false,
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(16.0, 10.0, 16.0, 16.0),
+                  child: SingleChildScrollView(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: <Widget>[
+                        // drag handle
+                        Center(
+                          child: Container(
+                            width: 40,
+                            height: 4,
+                            margin: const EdgeInsets.only(bottom: 14.0),
+                            decoration: BoxDecoration(
+                              color: Colors.black.withValues(alpha: 0.18),
+                              borderRadius: BorderRadius.circular(2.0),
+                            ),
+                          ),
+                        ),
+                        Text(
+                          AppString.eventSessionsPickerTitle,
+                          style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: Colors.black87),
+                        ),
+                        const SizedBox(height: 6.0),
+                        Text(
+                          AppString.eventSessionsPickerHint,
+                          style: TextStyle(color: Colors.black.withAlpha(160), fontSize: 12.0, height: 1.3),
+                        ),
+                        const SizedBox(height: 10.0),
+                        for (final EventSession session in sessions)
+                          if (session.id != null)
+                            CheckboxListTile(
+                              value: !skippedIds.contains(session.id),
+                              onChanged: (bool? ridden) {
+                                setSheetState(() {
+                                  if (ridden == true) {
+                                    skippedIds.remove(session.id);
+                                  } else {
+                                    skippedIds.add(session.id!);
+                                  }
+                                });
+                              },
+                              dense: true,
+                              contentPadding: EdgeInsets.zero,
+                              controlAffinity: ListTileControlAffinity.leading,
+                              activeColor: Colors.green[700],
+                              title: Text(
+                                AppString.format(AppString.eventSessionsSessionLabel, [
+                                  session.position ?? '',
+                                  session.durationMinutes ?? '',
+                                ]),
+                                style: const TextStyle(fontSize: 13.5, color: Colors.black87),
+                              ),
+                            ),
+                        const SizedBox(height: 6.0),
+                        ElevatedButton.icon(
+                          onPressed: () {
+                            Navigator.pop(sheetCtx);
+                            provider.setEventMemberSessions(event, skippedIds.toList());
+                          },
+                          icon: const Icon(Icons.check, size: 16.0),
+                          label: Text(AppString.validate),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.green[700],
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(vertical: 12.0),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6.0)),
+                            textStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13.0),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
   /// Build the registration "card": a horizontal panel that shows the
   /// current participation state (icon + label) on the left and the
   /// appropriate toggle action on the right. Visually integrated with
@@ -320,12 +413,7 @@ class EventDetail extends StatelessWidget {
   /// post-registration only, keeping the "Je participe" CTA a one-tap
   /// action, and allowed on past events too so riders can fill in or
   /// fix the bike retrospectively.
-  Widget _registrationCard(
-    BuildContext context,
-    Event event,
-    int memberId,
-    EventDetailProvider provider,
-  ) {
+  Widget _registrationCard(BuildContext context, Event event, int memberId, EventDetailProvider provider) {
     final EventMember? participation = event.participants?.firstWhere(
       (p) => p.member?.id == memberId,
       orElse: () => EventMember(),
@@ -333,15 +421,22 @@ class EventDetail extends StatelessWidget {
     final bool isRegistered = participation != null && participation.id != null;
     final Bike? pinnedBike = isRegistered ? participation.bike : null;
 
-    final Color statusColor = isRegistered
-        ? Colors.green[700]!
-        : Colors.blueGrey[500]!;
-    final IconData statusIcon = isRegistered
-        ? Icons.check_circle_rounded
-        : Icons.help_outline_rounded;
-    final String statusTitle = isRegistered
-        ? "Vous participez"
-        : "Vous ne participez pas encore";
+    // sessions the member rode = the event schedule minus the ones they unticked,
+    // so a participation nobody touched counts every session
+    final List<EventSession> scheduledSessions = event.sessions ?? const <EventSession>[];
+    final Set<int> skippedSessionIds = (participation?.skippedSessions ?? const <EventSession>[])
+        .map((session) => session.id)
+        .whereType<int>()
+        .toSet();
+    final List<EventSession> riddenSessions = scheduledSessions
+        .where((session) => !skippedSessionIds.contains(session.id))
+        .toList();
+    final int riddenCount = riddenSessions.length;
+    final int riddenMinutes = riddenSessions.fold<int>(0, (sum, session) => sum + (session.durationMinutes ?? 0));
+
+    final Color statusColor = isRegistered ? Colors.green[700]! : Colors.blueGrey[500]!;
+    final IconData statusIcon = isRegistered ? Icons.check_circle_rounded : Icons.help_outline_rounded;
+    final String statusTitle = isRegistered ? "Vous participez" : "Vous ne participez pas encore";
     final String statusSubtitle = isRegistered
         ? "Inscrit à cet événement"
         : "Inscrivez-vous pour rejoindre l'événement";
@@ -354,12 +449,7 @@ class EventDetail extends StatelessWidget {
         borderRadius: BorderRadius.circular(8.0),
         color: Colors.blue[100],
         boxShadow: [
-          BoxShadow(
-            color: Colors.black.withAlpha(25),
-            spreadRadius: 0.5,
-            blurRadius: 0.5,
-            offset: const Offset(2, 2),
-          ),
+          BoxShadow(color: Colors.black.withAlpha(25), spreadRadius: 0.5, blurRadius: 0.5, offset: const Offset(2, 2)),
         ],
       ),
       child: Column(
@@ -373,10 +463,7 @@ class EventDetail extends StatelessWidget {
               Container(
                 width: 40,
                 height: 40,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: statusColor.withValues(alpha: 0.15),
-                ),
+                decoration: BoxDecoration(shape: BoxShape.circle, color: statusColor.withValues(alpha: 0.15)),
                 child: Icon(statusIcon, color: statusColor, size: 24.0),
               ),
               const SizedBox(width: 10.0),
@@ -400,11 +487,7 @@ class EventDetail extends StatelessWidget {
                     const SizedBox(height: 2.0),
                     Text(
                       statusSubtitle,
-                      style: TextStyle(
-                        color: Colors.black.withAlpha(140),
-                        fontSize: 11.0,
-                        height: 1.2,
-                      ),
+                      style: TextStyle(color: Colors.black.withAlpha(140), fontSize: 11.0, height: 1.2),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -412,7 +495,7 @@ class EventDetail extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 8.0),
-              // action button — filled CTA when not registered, outlined
+              // action button, filled CTA when not registered, outlined
               // (less aggressive) when already registered
               isRegistered
                   ? OutlinedButton.icon(
@@ -422,17 +505,9 @@ class EventDetail extends StatelessWidget {
                       style: OutlinedButton.styleFrom(
                         foregroundColor: Colors.red[700],
                         side: BorderSide(color: Colors.red[700]!, width: 1.2),
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 12.0,
-                          vertical: 10.0,
-                        ),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(6.0),
-                        ),
-                        textStyle: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 13.0,
-                        ),
+                        padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 10.0),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6.0)),
+                        textStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13.0),
                       ),
                     )
                   : ElevatedButton.icon(
@@ -442,17 +517,9 @@ class EventDetail extends StatelessWidget {
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.green[700],
                         foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 14.0,
-                          vertical: 10.0,
-                        ),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(6.0),
-                        ),
-                        textStyle: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 13.0,
-                        ),
+                        padding: const EdgeInsets.symmetric(horizontal: 14.0, vertical: 10.0),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6.0)),
+                        textStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13.0),
                         elevation: 1,
                       ),
                     ),
@@ -464,21 +531,13 @@ class EventDetail extends StatelessWidget {
             Container(height: 1, color: Colors.black.withValues(alpha: 0.08)),
             const SizedBox(height: 8.0),
             InkWell(
-              onTap: () =>
-                  _openBikePicker(context, event, provider, pinnedBike),
+              onTap: () => _openBikePicker(context, event, provider, pinnedBike),
               borderRadius: BorderRadius.circular(6.0),
               child: Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 4.0,
-                  vertical: 6.0,
-                ),
+                padding: const EdgeInsets.symmetric(horizontal: 4.0, vertical: 6.0),
                 child: Row(
                   children: <Widget>[
-                    Icon(
-                      CustomIcons.motorbike_plain,
-                      size: 18.0,
-                      color: Colors.black.withAlpha(140),
-                    ),
+                    Icon(CustomIcons.motorbike_plain, size: 18.0, color: Colors.black.withAlpha(140)),
                     const SizedBox(width: 8.0),
                     Text(
                       AppString.eventBikeLabel,
@@ -492,31 +551,59 @@ class EventDetail extends StatelessWidget {
                     const SizedBox(width: 10.0),
                     Expanded(
                       child: Text(
-                        pinnedBike != null
-                            ? _bikeLabel(pinnedBike)
-                            : AppString.eventBikeNone,
+                        pinnedBike != null ? _bikeLabel(pinnedBike) : AppString.eventBikeNone,
                         style: TextStyle(
-                          color: Colors.black.withAlpha(
-                            pinnedBike != null ? 204 : 130,
-                          ),
+                          color: Colors.black.withAlpha(pinnedBike != null ? 204 : 130),
                           fontSize: 13.5,
-                          fontStyle: pinnedBike != null
-                              ? FontStyle.normal
-                              : FontStyle.italic,
+                          fontStyle: pinnedBike != null ? FontStyle.normal : FontStyle.italic,
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
-                    Icon(
-                      Icons.edit,
-                      size: 16.0,
-                      color: Colors.black.withAlpha(140),
-                    ),
+                    Icon(Icons.edit, size: 16.0, color: Colors.black.withAlpha(140)),
                   ],
                 ),
               ),
             ),
+            // third row: sessions actually ridden. Only when the event has a schedule to tick
+            if (scheduledSessions.isNotEmpty) ...[
+              const SizedBox(height: 8.0),
+              Container(height: 1, color: Colors.black.withValues(alpha: 0.08)),
+              const SizedBox(height: 8.0),
+              InkWell(
+                onTap: () => _openSessionsPicker(context, event, provider, participation),
+                borderRadius: BorderRadius.circular(6.0),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 4.0, vertical: 6.0),
+                  child: Row(
+                    children: <Widget>[
+                      Icon(Icons.timer_outlined, size: 18.0, color: Colors.black.withAlpha(140)),
+                      const SizedBox(width: 8.0),
+                      Text(
+                        AppString.eventSessionsLabel,
+                        style: TextStyle(
+                          color: Colors.black.withAlpha(160),
+                          fontSize: 12.0,
+                          fontWeight: FontWeight.w600,
+                          letterSpacing: 0.4,
+                        ),
+                      ),
+                      const SizedBox(width: 10.0),
+                      Expanded(
+                        child: Text(
+                          "$riddenCount / ${scheduledSessions.length} · ${_durationLabel(riddenMinutes)}",
+                          style: TextStyle(color: Colors.black.withAlpha(204), fontSize: 13.5),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      Icon(Icons.edit, size: 16.0, color: Colors.black.withAlpha(140)),
+                    ],
+                  ),
+                ),
+              ),
+            ],
           ],
         ],
       ),
@@ -526,18 +613,12 @@ class EventDetail extends StatelessWidget {
   Widget build(BuildContext context) {
     _log.info("Building Event detail...");
 
-    final EventDetailProvider _eventDetailProvider =
-        Provider.of<EventDetailProvider>(context, listen: true);
-    final LoginProvider _loginProvider = Provider.of<LoginProvider>(
-      context,
-      listen: true,
-    );
+    final EventDetailProvider _eventDetailProvider = Provider.of<EventDetailProvider>(context, listen: true);
+    final LoginProvider _loginProvider = Provider.of<LoginProvider>(context, listen: true);
 
     // if currentEvent is null or empty (e.g. after session expiration), don't render content
     if (_eventDetailProvider.currentEvent.id == null) {
-      return Scaffold(
-        body: Container(decoration: CustomDecorations.mainContent),
-      );
+      return Scaffold(body: Container(decoration: CustomDecorations.mainContent));
     }
 
     return Scaffold(
@@ -553,26 +634,17 @@ class EventDetail extends StatelessWidget {
             Builder(
               builder: (context) => IconButton(
                 icon: Icon(Icons.edit),
-                onPressed: () => _navigateToEditEventScreen(
-                  context,
-                  _eventDetailProvider.currentEvent,
-                ),
+                onPressed: () => _navigateToEditEventScreen(context, _eventDetailProvider.currentEvent),
               ),
             ),
           if (_loginProvider.isAdmin)
             IconButton(
               icon: Icon(Icons.delete_forever),
-              onPressed: () => _showDeleteEventConfirmation(
-                context,
-                AppString.eventDeletionAreYouSure,
-              ),
+              onPressed: () => _showDeleteEventConfirmation(context, AppString.eventDeletionAreYouSure),
             ),
         ],
         title: Text(AppString.eventDetailScreenTitle),
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back),
-          onPressed: () => Navigator.pop(context),
-        ),
+        leading: IconButton(icon: Icon(Icons.arrow_back), onPressed: () => Navigator.pop(context)),
       ),
       body: Container(
         decoration: CustomDecorations.mainContent,
@@ -605,10 +677,7 @@ class EventDetail extends StatelessWidget {
                             painter: RandomPatternPainter(
                               seed:
                                   _eventDetailProvider.currentEvent.id ??
-                                  _eventDetailProvider
-                                      .currentEvent
-                                      .title
-                                      ?.hashCode ??
+                                  _eventDetailProvider.currentEvent.title?.hashCode ??
                                   0,
                             ),
                           ),
@@ -620,10 +689,7 @@ class EventDetail extends StatelessWidget {
                               gradient: LinearGradient(
                                 begin: Alignment.topCenter,
                                 end: Alignment.bottomCenter,
-                                colors: [
-                                  Colors.transparent,
-                                  Colors.black.withValues(alpha: 0.22),
-                                ],
+                                colors: [Colors.transparent, Colors.black.withValues(alpha: 0.22)],
                               ),
                             ),
                           ),
@@ -669,13 +735,8 @@ class EventDetail extends StatelessWidget {
                                 margin: EdgeInsets.all(4.0),
                                 padding: EdgeInsets.all(8.0),
                                 decoration: BoxDecoration(
-                                  border: Border.all(
-                                    color: Colors.white,
-                                    width: 1.0,
-                                  ),
-                                  borderRadius: BorderRadius.all(
-                                    Radius.circular(4.0),
-                                  ),
+                                  border: Border.all(color: Colors.white, width: 1.0),
+                                  borderRadius: BorderRadius.all(Radius.circular(4.0)),
                                   color: Colors.blue[100],
                                   boxShadow: [
                                     BoxShadow(
@@ -687,18 +748,11 @@ class EventDetail extends StatelessWidget {
                                   ],
                                 ),
                                 child: Column(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                   children: <Widget>[
-                                    Icon(
-                                      Icons.event,
-                                      size: 38,
-                                      color: Colors.blue[700],
-                                    ),
+                                    Icon(Icons.event, size: 38, color: Colors.blue[700]),
                                     Text(
-                                      _eventDetailProvider
-                                          .currentEvent
-                                          .fullDate,
+                                      _eventDetailProvider.currentEvent.fullDate,
                                       textAlign: TextAlign.center,
                                       maxLines: 2,
                                       overflow: TextOverflow.ellipsis,
@@ -714,13 +768,8 @@ class EventDetail extends StatelessWidget {
                                 margin: EdgeInsets.all(4.0),
                                 padding: EdgeInsets.all(8.0),
                                 decoration: BoxDecoration(
-                                  border: Border.all(
-                                    color: Colors.white,
-                                    width: 1.0,
-                                  ),
-                                  borderRadius: BorderRadius.all(
-                                    Radius.circular(4.0),
-                                  ),
+                                  border: Border.all(color: Colors.white, width: 1.0),
+                                  borderRadius: BorderRadius.all(Radius.circular(4.0)),
                                   color: Colors.blue[100],
                                   boxShadow: [
                                     BoxShadow(
@@ -732,22 +781,12 @@ class EventDetail extends StatelessWidget {
                                   ],
                                 ),
                                 child: Column(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                   children: <Widget>[
-                                    Icon(
-                                      Icons.euro_symbol,
-                                      size: 38,
-                                      color: Colors.purple[700],
-                                    ),
+                                    Icon(Icons.euro_symbol, size: 38, color: Colors.purple[700]),
                                     Text(
-                                      _eventDetailProvider.currentEvent.price !=
-                                              null
-                                          ? StringUtils.formatPrice(
-                                              _eventDetailProvider
-                                                  .currentEvent
-                                                  .price!,
-                                            )
+                                      _eventDetailProvider.currentEvent.price != null
+                                          ? StringUtils.formatPrice(_eventDetailProvider.currentEvent.price!)
                                           : "",
                                       textAlign: TextAlign.center,
                                       maxLines: 2,
@@ -763,13 +802,8 @@ class EventDetail extends StatelessWidget {
                                 height: 100,
                                 margin: EdgeInsets.all(4.0),
                                 decoration: BoxDecoration(
-                                  border: Border.all(
-                                    color: Colors.white,
-                                    width: 1.0,
-                                  ),
-                                  borderRadius: BorderRadius.all(
-                                    Radius.circular(4.0),
-                                  ),
+                                  border: Border.all(color: Colors.white, width: 1.0),
+                                  borderRadius: BorderRadius.all(Radius.circular(4.0)),
                                   color: Colors.blue[100],
                                   boxShadow: [
                                     BoxShadow(
@@ -784,16 +818,10 @@ class EventDetail extends StatelessWidget {
                                 child: Material(
                                   color: Colors.transparent,
                                   child: InkWell(
-                                    onTap:
-                                        _eventDetailProvider
-                                                .currentEvent
-                                                .track !=
-                                            null
+                                    onTap: _eventDetailProvider.currentEvent.track != null
                                         ? () => _navigateToTrackDetailScreen(
                                             context,
-                                            _eventDetailProvider
-                                                .currentEvent
-                                                .track!,
+                                            _eventDetailProvider.currentEvent.track!,
                                           )
                                         : null,
                                     child: Stack(
@@ -801,8 +829,7 @@ class EventDetail extends StatelessWidget {
                                         Padding(
                                           padding: EdgeInsets.all(8.0),
                                           child: Column(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.spaceBetween,
+                                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                             children: <Widget>[
                                               SizedBox(
                                                 height: 38,
@@ -823,25 +850,15 @@ class EventDetail extends StatelessWidget {
                                                       child: Icon(
                                                         Icons.arrow_outward,
                                                         size: 14.0,
-                                                        color: Colors.red[700]!
-                                                            .withValues(
-                                                              alpha: 0.7,
-                                                            ),
+                                                        color: Colors.red[700]!.withValues(alpha: 0.7),
                                                       ),
                                                     ),
                                                   ],
                                                 ),
                                               ),
                                               Text(
-                                                _eventDetailProvider
-                                                            .currentEvent
-                                                            .track !=
-                                                        null
-                                                    ? _eventDetailProvider
-                                                              .currentEvent
-                                                              .track!
-                                                              .name ??
-                                                          ""
+                                                _eventDetailProvider.currentEvent.track != null
+                                                    ? _eventDetailProvider.currentEvent.track!.name ?? ""
                                                     : "",
                                                 textAlign: TextAlign.center,
                                                 maxLines: 2,
@@ -863,13 +880,8 @@ class EventDetail extends StatelessWidget {
                                 margin: EdgeInsets.all(4.0),
                                 padding: EdgeInsets.all(8.0),
                                 decoration: BoxDecoration(
-                                  border: Border.all(
-                                    color: Colors.white,
-                                    width: 1.0,
-                                  ),
-                                  borderRadius: BorderRadius.all(
-                                    Radius.circular(4.0),
-                                  ),
+                                  border: Border.all(color: Colors.white, width: 1.0),
+                                  borderRadius: BorderRadius.all(Radius.circular(4.0)),
                                   color: Colors.blue[100],
                                   boxShadow: [
                                     BoxShadow(
@@ -881,20 +893,11 @@ class EventDetail extends StatelessWidget {
                                   ],
                                 ),
                                 child: Column(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                   children: <Widget>[
-                                    Icon(
-                                      Icons.perm_contact_calendar,
-                                      size: 38,
-                                      color: Colors.teal[700],
-                                    ),
+                                    Icon(Icons.perm_contact_calendar, size: 38, color: Colors.teal[700]),
                                     Text(
-                                      _eventDetailProvider
-                                              .currentEvent
-                                              .organizer
-                                              ?.name ??
-                                          "",
+                                      _eventDetailProvider.currentEvent.organizer?.name ?? "",
                                       textAlign: TextAlign.center,
                                       maxLines: 2,
                                       overflow: TextOverflow.ellipsis,
@@ -909,45 +912,29 @@ class EventDetail extends StatelessWidget {
                         SizedBox(height: 10),
                         Row(
                           children: <Widget>[
-                            Icon(
-                              Icons.description,
-                              size: 16,
-                              color: Colors.black.withAlpha(163),
-                            ),
+                            Icon(Icons.description, size: 16, color: Colors.black.withAlpha(163)),
                             SizedBox(width: 5.0),
                             Text(
                               AppString.description,
                               textScaler: TextScaler.linear(1.2),
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                color: Colors.black.withAlpha(163),
-                              ),
+                              style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black.withAlpha(163)),
                             ),
                           ],
                         ),
                         SizedBox(height: 10),
-                        Text(
-                          _eventDetailProvider.currentEvent.description ?? "",
-                        ),
+                        Text(_eventDetailProvider.currentEvent.description ?? ""),
                         SizedBox(height: 10),
                         if (_loginProvider.isMember) ...[
                           Divider(color: Colors.white),
                           SizedBox(height: 10),
                           Row(
                             children: <Widget>[
-                              Icon(
-                                Icons.group,
-                                size: 18,
-                                color: Colors.black.withAlpha(163),
-                              ),
+                              Icon(Icons.group, size: 18, color: Colors.black.withAlpha(163)),
                               SizedBox(width: 5.0),
                               Text(
                                 AppString.participants,
                                 textScaler: TextScaler.linear(1.2),
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.black.withAlpha(163),
-                                ),
+                                style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black.withAlpha(163)),
                               ),
                               SizedBox(width: 4.0),
                               Text(
@@ -961,18 +948,10 @@ class EventDetail extends StatelessWidget {
                             ],
                           ),
                           SizedBox(height: 10),
-                          (_eventDetailProvider
-                                          .currentEvent
-                                          .participants
-                                          ?.length ??
-                                      0) >
-                                  0
+                          (_eventDetailProvider.currentEvent.participants?.length ?? 0) > 0
                               ? _ParticipantsList(
-                                  participants: _eventDetailProvider
-                                      .currentEvent
-                                      .participants!,
-                                  onTapMember: (Member m) =>
-                                      _navigateToMemberDetailScreen(context, m),
+                                  participants: _eventDetailProvider.currentEvent.participants!,
+                                  onTapMember: (Member m) => _navigateToMemberDetailScreen(context, m),
                                 )
                               : Text(AppString.noParticipant),
                           SizedBox(height: 10),
@@ -1007,14 +986,10 @@ class EventDetail extends StatelessWidget {
 ///
 /// Lives in its own StatefulWidget (rather than being inline in
 /// [EventDetail.build]) because it needs a [ScrollController] +
-/// listener — and isolating that concern keeps [EventDetail] a
+/// listener, and isolating that concern keeps [EventDetail] a
 /// pure [StatelessWidget].
 class _ParticipantsList extends StatefulWidget {
-  const _ParticipantsList({
-    Key? key,
-    required this.participants,
-    required this.onTapMember,
-  }) : super(key: key);
+  const _ParticipantsList({Key? key, required this.participants, required this.onTapMember}) : super(key: key);
 
   final List<EventMember> participants;
   final void Function(Member member) onTapMember;
@@ -1055,15 +1030,8 @@ class _ParticipantsListState extends State<_ParticipantsList> {
                     height: 80,
                     padding: const EdgeInsets.all(2.0),
                     margin: const EdgeInsets.symmetric(horizontal: 12.0),
-                    decoration: const ShapeDecoration(
-                      shape: CircleBorder(),
-                      color: Colors.white70,
-                    ),
-                    child: AvatarImage(
-                      memberId: member.id,
-                      hasAvatar: member.hasAvatar == true,
-                      radius: 20.0,
-                    ),
+                    decoration: const ShapeDecoration(shape: CircleBorder(), color: Colors.white70),
+                    child: AvatarImage(memberId: member.id, hasAvatar: member.hasAvatar == true, radius: 20.0),
                   ),
                 ),
                 const SizedBox(height: 5.0),
@@ -1141,16 +1109,13 @@ class _BikePickerTile extends StatelessWidget {
                       color: Colors.black.withAlpha(muted ? 140 : 204),
                       fontSize: 13.5,
                       fontStyle: muted ? FontStyle.italic : FontStyle.normal,
-                      fontWeight: selected
-                          ? FontWeight.w700
-                          : FontWeight.normal,
+                      fontWeight: selected ? FontWeight.w700 : FontWeight.normal,
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
-                if (selected)
-                  Icon(Icons.check, size: 18.0, color: Colors.green[700]),
+                if (selected) Icon(Icons.check, size: 18.0, color: Colors.green[700]),
               ],
             ),
           ),

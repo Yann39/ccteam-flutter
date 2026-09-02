@@ -18,6 +18,7 @@
  */
 
 import 'package:ccteam/models/event.dart';
+import 'package:ccteam/models/event_session.dart';
 import 'package:ccteam/utils/app_utils.dart';
 import 'package:ccteam/utils/graphql_connection.dart';
 import 'package:gql/language.dart';
@@ -400,6 +401,14 @@ class EventsService {
               engineSize
               year
             }
+            skippedSessions {
+              id
+            }
+          }
+          sessions {
+            id
+            position
+            durationMinutes
           }
         }
       }
@@ -571,6 +580,14 @@ class EventsService {
               engineSize
               year
             }
+            skippedSessions {
+              id
+            }
+          }
+          sessions {
+            id
+            position
+            durationMinutes
           }
           createdOn
           createdBy {
@@ -740,6 +757,14 @@ class EventsService {
               engineSize
               year
             }
+            skippedSessions {
+              id
+            }
+          }
+          sessions {
+            id
+            position
+            durationMinutes
           }
         }
       }
@@ -816,6 +841,14 @@ class EventsService {
               engineSize
               year
             }
+            skippedSessions {
+              id
+            }
+          }
+          sessions {
+            id
+            position
+            durationMinutes
           }
         }
       }
@@ -833,6 +866,175 @@ class EventsService {
       throw AppUtils.handleGraphQlException(result)!;
     } else {
       return Event.fromJson(result.data!['setEventMemberBike']);
+    }
+  }
+
+  /// Replace the session schedule of [eventId] with the specified [groups]
+  /// of identical sessions ("5 x 20 min, then 1 x 25 min"), which the server
+  /// expands into individual sessions. Pass an empty list to clear the
+  /// schedule. Admin-only server-side. Returns the up-to-date event.
+  Future<Event> setEventSessions(int eventId, List<EventSessionGroup> groups) async {
+    _log.info("Setting ${groups.length} session group(s) on event $eventId...");
+
+    final String mutation = """
+      mutation SetEventSessions(\$eventId: Long!, \$groups: [EventSessionGroupInput!]!) {
+        setEventSessions(
+            eventId: \$eventId
+            groups: \$groups
+        )
+        {
+          id
+          title
+          description
+          startDate
+          endDate
+          track {
+            id
+            variantName
+            iconKey
+            circuit {
+              id
+              name
+              latitude
+              longitude
+              website
+              country {
+                code
+                nameFr
+                nameEn
+              }
+            }
+          }
+          organizer {
+            id
+            name
+          }
+          price
+          participants {
+            id
+            member {
+              id
+              firstName
+              lastName
+              hasAvatar
+            }
+            bike {
+              id
+              manufacturer
+              modelName
+              engineSize
+              year
+            }
+            skippedSessions {
+              id
+            }
+          }
+          sessions {
+            id
+            position
+            durationMinutes
+          }
+        }
+      }
+    """;
+
+    final MutationOptions mutationOptions = new MutationOptions(
+      document: parseString(mutation),
+      variables: {'eventId': eventId, 'groups': groups.map((group) => group.toJson()).toList()},
+      fetchPolicy: FetchPolicy.noCache,
+    );
+
+    final QueryResult result = await GraphQLConnection().graphQLClient.mutate(mutationOptions);
+
+    if (result.hasException) {
+      throw AppUtils.handleGraphQlException(result)!;
+    } else {
+      return Event.fromJson(result.data!['setEventSessions']);
+    }
+  }
+
+  /// Set which sessions of [eventId] the caller did *not* ride, passing
+  /// their ids in [skippedSessionIds]. An empty list means the caller rode
+  /// every session, which is the default state of a participation. As for
+  /// [setEventMemberBike], the server derives the acting member from the
+  /// auth token. Returns the up-to-date event.
+  Future<Event> setEventMemberSessions(int eventId, List<int> skippedSessionIds) async {
+    _log.info("Setting ${skippedSessionIds.length} skipped session(s) on event $eventId for the caller...");
+
+    final String mutation = """
+      mutation SetEventMemberSessions(\$eventId: Long!, \$skippedSessionIds: [Long!]!) {
+        setEventMemberSessions(
+            eventId: \$eventId
+            skippedSessionIds: \$skippedSessionIds
+        )
+        {
+          id
+          title
+          description
+          startDate
+          endDate
+          track {
+            id
+            variantName
+            iconKey
+            circuit {
+              id
+              name
+              latitude
+              longitude
+              website
+              country {
+                code
+                nameFr
+                nameEn
+              }
+            }
+          }
+          organizer {
+            id
+            name
+          }
+          price
+          participants {
+            id
+            member {
+              id
+              firstName
+              lastName
+              hasAvatar
+            }
+            bike {
+              id
+              manufacturer
+              modelName
+              engineSize
+              year
+            }
+            skippedSessions {
+              id
+            }
+          }
+          sessions {
+            id
+            position
+            durationMinutes
+          }
+        }
+      }
+    """;
+
+    final MutationOptions mutationOptions = new MutationOptions(
+      document: parseString(mutation),
+      variables: {'eventId': eventId, 'skippedSessionIds': skippedSessionIds},
+      fetchPolicy: FetchPolicy.noCache,
+    );
+
+    final QueryResult result = await GraphQLConnection().graphQLClient.mutate(mutationOptions);
+
+    if (result.hasException) {
+      throw AppUtils.handleGraphQlException(result)!;
+    } else {
+      return Event.fromJson(result.data!['setEventMemberSessions']);
     }
   }
 
@@ -890,6 +1092,14 @@ class EventsService {
               engineSize
               year
             }
+            skippedSessions {
+              id
+            }
+          }
+          sessions {
+            id
+            position
+            durationMinutes
           }
         }
       }

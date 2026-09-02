@@ -22,7 +22,7 @@ import 'package:ccteam/models/track.dart';
 
 /// Class representing a circuit (venue). Holds the identity shared by every
 /// version (layout) of a physical circuit: name, country, GPS coordinates and
-/// website. The raceable unit — the one chronos and events reference — is the
+/// website. The raceable unit, the one chronos and events reference, is the
 /// [Track], which represents a single version of a circuit.
 class Circuit {
   int? id;

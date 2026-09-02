@@ -20,6 +20,7 @@
 import 'package:ccteam/models/bike.dart';
 import 'package:ccteam/models/event.dart';
 import 'package:ccteam/models/event_member.dart';
+import 'package:ccteam/models/event_session.dart';
 import 'package:ccteam/models/organizer.dart';
 import 'package:ccteam/models/record.dart';
 
@@ -344,9 +345,12 @@ class MemberStatsUtils {
   /// "achievement" number on the profile.
   ///
   /// Heuristic, applied per past event:
-  ///  1. **Sessions** : a full track day is treated as 6 × 20-minute
-  ///     sessions. A short event (under 6 hours) is treated as a
-  ///     half-day = 3 sessions. Anything longer is counted as
+  ///  1. **Sessions** : when the event carries a real schedule, the
+  ///     sessions the member actually rode are used (the schedule minus
+  ///     the ones they unticked), durations included. Otherwise it falls
+  ///     back to guessing from the event duration: a full track day is
+  ///     treated as 6 × 20-minute sessions, a short event (under 6 hours)
+  ///     as a half-day = 3 sessions, anything longer as
   ///     `ceil(hours / 24)` full days × 6 sessions.
   ///  2. **Laps per session** : `20 min / lap_time`. The lap time
   ///     used is the member's *own* best chrono on the circuit if any
@@ -375,15 +379,32 @@ class MemberStatsUtils {
       final track = event.track;
       if (track?.distance == null || track!.distance! <= 0) continue;
 
-      // sessions, based on event duration
-      final DateTime end = event.endDate ?? start;
-      final int hours = end.difference(start).inHours;
-      int sessions;
-      if (hours < 6) {
-        sessions = 3; // demi-journée
+      // the sessions actually ridden, when the event has a schedule to go by:
+      // everything scheduled except what the member unticked
+      final List<EventSession> scheduled = event.sessions ?? const <EventSession>[];
+      List<int> sessionDurations;
+      if (scheduled.isNotEmpty) {
+        final Set<int> skippedIds = (em.skippedSessions ?? const <EventSession>[])
+            .map((session) => session.id)
+            .whereType<int>()
+            .toSet();
+        sessionDurations = scheduled
+            .where((session) => !skippedIds.contains(session.id))
+            .map((session) => session.durationMinutes ?? 0)
+            .where((minutes) => minutes > 0)
+            .toList();
       } else {
-        final int days = (hours / 24).ceil().clamp(1, 30);
-        sessions = days * 6;
+        // no schedule entered, guess the sessions from the event duration
+        final DateTime end = event.endDate ?? start;
+        final int hours = end.difference(start).inHours;
+        final int sessions;
+        if (hours < 6) {
+          sessions = 3; // demi-journée
+        } else {
+          final int days = (hours / 24).ceil().clamp(1, 30);
+          sessions = days * 6;
+        }
+        sessionDurations = List<int>.filled(sessions, 20);
       }
 
       // lap time on this track: member's best chrono bumped by 2 %
@@ -401,9 +422,12 @@ class MemberStatsUtils {
       }
       lapMs ??= 120 * 1000;
 
-      // 20 min = 1 200 000 ms, integer divide gives full laps
-      final int lapsPerSession = (20 * 60 * 1000) ~/ lapMs;
-      final int totalLaps = sessions * lapsPerSession;
+      // full laps only, counted session by session: a lap started at the
+      // chequered flag doesn't add distance
+      int totalLaps = 0;
+      for (final int minutes in sessionDurations) {
+        totalLaps += (minutes * 60 * 1000) ~/ lapMs;
+      }
       totalMeters += track.distance! * totalLaps;
     }
 

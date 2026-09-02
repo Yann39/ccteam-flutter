@@ -20,6 +20,7 @@
 import 'dart:async';
 
 import 'package:ccteam/models/event.dart';
+import 'package:ccteam/models/event_session.dart';
 import 'package:ccteam/providers/login_provider.dart';
 import 'package:ccteam/providers/message_provider.dart';
 import 'package:ccteam/services/events_service.dart';
@@ -70,34 +71,72 @@ class EventCreationProvider extends ChangeNotifier {
   /// Create the current event being edited.
   Future<void> createEvent() async {
     _updateStatus(LoadingStatus.loading);
-    await _eventsService.createEvent(_event).then((value) async {
-      _log.fine("Event created successfully");
-      _event = value;
-      _updateStatus(LoadingStatus.loaded);
-      _messageProvider.setMessage(AppString.eventCreated, MessageType.SUCCESS);
-    }, onError: (error) {
-      _log.warning("Error when creating event ($error)");
-      _messageProvider.setMessage(AppString.eventCreationFailed, MessageType.ERROR);
-      AppUtils.handleServiceException(error, _messageProvider, _loginProvider);
-      _updateStatus(LoadingStatus.notLoaded);
-    });
+    await _eventsService
+        .createEvent(_event)
+        .then(
+          (value) async {
+            _log.fine("Event created successfully");
+            _event = value;
+            _updateStatus(LoadingStatus.loaded);
+            _messageProvider.setMessage(AppString.eventCreated, MessageType.SUCCESS);
+          },
+          onError: (error) {
+            _log.warning("Error when creating event ($error)");
+            _messageProvider.setMessage(AppString.eventCreationFailed, MessageType.ERROR);
+            AppUtils.handleServiceException(error, _messageProvider, _loginProvider);
+            _updateStatus(LoadingStatus.notLoaded);
+          },
+        );
   }
 
   /// Update the current event being edited.
   Future<void> updateEvent() async {
     _updateStatus(LoadingStatus.loading);
-    await _eventsService.updateEvent(_event).then((value) {
-      _log.fine("Event successfully updated : ${_event.title}");
-      _event = value;
-      _updateStatus(LoadingStatus.loaded);
-      _messageProvider.setMessage(AppString.eventUpdated, MessageType.SUCCESS);
-    }, onError: (error) {
-      // todo here we should reload the original event as it has not been updated in db ?
-      _log.warning("Error when updating event ($error)");
-      _messageProvider.setMessage(AppString.eventUpdateFailed, MessageType.ERROR);
-      AppUtils.handleServiceException(error, _messageProvider, _loginProvider);
-      _updateStatus(LoadingStatus.notLoaded);
-    });
+    await _eventsService
+        .updateEvent(_event)
+        .then(
+          (value) {
+            _log.fine("Event successfully updated : ${_event.title}");
+            _event = value;
+            _updateStatus(LoadingStatus.loaded);
+            _messageProvider.setMessage(AppString.eventUpdated, MessageType.SUCCESS);
+          },
+          onError: (error) {
+            // todo here we should reload the original event as it has not been updated in db ?
+            _log.warning("Error when updating event ($error)");
+            _messageProvider.setMessage(AppString.eventUpdateFailed, MessageType.ERROR);
+            AppUtils.handleServiceException(error, _messageProvider, _loginProvider);
+            _updateStatus(LoadingStatus.notLoaded);
+          },
+        );
+  }
+
+  /// Replace the session schedule of the current event with the specified
+  /// [groups] of identical sessions, which the server expands into
+  /// individual sessions. Pass an empty list to clear the schedule.
+  ///
+  /// Kept separate from [createEvent] / [updateEvent] because the schedule
+  /// hangs off the event id, so on a creation it can only be sent once the
+  /// event exists.
+  Future<void> setEventSessions(List<EventSessionGroup> groups) async {
+    if (_event.id == null) {
+      _log.warning("Cannot set sessions, the event has no id yet");
+      return;
+    }
+    await _eventsService
+        .setEventSessions(_event.id!, groups)
+        .then(
+          (value) {
+            _log.fine("Sessions successfully updated on event : ${_event.title}");
+            _event = value;
+            _updateStatus(LoadingStatus.loaded);
+          },
+          onError: (error) {
+            _log.warning("Error when updating event sessions ($error)");
+            _messageProvider.setMessage(AppString.eventSessionsUpdateFailed, MessageType.ERROR);
+            AppUtils.handleServiceException(error, _messageProvider, _loginProvider);
+          },
+        );
   }
 
   /// Notify all the registered listeners of this provider.

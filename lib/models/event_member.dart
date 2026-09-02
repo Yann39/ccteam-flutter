@@ -19,6 +19,7 @@
 
 import 'package:ccteam/models/bike.dart';
 import 'package:ccteam/models/event.dart';
+import 'package:ccteam/models/event_session.dart';
 import 'package:ccteam/models/member.dart';
 
 /// Class representing an event participant
@@ -33,9 +34,16 @@ class EventMember {
   /// server clears the reference, the participation stays).
   Bike? bike;
 
+  /// Sessions of the event the member did *not* ride.
+  ///
+  /// Absences are stored rather than attendances, so an empty list means
+  /// "rode everything", the default state of a participation, and the one
+  /// the UI shows with every session ticked.
+  List<EventSession>? skippedSessions;
+
   DateTime? createdOn;
 
-  EventMember({this.id, this.member, this.event, this.bike, this.createdOn});
+  EventMember({this.id, this.member, this.event, this.bike, this.skippedSessions, this.createdOn});
 
   @override
   String toString() {
@@ -44,24 +52,29 @@ class EventMember {
       members: ${this.member.toString()},
       members: ${this.event.toString()},
       bike: ${this.bike.toString()},
+      skippedSessions: ${this.skippedSessions?.map((session) => session.toString())},
       createdOn: ${this.createdOn?.toIso8601String()},
     }""";
   }
 
   /// Convert [json] map to the corresponding object
   EventMember.fromJson(Map<String, dynamic> json)
-      : id = json['id'] != null ? int.parse(json['id'].toString()) : null,
-        member = json['member'] != null ? Member.fromJson(json['member']) : null,
-        event = json['event'] != null ? Event.fromJson(json['event']) : null,
-        bike = json['bike'] != null ? Bike.fromJson(json['bike']) : null,
-        createdOn = json['createdOn'] != null ? DateTime.parse(json['createdOn']) : null;
+    : id = json['id'] != null ? int.parse(json['id'].toString()) : null,
+      member = json['member'] != null ? Member.fromJson(json['member']) : null,
+      event = json['event'] != null ? Event.fromJson(json['event']) : null,
+      bike = json['bike'] != null ? Bike.fromJson(json['bike']) : null,
+      skippedSessions = json['skippedSessions'] != null
+          ? (json['skippedSessions'] as Iterable).map((i) => EventSession.fromJson(i)).toList()
+          : null,
+      createdOn = json['createdOn'] != null ? DateTime.parse(json['createdOn']) : null;
 
   /// Convert [EventMember] object to the corresponding JSON map
   Map<String, dynamic> toJson() => {
-        "id": id.toString(),
-        "member": member?.toJson(),
-        "event": event?.toJson(),
-        "bike": bike?.toJson(),
-        "createdOn": createdOn?.toIso8601String(),
-      };
+    "id": id.toString(),
+    "member": member?.toJson(),
+    "event": event?.toJson(),
+    "bike": bike?.toJson(),
+    "skippedSessions": skippedSessions?.map((i) => i.toJson()).toList(),
+    "createdOn": createdOn?.toIso8601String(),
+  };
 }

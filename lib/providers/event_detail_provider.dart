@@ -261,6 +261,29 @@ class EventDetailProvider extends ChangeNotifier {
         );
   }
 
+  /// Set which sessions of [event] the caller did *not* ride. An empty
+  /// [skippedSessionIds] means they rode every session, which is the
+  /// default state of a participation. As for [setEventMemberBike], the
+  /// server derives the acting member from the auth token.
+  Future<void> setEventMemberSessions(Event event, List<int> skippedSessionIds) async {
+    _log.fine("Setting ${skippedSessionIds.length} skipped session(s) on event ${event.title}...");
+    await _eventsService
+        .setEventMemberSessions(event.id!, skippedSessionIds)
+        .then(
+          (value) async {
+            _log.fine("Ridden sessions updated successfully on event : ${event.title}");
+            _updateEventInList(value);
+            // refetch so the stats built on the logged member's participations pick up the change
+            await _loginProvider.refreshLoggedMember();
+            _messageProvider.setMessage(AppString.eventSessionsUpdated, MessageType.SUCCESS);
+          },
+          onError: (error) {
+            _log.warning("Failed to update ridden sessions ($error)");
+            AppUtils.handleServiceException(error, _messageProvider, _loginProvider);
+          },
+        );
+  }
+
   /// Update the specified [event] in the list of events.
   void _updateEventInList(Event event) {
     final int index = _allEvents.indexWhere((e) => e.id == event.id);

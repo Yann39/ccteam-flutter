@@ -343,6 +343,11 @@ class MembersService {
               participants {
                 id
               }
+              sessions {
+                id
+                position
+                durationMinutes
+              }
             }
             bike {
               id
@@ -350,6 +355,9 @@ class MembersService {
               modelName
               engineSize
               year
+            }
+            skippedSessions {
+              id
             }
           }
           createdOn
@@ -442,6 +450,11 @@ class MembersService {
               participants {
                 id
               }
+              sessions {
+                id
+                position
+                durationMinutes
+              }
             }
             bike {
               id
@@ -449,6 +462,9 @@ class MembersService {
               modelName
               engineSize
               year
+            }
+            skippedSessions {
+              id
             }
           }
           likedNews {
@@ -560,6 +576,11 @@ class MembersService {
               participants {
                 id
               }
+              sessions {
+                id
+                position
+                durationMinutes
+              }
             }
             bike {
               id
@@ -567,6 +588,9 @@ class MembersService {
               modelName
               engineSize
               year
+            }
+            skippedSessions {
+              id
             }
           }
           likedNews {
@@ -681,6 +705,11 @@ class MembersService {
               participants {
                 id
               }
+              sessions {
+                id
+                position
+                durationMinutes
+              }
             }
             bike {
               id
@@ -688,6 +717,9 @@ class MembersService {
               modelName
               engineSize
               year
+            }
+            skippedSessions {
+              id
             }
           }
           likedNews {

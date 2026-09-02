@@ -18,6 +18,7 @@
  */
 
 import 'package:ccteam/models/event.dart';
+import 'package:ccteam/models/event_session.dart';
 import 'package:ccteam/models/organizer.dart';
 import 'package:ccteam/models/track.dart';
 import 'package:ccteam/providers/event_creation_provider.dart';
@@ -75,11 +76,40 @@ class _AddEditEventState extends State<AddEditEvent> {
   /// later doesn't re-fetch.
   bool _organizersBootstrapped = false;
 
+  /// Session schedule being edited, held as groups ("5 x 20 min") because that
+  /// is how a track day is described. Expanded into individual sessions by the
+  /// server on save.
+  final List<EventSessionGroup> _sessionGroups = [];
+
+  /// Schedule proposed for a new event, so an admin who doesn't care about
+  /// sessions still ends up with a sensible one rather than none.
+  static const int _defaultSessionCount = 6;
+  static const int _defaultSessionDuration = 20;
+
+  /// Schedule as it stood when the form opened, used to skip the session
+  /// mutation on an edit that didn't touch it.
+  late String _initialSessionsSignature;
+
+  String _sessionsSignature(List<EventSessionGroup> groups) =>
+      groups.map((group) => "${group.count}x${group.durationMinutes}").join(',');
+
   initState() {
     final EventCreationProvider _eventCreationProvider = Provider.of<EventCreationProvider>(context, listen: false);
     // fetch the tracks in initState so it is not fetch each time the state change
     _futureTracks = _tracksService.fetchTracks();
     _selectedOrganizer = _eventCreationProvider.event.organizer;
+
+    // seed the schedule from the event being edited, falling back to the default for a new one
+    final List<EventSessionGroup> existingGroups = EventSessionGroup.fromSessions(
+      _eventCreationProvider.event.sessions,
+    );
+    if (existingGroups.isNotEmpty) {
+      _sessionGroups.addAll(existingGroups);
+    } else if (_eventCreationProvider.event.id == null) {
+      _sessionGroups.add(EventSessionGroup(count: _defaultSessionCount, durationMinutes: _defaultSessionDuration));
+    }
+    _initialSessionsSignature = _sessionsSignature(_sessionGroups);
+
     // set date picker text
     _startDatePickerController.text = AppDateUtils.convertToString(
       _eventCreationProvider.event.startDate != null ? _eventCreationProvider.event.startDate! : DateTime.now(),
@@ -179,17 +209,27 @@ class _AddEditEventState extends State<AddEditEvent> {
       final EventDetailProvider _eventDetailProvider = Provider.of<EventDetailProvider>(context, listen: false);
       final LoginProvider _loginProvider = Provider.of<LoginProvider>(context, listen: false);
 
+      // the schedule hangs off the event id, so it goes out as its own mutation once the event is saved.
+      // On an update it is only sent when actually edited, since the server rebuilds every session row.
+      final bool isCreation = event.id == null;
+      final bool sessionsChanged = _sessionsSignature(_sessionGroups) != _initialSessionsSignature;
+
       // submit data to backend, if id is set this is an update, else a creation
-      if (event.id != null) {
+      if (!isCreation) {
         event.modifiedBy = _loginProvider.loggedMember;
-        _eventCreationProvider.updateEvent().then((value) {
+        _eventCreationProvider.updateEvent().then((value) async {
+          if (sessionsChanged) {
+            await _eventCreationProvider.setEventSessions(_sessionGroups);
+          }
           // update event in related UIs
           _eventListProvider.updateEventInList(_eventCreationProvider.event);
           _eventDetailProvider.setCurrentEvent(_eventCreationProvider.event);
         });
       } else {
         event.createdBy = _loginProvider.loggedMember;
-        _eventCreationProvider.createEvent().then((value) {
+        _eventCreationProvider.createEvent().then((value) async {
+          // always sent on creation, that is how the default schedule gets persisted
+          await _eventCreationProvider.setEventSessions(_sessionGroups);
           _eventListProvider.addEventInList(_eventCreationProvider.event);
         });
       }
@@ -392,14 +432,160 @@ class _AddEditEventState extends State<AddEditEvent> {
         _organizerField,
         _startDateField,
         _endDateField,
+        _buildSessionsSection(),
       ],
+    );
+  }
+
+  /// Session schedule editor: one row per group of identical sessions
+  /// ("5 x 20 min"), so the admin types the schedule the way it is announced.
+  ///
+  /// Counts and durations are plain steppers rather than text fields, which
+  /// keeps the values valid by construction, no parsing, no validation
+  /// message to write, and no way to submit "0 sessions of -5 min".
+  Widget _buildSessionsSection() {
+    final int totalSessions = _sessionGroups.fold<int>(0, (sum, group) => sum + group.count);
+    final int totalMinutes = _sessionGroups.fold<int>(0, (sum, group) => sum + group.count * group.durationMinutes);
+
+    return Padding(
+      padding: const EdgeInsets.only(top: 18.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          Row(
+            children: <Widget>[
+              Icon(Icons.timer_outlined, size: 26.0, color: Colors.black.withAlpha(160)),
+              const SizedBox(width: 16.0),
+              Text(
+                AppString.eventSessionsScheduleLabel,
+                style: TextStyle(fontSize: 16.0, color: Colors.black87, fontWeight: FontWeight.w500),
+              ),
+            ],
+          ),
+          // total in place of the former hint text: it says what the schedule adds up to
+          if (totalSessions > 0)
+            Padding(
+              padding: const EdgeInsets.only(left: 38.0, top: 2.0),
+              child: Text(
+                AppString.format(AppString.eventSessionsTotal, [totalSessions, totalMinutes]),
+                style: TextStyle(fontSize: 12.0, color: Colors.black.withAlpha(120)),
+              ),
+            ),
+          const SizedBox(height: 8.0),
+          for (int i = 0; i < _sessionGroups.length; i++)
+            Padding(
+              padding: const EdgeInsets.only(left: 38.0, bottom: 6.0),
+              child: Row(
+                children: <Widget>[
+                  // the steppers share the available width instead of being fixed-width, so a long
+                  // value ("120 min") can't wrap and leave the two boxes at different heights.
+                  // The duration gets the larger share, its label being the longer of the two.
+                  Expanded(
+                    flex: 3,
+                    child: _sessionStepper(
+                      value: _sessionGroups[i].count,
+                      suffix: '',
+                      onChanged: (int value) => setState(() => _sessionGroups[i].count = value),
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                    child: Text('×', style: TextStyle(fontSize: 15.0, color: Colors.black.withAlpha(140))),
+                  ),
+                  Expanded(
+                    flex: 4,
+                    child: _sessionStepper(
+                      value: _sessionGroups[i].durationMinutes,
+                      suffix: ' min',
+                      step: 5,
+                      onChanged: (int value) => setState(() => _sessionGroups[i].durationMinutes = value),
+                    ),
+                  ),
+                  IconButton(
+                    tooltip: AppString.eventSessionsRemoveGroup,
+                    onPressed: () => setState(() => _sessionGroups.removeAt(i)),
+                    icon: Icon(Icons.close, size: 20.0, color: Colors.black.withAlpha(140)),
+                    visualDensity: VisualDensity.compact,
+                  ),
+                ],
+              ),
+            ),
+          Padding(
+            padding: const EdgeInsets.only(left: 30.0),
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: TextButton.icon(
+                onPressed: () => setState(
+                  () => _sessionGroups.add(EventSessionGroup(count: 1, durationMinutes: _defaultSessionDuration)),
+                ),
+                icon: const Icon(Icons.add, size: 18.0),
+                label: Text(AppString.eventSessionsAddGroup),
+                style: TextButton.styleFrom(padding: const EdgeInsets.symmetric(horizontal: 8.0)),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Small "- value +" stepper. Clamped at 1 so a group can never be emptied
+  /// into an invalid state, removing it is what the close button is for.
+  ///
+  /// The +/- hit areas are 36 dp squares: comfortably thumb-sized, while still
+  /// leaving both steppers and the remove button on one line on a narrow phone.
+  Widget _sessionStepper({
+    required int value,
+    required String suffix,
+    required ValueChanged<int> onChanged,
+    int step = 1,
+  }) {
+    final bool canDecrement = value - step >= 1;
+
+    Widget button({required IconData icon, required VoidCallback? onTap, required bool enabled}) {
+      return InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(8.0),
+        child: SizedBox(
+          width: 36.0,
+          height: 36.0,
+          child: Center(child: Icon(icon, size: 18.0, color: Colors.black.withAlpha(enabled ? 170 : 50))),
+        ),
+      );
+    }
+
+    return Container(
+      decoration: BoxDecoration(
+        border: Border.all(color: Colors.black.withAlpha(40)),
+        borderRadius: BorderRadius.circular(8.0),
+      ),
+      child: Row(
+        children: <Widget>[
+          button(icon: Icons.remove, onTap: canDecrement ? () => onChanged(value - step) : null, enabled: canDecrement),
+          // takes whatever space the row leaves, and never wraps: a wrapped value would
+          // make this box taller than its neighbour
+          Expanded(
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Text(
+                "$value$suffix",
+                maxLines: 1,
+                softWrap: false,
+                textAlign: TextAlign.center,
+                style: const TextStyle(fontSize: 14.5, fontWeight: FontWeight.w600),
+              ),
+            ),
+          ),
+          button(icon: Icons.add, onTap: () => onChanged(value + step), enabled: true),
+        ],
+      ),
     );
   }
 }
 
 /// Small dialog to enter a new organizer name. It owns its [TextEditingController]
 /// so the framework disposes it with the dialog's element (after the exit
-/// animation), instead of us disposing it early — which triggered a "dirty widget
+/// animation), instead of us disposing it early, which triggered a "dirty widget
 /// in the wrong build scope" while the TextField was still animating out.
 class _AddOrganizerDialog extends StatefulWidget {
   const _AddOrganizerDialog();
