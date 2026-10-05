@@ -117,11 +117,19 @@ class MaintenanceOperation {
       price = (json['price'] as num?)?.toDouble(),
       currency = CurrencyCode.fromCode(json['currency']);
 
-  /// Name to display: the free label for "other", otherwise the catalog label (with the free label as a precision).
+  /// Name to display on a single line: the free label for "other", otherwise the catalog label with the free label
+  /// as a precision. The line breaks the precision may hold are flattened.
   String get displayName {
-    if (type == MaintenanceOperationType.other) return label ?? type.label;
-    return label != null && label!.isNotEmpty ? "${type.label} ($label)" : type.label;
+    final String? flatLabel = label?.split('\n').map((l) => l.trim()).where((l) => l.isNotEmpty).join(', ');
+    if (type == MaintenanceOperationType.other) return flatLabel ?? type.label;
+    return flatLabel != null && flatLabel.isNotEmpty ? "${type.label} ($flatLabel)" : type.label;
   }
+
+  /// Main name of the operation: the free label for "other", the catalog label otherwise.
+  String get title => type == MaintenanceOperationType.other ? (label ?? type.label) : type.label;
+
+  /// Precision shown under [title], possibly on several lines; `null` for "other" whose label already is the title.
+  String? get details => type == MaintenanceOperationType.other || label == null || label!.isEmpty ? null : label;
 
   /// Convert to the GraphQL `MaintenanceOperationInput`.
   Map<String, dynamic> toInput() => {"type": type.code, "label": label, "price": price, "currency": currency.code};

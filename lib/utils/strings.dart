@@ -345,11 +345,10 @@ class AppString {
   static const String maintenanceOdometerHelper = 'Recommandé, sert au calcul des échéances';
   static const String maintenanceOperations = 'Opérations effectuées';
   static const String maintenanceOperationAdd = 'Ajouter une opération';
-  static const String maintenanceOperationType = 'Opération';
   static const String maintenanceOperationLabel = 'Précision (optionnel)';
   static const String maintenanceOperationLabelOther = 'Description';
   static const String maintenanceOperationLabelMandatory = 'La description est obligatoire';
-  static const String maintenanceOperationPrice = 'Prix';
+  static const String maintenanceOperationPrice = 'Prix (optionnel)';
   static const String maintenanceOperationRemove = 'Retirer l\'opération';
   static const String maintenanceOperationsMandatory = 'Ajoutez au moins une opération';
   static const String maintenanceComment = 'Commentaires';
@@ -358,10 +357,10 @@ class AppString {
       'Indique que cet entretien est une révision, le décompte du plan d\'entretien repartira de zéro';
   static const String maintenanceServiceBadge = 'Révision';
   static const String maintenanceTotal = 'Total';
-  static const String maintenanceSummaryCount = 'Entretiens';
+  static const String maintenanceHeaderCountOne = '1 entretien depuis le {0}';
+  static const String maintenanceHeaderCountMany = '{0} entretiens depuis le {1}';
   static const String maintenanceSummaryTotal = 'Coût total';
   static const String maintenanceSummaryPerYear = 'Coût moyen par an';
-  static const String maintenanceSummaryAvgGap = 'Intervalle moyen';
   static const String maintenanceGapNoKm = 'km inconnus';
   static const String maintenanceSinceLast = 'Depuis : ';
   static const String priceInvalid = 'Prix invalide';

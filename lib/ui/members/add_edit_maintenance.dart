@@ -122,6 +122,9 @@ class _AddEditMaintenanceState extends State<AddEditMaintenance> {
   static MaintenanceOperation _newOperation(CurrencyCode currency) =>
       MaintenanceOperation(type: MaintenanceOperationType.engineOil, currency: currency);
 
+  /// Maximum length of an operation precision, the size of the backend column.
+  static const int _maxLabelLength = 500;
+
   static double? _parsePrice(String? value) {
     if (value == null || value.trim().isEmpty) return null;
     return double.tryParse(value.trim().replaceAll(',', '.').replaceAll(' ', '').replaceAll("'", ''));
@@ -152,124 +155,156 @@ class _AddEditMaintenanceState extends State<AddEditMaintenance> {
     );
   }
 
+  /// Compact outlined decoration of the operation fields, same look as the session steppers of the event form.
+  static InputDecoration _operationFieldDecoration({String? hintText, Widget? suffixIcon}) {
+    final OutlineInputBorder border = OutlineInputBorder(
+      borderRadius: BorderRadius.circular(8.0),
+      borderSide: BorderSide(color: Colors.black.withAlpha(40)),
+    );
+    return InputDecoration(
+      hintText: hintText,
+      isDense: true,
+      contentPadding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 10.0),
+      border: border,
+      enabledBorder: border,
+      focusedBorder: border.copyWith(borderSide: BorderSide(color: Colors.blue[700]!, width: 1.5)),
+      suffixIcon: suffixIcon,
+      suffixIconConstraints: const BoxConstraints(minWidth: 0, minHeight: 0),
+    );
+  }
+
+  /// One operation: the kind of operation on a first line with the remove button, then the optional precision, then
+  /// the price with its own currency (parts of a same maintenance may be bought in different countries).
   Widget _buildOperation(MaintenanceOperation operation) {
     final bool isOther = operation.type == MaintenanceOperationType.other;
-    return Container(
+    return Padding(
       key: ObjectKey(operation),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.55),
-        borderRadius: BorderRadius.circular(8.0),
-        border: Border.all(color: Colors.white),
-      ),
-      padding: const EdgeInsets.fromLTRB(12.0, 4.0, 4.0, 10.0),
-      child: Column(
+      padding: const EdgeInsets.only(left: 38.0, bottom: 12.0),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
-          Row(
-            children: <Widget>[
-              Expanded(
-                child: DropdownButtonFormField<MaintenanceOperationType>(
+          Expanded(
+            child: Column(
+              children: <Widget>[
+                DropdownButtonFormField<MaintenanceOperationType>(
                   initialValue: operation.type,
                   isExpanded: true,
-                  decoration: const InputDecoration(labelText: AppString.maintenanceOperationType),
+                  decoration: _operationFieldDecoration(),
+                  style: const TextStyle(fontSize: 14.5, fontWeight: FontWeight.w600, color: Colors.black87),
                   items: MaintenanceOperationType.values
                       .map((t) => DropdownMenuItem<MaintenanceOperationType>(value: t, child: Text(t.label)))
                       .toList(),
                   onChanged: (value) => setState(() => operation.type = value ?? operation.type),
                 ),
-              ),
-              IconButton(
-                tooltip: AppString.maintenanceOperationRemove,
-                icon: Icon(Icons.close, color: Colors.black.withAlpha(140)),
-                onPressed: () => setState(() => _maintenance.operations.remove(operation)),
-              ),
-            ],
-          ),
-          Padding(
-            padding: const EdgeInsets.only(right: 8.0),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                Expanded(
-                  flex: 1,
-                  child: TextFormField(
-                    initialValue: operation.label,
-                    decoration: InputDecoration(
-                      labelText: isOther ? AppString.maintenanceOperationLabelOther : AppString.maintenanceOperationLabel,
-                    ),
-                    onChanged: (value) => operation.label = value.trim().isEmpty ? null : value.trim(),
-                    validator: (value) => isOther && (value == null || value.trim().isEmpty)
-                        ? AppString.maintenanceOperationLabelMandatory
-                        : null,
+                const SizedBox(height: 6.0),
+                // multiline: the precision may list several things (oil brand, references...), one per line.
+                // Grows up to 5 lines then scrolls, capped to the backend column size.
+                TextFormField(
+                  initialValue: operation.label,
+                  keyboardType: TextInputType.multiline,
+                  textCapitalization: TextCapitalization.sentences,
+                  minLines: 1,
+                  maxLines: 5,
+                  inputFormatters: [LengthLimitingTextInputFormatter(_maxLabelLength)],
+                  style: const TextStyle(fontSize: 14.0),
+                  decoration: _operationFieldDecoration(
+                    hintText: isOther ? AppString.maintenanceOperationLabelOther : AppString.maintenanceOperationLabel,
                   ),
+                  onChanged: (value) => operation.label = value.trim().isEmpty ? null : value.trim(),
+                  validator: (value) => isOther && (value == null || value.trim().isEmpty)
+                      ? AppString.maintenanceOperationLabelMandatory
+                      : null,
                 ),
-                const SizedBox(width: 12.0),
-                Expanded(
-                  flex: 1,
-                  child: TextFormField(
-                    initialValue: operation.price?.toStringAsFixed(2),
-                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                    decoration: InputDecoration(
-                      labelText: AppString.maintenanceOperationPrice,
-                      // currency picked per price, parts of a same maintenance may be bought in different countries
-                      suffixIcon: DropdownButtonHideUnderline(
-                        child: DropdownButton<CurrencyCode>(
-                          value: operation.currency,
-                          isDense: true,
-                          items: CurrencyCode.values
-                              .map((c) => DropdownMenuItem<CurrencyCode>(value: c, child: Text(c.code)))
-                              .toList(),
-                          onChanged: (value) => setState(() => operation.currency = value ?? operation.currency),
-                        ),
+                const SizedBox(height: 6.0),
+                // the price gets the whole line, its currency sits next to it rather than inside the field
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    Expanded(
+                      child: TextFormField(
+                        initialValue: operation.price?.toStringAsFixed(2),
+                        keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                        style: const TextStyle(fontSize: 14.0),
+                        decoration: _operationFieldDecoration(hintText: AppString.maintenanceOperationPrice),
+                        onChanged: (value) => setState(() => operation.price = _parsePrice(value)),
+                        validator: (value) =>
+                            value != null && value.trim().isNotEmpty && _parsePrice(value) == null
+                            ? AppString.priceInvalid
+                            : null,
                       ),
-                      suffixIconConstraints: const BoxConstraints(minWidth: 0, minHeight: 0),
                     ),
-                    onChanged: (value) => setState(() => operation.price = _parsePrice(value)),
-                    validator: (value) =>
-                        value != null && value.trim().isNotEmpty && _parsePrice(value) == null
-                        ? AppString.priceInvalid
-                        : null,
-                  ),
+                    const SizedBox(width: 6.0),
+                    SizedBox(
+                      width: 92.0,
+                      child: DropdownButtonFormField<CurrencyCode>(
+                        initialValue: operation.currency,
+                        isExpanded: true,
+                        decoration: _operationFieldDecoration(),
+                        style: const TextStyle(fontSize: 14.0, fontWeight: FontWeight.w600, color: Colors.black87),
+                        items: CurrencyCode.values
+                            .map((c) => DropdownMenuItem<CurrencyCode>(value: c, child: Text(c.code)))
+                            .toList(),
+                        onChanged: (value) => setState(() => operation.currency = value ?? operation.currency),
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
+          ),
+          IconButton(
+            tooltip: AppString.maintenanceOperationRemove,
+            onPressed: () => setState(() => _maintenance.operations.remove(operation)),
+            icon: Icon(Icons.close, size: 20.0, color: Colors.black.withAlpha(140)),
+            visualDensity: VisualDensity.compact,
           ),
         ],
       ),
     );
   }
 
+  /// Operations editor, laid out like the session schedule of the event form: section title with the total below
+  /// it, one indented block per operation, and an "add" button at the bottom.
   Widget _buildOperationsSection() {
     final String? total = MaintenanceUtils.formatAmounts(MaintenanceUtils.sumOperations(_maintenance.operations));
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: <Widget>[
-        Row(
-          children: <Widget>[
-            Icon(Icons.build, color: Colors.black.withAlpha(115)),
-            const SizedBox(width: 16.0),
-            Text(
-              AppString.maintenanceOperations,
-              style: TextStyle(color: Colors.black.withAlpha(170), fontSize: 15.0),
-            ),
-          ],
-        ),
-        const SizedBox(height: 8.0),
-        for (final MaintenanceOperation operation in _maintenance.operations) ...[
-          _buildOperation(operation),
-          const SizedBox(height: 8.0),
-        ],
-        if (_operationsError != null)
-          Padding(
-            padding: const EdgeInsets.only(bottom: 8.0),
-            child: Text(
-              _operationsError!,
-              style: TextStyle(color: Theme.of(context).colorScheme.error, fontSize: 12.5),
-            ),
+    return Padding(
+      padding: const EdgeInsets.only(top: 18.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          Row(
+            children: <Widget>[
+              Icon(Icons.build_outlined, size: 26.0, color: Colors.black.withAlpha(160)),
+              const SizedBox(width: 16.0),
+              Text(
+                AppString.maintenanceOperations,
+                style: TextStyle(fontSize: 16.0, color: Colors.black87, fontWeight: FontWeight.w500),
+              ),
+            ],
           ),
-        Row(
-          children: <Widget>[
-            TextButton.icon(
+          // total in place of a hint text: it says what the operations add up to
+          if (total != null)
+            Padding(
+              padding: const EdgeInsets.only(left: 38.0, top: 2.0),
+              child: Text(
+                "${AppString.maintenanceTotal} : $total",
+                style: TextStyle(fontSize: 12.0, color: Colors.black.withAlpha(120)),
+              ),
+            ),
+          const SizedBox(height: 10.0),
+          for (final MaintenanceOperation operation in _maintenance.operations) _buildOperation(operation),
+          if (_operationsError != null)
+            Padding(
+              padding: const EdgeInsets.only(left: 38.0, bottom: 4.0),
+              child: Text(
+                _operationsError!,
+                style: TextStyle(color: Theme.of(context).colorScheme.error, fontSize: 12.5),
+              ),
+            ),
+          Padding(
+            padding: const EdgeInsets.only(left: 30.0),
+            child: TextButton.icon(
               onPressed: () => setState(() {
                 _operationsError = null;
                 // same currency as the previous line, parts bought in the same shop are entered in a row
@@ -279,21 +314,13 @@ class _AddEditMaintenanceState extends State<AddEditMaintenance> {
                   ),
                 );
               }),
-              icon: const Icon(Icons.add),
+              icon: const Icon(Icons.add, size: 18.0),
               label: Text(AppString.maintenanceOperationAdd),
+              style: TextButton.styleFrom(padding: const EdgeInsets.symmetric(horizontal: 8.0)),
             ),
-            const SizedBox(width: 8.0),
-            if (total != null)
-              Expanded(
-                child: Text(
-                  "${AppString.maintenanceTotal} : $total",
-                  textAlign: TextAlign.right,
-                  style: const TextStyle(fontWeight: FontWeight.w600),
-                ),
-              ),
-          ],
-        ),
-      ],
+          ),
+        ],
+      ),
     );
   }
 

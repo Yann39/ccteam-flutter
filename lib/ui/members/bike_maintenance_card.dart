@@ -106,6 +106,30 @@ class _BikeMaintenanceCardState extends State<BikeMaintenanceCard> {
     );
   }
 
+  /// Maximum number of operations listed under the last maintenance date (3 lines with the date).
+  static const int _maxLastOperations = 2;
+
+  /// Operations of the last maintenance, one per line, the last line ending with "…" when some are left out.
+  Widget _buildLastOperations(Maintenance last) {
+    final List<String> names = last.operations.map((o) => o.displayName).toList();
+    final bool truncated = names.length > _maxLastOperations;
+    final List<String> lines = names.take(_maxLastOperations).toList();
+    if (truncated) lines[lines.length - 1] = "${lines.last} …";
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        for (final String line in lines)
+          Text(
+            line,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(color: Colors.black.withAlpha(180), fontSize: 13.5),
+          ),
+      ],
+    );
+  }
+
   /// Next due row, colored by status with a progress bar of the elapsed maintenance period.
   Widget _buildNextDueRow(BikeMaintenance data) {
     final MaintenanceDue due = data.nextDue;
@@ -211,10 +235,8 @@ class _BikeMaintenanceCardState extends State<BikeMaintenanceCard> {
           icon: Icons.build,
           iconColor: Colors.teal[700]!,
           label: AppString.maintenanceLast,
-          value: last == null
-              ? AppString.maintenanceNone
-              : "${DateFormat(DATE_FORMAT_DAY).format(last.maintenanceDate!)} · "
-                    "${last.operations.map((o) => o.displayName).join(', ')}",
+          value: last == null ? AppString.maintenanceNone : DateFormat(DATE_FORMAT_DAY).format(last.maintenanceDate!),
+          below: last == null ? null : _buildLastOperations(last),
           onTap: last == null
               ? null
               : () => Navigator.pushNamed(context, '/maintenanceHistory', arguments: widget.bike),

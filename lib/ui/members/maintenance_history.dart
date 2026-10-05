@@ -25,11 +25,12 @@ import 'package:ccteam/utils/constants.dart';
 import 'package:ccteam/utils/custom_decorations.dart';
 import 'package:ccteam/utils/maintenance_utils.dart';
 import 'package:ccteam/utils/strings.dart';
+import 'package:ccteam/widgets/random_pattern_painter.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
-/// Maintenance history of a bike: a summary (count, costs, average interval) followed by a vertical timeline of
+/// Maintenance history of a bike: a summary (count, costs) followed by a vertical timeline of
 /// the maintenances, most recent first, with the time and distance elapsed between two consecutive maintenances.
 class MaintenanceHistory extends StatelessWidget {
   const MaintenanceHistory({Key? key}) : super(key: key);
@@ -48,93 +49,118 @@ class MaintenanceHistory extends StatelessWidget {
     );
   }
 
-  /// One line of the summary: colored icon and label on the left, value on the right.
-  Widget _summaryRow({required IconData icon, required Color color, required String label, required String value}) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 5.0),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
+  /// One figure of the header: small label above a bold value, on a compact translucent pill (kept narrow so the
+  /// figures usually fit on a single row).
+  Widget _headerStat(IconData icon, String label, String value) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 5.0),
+      decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.20), borderRadius: BorderRadius.circular(10.0)),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: <Widget>[
-          Icon(icon, color: color, size: 18.0),
-          const SizedBox(width: 8.0),
-          Text(label, style: TextStyle(color: Colors.black.withAlpha(160), fontSize: 13.5)),
-          const SizedBox(width: 12.0),
-          Expanded(
-            child: Text(
-              value,
-              textAlign: TextAlign.right,
-              style: TextStyle(color: Colors.black.withAlpha(225), fontSize: 14.0, fontWeight: FontWeight.w700),
-            ),
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              Icon(icon, color: Colors.white.withValues(alpha: 0.85), size: 11.0),
+              const SizedBox(width: 3.0),
+              Text(label, style: TextStyle(color: Colors.white.withValues(alpha: 0.85), fontSize: 10.5)),
+            ],
+          ),
+          const SizedBox(height: 1.0),
+          Text(
+            value,
+            textAlign: TextAlign.center,
+            style: const TextStyle(color: Colors.white, fontSize: 13.5, fontWeight: FontWeight.w700),
           ),
         ],
       ),
     );
   }
 
-  /// Summary: number of maintenances, total cost, yearly cost and average interval between maintenances, in a
-  /// simple outlined box.
-  Widget _buildSummary(List<Maintenance> maintenances) {
-    final Maintenance oldest = maintenances.last;
-    final DateTime now = DateTime.now();
+  /// Hero header, same idiom as the news detail: the bike pattern (seeded by the bike id, like the bike detail
+  /// header) behind the bike name, the number of maintenances and the summary figures (total cost, yearly
+  /// cost).
+  Widget _buildHeader(Bike bike, List<Maintenance> maintenances) {
+    final String bikeLabel = "${(bike.manufacturer ?? '').toUpperCase()} ${bike.modelName ?? ''}".trim();
 
-    final Map<CurrencyCode, double> totals = MaintenanceUtils.sumTotals(maintenances);
-    final String? total = MaintenanceUtils.formatAmounts(totals);
-    // yearly cost over the period from the first maintenance to today, at least one year so a single
-    // maintenance does not get extrapolated to a huge yearly figure
-    final double years = now.difference(oldest.maintenanceDate!).inDays / 365.25;
-    final String? perYear = MaintenanceUtils.formatAmounts(totals, divisor: years < 1 ? 1 : years);
+    String subtitle = AppString.maintenanceNone;
+    final List<Widget> stats = <Widget>[];
+    if (maintenances.isNotEmpty) {
+      final Maintenance oldest = maintenances.last;
+      final String since = DateFormat(DATE_FORMAT_DAY).format(oldest.maintenanceDate!);
+      subtitle = maintenances.length == 1
+          ? AppString.format(AppString.maintenanceHeaderCountOne, [since])
+          : AppString.format(AppString.maintenanceHeaderCountMany, [maintenances.length, since]);
 
-    String? averageGap;
-    if (maintenances.length > 1) {
-      final int avgDays =
-          maintenances.first.maintenanceDate!.difference(oldest.maintenanceDate!).inDays ~/ (maintenances.length - 1);
-      final DateTime origin = DateTime(2000);
-      final List<String> parts = [MaintenanceUtils.formatElapsed(origin, origin.add(Duration(days: avgDays)))];
-      // average distance over the maintenances that carry an odometer reading
-      final List<Maintenance> withKm = maintenances.where((m) => m.odometerKm != null).toList();
-      if (withKm.length > 1) {
-        final int avgKm = (withKm.first.odometerKm! - withKm.last.odometerKm!) ~/ (withKm.length - 1);
-        parts.add(MaintenanceUtils.formatKm(avgKm));
-      }
-      averageGap = parts.join(" · ");
+      final Map<CurrencyCode, double> totals = MaintenanceUtils.sumTotals(maintenances);
+      final String? total = MaintenanceUtils.formatAmounts(totals);
+      // yearly cost over the period from the first maintenance to today, at least one year so a single
+      // maintenance does not get extrapolated to a huge yearly figure
+      final double years = DateTime.now().difference(oldest.maintenanceDate!).inDays / 365.25;
+      final String? perYear = MaintenanceUtils.formatAmounts(totals, divisor: years < 1 ? 1 : years);
+
+      if (total != null) stats.add(_headerStat(Icons.payments, AppString.maintenanceSummaryTotal, total));
+      if (perYear != null) stats.add(_headerStat(Icons.calendar_month, AppString.maintenanceSummaryPerYear, perYear));
     }
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14.0, vertical: 8.0),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(8.0),
-        border: Border.all(color: Colors.white, width: 1.5),
-        color: Colors.blue[200],
+        boxShadow: [
+          BoxShadow(color: Colors.black.withValues(alpha: 0.18), blurRadius: 12.0, offset: const Offset(0, 4)),
+        ],
       ),
-      child: Column(
+      clipBehavior: Clip.antiAlias,
+      child: Stack(
         children: <Widget>[
-          _summaryRow(
-            icon: Icons.build,
-            color: _accent,
-            label: AppString.maintenanceSummaryCount,
-            value: maintenances.length.toString(),
+          Positioned.fill(
+            child: CustomPaint(painter: RandomPatternPainter(seed: bike.id ?? 0)),
           ),
-          if (averageGap != null)
-            _summaryRow(
-              icon: Icons.swap_vert,
-              color: Colors.indigo[600]!,
-              label: AppString.maintenanceSummaryAvgGap,
-              value: averageGap,
+          // soft dark overlay so the white text stays readable over any pattern
+          Positioned.fill(
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [Colors.black.withValues(alpha: 0.10), Colors.black.withValues(alpha: 0.35)],
+                ),
+              ),
             ),
-          if (total != null)
-            _summaryRow(
-              icon: Icons.payments,
-              color: Colors.green[700]!,
-              label: AppString.maintenanceSummaryTotal,
-              value: total,
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16.0, 12.0, 16.0, 12.0),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: <Widget>[
+                Text(
+                  bikeLabel.isEmpty ? AppString.notDefined : bikeLabel,
+                  textAlign: TextAlign.center,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 19.0,
+                    fontWeight: FontWeight.bold,
+                    height: 1.15,
+                    shadows: [
+                      Shadow(color: Colors.black.withValues(alpha: 0.35), blurRadius: 4.0, offset: const Offset(0, 1)),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 2.0),
+                Text(
+                  subtitle,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(color: Colors.white.withValues(alpha: 0.92), fontSize: 12.5, fontStyle: FontStyle.italic),
+                ),
+                if (stats.isNotEmpty) ...[
+                  const SizedBox(height: 10.0),
+                  Wrap(alignment: WrapAlignment.center, spacing: 6.0, runSpacing: 6.0, children: stats),
+                ],
+              ],
             ),
-          if (perYear != null)
-            _summaryRow(
-              icon: Icons.calendar_month,
-              color: Colors.orange[800]!,
-              label: AppString.maintenanceSummaryPerYear,
-              value: perYear,
-            ),
+          ),
         ],
       ),
     );
@@ -283,10 +309,21 @@ class MaintenanceHistory extends StatelessWidget {
                           child: Icon(Icons.check_circle, size: 14.0, color: _accent.withValues(alpha: 0.8)),
                         ),
                         const SizedBox(width: 6.0),
+                        // name, then the precision under it, keeping the line breaks the member typed
                         Expanded(
-                          child: Text(
-                            operation.displayName,
-                            style: TextStyle(color: Colors.black.withAlpha(210), fontSize: 13.5),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: <Widget>[
+                              Text(
+                                operation.title,
+                                style: TextStyle(color: Colors.black.withAlpha(210), fontSize: 13.5),
+                              ),
+                              if (operation.details != null)
+                                Text(
+                                  operation.details!,
+                                  style: TextStyle(color: Colors.black.withAlpha(140), fontSize: 12.5),
+                                ),
+                            ],
                           ),
                         ),
                         if (operation.price != null)
@@ -370,19 +407,9 @@ class MaintenanceHistory extends StatelessWidget {
     final BikeMaintenance? data = provider.maintenanceOf(bike.id!);
     final List<Maintenance> maintenances = data?.maintenances ?? const <Maintenance>[];
 
+    // timeline items, laid out under the full-width header
     final List<Widget> children = <Widget>[];
-    if (maintenances.isEmpty) {
-      children.add(
-        Padding(
-          padding: const EdgeInsets.all(24.0),
-          child: Center(
-            child: Text(AppString.maintenanceNone, style: TextStyle(color: Colors.black.withAlpha(170))),
-          ),
-        ),
-      );
-    } else {
-      children.add(_buildSummary(maintenances));
-      children.add(const SizedBox(height: 12.0));
+    if (maintenances.isNotEmpty) {
 
       // elapsed since the last maintenance, up to today and the current odometer reading
       final Maintenance last = maintenances.first;
@@ -429,8 +456,14 @@ class MaintenanceHistory extends StatelessWidget {
           onRefresh: () => provider.load(bike.id!),
           child: ListView(
             physics: const AlwaysScrollableScrollPhysics(),
-            padding: EdgeInsets.fromLTRB(12.0, 12.0, 12.0, MediaQuery.of(context).padding.bottom + 88.0),
-            children: children,
+            padding: EdgeInsets.only(bottom: MediaQuery.of(context).padding.bottom + 88.0),
+            children: <Widget>[
+              _buildHeader(bike, maintenances),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(12.0, 12.0, 12.0, 0.0),
+                child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: children),
+              ),
+            ],
           ),
         ),
       ),
