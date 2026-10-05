@@ -302,6 +302,8 @@ class AppString {
   static const String bikeDetailTitle = 'Détail de la moto';
   static const String bikeStatusLabel = 'Statut';
   static const String bikeCurrentLabel = 'Moto courante';
+  static const String bikeMileage = 'Kilométrage';
+  static const String bikeMileageEstimated = 'Kilométrage (dernier relevé + roulages)';
   static const String bikeChronosTitle = 'Chronos avec cette moto';
   static const String bikeDeletionAreYouSure = 'Etes-vous sûr de vouloir supprimer cette moto ?';
 

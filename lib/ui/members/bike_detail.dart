@@ -20,7 +20,9 @@
 import 'package:ccteam/models/bike.dart';
 import 'package:ccteam/models/event_member.dart';
 import 'package:ccteam/models/record.dart';
+import 'package:ccteam/models/bike_maintenance.dart';
 import 'package:ccteam/providers/bike_list_provider.dart';
+import 'package:ccteam/providers/bike_maintenance_provider.dart';
 import 'package:ccteam/providers/login_provider.dart';
 import 'package:ccteam/providers/record_detail_provider.dart';
 import 'package:ccteam/providers/record_list_provider.dart';
@@ -29,6 +31,7 @@ import 'package:ccteam/utils/bike_utils.dart';
 import 'package:ccteam/utils/custom_decorations.dart';
 import 'package:ccteam/utils/custom_icons.dart';
 import 'package:ccteam/utils/date_utils.dart';
+import 'package:ccteam/utils/maintenance_utils.dart';
 import 'package:ccteam/utils/member_stats.dart';
 import 'package:ccteam/utils/string_utils.dart';
 import 'package:ccteam/utils/strings.dart';
@@ -344,6 +347,24 @@ class _BikeDetailState extends State<BikeDetail> {
         .where((em) => em.bike?.id == bike.id)
         .toList();
 
+    // current mileage: last odometer reading, plus the estimated km of the track days ridden with this bike since
+    final BikeMaintenance? maintenance = Provider.of<BikeMaintenanceProvider>(context, listen: true).maintenanceOf(
+      bike.id!,
+    );
+    int? currentKm;
+    int trackKmSinceReading = 0;
+    if (maintenance?.odometerKm != null) {
+      final DateTime? readOn = maintenance!.odometerUpdatedOn;
+      trackKmSinceReading = readOn == null
+          ? 0
+          : MemberStatsUtils.estimateKm(
+              eventMembers: bikeEventMembers.where((em) => em.event?.startDate?.isAfter(readOn) ?? false).toList(),
+              records: _recordListProvider.myRecords,
+              now: DateTime.now(),
+            );
+      currentKm = maintenance.odometerKm! + trackKmSinceReading;
+    }
+
     return Scaffold(
       body: Container(
         decoration: CustomDecorations.mainContent,
@@ -481,6 +502,18 @@ class _BikeDetailState extends State<BikeDetail> {
                           label: AppString.bikeYear,
                           value: bike.year?.toString() ?? AppString.notDefined,
                         ),
+                        if (currentKm != null) ...[
+                          _divider(),
+                          _detailRow(
+                            icon: Icons.speed,
+                            iconColor: Colors.green[700]!,
+                            // flagged as an estimate as soon as track days are added to the reading
+                            label: trackKmSinceReading > 0 ? AppString.bikeMileageEstimated : AppString.bikeMileage,
+                            value: trackKmSinceReading > 0
+                                ? "≈ ${MaintenanceUtils.formatKm(currentKm)}"
+                                : MaintenanceUtils.formatKm(currentKm),
+                          ),
+                        ],
                         if (isCurrent) ...[
                           _divider(),
                           _detailRow(
