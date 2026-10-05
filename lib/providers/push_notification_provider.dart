@@ -19,6 +19,7 @@
 
 import 'dart:async';
 
+import 'package:ccteam/models/bike.dart';
 import 'package:ccteam/models/event_member.dart';
 import 'package:ccteam/providers/login_provider.dart';
 import 'package:ccteam/providers/message_provider.dart';
@@ -60,7 +61,10 @@ class ReminderOffset {
 ///  - when they enabled event reminders, one `event-{id}-{offset}` topic per
 ///    upcoming event they are registered to and per reminder offset they
 ///    selected ([ReminderOffset.all]), so only the participants of an event
-///    receive its reminders, and only at the delays they asked for.
+///    receive its reminders, and only at the delays they asked for,
+///  - when they enabled maintenance reminders, one `bike-{id}-maintenance`
+///    topic per bike they own, notified when the bike maintenance is
+///    approaching or overdue according to its maintenance plan.
 ///
 /// The sync is a diff between the desired topics and the topics currently
 /// subscribed. Registering to or leaving an event refreshes the logged
@@ -82,10 +86,15 @@ class PushNotificationProvider extends ChangeNotifier {
   /// Prefix of the per-event reminder topics: `event-{id}-{offset key}`.
   static const String topicEventPrefix = 'event-';
 
+  /// Prefix and suffix of the per-bike maintenance reminder topics: `bike-{id}-maintenance`.
+  static const String topicBikePrefix = 'bike-';
+  static const String topicMaintenanceSuffix = '-maintenance';
+
   // shared preferences keys for the notification choices (per device)
   static const String _prefNewsEnabled = 'notifNewsEnabled';
   static const String _prefEventRemindersEnabled = 'notifEventRemindersEnabled';
   static const String _prefEventReminderOffsets = 'notifEventReminderOffsets';
+  static const String _prefMaintenanceRemindersEnabled = 'notifMaintenanceRemindersEnabled';
 
   final Logger _log = new Logger('PushNotificationProvider');
 
@@ -101,6 +110,7 @@ class PushNotificationProvider extends ChangeNotifier {
   bool _newsEnabled = true;
   bool _eventRemindersEnabled = true;
   Set<String> _selectedOffsetKeys = {'1d'};
+  bool _maintenanceRemindersEnabled = true;
 
   // preferences are loaded asynchronously from the shared preferences, no
   // subscription is touched before they are known
@@ -136,6 +146,9 @@ class PushNotificationProvider extends ChangeNotifier {
   /// Keys of the selected reminder offsets (see [ReminderOffset.all]).
   Set<String> get selectedOffsetKeys => Set.unmodifiable(_selectedOffsetKeys);
 
+  /// Whether reminders are sent when the maintenance of one of the member's bikes is approaching or overdue.
+  bool get maintenanceRemindersEnabled => _maintenanceRemindersEnabled;
+
   /// Update message provider with the specified [messageProvider].
   void updateMessageProvider(MessageProvider messageProvider) {
     _messageProvider = messageProvider;
@@ -169,6 +182,14 @@ class PushNotificationProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Enable or disable the reminders sent when a bike maintenance is approaching or overdue.
+  Future<void> setMaintenanceRemindersEnabled(bool enabled) async {
+    _maintenanceRemindersEnabled = enabled;
+    await _savePreferences();
+    _refreshDesiredTopics();
+    notifyListeners();
+  }
+
   /// Select or deselect the reminder offset identified by [key].
   Future<void> setOffsetSelected(String key, bool selected) async {
     if (selected) {
@@ -192,6 +213,7 @@ class PushNotificationProvider extends ChangeNotifier {
       if (offsets != null) {
         _selectedOffsetKeys = offsets.toSet();
       }
+      _maintenanceRemindersEnabled = prefs.getBool(_prefMaintenanceRemindersEnabled) ?? true;
     } catch (error) {
       _log.warning("Failed to load the notification preferences, using defaults ($error)");
     }
@@ -207,6 +229,7 @@ class PushNotificationProvider extends ChangeNotifier {
       await prefs.setBool(_prefNewsEnabled, _newsEnabled);
       await prefs.setBool(_prefEventRemindersEnabled, _eventRemindersEnabled);
       await prefs.setStringList(_prefEventReminderOffsets, _selectedOffsetKeys.toList());
+      await prefs.setBool(_prefMaintenanceRemindersEnabled, _maintenanceRemindersEnabled);
     } catch (error) {
       _log.warning("Failed to save the notification preferences ($error)");
     }
@@ -246,6 +269,13 @@ class PushNotificationProvider extends ChangeNotifier {
           for (final String key in _selectedOffsetKeys) {
             topics.add('$topicEventPrefix$eventId-$key');
           }
+        }
+      }
+    }
+    if (_maintenanceRemindersEnabled) {
+      for (final Bike bike in loginProvider.loggedMember?.bikes ?? const <Bike>[]) {
+        if (bike.id != null) {
+          topics.add('$topicBikePrefix${bike.id}$topicMaintenanceSuffix');
         }
       }
     }

@@ -19,6 +19,7 @@
 
 import 'package:ccteam/providers/avatar_provider.dart';
 import 'package:ccteam/providers/bike_list_provider.dart';
+import 'package:ccteam/providers/bike_maintenance_provider.dart';
 import 'package:ccteam/providers/change_passcode_provider.dart';
 import 'package:ccteam/providers/circuit_creation_provider.dart';
 import 'package:ccteam/providers/circuit_detail_provider.dart';
@@ -62,9 +63,11 @@ import 'package:ccteam/ui/main/my_account.dart';
 import 'package:ccteam/ui/main/notification_settings.dart';
 import 'package:ccteam/ui/main/trusted_devices.dart';
 import 'package:ccteam/ui/members/add_edit_bike.dart';
+import 'package:ccteam/ui/members/add_edit_maintenance.dart';
 import 'package:ccteam/ui/members/add_edit_member.dart';
 import 'package:ccteam/ui/members/add_edit_membership_fee.dart';
 import 'package:ccteam/ui/members/bike_detail.dart';
+import 'package:ccteam/ui/members/maintenance_history.dart';
 import 'package:ccteam/ui/members/member_detail.dart';
 import 'package:ccteam/ui/members/member_events.dart';
 import 'package:ccteam/ui/members/member_list.dart';
@@ -160,6 +163,12 @@ void main() async {
         ChangeNotifierProxyProvider2<MessageProvider, LoginProvider, BikeListProvider>(
           create: (context) => BikeListProvider(),
           update: (context, messageProvider, loginProvider, bikeListProvider) => bikeListProvider!
+            ..updateMessageProvider(messageProvider)
+            ..updateLoginProvider(loginProvider),
+        ),
+        ChangeNotifierProxyProvider2<MessageProvider, LoginProvider, BikeMaintenanceProvider>(
+          create: (context) => BikeMaintenanceProvider(),
+          update: (context, messageProvider, loginProvider, bikeMaintenanceProvider) => bikeMaintenanceProvider!
             ..updateMessageProvider(messageProvider)
             ..updateLoginProvider(loginProvider),
         ),
@@ -330,6 +339,8 @@ class CCTeamApp extends StatelessWidget {
           '/myBikes': (context) => MyBikes(),
           '/addEditBike': (context) => AddEditBike(),
           '/bikeDetail': (context) => const BikeDetail(),
+          '/addEditMaintenance': (context) => const AddEditMaintenance(),
+          '/maintenanceHistory': (context) => const MaintenanceHistory(),
           '/members': (context) => MemberList(),
           '/memberEvents': (context) => MemberEvents(),
           '/selectEventToJoin': (context) => SelectEventToJoin(),
