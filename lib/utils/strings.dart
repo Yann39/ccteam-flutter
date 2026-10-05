@@ -74,6 +74,7 @@ class AppString {
   static const String cancel = 'Annuler';
   static const String save = 'Enregistrer';
   static const String confirm = 'Confirmer';
+  static const String delete = 'Supprimer';
   static const String connect = 'Se connecter';
   static const String register = 'S\'inscrire';
   static const String send = 'Envoyer';
@@ -303,6 +304,98 @@ class AppString {
   static const String bikeCurrentLabel = 'Moto courante';
   static const String bikeChronosTitle = 'Chronos avec cette moto';
   static const String bikeDeletionAreYouSure = 'Etes-vous sûr de vouloir supprimer cette moto ?';
+
+  // Bike maintenance
+  static const String maintenanceTitle = 'Entretien';
+  static const String maintenanceHistoryTitle = 'Historique d\'entretien';
+  static const String maintenanceCreate = 'Saisir un entretien';
+  static const String maintenanceEdit = 'Modifier l\'entretien';
+  static const String maintenanceAdded = 'L\'entretien a été enregistré !';
+  static const String maintenanceUpdated = 'L\'entretien a été mis à jour !';
+  static const String maintenanceDeleted = 'L\'entretien a été supprimé !';
+  static const String maintenanceDeletionAreYouSure = 'Etes-vous sûr de vouloir supprimer cet entretien ?';
+  static const String maintenancePlan = 'Plan d\'entretien';
+  static const String maintenancePlanNone = 'Aucun plan d\'entretien défini';
+  static const String maintenancePlanDefine = 'Définir un plan';
+  static const String maintenancePlanEdit = 'Modifier le plan';
+  static const String maintenancePlanHelp =
+      'L\'entretien est dû au premier des deux termes atteint, compté depuis le dernier entretien. '
+      'Laissez un champ vide pour ne pas l\'utiliser.';
+  static const String maintenancePlanEvery = 'Tous les';
+  static const String maintenancePlanMandatory = 'Indiquez au moins un kilométrage ou une durée';
+  static const String maintenancePlanSaved = 'Le plan d\'entretien a été enregistré !';
+  static const String maintenancePlanDeleted = 'Le plan d\'entretien a été supprimé !';
+  static const String maintenancePlanDeleteAreYouSure =
+      'Supprimer le plan d\'entretien ? Les entretiens déjà saisis sont conservés.';
+  static const String maintenanceEvery = 'Tous les {0}';
+  static const String maintenanceOr = ' ou ';
+  static const String maintenanceAnd = ' et ';
+  static const String maintenanceNextDue = 'Prochain entretien';
+  static const String maintenanceDueIn = 'Dans {0}';
+  static const String maintenanceOverdueBy = 'Dépassé de {0}';
+  static const String maintenanceDueNoMaintenance = 'Saisissez une première révision pour calculer la prochaine échéance';
+  static const String maintenanceDueNoOdometer =
+      'Renseignez le kilométrage de l\'entretien et du compteur pour calculer l\'échéance';
+  static const String maintenanceLast = 'Dernier entretien';
+  static const String maintenanceNone = 'Aucun entretien saisi';
+  static const String maintenanceSeeHistory = 'Historique';
+  static const String maintenanceDate = 'Date de l\'entretien';
+  static const String maintenanceDateMandatory = 'La date est obligatoire';
+  static const String maintenanceOdometer = 'Kilométrage au compteur';
+  static const String maintenanceOdometerHelper = 'Recommandé, sert au calcul des échéances';
+  static const String maintenanceOperations = 'Opérations effectuées';
+  static const String maintenanceOperationAdd = 'Ajouter une opération';
+  static const String maintenanceOperationType = 'Opération';
+  static const String maintenanceOperationLabel = 'Précision (optionnel)';
+  static const String maintenanceOperationLabelOther = 'Description';
+  static const String maintenanceOperationLabelMandatory = 'La description est obligatoire';
+  static const String maintenanceOperationPrice = 'Prix';
+  static const String maintenanceOperationRemove = 'Retirer l\'opération';
+  static const String maintenanceOperationsMandatory = 'Ajoutez au moins une opération';
+  static const String maintenanceComment = 'Commentaires';
+  static const String maintenanceResetsPlan = 'Révision';
+  static const String maintenanceResetsPlanHelp =
+      'Indique que cet entretien est une révision, le décompte du plan d\'entretien repartira de zéro';
+  static const String maintenanceServiceBadge = 'Révision';
+  static const String maintenanceTotal = 'Total';
+  static const String maintenanceSummaryCount = 'Entretiens';
+  static const String maintenanceSummaryTotal = 'Coût total';
+  static const String maintenanceSummaryPerYear = 'Coût moyen par an';
+  static const String maintenanceSummaryAvgGap = 'Intervalle moyen';
+  static const String maintenanceGapNoKm = 'km inconnus';
+  static const String maintenanceSinceLast = 'Depuis : ';
+  static const String priceInvalid = 'Prix invalide';
+  static const String odometer = 'Compteur';
+  static const String odometerUpdate = 'Mettre à jour le compteur';
+  static const String odometerKm = 'Kilométrage actuel';
+  static const String odometerUpdated = 'Le compteur a été mis à jour !';
+  static const String odometerUnknown = 'Non renseigné';
+  static const String odometerReadOn = '{0} (relevé le {1})';
+  static const String odometerMandatory = 'Le kilométrage est obligatoire';
+  static const String odometerInvalid = 'Kilométrage invalide';
+  static const String durationDay = '{0} jour';
+  static const String durationDays = '{0} jours';
+  static const String durationMonths = '{0} mois';
+  static const String durationYear = '{0} an';
+  static const String durationYears = '{0} ans';
+  static const String maintenanceOpEngineOil = 'Huile moteur';
+  static const String maintenanceOpOilFilter = 'Filtre à huile';
+  static const String maintenanceOpAirFilter = 'Filtre à air';
+  static const String maintenanceOpSparkPlugs = 'Bougies';
+  static const String maintenanceOpCoolant = 'Liquide de refroidissement';
+  static const String maintenanceOpBrakePadsFront = 'Plaquettes de frein avant';
+  static const String maintenanceOpBrakePadsRear = 'Plaquettes de frein arrière';
+  static const String maintenanceOpBrakeDiscs = 'Disques de frein';
+  static const String maintenanceOpBrakeFluid = 'Liquide de frein';
+  static const String maintenanceOpTireFront = 'Pneu avant';
+  static const String maintenanceOpTireRear = 'Pneu arrière';
+  static const String maintenanceOpChainKit = 'Kit chaîne';
+  static const String maintenanceOpForkService = 'Révision de fourche';
+  static const String maintenanceOpShockService = 'Révision d\'amortisseur';
+  static const String maintenanceOpValveClearance = 'Jeu aux soupapes';
+  static const String maintenanceOpBattery = 'Batterie';
+  static const String maintenanceOpGeneralInspection = 'Révision générale';
+  static const String maintenanceOpOther = 'Autre';
 
   static const String tracksSearchHint = 'Nom du circuit';
   static const String tracksNotFound = 'Aucun circuit trouvé';
@@ -692,6 +785,9 @@ class AppString {
   static const String notificationsEventsLabel = 'Rappels d\'événement';
   static const String notificationsEventsSubtitle =
       'Recevoir un rappel avant chaque événement auquel vous êtes inscrit';
+  static const String notificationsMaintenanceLabel = 'Rappels d\'entretien';
+  static const String notificationsMaintenanceSubtitle =
+      'Recevoir un rappel à l\'approche de l\'entretien de vos motos, selon leur plan d\'entretien';
   static const String notificationsEventDelaysLabel = 'Quand recevoir les rappels ?';
   static const String notificationsOffset1h = 'Une heure avant';
   static const String notificationsOffset12h = '12 heures avant';

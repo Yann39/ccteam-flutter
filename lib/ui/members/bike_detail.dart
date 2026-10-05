@@ -24,6 +24,7 @@ import 'package:ccteam/providers/bike_list_provider.dart';
 import 'package:ccteam/providers/login_provider.dart';
 import 'package:ccteam/providers/record_detail_provider.dart';
 import 'package:ccteam/providers/record_list_provider.dart';
+import 'package:ccteam/ui/members/bike_maintenance_card.dart';
 import 'package:ccteam/utils/bike_utils.dart';
 import 'package:ccteam/utils/custom_decorations.dart';
 import 'package:ccteam/utils/custom_icons.dart';
@@ -491,6 +492,11 @@ class _BikeDetailState extends State<BikeDetail> {
                         ],
                       ],
                     ),
+                  ),
+                  // maintenance plan, next due maintenance, odometer and last maintenance
+                  Padding(
+                    padding: const EdgeInsets.only(top: 12.0),
+                    child: BikeMaintenanceCard(bike: bike),
                   ),
                   // bike usage statistics
                   Padding(

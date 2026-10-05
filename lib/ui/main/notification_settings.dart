@@ -255,6 +255,18 @@ class _NotificationSettingsState extends State<NotificationSettings> with Widget
                 ],
               ),
             ),
+            const SizedBox(height: 8.0),
+            // bike maintenance reminders on/off
+            Container(
+              decoration: CustomDecorations.cardLight,
+              child: SwitchListTile(
+                title: const Text(AppString.notificationsMaintenanceLabel),
+                subtitle: const Text(AppString.notificationsMaintenanceSubtitle),
+                secondary: Icon(Icons.build_circle, color: Colors.teal[700]),
+                value: _pushNotificationProvider.maintenanceRemindersEnabled,
+                onChanged: (bool value) => _pushNotificationProvider.setMaintenanceRemindersEnabled(value),
+              ),
+            ),
           ],
         ),
       ),
