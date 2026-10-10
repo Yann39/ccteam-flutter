@@ -41,9 +41,12 @@ class EventMember {
   /// the UI shows with every session ticked.
   List<EventSession>? skippedSessions;
 
+  /// Free comment of the member about their participation (optional).
+  String? comment;
+
   DateTime? createdOn;
 
-  EventMember({this.id, this.member, this.event, this.bike, this.skippedSessions, this.createdOn});
+  EventMember({this.id, this.member, this.event, this.bike, this.skippedSessions, this.comment, this.createdOn});
 
   @override
   String toString() {
@@ -53,6 +56,7 @@ class EventMember {
       members: ${this.event.toString()},
       bike: ${this.bike.toString()},
       skippedSessions: ${this.skippedSessions?.map((session) => session.toString())},
+      comment: ${this.comment},
       createdOn: ${this.createdOn?.toIso8601String()},
     }""";
   }
@@ -66,6 +70,7 @@ class EventMember {
       skippedSessions = json['skippedSessions'] != null
           ? (json['skippedSessions'] as Iterable).map((i) => EventSession.fromJson(i)).toList()
           : null,
+      comment = json['comment'],
       createdOn = json['createdOn'] != null ? DateTime.parse(json['createdOn']) : null;
 
   /// Convert [EventMember] object to the corresponding JSON map
@@ -75,6 +80,7 @@ class EventMember {
     "event": event?.toJson(),
     "bike": bike?.toJson(),
     "skippedSessions": skippedSessions?.map((i) => i.toJson()).toList(),
+    "comment": comment,
     "createdOn": createdOn?.toIso8601String(),
   };
 }

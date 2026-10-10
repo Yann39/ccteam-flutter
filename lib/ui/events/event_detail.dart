@@ -604,9 +604,156 @@ class EventDetail extends StatelessWidget {
                 ),
               ),
             ],
+            // fourth row: free comment about the participation
+            const SizedBox(height: 8.0),
+            Container(height: 1, color: Colors.black.withValues(alpha: 0.08)),
+            const SizedBox(height: 8.0),
+            InkWell(
+              onTap: () => _openCommentEditor(context, event, provider, participation),
+              borderRadius: BorderRadius.circular(6.0),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 4.0, vertical: 6.0),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    Icon(Icons.comment_outlined, size: 18.0, color: Colors.black.withAlpha(140)),
+                    const SizedBox(width: 8.0),
+                    Padding(
+                      padding: const EdgeInsets.only(top: 1.0),
+                      child: Text(
+                        AppString.eventCommentLabel,
+                        style: TextStyle(
+                          color: Colors.black.withAlpha(160),
+                          fontSize: 12.0,
+                          fontWeight: FontWeight.w600,
+                          letterSpacing: 0.4,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 10.0),
+                    Expanded(
+                      child: Text(
+                        participation.comment ?? AppString.eventCommentNone,
+                        style: TextStyle(
+                          color: Colors.black.withAlpha(participation.comment != null ? 204 : 130),
+                          fontSize: 13.5,
+                          fontStyle: participation.comment != null ? FontStyle.normal : FontStyle.italic,
+                        ),
+                        maxLines: 3,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    Icon(Icons.edit, size: 16.0, color: Colors.black.withAlpha(140)),
+                  ],
+                ),
+              ),
+            ),
           ],
         ],
       ),
+    );
+  }
+
+  /// Open the comment editor for the caller's participation in [event], same sheet style as the bike and
+  /// sessions pickers. The comment is only submitted when validated, and an emptied field clears it.
+  void _openCommentEditor(BuildContext context, Event event, EventDetailProvider provider, EventMember participation) {
+    final TextEditingController controller = TextEditingController(text: participation.comment ?? '');
+
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(16.0))),
+      builder: (BuildContext sheetCtx) {
+        return Padding(
+          // keeps the sheet above the keyboard
+          padding: EdgeInsets.only(bottom: MediaQuery.of(sheetCtx).viewInsets.bottom),
+          child: Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [Colors.blue[100]!, Colors.blue[200]!],
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+              ),
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(16.0)),
+            ),
+            child: SafeArea(
+              top: false,
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(16.0, 10.0, 16.0, 16.0),
+                child: SingleChildScrollView(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: <Widget>[
+                      // drag handle
+                      Center(
+                        child: Container(
+                          width: 40,
+                          height: 4,
+                          margin: const EdgeInsets.only(bottom: 14.0),
+                          decoration: BoxDecoration(
+                            color: Colors.black.withValues(alpha: 0.18),
+                            borderRadius: BorderRadius.circular(2.0),
+                          ),
+                        ),
+                      ),
+                      Text(
+                        AppString.eventCommentEditorTitle,
+                        style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: Colors.black87),
+                      ),
+                      const SizedBox(height: 12.0),
+                      TextField(
+                        controller: controller,
+                        autofocus: true,
+                        minLines: 3,
+                        maxLines: 8,
+                        // same limit as the backend column
+                        maxLength: 4096,
+                        keyboardType: TextInputType.multiline,
+                        textCapitalization: TextCapitalization.sentences,
+                        decoration: InputDecoration(
+                          hintText: AppString.eventCommentHint,
+                          filled: true,
+                          fillColor: Colors.white.withValues(alpha: 0.7),
+                          contentPadding: const EdgeInsets.all(12.0),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8.0),
+                            borderSide: BorderSide(color: Colors.black.withAlpha(40)),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8.0),
+                            borderSide: BorderSide(color: Colors.black.withAlpha(40)),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 6.0),
+                      ElevatedButton.icon(
+                        onPressed: () {
+                          Navigator.pop(sheetCtx);
+                          final String text = controller.text.trim();
+                          // nothing to send when the comment did not change
+                          if (text == (participation.comment ?? '')) return;
+                          provider.setEventMemberComment(event, text.isEmpty ? null : text);
+                        },
+                        icon: const Icon(Icons.check, size: 16.0),
+                        label: Text(AppString.validate),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.green[700],
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 12.0),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6.0)),
+                          textStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13.0),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 

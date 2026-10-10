@@ -522,6 +522,11 @@ class AppString {
   static const String filterByBikeTooltip = 'Filtrer par moto';
   static const String filterByBikeClear = 'Effacer le filtre';
   static const String eventBikeNoneOption = 'Aucune (effacer)';
+  static const String eventCommentLabel = 'Commentaire';
+  static const String eventCommentNone = 'Aucun commentaire';
+  static const String eventCommentEditorTitle = 'Commentaire sur votre participation';
+  static const String eventCommentHint = 'Conditions, réglages, ressenti...';
+  static const String eventCommentUpdated = 'Commentaire mis à jour';
   static const String eventSessionsUpdated = 'Sessions mises à jour';
   static const String eventSessionsUpdateFailed = 'Les sessions n\'ont pas pu être enregistrées';
   static const String eventSessionsLabel = 'Sessions';

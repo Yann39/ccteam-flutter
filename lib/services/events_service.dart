@@ -404,6 +404,7 @@ class EventsService {
             skippedSessions {
               id
             }
+            comment
           }
           sessions {
             id
@@ -583,6 +584,7 @@ class EventsService {
             skippedSessions {
               id
             }
+            comment
           }
           sessions {
             id
@@ -760,6 +762,7 @@ class EventsService {
             skippedSessions {
               id
             }
+            comment
           }
           sessions {
             id
@@ -844,6 +847,7 @@ class EventsService {
             skippedSessions {
               id
             }
+            comment
           }
           sessions {
             id
@@ -928,6 +932,7 @@ class EventsService {
             skippedSessions {
               id
             }
+            comment
           }
           sessions {
             id
@@ -1013,6 +1018,7 @@ class EventsService {
             skippedSessions {
               id
             }
+            comment
           }
           sessions {
             id
@@ -1035,6 +1041,90 @@ class EventsService {
       throw AppUtils.handleGraphQlException(result)!;
     } else {
       return Event.fromJson(result.data!['setEventMemberSessions']);
+    }
+  }
+
+  /// Set the caller's [comment] about their participation to [eventId], a
+  /// null or blank value clearing it. As for [setEventMemberBike], the server
+  /// derives the acting member from the auth token. Returns the up-to-date event.
+  Future<Event> setEventMemberComment(int eventId, String? comment) async {
+    _log.info("Setting the participation comment on event $eventId for the caller...");
+
+    final String mutation = """
+      mutation SetEventMemberComment(\$eventId: Long!, \$comment: String) {
+        setEventMemberComment(
+            eventId: \$eventId
+            comment: \$comment
+        )
+        {
+          id
+          title
+          description
+          startDate
+          endDate
+          track {
+            id
+            variantName
+            iconKey
+            circuit {
+              id
+              name
+              latitude
+              longitude
+              website
+              country {
+                code
+                nameFr
+                nameEn
+              }
+            }
+          }
+          organizer {
+            id
+            name
+          }
+          price
+          participants {
+            id
+            member {
+              id
+              firstName
+              lastName
+              hasAvatar
+            }
+            bike {
+              id
+              manufacturer
+              modelName
+              engineSize
+              year
+            }
+            skippedSessions {
+              id
+            }
+            comment
+          }
+          sessions {
+            id
+            position
+            durationMinutes
+          }
+        }
+      }
+    """;
+
+    final MutationOptions mutationOptions = new MutationOptions(
+      document: parseString(mutation),
+      variables: {'eventId': eventId, 'comment': comment},
+      fetchPolicy: FetchPolicy.noCache,
+    );
+
+    final QueryResult result = await GraphQLConnection().graphQLClient.mutate(mutationOptions);
+
+    if (result.hasException) {
+      throw AppUtils.handleGraphQlException(result)!;
+    } else {
+      return Event.fromJson(result.data!['setEventMemberComment']);
     }
   }
 
@@ -1095,6 +1185,7 @@ class EventsService {
             skippedSessions {
               id
             }
+            comment
           }
           sessions {
             id

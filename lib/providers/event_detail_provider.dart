@@ -284,6 +284,26 @@ class EventDetailProvider extends ChangeNotifier {
         );
   }
 
+  /// Set the caller's [comment] about their participation to [event], a null
+  /// or blank value clearing it. As for [setEventMemberBike], the server
+  /// derives the acting member from the auth token.
+  Future<void> setEventMemberComment(Event event, String? comment) async {
+    _log.fine("Setting the participation comment on event ${event.title}...");
+    await _eventsService
+        .setEventMemberComment(event.id!, comment)
+        .then(
+          (value) {
+            _log.fine("Participation comment updated successfully on event : ${event.title}");
+            _updateEventInList(value);
+            _messageProvider.setMessage(AppString.eventCommentUpdated, MessageType.SUCCESS);
+          },
+          onError: (error) {
+            _log.warning("Failed to update the participation comment ($error)");
+            AppUtils.handleServiceException(error, _messageProvider, _loginProvider);
+          },
+        );
+  }
+
   /// Update the specified [event] in the list of events.
   void _updateEventInList(Event event) {
     final int index = _allEvents.indexWhere((e) => e.id == event.id);
