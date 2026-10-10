@@ -17,28 +17,63 @@
  * along with CCTeam. If not, see <http://www.gnu.org/licenses/>.
  */
 
+import 'dart:typed_data';
+
 import 'package:ccteam/models/bike.dart';
 import 'package:ccteam/models/bike_maintenance.dart';
 import 'package:ccteam/providers/bike_maintenance_provider.dart';
+import 'package:ccteam/providers/login_provider.dart';
+import 'package:ccteam/providers/message_provider.dart';
 import 'package:ccteam/ui/members/add_edit_maintenance.dart';
 import 'package:ccteam/utils/constants.dart';
 import 'package:ccteam/utils/custom_decorations.dart';
+import 'package:ccteam/utils/enums.dart';
+import 'package:ccteam/utils/maintenance_pdf.dart';
 import 'package:ccteam/utils/maintenance_utils.dart';
 import 'package:ccteam/utils/strings.dart';
 import 'package:ccteam/widgets/random_pattern_painter.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:logging/logging.dart';
 import 'package:provider/provider.dart';
+import 'package:share_plus/share_plus.dart';
 
 /// Maintenance history of a bike: a summary (count, costs) followed by a vertical timeline of
 /// the maintenances, most recent first, with the time and distance elapsed between two consecutive maintenances.
 class MaintenanceHistory extends StatelessWidget {
   const MaintenanceHistory({Key? key}) : super(key: key);
 
+  static final Logger _log = Logger('MaintenanceHistory');
+
   /// Width of the timeline rail on the left of the maintenance cards.
   static const double _railWidth = 36.0;
 
   static final Color _accent = Colors.teal[700]!;
+
+  /// Build the maintenance logbook PDF of [bike] and hand it to the system share sheet (e-mail, messaging, files,
+  /// print, which also allows saving it...). The file is shared straight from memory, nothing is written by the app.
+  Future<void> _exportPdf(BuildContext context, Bike bike, BikeMaintenance data) async {
+    final LoginProvider loginProvider = Provider.of<LoginProvider>(context, listen: false);
+    final MessageProvider messageProvider = Provider.of<MessageProvider>(context, listen: false);
+    try {
+      final Uint8List bytes = await MaintenancePdf.build(
+        bike: bike,
+        owner: loginProvider.loggedMember,
+        maintenance: data,
+      );
+      final String fileName = MaintenancePdf.fileName(bike);
+      await SharePlus.instance.share(
+        ShareParams(
+          files: <XFile>[XFile.fromData(bytes, mimeType: 'application/pdf', name: fileName)],
+          fileNameOverrides: <String>[fileName],
+          subject: AppString.maintenancePdfTitle,
+        ),
+      );
+    } catch (e) {
+      _log.severe("Failed to export the maintenance PDF: $e");
+      messageProvider.setMessage(AppString.maintenancePdfFailed, MessageType.ERROR);
+    }
+  }
 
   /// Open the maintenance form, prefilled with [maintenance] when editing.
   void _openForm(BuildContext context, Bike bike, [Maintenance? maintenance]) {
@@ -441,7 +476,17 @@ class MaintenanceHistory extends StatelessWidget {
     }
 
     return Scaffold(
-      appBar: AppBar(title: Text(AppString.maintenanceHistoryTitle)),
+      appBar: AppBar(
+        title: Text(AppString.maintenanceHistoryTitle),
+        actions: <Widget>[
+          if (data != null && maintenances.isNotEmpty)
+            IconButton(
+              tooltip: AppString.maintenancePdfExport,
+              icon: const Icon(Icons.picture_as_pdf),
+              onPressed: () => _exportPdf(context, bike, data),
+            ),
+        ],
+      ),
       // same look as the other list pages ("Mes motos"...)
       floatingActionButton: FloatingActionButton(
         elevation: 0.0,

@@ -80,6 +80,9 @@ dependencies:
   # Keystore-backed secure storage for the device-binding secret
   flutter_secure_storage: ^10.3.1
 
+  # To create PDF files
+  pdf: ^3.13.1
+
   gql: any
   path: any
 
