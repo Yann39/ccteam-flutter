@@ -379,33 +379,7 @@ class MemberStatsUtils {
       final track = event.track;
       if (track?.distance == null || track!.distance! <= 0) continue;
 
-      // the sessions actually ridden, when the event has a schedule to go by:
-      // everything scheduled except what the member unticked
-      final List<EventSession> scheduled = event.sessions ?? const <EventSession>[];
-      List<int> sessionDurations;
-      if (scheduled.isNotEmpty) {
-        final Set<int> skippedIds = (em.skippedSessions ?? const <EventSession>[])
-            .map((session) => session.id)
-            .whereType<int>()
-            .toSet();
-        sessionDurations = scheduled
-            .where((session) => !skippedIds.contains(session.id))
-            .map((session) => session.durationMinutes ?? 0)
-            .where((minutes) => minutes > 0)
-            .toList();
-      } else {
-        // no schedule entered, guess the sessions from the event duration
-        final DateTime end = event.endDate ?? start;
-        final int hours = end.difference(start).inHours;
-        final int sessions;
-        if (hours < 6) {
-          sessions = 3; // demi-journée
-        } else {
-          final int days = (hours / 24).ceil().clamp(1, 30);
-          sessions = days * 6;
-        }
-        sessionDurations = List<int>.filled(sessions, 20);
-      }
+      final List<int> sessionDurations = _riddenSessionDurations(em, event, start);
 
       // lap time on this track: member's best chrono bumped by 2 %
       // for "average lap" feel, else track's record + 15 %, else 2-minute default
@@ -432,6 +406,58 @@ class MemberStatsUtils {
     }
 
     return (totalMeters / 1000).round();
+  }
+
+  /// Estimate of the total riding time across past events, in minutes:
+  /// the sum of the durations of the sessions ridden, determined the same
+  /// way as for [estimateKm] (the actual schedule minus the unticked
+  /// sessions, or a guess from the event duration). Useful for small bikes
+  /// (pit bikes...) that have no odometer, their service intervals being
+  /// counted in hours.
+  static int estimateRidingMinutes({required List<EventMember>? eventMembers, required DateTime now}) {
+    if (eventMembers == null || eventMembers.isEmpty) return 0;
+    int totalMinutes = 0;
+    for (final em in eventMembers) {
+      final Event? event = em.event;
+      if (event == null) continue;
+      final DateTime? start = event.startDate;
+      if (start == null) continue;
+      if (start.isAfter(now)) continue;
+      totalMinutes += _riddenSessionDurations(em, event, start).fold<int>(0, (sum, minutes) => sum + minutes);
+    }
+    return totalMinutes;
+  }
+
+  /// Durations (in minutes) of the sessions of [event] the member rode.
+  ///
+  /// When the event has a schedule, it is every scheduled session except the
+  /// ones the member unticked. Otherwise the sessions are guessed from the
+  /// event duration: a short event (under 6 hours) is a half-day of
+  /// 3 × 20 min, anything longer `ceil(hours / 24)` full days of 6 × 20 min.
+  static List<int> _riddenSessionDurations(EventMember em, Event event, DateTime start) {
+    final List<EventSession> scheduled = event.sessions ?? const <EventSession>[];
+    if (scheduled.isNotEmpty) {
+      final Set<int> skippedIds = (em.skippedSessions ?? const <EventSession>[])
+          .map((session) => session.id)
+          .whereType<int>()
+          .toSet();
+      return scheduled
+          .where((session) => !skippedIds.contains(session.id))
+          .map((session) => session.durationMinutes ?? 0)
+          .where((minutes) => minutes > 0)
+          .toList();
+    }
+    // no schedule entered, guess the sessions from the event duration
+    final DateTime end = event.endDate ?? start;
+    final int hours = end.difference(start).inHours;
+    final int sessions;
+    if (hours < 6) {
+      sessions = 3; // demi-journée
+    } else {
+      final int days = (hours / 24).ceil().clamp(1, 30);
+      sessions = days * 6;
+    }
+    return List<int>.filled(sessions, 20);
   }
 }
 

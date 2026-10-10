@@ -675,6 +675,7 @@ class AppString {
   static const String statsTrackEventsCount = 'Roulages effectués';
   static const String statsBikesCount = 'Motos';
   static const String statsKmEstimated = 'Km estimés';
+  static const String statsRidingTimeEstimated = 'Temps de roulage estimé';
   static const String statsEventsKmSubtitle = 'soit ≈ {0} km';
   static const String statsFavoriteTrack = 'Circuit le plus roulé';
   static const String statsFavoriteTrackTimes = '{0} fois';

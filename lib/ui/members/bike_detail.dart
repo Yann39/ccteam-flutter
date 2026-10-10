@@ -241,14 +241,24 @@ class _BikeDetailState extends State<BikeDetail> {
     );
   }
 
-  /// Build the "Statistiques" card: estimated km, number of track days and
-  /// most ridden track with this bike. Reuses the [MemberStatsUtils] heuristics
-  /// of the "Mon compte" page, with the participations filtered on this bike
-  /// (so only the track days where this bike was pinned count).
+  /// Riding time as a rider says it: "45 min", "12h", "12h30".
+  String _ridingTimeLabel(int minutes) {
+    if (minutes < 60) return "$minutes min";
+    final int hours = minutes ~/ 60;
+    final int remainder = minutes % 60;
+    return remainder == 0 ? "${hours}h" : "${hours}h${remainder.toString().padLeft(2, '0')}";
+  }
+
+  /// Build the "Statistiques" card: estimated km and riding time, number of
+  /// track days and most ridden track with this bike. Reuses the
+  /// [MemberStatsUtils] heuristics of the "Mon compte" page, with the
+  /// participations filtered on this bike (so only the track days where this
+  /// bike was pinned count).
   Widget _buildStatsCard(List<EventMember> bikeEventMembers, List<Record> myRecords) {
     final DateTime now = DateTime.now();
     final int events = MemberStatsUtils.pastEventsCount(eventMembers: bikeEventMembers, now: now);
     final int km = MemberStatsUtils.estimateKm(eventMembers: bikeEventMembers, records: myRecords, now: now);
+    final int ridingMinutes = MemberStatsUtils.estimateRidingMinutes(eventMembers: bikeEventMembers, now: now);
     final MostRiddenTrack? favTrack = MemberStatsUtils.mostRiddenTrack(eventMembers: bikeEventMembers, now: now);
 
     return Container(
@@ -287,6 +297,13 @@ class _BikeDetailState extends State<BikeDetail> {
             iconColor: Colors.green[700]!,
             label: AppString.statsKmEstimated,
             value: "≈ $km km",
+          ),
+          _divider(),
+          _detailRow(
+            icon: Icons.timer_outlined,
+            iconColor: Colors.orange[800]!,
+            label: AppString.statsRidingTimeEstimated,
+            value: "≈ ${_ridingTimeLabel(ridingMinutes)}",
           ),
           _divider(),
           _detailRow(
