@@ -125,11 +125,6 @@ class _AddEditMaintenanceState extends State<AddEditMaintenance> {
   /// Maximum length of an operation precision, the size of the backend column.
   static const int _maxLabelLength = 500;
 
-  static double? _parsePrice(String? value) {
-    if (value == null || value.trim().isEmpty) return null;
-    return double.tryParse(value.trim().replaceAll(',', '.').replaceAll(' ', '').replaceAll("'", ''));
-  }
-
   Widget _buildDateField() {
     return TextFormField(
       controller: _dateController,
@@ -226,9 +221,9 @@ class _AddEditMaintenanceState extends State<AddEditMaintenance> {
                         keyboardType: const TextInputType.numberWithOptions(decimal: true),
                         style: const TextStyle(fontSize: 14.0),
                         decoration: _operationFieldDecoration(hintText: AppString.maintenanceOperationPrice),
-                        onChanged: (value) => setState(() => operation.price = _parsePrice(value)),
+                        onChanged: (value) => setState(() => operation.price = MaintenanceUtils.parsePrice(value)),
                         validator: (value) =>
-                            value != null && value.trim().isNotEmpty && _parsePrice(value) == null
+                            value != null && value.trim().isNotEmpty && MaintenanceUtils.parsePrice(value) == null
                             ? AppString.priceInvalid
                             : null,
                       ),

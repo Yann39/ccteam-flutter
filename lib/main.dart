@@ -18,6 +18,7 @@
  */
 
 import 'package:ccteam/providers/avatar_provider.dart';
+import 'package:ccteam/providers/bike_equipment_provider.dart';
 import 'package:ccteam/providers/bike_list_provider.dart';
 import 'package:ccteam/providers/bike_maintenance_provider.dart';
 import 'package:ccteam/providers/change_passcode_provider.dart';
@@ -63,6 +64,7 @@ import 'package:ccteam/ui/main/my_account.dart';
 import 'package:ccteam/ui/main/notification_settings.dart';
 import 'package:ccteam/ui/main/trusted_devices.dart';
 import 'package:ccteam/ui/members/add_edit_bike.dart';
+import 'package:ccteam/ui/members/add_edit_equipment.dart';
 import 'package:ccteam/ui/members/add_edit_maintenance.dart';
 import 'package:ccteam/ui/members/add_edit_member.dart';
 import 'package:ccteam/ui/members/add_edit_membership_fee.dart';
@@ -169,6 +171,12 @@ void main() async {
         ChangeNotifierProxyProvider2<MessageProvider, LoginProvider, BikeMaintenanceProvider>(
           create: (context) => BikeMaintenanceProvider(),
           update: (context, messageProvider, loginProvider, bikeMaintenanceProvider) => bikeMaintenanceProvider!
+            ..updateMessageProvider(messageProvider)
+            ..updateLoginProvider(loginProvider),
+        ),
+        ChangeNotifierProxyProvider2<MessageProvider, LoginProvider, BikeEquipmentProvider>(
+          create: (context) => BikeEquipmentProvider(),
+          update: (context, messageProvider, loginProvider, bikeEquipmentProvider) => bikeEquipmentProvider!
             ..updateMessageProvider(messageProvider)
             ..updateLoginProvider(loginProvider),
         ),
@@ -340,6 +348,7 @@ class CCTeamApp extends StatelessWidget {
           '/addEditBike': (context) => AddEditBike(),
           '/bikeDetail': (context) => const BikeDetail(),
           '/addEditMaintenance': (context) => const AddEditMaintenance(),
+          '/addEditEquipment': (context) => const AddEditEquipment(),
           '/maintenanceHistory': (context) => const MaintenanceHistory(),
           '/members': (context) => MemberList(),
           '/memberEvents': (context) => MemberEvents(),
