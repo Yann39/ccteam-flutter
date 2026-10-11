@@ -95,11 +95,12 @@ class EventCreationProvider extends ChangeNotifier {
     await _eventsService
         .updateEvent(_event)
         .then(
-          (value) {
+          (value) async {
             _log.fine("Event successfully updated : ${_event.title}");
             _event = value;
             _updateStatus(LoadingStatus.loaded);
             _messageProvider.setMessage(AppString.eventUpdated, MessageType.SUCCESS);
+            await _refreshLoggedMemberIfParticipant(value);
           },
           onError: (error) {
             // todo here we should reload the original event as it has not been updated in db ?
@@ -126,10 +127,11 @@ class EventCreationProvider extends ChangeNotifier {
     await _eventsService
         .setEventSessions(_event.id!, groups)
         .then(
-          (value) {
+          (value) async {
             _log.fine("Sessions successfully updated on event : ${_event.title}");
             _event = value;
             _updateStatus(LoadingStatus.loaded);
+            await _refreshLoggedMemberIfParticipant(value);
           },
           onError: (error) {
             _log.warning("Error when updating event sessions ($error)");
@@ -137,6 +139,16 @@ class EventCreationProvider extends ChangeNotifier {
             AppUtils.handleServiceException(error, _messageProvider, _loginProvider);
           },
         );
+  }
+
+  /// Refresh the logged member when they take part in [event]: their participations embed a copy of the event
+  /// (dates, track, session schedule), which the statistics are computed from (km and riding time of the bike...),
+  /// so an edit of the event must be reflected there too.
+  Future<void> _refreshLoggedMemberIfParticipant(Event event) async {
+    final int? memberId = _loginProvider.loggedMember?.id;
+    if (memberId != null && (event.participants?.any((p) => p.member?.id == memberId) ?? false)) {
+      await _loginProvider.refreshLoggedMember();
+    }
   }
 
   /// Notify all the registered listeners of this provider.

@@ -104,7 +104,7 @@ class EventDetailProvider extends ChangeNotifier {
     await _eventsService
         .deleteEvent(event)
         .then(
-          (value) {
+          (value) async {
             _log.fine("Event deleted successfully : ${event.title}");
             // this shouldn't be a problem to not set _currentEvent to null but keep the deleted event,
             // because _currentEvent is initialized before each display of the EventDetail view,
@@ -112,6 +112,11 @@ class EventDetailProvider extends ChangeNotifier {
             _currentEvent = value;
             _messageProvider.setMessage(AppString.eventDeleted, MessageType.SUCCESS);
             _notifyListeners();
+            // the logged member's participations (and the statistics built on them) must forget the deleted event
+            final int? memberId = _loginProvider.loggedMember?.id;
+            if (memberId != null && (event.participants?.any((p) => p.member?.id == memberId) ?? false)) {
+              await _loginProvider.refreshLoggedMember();
+            }
           },
           onError: (error) {
             _log.warning("Failed to delete event ($error)");
