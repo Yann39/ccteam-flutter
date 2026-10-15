@@ -129,15 +129,10 @@ class _MemberListState extends State<MemberList> {
       Provider.of<RecordListProvider>(context, listen: false).fetchMemberRecords(member.id!);
     }
 
-    // fetch the member to get complete data
-    Provider.of<MemberDetailProvider>(context, listen: false)
-        .fetchMember(member)
-        .then(
-          (value) => {
-            // navigate to member detail screen
-            Navigator.pushNamed(context, '/memberDetail'),
-          },
-        );
+    // fetch the member to get complete data, the page opens right away with what the list already knows (name,
+    // avatar, header palette, bikes...) and shows the rest once loaded
+    Provider.of<MemberDetailProvider>(context, listen: false).fetchMember(member);
+    Navigator.pushNamed(context, '/memberDetail');
   }
 
   /// Build the search field (matches the search bar of the tracks page).

@@ -42,10 +42,17 @@ class MemberDetailProvider extends ChangeNotifier {
   // current member
   Member? _currentMember;
 
+  // whether the current member holds all its details, or only the fields of a list while the complete one loads
+  bool _complete = false;
+
   // current loading status
   LoadingStatus _loadingStatus = LoadingStatus.notLoaded;
 
   Member? get currentMember => _currentMember;
+
+  /// Whether [currentMember] holds all its details (contact, participations, membership fees...), or only the
+  /// fields of the list it was opened from while the complete member loads.
+  bool get isComplete => _complete;
 
   LoadingStatus get loadingStatus => _loadingStatus;
 
@@ -61,28 +68,39 @@ class MemberDetailProvider extends ChangeNotifier {
     _notifyListeners();
   }
 
-  /// Set the current member to be the specified [member].
+  /// Set the current member to be the specified complete [member].
   void setCurrentMember(Member member) {
     _currentMember = member;
+    _complete = true;
     _notifyListeners();
   }
 
   /// Fetch the specified [member] from the database.
+  ///
+  /// When it is not the member already displayed, [member] becomes the current member right away, so the detail
+  /// page can open with what the caller already knows while the complete member loads; it is kept if loading fails.
   Future<void> fetchMember(Member member) async {
     _log.fine("Fetching member ${member.email}...");
+    if (_currentMember?.id != member.id) {
+      _currentMember = member;
+      _complete = false;
+    }
     _updateStatus(LoadingStatus.loading);
     await _membersService
         .getMemberById(member.id!)
         .then(
           (value) async {
+            // another member may have been opened in the meantime
+            if (_currentMember?.id != member.id) return;
             _log.fine("Member ID ${member.id} retrieved successfully");
             _currentMember = value;
+            _complete = true;
             _updateStatus(LoadingStatus.loaded);
           },
           onError: (error) {
             _log.warning("Error when retrieving member ($error)");
-            _currentMember = null;
             AppUtils.handleServiceException(error, _messageProvider, _loginProvider);
+            if (_currentMember?.id != member.id) return;
             _updateStatus(LoadingStatus.notLoaded);
           },
         );
@@ -129,6 +147,7 @@ class MemberDetailProvider extends ChangeNotifier {
           (value) {
             _log.fine("Member deleted successfully : ${member.email}");
             _currentMember = null;
+            _complete = false;
             _messageProvider.setMessage(AppString.memberDeleted, MessageType.SUCCESS);
             _notifyListeners();
           },

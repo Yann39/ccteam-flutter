@@ -425,6 +425,22 @@ class MemberDetail extends StatelessWidget {
     );
   }
 
+  /// Stand-in for a section that needs the complete member (contact details, rides, membership fees) while the page
+  /// shows what the members list already knew: a small spinner while it loads, the usual message if it could not be
+  /// loaded. With [card], it is drawn as a section card of its own.
+  Widget _detailsPlaceholder(MemberDetailProvider memberDetailProvider, {bool card = false}) {
+    return Container(
+      padding: const EdgeInsets.all(12.0),
+      decoration: card ? CustomDecorations.cardLight : null,
+      child: LoadingContent(
+        loadingStatus: memberDetailProvider.loadingStatus,
+        defaultText: AppString.contentNotLoaded,
+        emptyText: AppString.contentNotLoaded,
+        child: const SizedBox.shrink(),
+      ),
+    );
+  }
+
   Widget _eventsTimeline(BuildContext context, MemberDetailProvider memberDetailProvider) {
     final List<EventMember>? eventMembers = memberDetailProvider.currentMember!.eventMembers;
     if (eventMembers == null || eventMembers.isEmpty) {
@@ -638,6 +654,8 @@ class MemberDetail extends StatelessWidget {
     final bool _isAdmin = _loginProvider.loggedMember?.role == MemberRole.ROLE_ADMIN;
     final bool _isOwnProfile = _memberDetailProvider.currentMember?.id == _loginProvider.loggedMember?.id;
     final bool _canView = _loginProvider.canView || _isOwnProfile;
+    // the page opens with what the members list knows, the sections needing the complete member wait for it
+    final bool _complete = _memberDetailProvider.isComplete;
 
     // if currentMember is null (e.g. after session expiration), don't render content
     if (_memberDetailProvider.currentMember == null) {
@@ -767,192 +785,198 @@ class MemberDetail extends StatelessWidget {
           ? Container(decoration: CustomDecorations.mainContent, child: RestrictedContent())
           : Container(
               decoration: CustomDecorations.mainContent,
-              child: LoadingContent(
-                loadingStatus: _memberDetailProvider.loadingStatus,
-                defaultText: AppString.contentNotLoaded,
-                emptyText: AppString.contentNotLoaded,
-                child: CustomScrollView(
-                  controller: _scrollController,
-                  slivers: <Widget>[
-                    SliverAppBar(
-                      pinned: true,
-                      expandedHeight: _expandedHeight,
-                      flexibleSpace: LayoutBuilder(
-                        builder: (BuildContext context, BoxConstraints constraints) {
-                          final FlexibleSpaceBarSettings settings = context
-                              .dependOnInheritedWidgetOfExactType<FlexibleSpaceBarSettings>()!;
-                          final double deltaExtent = settings.maxExtent - settings.minExtent;
-                          final double t = (1.0 - (settings.currentExtent - settings.minExtent) / deltaExtent).clamp(
-                            0.0,
-                            1.0,
-                          );
+              child: CustomScrollView(
+                controller: _scrollController,
+                slivers: <Widget>[
+                  SliverAppBar(
+                    pinned: true,
+                    expandedHeight: _expandedHeight,
+                    flexibleSpace: LayoutBuilder(
+                      builder: (BuildContext context, BoxConstraints constraints) {
+                        final FlexibleSpaceBarSettings settings = context
+                            .dependOnInheritedWidgetOfExactType<FlexibleSpaceBarSettings>()!;
+                        final double deltaExtent = settings.maxExtent - settings.minExtent;
+                        final double t = (1.0 - (settings.currentExtent - settings.minExtent) / deltaExtent).clamp(
+                          0.0,
+                          1.0,
+                        );
 
-                          // Vertical lift that peaks at the middle of the
-                          // collapse animation: the title arcs UPWARD over the
-                          // avatar circle instead of cutting straight through
-                          // it. With a lift of 50, the trajectory stays outside
-                          // the 50-px avatar radius for the entire transition.
-                          final double arcLift = sin(t * pi) * 50;
+                        // Vertical lift that peaks at the middle of the
+                        // collapse animation: the title arcs UPWARD over the
+                        // avatar circle instead of cutting straight through
+                        // it. With a lift of 50, the trajectory stays outside
+                        // the 50-px avatar radius for the entire transition.
+                        final double arcLift = sin(t * pi) * 50;
 
-                          return FlexibleSpaceBar(
-                            titlePadding: EdgeInsets.only(left: 144.0 - t * 88, bottom: 16.0 + arcLift),
-                            title: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: <Widget>[
-                                Text(
-                                  "${_memberDetailProvider.currentMember!.firstName} ${_memberDetailProvider.currentMember!.lastName}",
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 24.0 - t * 6.0,
-                                    fontWeight: FontWeight.lerp(FontWeight.bold, FontWeight.normal, t),
-                                  ),
+                        return FlexibleSpaceBar(
+                          titlePadding: EdgeInsets.only(left: 144.0 - t * 88, bottom: 16.0 + arcLift),
+                          title: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: <Widget>[
+                              Text(
+                                "${_memberDetailProvider.currentMember!.firstName} ${_memberDetailProvider.currentMember!.lastName}",
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 24.0 - t * 6.0,
+                                  fontWeight: FontWeight.lerp(FontWeight.bold, FontWeight.normal, t),
                                 ),
-                                if (_memberDetailProvider.currentMember!.riderNumber != null)
-                                  ClipRect(
-                                    child: Align(
-                                      alignment: Alignment.topLeft,
-                                      heightFactor: (1.0 - t * 2).clamp(0.0, 1.0),
-                                      child: Opacity(
-                                        opacity: (1.0 - t * 2).clamp(0.0, 1.0),
-                                        child: Padding(
-                                          padding: const EdgeInsets.only(top: 4.0),
-                                          child: _buildRiderNumberPlate(
-                                            _memberDetailProvider.currentMember!.riderNumber!,
-                                          ),
+                              ),
+                              if (_memberDetailProvider.currentMember!.riderNumber != null)
+                                ClipRect(
+                                  child: Align(
+                                    alignment: Alignment.topLeft,
+                                    heightFactor: (1.0 - t * 2).clamp(0.0, 1.0),
+                                    child: Opacity(
+                                      opacity: (1.0 - t * 2).clamp(0.0, 1.0),
+                                      child: Padding(
+                                        padding: const EdgeInsets.only(top: 4.0),
+                                        child: _buildRiderNumberPlate(
+                                          _memberDetailProvider.currentMember!.riderNumber!,
                                         ),
                                       ),
                                     ),
                                   ),
-                              ],
-                            ),
-                            background: Stack(
-                              alignment: Alignment.bottomLeft,
-                              fit: StackFit.expand,
-                              children: <Widget>[
-                                // procedurally-generated background according to palette
-                                Positioned.fill(
-                                  child: CustomPaint(
-                                    painter: () {
-                                      final int seed =
-                                          _memberDetailProvider.currentMember!.id ??
-                                          _memberDetailProvider.currentMember!.email?.hashCode ??
-                                          0;
-                                      final int paletteIdx =
-                                          _memberDetailProvider.currentMember!.headerPalette ??
-                                          (seed.abs() % kMemberHeaderPalettes.length);
-                                      final List<Color> palette =
-                                          kMemberHeaderPalettes[paletteIdx.clamp(0, kMemberHeaderPalettes.length - 1)];
-                                      return RandomPatternPainter(seed: seed, color1: palette[0], color2: palette[1]);
-                                    }(),
-                                  ),
                                 ),
-                                DecoratedBox(
-                                  decoration: BoxDecoration(
-                                    gradient: LinearGradient(
-                                      begin: Alignment(0.0, 0.5),
-                                      end: Alignment(0.0, -0.5),
-                                      colors: <Color>[
-                                        Colors.black.withAlpha(179),
-                                        Colors.black.withAlpha(76),
-                                        Colors.transparent,
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                                Positioned(
-                                  bottom: 15,
-                                  left: 15,
-                                  child: Container(
-                                    decoration: ShapeDecoration(shape: CircleBorder(), color: Colors.white),
-                                    padding: EdgeInsets.all(3.0),
-                                    child: AvatarImage(
-                                      memberId: _memberDetailProvider.currentMember!.id,
-                                      hasAvatar: _memberDetailProvider.currentMember!.hasAvatar == true,
-                                      radius: 50.0,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          );
-                        },
-                      ),
-                      actions: <Widget>[
-                        // palette picker
-                        if (_isOwnProfile)
-                          IconButton(
-                            icon: const Icon(Icons.palette_outlined),
-                            tooltip: AppString.changeHeaderPalette,
-                            onPressed: () => _showHeaderPalettePicker(context, _memberDetailProvider),
+                            ],
                           ),
-                        if (_isAdmin || _isOwnProfile)
-                          IconButton(
-                            icon: const Icon(Icons.edit),
-                            onPressed: () => _navigateToEditMemberScreen(context, _memberDetailProvider.currentMember!),
-                          ),
-                        if (_isAdmin)
-                          IconButton(
-                            icon: const Icon(Icons.delete_forever),
-                            onPressed: () => _showDeleteMemberConfirmation(context, AppString.memberDeletionAreYouSure),
-                          ),
-                      ],
-                    ),
-                    SliverPadding(
-                      padding: EdgeInsets.fromLTRB(8.0, 8.0, 8.0, 8.0 + MediaQuery.of(context).padding.bottom),
-                      sliver: SliverList(
-                        delegate: SliverChildListDelegate(<Widget>[
-                          ConstrainedBox(
-                            // set minimum height : screen height - app bar height - status bar height - padding
-                            constraints: BoxConstraints(
-                              minHeight:
-                                  MediaQuery.of(context).size.height -
-                                  kToolbarHeight -
-                                  MediaQuery.of(context).padding.top -
-                                  16,
-                            ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.stretch,
-                              children: <Widget>[
-                                Row(
-                                  children: <Widget>[
-                                    Icon(Icons.person, size: 16, color: Colors.black.withAlpha(204)),
-                                    SizedBox(width: 5.0),
-                                    Text(
-                                      AppString.personalInformation,
-                                      textScaler: TextScaler.linear(1.2),
-                                      style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black.withAlpha(204)),
-                                    ),
-                                  ],
+                          background: Stack(
+                            alignment: Alignment.bottomLeft,
+                            fit: StackFit.expand,
+                            children: <Widget>[
+                              // procedurally-generated background according to palette
+                              Positioned.fill(
+                                child: CustomPaint(
+                                  painter: () {
+                                    final int seed =
+                                        _memberDetailProvider.currentMember!.id ??
+                                        _memberDetailProvider.currentMember!.email?.hashCode ??
+                                        0;
+                                    final int paletteIdx =
+                                        _memberDetailProvider.currentMember!.headerPalette ??
+                                        (seed.abs() % kMemberHeaderPalettes.length);
+                                    final List<Color> palette =
+                                        kMemberHeaderPalettes[paletteIdx.clamp(0, kMemberHeaderPalettes.length - 1)];
+                                    return RandomPatternPainter(seed: seed, color1: palette[0], color2: palette[1]);
+                                  }(),
                                 ),
-                                SizedBox(height: 10),
-                                Container(
-                                  padding: EdgeInsets.all(6.0),
-                                  decoration: CustomDecorations.cardLight,
-                                  child: Column(
-                                    children: <Widget>[
-                                      if (_boardRoleInfo != null) ...[
-                                        _boardRoleInfo,
-                                        Divider(color: Colors.black.withAlpha(204), height: 5),
-                                      ],
-                                      _motoInfo,
-                                      Divider(color: Colors.black.withAlpha(204), height: 5),
-                                      _mobileInfo,
-                                      Divider(color: Colors.black.withAlpha(204), height: 5),
-                                      _emailInfo,
+                              ),
+                              DecoratedBox(
+                                decoration: BoxDecoration(
+                                  gradient: LinearGradient(
+                                    begin: Alignment(0.0, 0.5),
+                                    end: Alignment(0.0, -0.5),
+                                    colors: <Color>[
+                                      Colors.black.withAlpha(179),
+                                      Colors.black.withAlpha(76),
+                                      Colors.transparent,
                                     ],
                                   ),
                                 ),
-                                SizedBox(height: 15),
-                                Row(
+                              ),
+                              Positioned(
+                                bottom: 15,
+                                left: 15,
+                                child: Container(
+                                  decoration: ShapeDecoration(shape: CircleBorder(), color: Colors.white),
+                                  padding: EdgeInsets.all(3.0),
+                                  child: AvatarImage(
+                                    memberId: _memberDetailProvider.currentMember!.id,
+                                    hasAvatar: _memberDetailProvider.currentMember!.hasAvatar == true,
+                                    radius: 50.0,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                    ),
+                    actions: <Widget>[
+                      // palette picker
+                      if (_isOwnProfile)
+                        IconButton(
+                          icon: const Icon(Icons.palette_outlined),
+                          tooltip: AppString.changeHeaderPalette,
+                          onPressed: () => _showHeaderPalettePicker(context, _memberDetailProvider),
+                        ),
+                      if (_isAdmin || _isOwnProfile)
+                        IconButton(
+                          icon: const Icon(Icons.edit),
+                          // the form needs every field of the member
+                          onPressed: _complete
+                              ? () => _navigateToEditMemberScreen(context, _memberDetailProvider.currentMember!)
+                              : null,
+                        ),
+                      if (_isAdmin)
+                        IconButton(
+                          icon: const Icon(Icons.delete_forever),
+                          onPressed: () => _showDeleteMemberConfirmation(context, AppString.memberDeletionAreYouSure),
+                        ),
+                    ],
+                  ),
+                  SliverPadding(
+                    padding: EdgeInsets.fromLTRB(8.0, 8.0, 8.0, 8.0 + MediaQuery.of(context).padding.bottom),
+                    sliver: SliverList(
+                      delegate: SliverChildListDelegate(<Widget>[
+                        ConstrainedBox(
+                          // set minimum height : screen height - app bar height - status bar height - padding
+                          constraints: BoxConstraints(
+                            minHeight:
+                                MediaQuery.of(context).size.height -
+                                kToolbarHeight -
+                                MediaQuery.of(context).padding.top -
+                                16,
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: <Widget>[
+                              Row(
+                                children: <Widget>[
+                                  Icon(Icons.person, size: 16, color: Colors.black.withAlpha(204)),
+                                  SizedBox(width: 5.0),
+                                  Text(
+                                    AppString.personalInformation,
+                                    textScaler: TextScaler.linear(1.2),
+                                    style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black.withAlpha(204)),
+                                  ),
+                                ],
+                              ),
+                              SizedBox(height: 10),
+                              Container(
+                                padding: EdgeInsets.all(6.0),
+                                decoration: CustomDecorations.cardLight,
+                                child: Column(
                                   children: <Widget>[
-                                    Icon(Icons.event, size: 16, color: Colors.black.withAlpha(204)),
-                                    SizedBox(width: 5.0),
-                                    Text(
-                                      AppString.rides,
-                                      textScaler: TextScaler.linear(1.2),
-                                      style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black.withAlpha(204)),
-                                    ),
+                                    if (_boardRoleInfo != null) ...[
+                                      _boardRoleInfo,
+                                      Divider(color: Colors.black.withAlpha(204), height: 5),
+                                    ],
+                                    // the members list already provides the bikes, not the contact details
+                                    if (_complete || _memberDetailProvider.currentMember!.bikes != null) ...[
+                                      _motoInfo,
+                                      Divider(color: Colors.black.withAlpha(204), height: 5),
+                                    ],
+                                    if (_complete) ...[
+                                      _mobileInfo,
+                                      Divider(color: Colors.black.withAlpha(204), height: 5),
+                                      _emailInfo,
+                                    ] else
+                                      _detailsPlaceholder(_memberDetailProvider),
+                                  ],
+                                ),
+                              ),
+                              SizedBox(height: 15),
+                              Row(
+                                children: <Widget>[
+                                  Icon(Icons.event, size: 16, color: Colors.black.withAlpha(204)),
+                                  SizedBox(width: 5.0),
+                                  Text(
+                                    AppString.rides,
+                                    textScaler: TextScaler.linear(1.2),
+                                    style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black.withAlpha(204)),
+                                  ),
+                                  if (_complete) ...[
                                     SizedBox(width: 4.0),
                                     Text(
                                       "(${_memberDetailProvider.currentMember?.eventMembers?.length ?? 0})",
@@ -963,42 +987,46 @@ class MemberDetail extends StatelessWidget {
                                       ),
                                     ),
                                   ],
-                                ),
-                                SizedBox(height: 10),
-                                _eventsTimeline(context, _memberDetailProvider),
-                                SizedBox(height: 10),
-                                Row(
-                                  children: <Widget>[
-                                    Icon(Icons.timer, size: 16, color: Colors.black.withAlpha(204)),
-                                    SizedBox(width: 5.0),
-                                    Text(
-                                      AppString.chronos,
-                                      textScaler: TextScaler.linear(1.2),
-                                      style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black.withAlpha(204)),
+                                ],
+                              ),
+                              SizedBox(height: 10),
+                              _complete
+                                  ? _eventsTimeline(context, _memberDetailProvider)
+                                  : _detailsPlaceholder(_memberDetailProvider, card: true),
+                              SizedBox(height: 10),
+                              Row(
+                                children: <Widget>[
+                                  Icon(Icons.timer, size: 16, color: Colors.black.withAlpha(204)),
+                                  SizedBox(width: 5.0),
+                                  Text(
+                                    AppString.chronos,
+                                    textScaler: TextScaler.linear(1.2),
+                                    style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black.withAlpha(204)),
+                                  ),
+                                  SizedBox(width: 4.0),
+                                  Text(
+                                    "(${_recordListProvider.memberRecords.length})",
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.normal,
+                                      color: Colors.black.withAlpha(204),
+                                      fontSize: 11.0,
                                     ),
-                                    SizedBox(width: 4.0),
-                                    Text(
-                                      "(${_recordListProvider.memberRecords.length})",
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.normal,
-                                        color: Colors.black.withAlpha(204),
-                                        fontSize: 11.0,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                SizedBox(height: 10),
-                                _recordsTable(context, _recordListProvider),
-                                SizedBox(height: 15),
-                                Row(
-                                  children: <Widget>[
-                                    Icon(Icons.payment, size: 16, color: Colors.black.withAlpha(204)),
-                                    SizedBox(width: 5.0),
-                                    Text(
-                                      "Cotisations",
-                                      textScaler: TextScaler.linear(1.2),
-                                      style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black.withAlpha(204)),
-                                    ),
+                                  ),
+                                ],
+                              ),
+                              SizedBox(height: 10),
+                              _recordsTable(context, _recordListProvider),
+                              SizedBox(height: 15),
+                              Row(
+                                children: <Widget>[
+                                  Icon(Icons.payment, size: 16, color: Colors.black.withAlpha(204)),
+                                  SizedBox(width: 5.0),
+                                  Text(
+                                    "Cotisations",
+                                    textScaler: TextScaler.linear(1.2),
+                                    style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black.withAlpha(204)),
+                                  ),
+                                  if (_complete) ...[
                                     SizedBox(width: 4.0),
                                     Text(
                                       "(${_memberDetailProvider.currentMember?.membershipFees?.length ?? 0})",
@@ -1009,17 +1037,19 @@ class MemberDetail extends StatelessWidget {
                                       ),
                                     ),
                                   ],
-                                ),
-                                SizedBox(height: 10),
-                                _feesTable(context, _memberDetailProvider, _isAdmin),
-                              ],
-                            ),
+                                ],
+                              ),
+                              SizedBox(height: 10),
+                              _complete
+                                  ? _feesTable(context, _memberDetailProvider, _isAdmin)
+                                  : _detailsPlaceholder(_memberDetailProvider, card: true),
+                            ],
                           ),
-                        ]),
-                      ),
+                        ),
+                      ]),
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
     );
