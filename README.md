@@ -5,8 +5,8 @@
 ![Version](https://img.shields.io/badge/Version-1.2.3-2AAB92.svg)
 ![Static Badge](https://img.shields.io/badge/Last_update-02_September_2026-blue)
 
-![Version](https://img.shields.io/badge/Flutter-3.44.8-44D1FD.svg)
-![Version](https://img.shields.io/badge/Dart-3.12.2-08589C.svg)
+![Version](https://img.shields.io/badge/Flutter-3.47.7-44D1FD.svg)
+![Version](https://img.shields.io/badge/Dart-3.15.5-08589C.svg)
 
 ---
 
