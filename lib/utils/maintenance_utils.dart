@@ -36,6 +36,12 @@ class MaintenanceUtils {
     return currency == CurrencyCode.eur ? "$value €" : "CHF $value";
   }
 
+  /// Parse a price as typed by a member ("380", "380.50", "380,50", "1'200"), `null` when empty or invalid.
+  static double? parsePrice(String? value) {
+    if (value == null || value.trim().isEmpty) return null;
+    return double.tryParse(value.trim().replaceAll(',', '.').replaceAll(' ', '').replaceAll("'", ''));
+  }
+
   /// Amounts per currency as "CHF 1 200.00 · 80.00 €" (amounts are never converted), each divided by [divisor].
   /// Returns `null` when there is no amount.
   static String? formatAmounts(Map<CurrencyCode, double> totals, {double divisor = 1}) {

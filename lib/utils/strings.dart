@@ -304,6 +304,11 @@ class AppString {
   static const String bikeCurrentLabel = 'Moto courante';
   static const String bikeMileage = 'Kilométrage';
   static const String bikeMileageEstimated = 'Kilométrage (dernier relevé + roulages)';
+  static const String bikeOwner = 'Propriétaire';
+  static const String bikeSheetPdfExport = 'Exporter la fiche moto en PDF';
+  static const String bikeSheetPdfFailed = 'La fiche n\'a pas pu être générée';
+  static const String bikeSheetPdfTitle = 'Fiche moto';
+  static const String bikeSheetPdfFooter = 'Fiche moto {0} · générée par l\'application CCTeam le {1}';
   static const String bikeChronosTitle = 'Chronos avec cette moto';
   static const String bikeDeletionAreYouSure = 'Etes-vous sûr de vouloir supprimer cette moto ?';
 
@@ -414,6 +419,25 @@ class AppString {
   static const String maintenanceOpBattery = 'Batterie';
   static const String maintenanceOpGeneralInspection = 'Révision générale';
   static const String maintenanceOpOther = 'Autre';
+
+  // Bike equipment
+  static const String equipmentTitle = 'Équipements';
+  static const String equipmentNone = 'Aucun équipement saisi';
+  static const String equipmentNoneHelp = 'Échappement, leviers, protections, crash pads…';
+  static const String equipmentCreate = 'Ajouter un équipement';
+  static const String equipmentEdit = 'Modifier l\'équipement';
+  static const String equipmentAdded = 'L\'équipement a été ajouté !';
+  static const String equipmentUpdated = 'L\'équipement a été mis à jour !';
+  static const String equipmentDeleted = 'L\'équipement a été supprimé !';
+  static const String equipmentDeletionAreYouSure = 'Etes-vous sûr de vouloir supprimer cet équipement ?';
+  static const String equipmentDesignation = 'Désignation';
+  static const String equipmentDesignationHint = 'Ex. échappement Akrapovič, levier court…';
+  static const String equipmentDesignationMandatory = 'La désignation est obligatoire';
+  static const String equipmentPrice = 'Prix (optionnel)';
+  static const String equipmentCurrency = 'Devise';
+  static const String equipmentComment = 'Détail (optionnel)';
+  static const String equipmentCommentHint = 'Référence, lieu d\'achat, date de montage…';
+  static const String equipmentTotal = 'Total';
 
   static const String tracksSearchHint = 'Nom du circuit';
   static const String tracksNotFound = 'Aucun circuit trouvé';

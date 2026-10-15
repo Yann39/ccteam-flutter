@@ -17,20 +17,28 @@
  * along with CCTeam. If not, see <http://www.gnu.org/licenses/>.
  */
 
+import 'dart:typed_data';
+
 import 'package:ccteam/models/bike.dart';
+import 'package:ccteam/models/bike_equipment.dart';
 import 'package:ccteam/models/event_member.dart';
 import 'package:ccteam/models/record.dart';
 import 'package:ccteam/models/bike_maintenance.dart';
+import 'package:ccteam/providers/bike_equipment_provider.dart';
 import 'package:ccteam/providers/bike_list_provider.dart';
 import 'package:ccteam/providers/bike_maintenance_provider.dart';
 import 'package:ccteam/providers/login_provider.dart';
+import 'package:ccteam/providers/message_provider.dart';
 import 'package:ccteam/providers/record_detail_provider.dart';
 import 'package:ccteam/providers/record_list_provider.dart';
+import 'package:ccteam/ui/members/bike_equipment_card.dart';
 import 'package:ccteam/ui/members/bike_maintenance_card.dart';
+import 'package:ccteam/utils/bike_sheet_pdf.dart';
 import 'package:ccteam/utils/bike_utils.dart';
 import 'package:ccteam/utils/custom_decorations.dart';
 import 'package:ccteam/utils/custom_icons.dart';
 import 'package:ccteam/utils/date_utils.dart';
+import 'package:ccteam/utils/enums.dart';
 import 'package:ccteam/utils/maintenance_utils.dart';
 import 'package:ccteam/utils/member_stats.dart';
 import 'package:ccteam/utils/string_utils.dart';
@@ -40,7 +48,9 @@ import 'package:ccteam/widgets/random_pattern_painter.dart';
 import 'package:ccteam/widgets/restricted_content.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:logging/logging.dart';
 import 'package:provider/provider.dart';
+import 'package:share_plus/share_plus.dart';
 
 /// Read-only detail page for a single bike, reached by tapping a bike in
 /// the "My bikes" list (the bike travels through the route arguments).
@@ -52,6 +62,8 @@ class BikeDetail extends StatefulWidget {
 }
 
 class _BikeDetailState extends State<BikeDetail> {
+  static final Logger _log = Logger('BikeDetail');
+
   // bike passed by the list page, only used as the identity (id), the displayed values are re-derived from
   // BikeListProvider on every build so the page refreshes after an edit
   Bike? _initialBike;
@@ -111,6 +123,39 @@ class _BikeDetailState extends State<BikeDetail> {
         );
       },
     );
+  }
+
+  /// Build the bike sheet PDF (details and equipments, without the maintenance history) and hand it to the system
+  /// share sheet (e-mail, messaging, files, print, which also allows saving it...). The file is shared straight from
+  /// memory, nothing is written by the app.
+  Future<void> _exportSheet(
+    BuildContext context,
+    Bike bike,
+    BikeMaintenance maintenance,
+    List<BikeEquipment> equipments,
+  ) async {
+    final LoginProvider loginProvider = Provider.of<LoginProvider>(context, listen: false);
+    final MessageProvider messageProvider = Provider.of<MessageProvider>(context, listen: false);
+    try {
+      final Uint8List bytes = await BikeSheetPdf.build(
+        bike: bike,
+        owner: loginProvider.loggedMember,
+        odometerKm: maintenance.odometerKm,
+        odometerUpdatedOn: maintenance.odometerUpdatedOn,
+        equipments: equipments,
+      );
+      final String fileName = BikeSheetPdf.fileName(bike);
+      await SharePlus.instance.share(
+        ShareParams(
+          files: <XFile>[XFile.fromData(bytes, mimeType: 'application/pdf', name: fileName)],
+          fileNameOverrides: <String>[fileName],
+          subject: AppString.bikeSheetPdfTitle,
+        ),
+      );
+    } catch (e) {
+      _log.severe("Failed to export the bike sheet PDF: $e");
+      messageProvider.setMessage(AppString.bikeSheetPdfFailed, MessageType.ERROR);
+    }
   }
 
   /// Open the chrono detail page for the specified [record].
@@ -365,9 +410,10 @@ class _BikeDetailState extends State<BikeDetail> {
         .toList();
 
     // current mileage: last odometer reading, plus the estimated km of the track days ridden with this bike since
-    final BikeMaintenance? maintenance = Provider.of<BikeMaintenanceProvider>(context, listen: true).maintenanceOf(
-      bike.id!,
-    );
+    final BikeMaintenance? maintenance = Provider.of<BikeMaintenanceProvider>(
+      context,
+      listen: true,
+    ).maintenanceOf(bike.id!);
     int? currentKm;
     int trackKmSinceReading = 0;
     if (maintenance?.odometerKm != null) {
@@ -382,6 +428,31 @@ class _BikeDetailState extends State<BikeDetail> {
       currentKm = maintenance.odometerKm! + trackKmSinceReading;
     }
 
+    final List<BikeEquipment>? equipments = Provider.of<BikeEquipmentProvider>(
+      context,
+      listen: true,
+    ).equipmentsOf(bike.id!);
+
+    final List<Widget> actions = <Widget>[
+      // the sheet shows the odometer and the equipments, it is offered once both are loaded
+      if (maintenance != null && equipments != null)
+        IconButton(
+          tooltip: AppString.bikeSheetPdfExport,
+          icon: const Icon(Icons.picture_as_pdf, color: Colors.white),
+          onPressed: () => _exportSheet(context, bike, maintenance, equipments),
+        ),
+      IconButton(
+        tooltip: AppString.bikeEdit,
+        icon: const Icon(Icons.edit, color: Colors.white),
+        onPressed: () => _editBike(context, bike),
+      ),
+      IconButton(
+        tooltip: AppString.bikeDeletionAreYouSure,
+        icon: const Icon(Icons.delete_forever, color: Colors.white),
+        onPressed: () => _confirmAndDelete(context, bike),
+      ),
+    ];
+
     return Scaffold(
       body: Container(
         decoration: CustomDecorations.mainContent,
@@ -390,18 +461,7 @@ class _BikeDetailState extends State<BikeDetail> {
             SliverAppBar(
               pinned: true,
               expandedHeight: 200,
-              actions: <Widget>[
-                IconButton(
-                  tooltip: AppString.bikeEdit,
-                  icon: const Icon(Icons.edit, color: Colors.white),
-                  onPressed: () => _editBike(context, bike),
-                ),
-                IconButton(
-                  tooltip: AppString.bikeDeletionAreYouSure,
-                  icon: const Icon(Icons.delete_forever, color: Colors.white),
-                  onPressed: () => _confirmAndDelete(context, bike),
-                ),
-              ],
+              actions: actions,
               flexibleSpace: LayoutBuilder(
                 builder: (BuildContext context, BoxConstraints constraints) {
                   final FlexibleSpaceBarSettings settings = context
@@ -412,7 +472,12 @@ class _BikeDetailState extends State<BikeDetail> {
                   // t is 0.0 when completely deployed, 1.0 when completely collapsed
                   return FlexibleSpaceBar(
                     expandedTitleScale: 1.0,
-                    titlePadding: EdgeInsets.only(left: 144.0 - t * 88, bottom: 15.0 - t * 11.0),
+                    // once collapsed, the title shares the toolbar with the actions, keep it clear of them
+                    titlePadding: EdgeInsets.only(
+                      left: 144.0 - t * 88,
+                      right: t * actions.length * kMinInteractiveDimension,
+                      bottom: 15.0 - t * 11.0,
+                    ),
                     title: Container(
                       height: 100.0 - t * 52.0,
                       alignment: Alignment.centerLeft,
@@ -547,6 +612,11 @@ class _BikeDetailState extends State<BikeDetail> {
                   Padding(
                     padding: const EdgeInsets.only(top: 12.0),
                     child: BikeMaintenanceCard(bike: bike),
+                  ),
+                  // parts fitted to the bike
+                  Padding(
+                    padding: const EdgeInsets.only(top: 12.0),
+                    child: BikeEquipmentCard(bike: bike),
                   ),
                   // bike usage statistics
                   Padding(
