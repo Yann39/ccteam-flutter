@@ -304,6 +304,11 @@ class AppString {
   static const String bikeCurrentLabel = 'Moto courante';
   static const String bikeMileage = 'Kilométrage';
   static const String bikeMileageEstimated = 'Kilométrage (dernier relevé + roulages)';
+  static const String bikeOwner = 'Propriétaire';
+  static const String bikeSheetPdfExport = 'Exporter la fiche moto en PDF';
+  static const String bikeSheetPdfFailed = 'La fiche n\'a pas pu être générée';
+  static const String bikeSheetPdfTitle = 'Fiche moto';
+  static const String bikeSheetPdfFooter = 'Fiche moto {0} · générée par l\'application CCTeam le {1}';
   static const String bikeChronosTitle = 'Chronos avec cette moto';
   static const String bikeDeletionAreYouSure = 'Etes-vous sûr de vouloir supprimer cette moto ?';
 
@@ -430,7 +435,7 @@ class AppString {
   static const String equipmentDesignationMandatory = 'La désignation est obligatoire';
   static const String equipmentPrice = 'Prix (optionnel)';
   static const String equipmentCurrency = 'Devise';
-  static const String equipmentComment = 'Commentaire (optionnel)';
+  static const String equipmentComment = 'Détail (optionnel)';
   static const String equipmentCommentHint = 'Référence, lieu d\'achat, date de montage…';
   static const String equipmentTotal = 'Total';
 
