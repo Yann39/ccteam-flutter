@@ -445,7 +445,6 @@ class MaintenanceHistory extends StatelessWidget {
     // timeline items, laid out under the full-width header
     final List<Widget> children = <Widget>[];
     if (maintenances.isNotEmpty) {
-
       // elapsed since the last maintenance, up to today and the current odometer reading
       final Maintenance last = maintenances.first;
       children.add(
@@ -505,7 +504,7 @@ class MaintenanceHistory extends StatelessWidget {
             children: <Widget>[
               _buildHeader(bike, maintenances),
               Padding(
-                padding: const EdgeInsets.fromLTRB(12.0, 12.0, 12.0, 0.0),
+                padding: const EdgeInsets.fromLTRB(0.0, 12.0, 12.0, 0.0),
                 child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: children),
               ),
             ],
