@@ -123,6 +123,22 @@ class BikeEquipmentService {
     return _mutate(query, 'deleteBikeEquipment', {'equipmentId': equipmentId});
   }
 
+  /// Reorder the equipments of the bike with the given [bikeId], [equipmentIds] holding all their ids in the new order.
+  Future<List<BikeEquipment>> reorderBikeEquipments(int bikeId, List<int> equipmentIds) async {
+    _log.info("Reordering equipments of bike $bikeId ...");
+
+    final String query =
+        """
+      mutation ReorderBikeEquipments(\$bikeId: Long!, \$equipmentIds: [Long!]!) {
+        reorderBikeEquipments(bikeId: \$bikeId, equipmentIds: \$equipmentIds) {
+          $_equipmentFields
+        }
+      }
+    """;
+
+    return _mutate(query, 'reorderBikeEquipments', {'bikeId': bikeId, 'equipmentIds': equipmentIds});
+  }
+
   Map<String, dynamic> _equipmentVariables(BikeEquipment equipment) => {
     'designation': equipment.designation,
     'price': equipment.price,

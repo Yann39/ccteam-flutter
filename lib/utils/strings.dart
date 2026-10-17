@@ -438,6 +438,10 @@ class AppString {
   static const String equipmentComment = 'Détail (optionnel)';
   static const String equipmentCommentHint = 'Référence, lieu d\'achat, date de montage…';
   static const String equipmentTotal = 'Total';
+  static const String equipmentReorder = 'Ordonner';
+  static const String equipmentReorderHelp =
+      'Maintenez un équipement ou sa poignée, puis faites-le glisser pour changer l\'ordre. La fiche PDF suit cet '
+      'ordre.';
 
   static const String tracksSearchHint = 'Nom du circuit';
   static const String tracksNotFound = 'Aucun circuit trouvé';

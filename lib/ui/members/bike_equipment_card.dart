@@ -28,7 +28,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 /// "Équipements" card of the bike detail page: the parts fitted to the bike (racing exhaust, short levers, crash
-/// pads...) with their optional price, each one opening the equipment form when tapped.
+/// pads...) in the order set by the member, with their optional price, each one opening the equipment form when
+/// tapped. The order is set on the `BikeEquipments` page.
 class BikeEquipmentCard extends StatefulWidget {
   final Bike bike;
 
@@ -205,20 +206,29 @@ class _BikeEquipmentCardState extends State<BikeEquipmentCard> {
         color: Colors.transparent,
         child: Column(
           children: <Widget>[
+            // same header as the maintenance card, with the entry point to the page ordering the equipments
             Padding(
-              padding: const EdgeInsets.fromLTRB(14.0, 12.0, 14.0, 10.0),
+              padding: const EdgeInsets.fromLTRB(14.0, 4.0, 4.0, 4.0),
               child: Row(
                 children: <Widget>[
                   Icon(Icons.handyman, color: Colors.deepOrange[700], size: 18.0),
                   const SizedBox(width: 6.0),
-                  Text(
-                    AppString.equipmentTitle,
-                    style: TextStyle(
-                      color: Colors.black.withAlpha(170),
-                      fontSize: 12.0,
-                      fontWeight: FontWeight.w700,
-                      letterSpacing: 0.4,
+                  Expanded(
+                    child: Text(
+                      AppString.equipmentTitle,
+                      style: TextStyle(
+                        color: Colors.black.withAlpha(170),
+                        fontSize: 12.0,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 0.4,
+                      ),
                     ),
+                  ),
+                  TextButton(
+                    onPressed: equipments == null || equipments.length < 2
+                        ? null
+                        : () => Navigator.pushNamed(context, '/bikeEquipments', arguments: widget.bike),
+                    child: Text(AppString.equipmentReorder),
                   ),
                 ],
               ),
