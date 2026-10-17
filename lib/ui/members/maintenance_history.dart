@@ -50,6 +50,16 @@ class MaintenanceHistory extends StatelessWidget {
 
   static final Color _accent = Colors.teal[700]!;
 
+  /// Darker blue of the elapsed time pills between the cards, which take the blue gradient of the bike list.
+  static final Color _pillColor = Colors.blue[700]!;
+
+  /// Pills inside the cards: the "Révision" badge in the red of the app, the total in green.
+  static final Color _serviceBadgeColor = Colors.red[700]!.withAlpha(200);
+  static final Color _totalColor = Colors.green[900]!.withAlpha(140);
+
+  /// Check mark in front of each operation, solid so it stays green over the blue card.
+  static final Color _operationCheckColor = Colors.green[900]!.withAlpha(140);
+
   /// Build the maintenance logbook PDF of [bike] and hand it to the system share sheet (e-mail, messaging, files,
   /// print, which also allows saving it...). The file is shared straight from memory, nothing is written by the app.
   Future<void> _exportPdf(BuildContext context, Bike bike, BikeMaintenance data) async {
@@ -88,7 +98,7 @@ class MaintenanceHistory extends StatelessWidget {
   /// figures usually fit on a single row).
   Widget _headerStat(IconData icon, String label, String value) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 5.0),
+      padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
       decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.20), borderRadius: BorderRadius.circular(10.0)),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -101,7 +111,7 @@ class MaintenanceHistory extends StatelessWidget {
               Text(label, style: TextStyle(color: Colors.white.withValues(alpha: 0.85), fontSize: 10.5)),
             ],
           ),
-          const SizedBox(height: 1.0),
+          const SizedBox(height: 2.0),
           Text(
             value,
             textAlign: TextAlign.center,
@@ -163,7 +173,7 @@ class MaintenanceHistory extends StatelessWidget {
             ),
           ),
           Padding(
-            padding: const EdgeInsets.fromLTRB(16.0, 12.0, 16.0, 12.0),
+            padding: const EdgeInsets.fromLTRB(16.0, 18.0, 16.0, 18.0),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -175,7 +185,7 @@ class MaintenanceHistory extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
                     color: Colors.white,
-                    fontSize: 19.0,
+                    fontSize: 20.0,
                     fontWeight: FontWeight.bold,
                     height: 1.15,
                     shadows: [
@@ -183,15 +193,19 @@ class MaintenanceHistory extends StatelessWidget {
                     ],
                   ),
                 ),
-                const SizedBox(height: 2.0),
+                const SizedBox(height: 8.0),
                 Text(
                   subtitle,
                   textAlign: TextAlign.center,
-                  style: TextStyle(color: Colors.white.withValues(alpha: 0.92), fontSize: 12.5, fontStyle: FontStyle.italic),
+                  style: TextStyle(
+                    color: Colors.white.withValues(alpha: 0.92),
+                    fontSize: 13.5,
+                    fontStyle: FontStyle.italic,
+                  ),
                 ),
                 if (stats.isNotEmpty) ...[
-                  const SizedBox(height: 10.0),
-                  Wrap(alignment: WrapAlignment.center, spacing: 6.0, runSpacing: 6.0, children: stats),
+                  const SizedBox(height: 18.0),
+                  Wrap(alignment: WrapAlignment.center, spacing: 10.0, runSpacing: 8.0, children: stats),
                 ],
               ],
             ),
@@ -239,19 +253,15 @@ class MaintenanceHistory extends StatelessWidget {
             padding: const EdgeInsets.symmetric(vertical: 8.0),
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 4.0),
-              decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.7),
-                borderRadius: BorderRadius.circular(20.0),
-                border: Border.all(color: _accent.withValues(alpha: 0.3)),
-              ),
+              decoration: BoxDecoration(color: _pillColor, borderRadius: BorderRadius.circular(20.0)),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: <Widget>[
-                  Icon(Icons.swap_vert, size: 15.0, color: _accent),
+                  Icon(Icons.swap_vert, size: 15.0, color: Colors.white.withAlpha(220)),
                   const SizedBox(width: 4.0),
                   Text(
                     "$prefix${MaintenanceUtils.formatElapsed(from, to)} · $km",
-                    style: TextStyle(color: Colors.black.withAlpha(200), fontSize: 12.5, fontWeight: FontWeight.w600),
+                    style: const TextStyle(color: Colors.white, fontSize: 12.5, fontWeight: FontWeight.w600),
                   ),
                 ],
               ),
@@ -264,16 +274,16 @@ class MaintenanceHistory extends StatelessWidget {
 
   Widget _buildMaintenanceCard(BuildContext context, Bike bike, Maintenance maintenance, {required bool isLast}) {
     final Widget card = Container(
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.6),
-        borderRadius: BorderRadius.circular(10.0),
-        border: Border.all(color: Colors.white),
-      ),
+      // same blue gradient as the cards of the bike list, with the rounder corners of the timeline
+      decoration: CustomDecorations.cardFull.copyWith(borderRadius: BorderRadius.circular(10.0)),
       clipBehavior: Clip.antiAlias,
       child: Material(
         color: Colors.transparent,
         child: InkWell(
           onTap: () => _openForm(context, bike, maintenance),
+          // the default dark ripple would hardly show on the blue card
+          splashColor: Colors.white.withValues(alpha: 0.12),
+          highlightColor: Colors.white.withValues(alpha: 0.06),
           child: Padding(
             padding: const EdgeInsets.fromLTRB(12.0, 10.0, 8.0, 10.0),
             child: Column(
@@ -290,8 +300,8 @@ class MaintenanceHistory extends StatelessWidget {
                             children: <Widget>[
                               Text(
                                 DateFormat(DATE_FORMAT_DAY).format(maintenance.maintenanceDate!),
-                                style: TextStyle(
-                                  color: Colors.black.withAlpha(225),
+                                style: const TextStyle(
+                                  color: Colors.white,
                                   fontSize: 15.0,
                                   fontWeight: FontWeight.w700,
                                 ),
@@ -301,12 +311,12 @@ class MaintenanceHistory extends StatelessWidget {
                                 Container(
                                   padding: const EdgeInsets.symmetric(horizontal: 6.0, vertical: 1.0),
                                   decoration: BoxDecoration(
-                                    color: _accent.withValues(alpha: 0.12),
+                                    color: _serviceBadgeColor,
                                     borderRadius: BorderRadius.circular(4.0),
                                   ),
-                                  child: Text(
+                                  child: const Text(
                                     AppString.maintenanceServiceBadge,
-                                    style: TextStyle(color: _accent, fontSize: 11.0, fontWeight: FontWeight.w700),
+                                    style: TextStyle(color: Colors.white, fontSize: 11.0, fontWeight: FontWeight.w700),
                                   ),
                                 ),
                               ],
@@ -317,11 +327,11 @@ class MaintenanceHistory extends StatelessWidget {
                               padding: const EdgeInsets.only(top: 2.0),
                               child: Row(
                                 children: <Widget>[
-                                  Icon(Icons.speed, size: 14.0, color: Colors.black.withAlpha(130)),
+                                  Icon(Icons.speed, size: 14.0, color: Colors.white.withAlpha(210)),
                                   const SizedBox(width: 4.0),
                                   Text(
                                     MaintenanceUtils.formatKm(maintenance.odometerKm!),
-                                    style: TextStyle(color: Colors.black.withAlpha(150), fontSize: 12.5),
+                                    style: TextStyle(color: Colors.white.withAlpha(230), fontSize: 12.5),
                                   ),
                                 ],
                               ),
@@ -329,7 +339,7 @@ class MaintenanceHistory extends StatelessWidget {
                         ],
                       ),
                     ),
-                    Icon(Icons.chevron_right, size: 20.0, color: Colors.black.withAlpha(100)),
+                    Icon(Icons.chevron_right, size: 20.0, color: Colors.white.withAlpha(200)),
                   ],
                 ),
                 const SizedBox(height: 8.0),
@@ -341,7 +351,7 @@ class MaintenanceHistory extends StatelessWidget {
                       children: <Widget>[
                         Padding(
                           padding: const EdgeInsets.only(top: 1.0),
-                          child: Icon(Icons.check_circle, size: 14.0, color: _accent.withValues(alpha: 0.8)),
+                          child: Icon(Icons.check_circle, size: 14.0, color: _operationCheckColor),
                         ),
                         const SizedBox(width: 6.0),
                         // name, then the precision under it, keeping the line breaks the member typed
@@ -349,14 +359,11 @@ class MaintenanceHistory extends StatelessWidget {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: <Widget>[
-                              Text(
-                                operation.title,
-                                style: TextStyle(color: Colors.black.withAlpha(210), fontSize: 13.5),
-                              ),
+                              Text(operation.title, style: const TextStyle(color: Colors.white, fontSize: 13.5)),
                               if (operation.details != null)
                                 Text(
                                   operation.details!,
-                                  style: TextStyle(color: Colors.black.withAlpha(140), fontSize: 12.5),
+                                  style: TextStyle(color: Colors.white.withAlpha(220), fontSize: 12.5),
                                 ),
                             ],
                           ),
@@ -364,7 +371,7 @@ class MaintenanceHistory extends StatelessWidget {
                         if (operation.price != null)
                           Text(
                             MaintenanceUtils.formatPrice(operation.price!, operation.currency),
-                            style: TextStyle(color: Colors.black.withAlpha(150), fontSize: 12.5),
+                            style: TextStyle(color: Colors.white.withAlpha(235), fontSize: 12.5),
                           ),
                       ],
                     ),
@@ -376,14 +383,11 @@ class MaintenanceHistory extends StatelessWidget {
                       alignment: Alignment.centerRight,
                       child: Container(
                         padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 3.0),
-                        decoration: BoxDecoration(
-                          color: Colors.green[700]!.withValues(alpha: 0.12),
-                          borderRadius: BorderRadius.circular(6.0),
-                        ),
+                        decoration: BoxDecoration(color: _totalColor, borderRadius: BorderRadius.circular(6.0)),
                         child: Text(
                           "${AppString.maintenanceTotal} : ${MaintenanceUtils.formatAmounts(maintenance.totals)!}",
                           textAlign: TextAlign.right,
-                          style: TextStyle(color: Colors.green[900], fontSize: 12.5, fontWeight: FontWeight.w700),
+                          style: const TextStyle(color: Colors.white, fontSize: 12.5, fontWeight: FontWeight.w700),
                         ),
                       ),
                     ),
@@ -395,12 +399,12 @@ class MaintenanceHistory extends StatelessWidget {
                     margin: const EdgeInsets.only(right: 8.0),
                     padding: const EdgeInsets.fromLTRB(8.0, 6.0, 8.0, 6.0),
                     decoration: BoxDecoration(
-                      color: Colors.black.withAlpha(10),
+                      color: Colors.black.withAlpha(20),
                       borderRadius: BorderRadius.circular(6.0),
                     ),
                     child: Text(
                       maintenance.comment!,
-                      style: TextStyle(color: Colors.black.withAlpha(170), fontSize: 13.0, fontStyle: FontStyle.italic),
+                      style: TextStyle(color: Colors.white.withAlpha(235), fontSize: 13.0, fontStyle: FontStyle.italic),
                     ),
                   ),
                 ],
