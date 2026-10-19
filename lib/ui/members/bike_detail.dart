@@ -31,7 +31,7 @@ import 'package:ccteam/providers/login_provider.dart';
 import 'package:ccteam/providers/message_provider.dart';
 import 'package:ccteam/providers/record_detail_provider.dart';
 import 'package:ccteam/providers/record_list_provider.dart';
-import 'package:ccteam/ui/members/bike_equipment_card.dart';
+import 'package:ccteam/ui/members/bike_equipment_list.dart';
 import 'package:ccteam/ui/members/bike_maintenance_card.dart';
 import 'package:ccteam/utils/bike_sheet_pdf.dart';
 import 'package:ccteam/utils/bike_utils.dart';
@@ -61,17 +61,43 @@ class BikeDetail extends StatefulWidget {
   State<BikeDetail> createState() => _BikeDetailState();
 }
 
-class _BikeDetailState extends State<BikeDetail> {
+class _BikeDetailState extends State<BikeDetail> with SingleTickerProviderStateMixin {
   static final Logger _log = Logger('BikeDetail');
 
   // bike passed by the list page, only used as the identity (id), the displayed values are re-derived from
   // BikeListProvider on every build so the page refreshes after an edit
   Bike? _initialBike;
 
+  // tabs: details (default), maintenance, equipments, statistics
+  late final TabController _tabController;
+
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: 4, vsync: this);
+  }
+
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    _initialBike ??= ModalRoute.of(context)!.settings.arguments as Bike?;
+    if (_initialBike != null) return;
+    _initialBike = ModalRoute.of(context)!.settings.arguments as Bike?;
+    final int? bikeId = _initialBike?.id;
+    if (bikeId != null && Provider.of<LoginProvider>(context, listen: false).isMember) {
+      // loaded right away whatever the tab: the details tab shows the mileage and the sheet PDF needs both. Always
+      // reloaded when the page opens, a reminder may have been triggered by a change made on another device
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        Provider.of<BikeMaintenanceProvider>(context, listen: false).load(bikeId);
+        Provider.of<BikeEquipmentProvider>(context, listen: false).load(bikeId);
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
   }
 
   /// Open the bike form seeded with the current bike.
@@ -316,27 +342,9 @@ class _BikeDetailState extends State<BikeDetail> {
         ],
       ),
       clipBehavior: Clip.antiAlias,
+      // no title, the tab already names it
       child: Column(
         children: <Widget>[
-          Padding(
-            padding: const EdgeInsets.fromLTRB(14.0, 12.0, 14.0, 10.0),
-            child: Row(
-              children: <Widget>[
-                Icon(Icons.query_stats, color: Colors.green[700], size: 18.0),
-                const SizedBox(width: 6.0),
-                Text(
-                  AppString.statistics,
-                  style: TextStyle(
-                    color: Colors.black.withAlpha(170),
-                    fontSize: 12.0,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: 0.4,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          _divider(),
           _detailRow(
             icon: Icons.route,
             iconColor: Colors.green[700]!,
@@ -453,192 +461,242 @@ class _BikeDetailState extends State<BikeDetail> {
       ),
     ];
 
+    final Widget? chronosCard = _buildChronosCard(context, bike, _recordListProvider.myRecords.toList());
+    final double bottomInset = MediaQuery.of(context).padding.bottom;
+
     return Scaffold(
       body: Container(
         decoration: CustomDecorations.mainContent,
-        child: CustomScrollView(
-          slivers: <Widget>[
-            SliverAppBar(
-              pinned: true,
-              expandedHeight: 200,
-              actions: actions,
-              flexibleSpace: LayoutBuilder(
-                builder: (BuildContext context, BoxConstraints constraints) {
-                  final FlexibleSpaceBarSettings settings = context
-                      .dependOnInheritedWidgetOfExactType<FlexibleSpaceBarSettings>()!;
-                  final double deltaExtent = settings.maxExtent - settings.minExtent;
-                  final double t = (1.0 - (settings.currentExtent - settings.minExtent) / deltaExtent).clamp(0.0, 1.0);
+        child: NestedScrollView(
+          headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) => <Widget>[
+            // the pinned part of the header is reported to the tabs, so their content starts below it
+            SliverOverlapAbsorber(
+              handle: NestedScrollView.sliverOverlapAbsorberHandleFor(context),
+              sliver: SliverAppBar(
+                pinned: true,
+                forceElevated: innerBoxIsScrolled,
+                // the former header, plus the tab bar
+                expandedHeight: 200 + kTextTabBarHeight,
+                actions: actions,
+                bottom: TabBar(
+                  controller: _tabController,
+                  // sized to their labels and centered, they fit side by side on a phone
+                  isScrollable: true,
+                  tabAlignment: TabAlignment.center,
+                  labelColor: Colors.white,
+                  unselectedLabelColor: Colors.white70,
+                  indicatorColor: Colors.white,
+                  dividerColor: Colors.transparent,
+                  tabs: <Widget>[
+                    Tab(text: AppString.bikeTabInfo),
+                    Tab(text: AppString.maintenanceTitle),
+                    Tab(text: AppString.equipmentTitle),
+                    Tab(text: AppString.statistics),
+                  ],
+                ),
+                flexibleSpace: LayoutBuilder(
+                  builder: (BuildContext context, BoxConstraints constraints) {
+                    final FlexibleSpaceBarSettings settings = context
+                        .dependOnInheritedWidgetOfExactType<FlexibleSpaceBarSettings>()!;
+                    final double deltaExtent = settings.maxExtent - settings.minExtent;
+                    final double t = (1.0 - (settings.currentExtent - settings.minExtent) / deltaExtent).clamp(
+                      0.0,
+                      1.0,
+                    );
 
-                  // t is 0.0 when completely deployed, 1.0 when completely collapsed
-                  return FlexibleSpaceBar(
-                    expandedTitleScale: 1.0,
-                    // once collapsed, the title shares the toolbar with the actions, keep it clear of them
-                    titlePadding: EdgeInsets.only(
-                      left: 144.0 - t * 88,
-                      right: t * actions.length * kMinInteractiveDimension,
-                      bottom: 15.0 - t * 11.0,
-                    ),
-                    title: Container(
-                      height: 100.0 - t * 52.0,
-                      alignment: Alignment.centerLeft,
-                      child: Text(
-                        bikeLabel.isEmpty ? AppString.notDefined : bikeLabel,
-                        // size and weight follow the collapse progress
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 24.0 - t * 8.0,
-                          fontWeight: FontWeight.lerp(FontWeight.bold, FontWeight.normal, t),
-                        ),
-                        maxLines: 3,
-                        overflow: TextOverflow.ellipsis,
+                    // t is 0.0 when completely deployed, 1.0 when completely collapsed
+                    return FlexibleSpaceBar(
+                      expandedTitleScale: 1.0,
+                      // once collapsed, the title shares the toolbar with the actions, keep it clear of them
+                      titlePadding: EdgeInsets.only(
+                        left: 144.0 - t * 88,
+                        right: t * actions.length * kMinInteractiveDimension,
+                        // above the tab bar
+                        bottom: kTextTabBarHeight + 15.0 - t * 11.0,
                       ),
-                    ),
-                    background: Stack(
-                      alignment: Alignment.bottomLeft,
-                      fit: StackFit.expand,
-                      children: <Widget>[
-                        // procedurally-generated pattern background, seeded by the bike id
-                        Positioned.fill(
-                          child: CustomPaint(painter: RandomPatternPainter(seed: bike.id ?? 0)),
+                      title: Container(
+                        height: 100.0 - t * 52.0,
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          bikeLabel.isEmpty ? AppString.notDefined : bikeLabel,
+                          // size and weight follow the collapse progress
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 24.0 - t * 8.0,
+                            fontWeight: FontWeight.lerp(FontWeight.bold, FontWeight.normal, t),
+                          ),
+                          maxLines: 3,
+                          overflow: TextOverflow.ellipsis,
                         ),
-                        // dark bottom gradient so the title and name stay readable over the pattern
-                        DecoratedBox(
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              begin: Alignment(0.0, 0.5),
-                              end: Alignment(0.0, -0.5),
-                              colors: <Color>[
-                                Colors.black.withAlpha(179),
-                                Colors.black.withAlpha(76),
-                                Colors.transparent,
-                              ],
+                      ),
+                      background: Stack(
+                        alignment: Alignment.bottomLeft,
+                        fit: StackFit.expand,
+                        children: <Widget>[
+                          // procedurally-generated pattern background, seeded by the bike id
+                          Positioned.fill(
+                            child: CustomPaint(painter: RandomPatternPainter(seed: bike.id ?? 0)),
+                          ),
+                          // dark bottom gradient so the title and name stay readable over the pattern
+                          DecoratedBox(
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                begin: Alignment(0.0, 0.5),
+                                end: Alignment(0.0, -0.5),
+                                colors: <Color>[
+                                  Colors.black.withAlpha(179),
+                                  Colors.black.withAlpha(76),
+                                  Colors.transparent,
+                                ],
+                              ),
                             ),
                           ),
-                        ),
-                        // white circular badge with the manufacturer logo
-                        Positioned(
-                          bottom: 15.0,
-                          left: 15.0,
-                          child: Container(
-                            width: 100.0,
-                            height: 100.0,
-                            padding: const EdgeInsets.all(18.0),
-                            decoration: const ShapeDecoration(shape: CircleBorder(), color: Colors.white),
-                            child: logoPath != null
-                                ? SvgPicture.asset(logoPath, fit: BoxFit.contain)
-                                : Icon(CustomIcons.motorbike_plain, color: Colors.deepPurple, size: 48),
-                          ),
-                        ),
-                      ],
-                    ),
-                  );
-                },
-              ),
-            ),
-            SliverPadding(
-              padding: const EdgeInsets.all(12.0),
-              sliver: SliverList(
-                delegate: SliverChildListDelegate(<Widget>[
-                  // details card
-                  Container(
-                    decoration: BoxDecoration(
-                      border: Border.all(color: Colors.white, width: 1.0),
-                      borderRadius: BorderRadius.circular(8.0),
-                      color: Colors.blue[100],
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withAlpha(25),
-                          spreadRadius: 0.5,
-                          blurRadius: 0.5,
-                          offset: const Offset(2, 2),
-                        ),
-                      ],
-                    ),
-                    clipBehavior: Clip.antiAlias,
-                    child: Column(
-                      children: <Widget>[
-                        _detailRow(
-                          icon: Icons.factory,
-                          iconColor: Colors.indigo[600]!,
-                          label: AppString.bikeManufacturer,
-                          value: StringUtils.capitalize(bike.manufacturer ?? '') ?? AppString.notDefined,
-                        ),
-                        _divider(),
-                        _detailRow(
-                          icon: CustomIcons.motorbike_plain,
-                          iconColor: Colors.deepPurple,
-                          label: AppString.bikeModel,
-                          value: bike.modelName ?? AppString.notDefined,
-                        ),
-                        _divider(),
-                        _detailRow(
-                          icon: Icons.speed,
-                          iconColor: Colors.red[700]!,
-                          label: AppString.bikeEngineSize,
-                          value: bike.engineSize != null ? "${bike.engineSize} cc" : AppString.notDefined,
-                        ),
-                        _divider(),
-                        _detailRow(
-                          icon: Icons.calendar_today,
-                          iconColor: Colors.teal[700]!,
-                          label: AppString.bikeYear,
-                          value: bike.year?.toString() ?? AppString.notDefined,
-                        ),
-                        if (currentKm != null) ...[
-                          _divider(),
-                          _detailRow(
-                            icon: Icons.speed,
-                            iconColor: Colors.green[700]!,
-                            // flagged as an estimate as soon as track days are added to the reading
-                            label: trackKmSinceReading > 0 ? AppString.bikeMileageEstimated : AppString.bikeMileage,
-                            value: trackKmSinceReading > 0
-                                ? "≈ ${MaintenanceUtils.formatKm(currentKm)}"
-                                : MaintenanceUtils.formatKm(currentKm),
+                          // white circular badge with the manufacturer logo
+                          Positioned(
+                            bottom: kTextTabBarHeight + 15.0,
+                            left: 15.0,
+                            child: Container(
+                              width: 100.0,
+                              height: 100.0,
+                              padding: const EdgeInsets.all(18.0),
+                              decoration: const ShapeDecoration(shape: CircleBorder(), color: Colors.white),
+                              child: logoPath != null
+                                  ? SvgPicture.asset(logoPath, fit: BoxFit.contain)
+                                  : Icon(CustomIcons.motorbike_plain, color: Colors.deepPurple, size: 48),
+                            ),
                           ),
                         ],
-                        if (isCurrent) ...[
-                          _divider(),
-                          _detailRow(
-                            icon: Icons.star,
-                            iconColor: Colors.amber[800]!,
-                            label: AppString.bikeStatusLabel,
-                            value: AppString.bikeCurrentLabel,
-                          ),
-                        ],
-                      ],
-                    ),
-                  ),
-                  // maintenance plan, next due maintenance, odometer and last maintenance
-                  Padding(
-                    padding: const EdgeInsets.only(top: 12.0),
-                    child: BikeMaintenanceCard(bike: bike),
-                  ),
-                  // parts fitted to the bike
-                  Padding(
-                    padding: const EdgeInsets.only(top: 12.0),
-                    child: BikeEquipmentCard(bike: bike),
-                  ),
-                  // bike usage statistics
-                  Padding(
-                    padding: const EdgeInsets.only(top: 12.0),
-                    child: _buildStatsCard(bikeEventMembers, _recordListProvider.myRecords.toList()),
-                  ),
-                  // chronos recorded with this bike
-                  () {
-                    final Widget? chronosCard = _buildChronosCard(
-                      context,
-                      bike,
-                      _recordListProvider.myRecords.toList(),
+                      ),
                     );
-                    if (chronosCard == null) return const SizedBox.shrink();
-                    return Padding(padding: const EdgeInsets.only(top: 12.0), child: chronosCard);
-                  }(),
-                  SizedBox(height: MediaQuery.of(context).padding.bottom + 16.0),
-                ]),
+                  },
+                ),
               ),
             ),
           ],
+          body: TabBarView(
+            controller: _tabController,
+            children: <Widget>[
+              _tab('details', bottomInset, <Widget>[
+                SliverPadding(
+                  padding: const EdgeInsets.all(12.0),
+                  sliver: SliverToBoxAdapter(
+                    // details card
+                    child: Container(
+                      decoration: BoxDecoration(
+                        border: Border.all(color: Colors.white, width: 1.0),
+                        borderRadius: BorderRadius.circular(8.0),
+                        color: Colors.blue[100],
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withAlpha(25),
+                            spreadRadius: 0.5,
+                            blurRadius: 0.5,
+                            offset: const Offset(2, 2),
+                          ),
+                        ],
+                      ),
+                      clipBehavior: Clip.antiAlias,
+                      child: Column(
+                        children: <Widget>[
+                          _detailRow(
+                            icon: Icons.factory,
+                            iconColor: Colors.indigo[600]!,
+                            label: AppString.bikeManufacturer,
+                            value: StringUtils.capitalize(bike.manufacturer ?? '') ?? AppString.notDefined,
+                          ),
+                          _divider(),
+                          _detailRow(
+                            icon: CustomIcons.motorbike_plain,
+                            iconColor: Colors.deepPurple,
+                            label: AppString.bikeModel,
+                            value: bike.modelName ?? AppString.notDefined,
+                          ),
+                          _divider(),
+                          _detailRow(
+                            icon: Icons.speed,
+                            iconColor: Colors.red[700]!,
+                            label: AppString.bikeEngineSize,
+                            value: bike.engineSize != null ? "${bike.engineSize} cc" : AppString.notDefined,
+                          ),
+                          _divider(),
+                          _detailRow(
+                            icon: Icons.calendar_today,
+                            iconColor: Colors.teal[700]!,
+                            label: AppString.bikeYear,
+                            value: bike.year?.toString() ?? AppString.notDefined,
+                          ),
+                          if (currentKm != null) ...[
+                            _divider(),
+                            _detailRow(
+                              icon: Icons.speed,
+                              iconColor: Colors.green[700]!,
+                              // flagged as an estimate as soon as track days are added to the reading
+                              label: trackKmSinceReading > 0 ? AppString.bikeMileageEstimated : AppString.bikeMileage,
+                              value: trackKmSinceReading > 0
+                                  ? "≈ ${MaintenanceUtils.formatKm(currentKm)}"
+                                  : MaintenanceUtils.formatKm(currentKm),
+                            ),
+                          ],
+                          if (isCurrent) ...[
+                            _divider(),
+                            _detailRow(
+                              icon: Icons.star,
+                              iconColor: Colors.amber[800]!,
+                              label: AppString.bikeStatusLabel,
+                              value: AppString.bikeCurrentLabel,
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ]),
+              _tab('maintenance', bottomInset, <Widget>[
+                // maintenance plan, next due maintenance, odometer and last maintenance
+                SliverPadding(
+                  padding: const EdgeInsets.all(12.0),
+                  sliver: SliverToBoxAdapter(child: BikeMaintenanceCard(bike: bike)),
+                ),
+              ]),
+              // parts fitted to the bike, ordered by drag and drop
+              _tab('equipments', bottomInset, <Widget>[
+                SliverPadding(
+                  padding: const EdgeInsets.all(12.0),
+                  sliver: BikeEquipmentList(bike: bike),
+                ),
+              ]),
+              _tab('statistics', bottomInset, <Widget>[
+                SliverPadding(
+                  padding: const EdgeInsets.all(12.0),
+                  sliver: SliverList(
+                    delegate: SliverChildListDelegate(<Widget>[
+                      // bike usage statistics
+                      _buildStatsCard(bikeEventMembers, _recordListProvider.myRecords.toList()),
+                      // chronos recorded with this bike
+                      if (chronosCard != null) Padding(padding: const EdgeInsets.only(top: 12.0), child: chronosCard),
+                    ]),
+                  ),
+                ),
+              ]),
+            ],
+          ),
         ),
+      ),
+    );
+  }
+
+  /// Content of a tab: the given [slivers] below the part of the header pinned over the tabs, then room for the
+  /// system bar and the add button ([bottom]). The key keeps the scroll position of each tab.
+  Widget _tab(String key, double bottom, List<Widget> slivers) {
+    return Builder(
+      builder: (BuildContext context) => CustomScrollView(
+        key: PageStorageKey<String>(key),
+        slivers: <Widget>[
+          SliverOverlapInjector(handle: NestedScrollView.sliverOverlapAbsorberHandleFor(context)),
+          ...slivers,
+          SliverToBoxAdapter(child: SizedBox(height: bottom + 16.0)),
+        ],
       ),
     );
   }

@@ -31,7 +31,8 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 /// "Entretien" card of the bike detail page: maintenance plan, next due maintenance, odometer and last maintenance,
-/// with the entry points to record a maintenance and to the maintenance history.
+/// with the entry points to record a maintenance and to the maintenance history. The data is loaded by the bike
+/// detail page.
 class BikeMaintenanceCard extends StatefulWidget {
   final Bike bike;
 
@@ -42,15 +43,6 @@ class BikeMaintenanceCard extends StatefulWidget {
 }
 
 class _BikeMaintenanceCardState extends State<BikeMaintenanceCard> {
-  @override
-  void initState() {
-    super.initState();
-    // always reload when the page opens, a reminder may have been triggered by a change made on another device
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) Provider.of<BikeMaintenanceProvider>(context, listen: false).load(widget.bike.id!);
-    });
-  }
-
   Widget _divider() => Container(height: 1, color: Colors.white.withValues(alpha: 0.6));
 
   /// Info row, same idiom as the other cards of the bike detail page, optionally tappable.
@@ -257,49 +249,33 @@ class _BikeMaintenanceCardState extends State<BikeMaintenanceCard> {
       child: Material(
         color: Colors.transparent,
         child: Column(
+          // no title, the tab of the bike detail page already names it
           children: <Widget>[
-            Padding(
-              padding: const EdgeInsets.fromLTRB(14.0, 4.0, 4.0, 4.0),
-              child: Row(
-                children: <Widget>[
-                  Icon(Icons.build_circle, color: Colors.teal[700], size: 18.0),
-                  const SizedBox(width: 6.0),
-                  Expanded(
-                    child: Text(
-                      AppString.maintenanceTitle,
-                      style: TextStyle(
-                        color: Colors.black.withAlpha(170),
-                        fontSize: 12.0,
-                        fontWeight: FontWeight.w700,
-                        letterSpacing: 0.4,
-                      ),
-                    ),
-                  ),
-                  TextButton(
-                    onPressed: data == null || data.maintenances.isEmpty
-                        ? null
-                        : () => Navigator.pushNamed(context, '/maintenanceHistory', arguments: widget.bike),
-                    child: Text(AppString.maintenanceSeeHistory),
-                  ),
-                ],
-              ),
-            ),
-            _divider(),
             ...rows,
             if (data != null) ...[
               _divider(),
               Padding(
                 padding: const EdgeInsets.all(8.0),
-                child: Center(
-                  child: TextButton.icon(
-                    onPressed: () => Navigator.pushNamed(
-                      context,
-                      '/addEditMaintenance',
-                      arguments: MaintenanceFormArguments(bike: widget.bike),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: <Widget>[
+                    TextButton.icon(
+                      onPressed: data.maintenances.isEmpty
+                          ? null
+                          : () => Navigator.pushNamed(context, '/maintenanceHistory', arguments: widget.bike),
+                      icon: const Icon(Icons.history),
+                      label: Text(AppString.maintenanceSeeHistory),
                     ),
-                    icon: const Icon(Icons.add),
-                    label: Text(AppString.maintenanceCreate),
-                  ),
+                    TextButton.icon(
+                      onPressed: () => Navigator.pushNamed(
+                        context,
+                        '/addEditMaintenance',
+                        arguments: MaintenanceFormArguments(bike: widget.bike),
+                      ),
+                      icon: const Icon(Icons.add),
+                      label: Text(AppString.maintenanceCreate),
+                    ),
+                  ],
                 ),
               ),
             ],

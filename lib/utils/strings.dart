@@ -300,6 +300,7 @@ class AppString {
   static const String bikeYearMandatory = 'L\'année est obligatoire';
   static const String noBike = 'Aucune moto enregistrée';
   static const String bikeDetailTitle = 'Détail de la moto';
+  static const String bikeTabInfo = 'Infos';
   static const String bikeStatusLabel = 'Statut';
   static const String bikeCurrentLabel = 'Moto courante';
   static const String bikeMileage = 'Kilométrage';
@@ -437,11 +438,10 @@ class AppString {
   static const String equipmentCurrency = 'Devise';
   static const String equipmentComment = 'Détail (optionnel)';
   static const String equipmentCommentHint = 'Référence, lieu d\'achat, date de montage…';
-  static const String equipmentTotal = 'Total';
-  static const String equipmentReorder = 'Ordonner';
-  static const String equipmentReorderHelp =
-      'Maintenez un équipement ou sa poignée, puis faites-le glisser pour changer l\'ordre. La fiche PDF suit cet '
-      'ordre.';
+  static const String equipmentCountOne = '1 équipement';
+  static const String equipmentCountMany = '{0} équipements';
+  static const String equipmentTotalOf = 'Total : {0}';
+  static const String equipmentNoPrice = 'Aucun prix renseigné';
 
   static const String tracksSearchHint = 'Nom du circuit';
   static const String tracksNotFound = 'Aucun circuit trouvé';
