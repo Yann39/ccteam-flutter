@@ -376,36 +376,70 @@ class MemberStatsUtils {
       final DateTime? start = event.startDate;
       if (start == null) continue;
       if (start.isAfter(now)) continue;
-      final track = event.track;
-      if (track?.distance == null || track!.distance! <= 0) continue;
-
-      final List<int> sessionDurations = _riddenSessionDurations(em, event, start);
-
-      // lap time on this track: member's best chrono bumped by 2 %
-      // for "average lap" feel, else track's record + 15 %, else 2-minute default
-      int? lapMs;
-      for (final r in records) {
-        if (r.track?.id == track.id && r.lapTime != null) {
-          if (lapMs == null || r.lapTime! < lapMs) lapMs = r.lapTime;
-        }
-      }
-      if (lapMs != null) {
-        lapMs = (lapMs * 1.02).round();
-      } else if (track.lapRecord != null && track.lapRecord! > 0) {
-        lapMs = (track.lapRecord! * 1.15).round();
-      }
-      lapMs ??= 120 * 1000;
-
-      // full laps only, counted session by session: a lap started at the
-      // chequered flag doesn't add distance
-      int totalLaps = 0;
-      for (final int minutes in sessionDurations) {
-        totalLaps += (minutes * 60 * 1000) ~/ lapMs;
-      }
-      totalMeters += track.distance! * totalLaps;
+      totalMeters += _estimateMeters(em, event, start, records);
     }
 
     return (totalMeters / 1000).round();
+  }
+
+  /// Estimated km accumulated over time: one point per past event that
+  /// adds distance, sorted by date, each carrying the running total
+  /// (same heuristic as [estimateKm], so the last point is its result).
+  /// Empty list when no past event has a track with a known distance.
+  static List<KmProgress> kmProgress({
+    required List<EventMember>? eventMembers,
+    required Iterable<Record> records,
+    required DateTime now,
+  }) {
+    if (eventMembers == null || eventMembers.isEmpty) return const <KmProgress>[];
+
+    final List<EventMember> past = eventMembers.where((em) {
+      final DateTime? start = em.event?.startDate;
+      return start != null && !start.isAfter(now);
+    }).toList()..sort((a, b) => a.event!.startDate!.compareTo(b.event!.startDate!));
+
+    final List<KmProgress> out = <KmProgress>[];
+    int totalMeters = 0;
+    for (final em in past) {
+      final Event event = em.event!;
+      final int meters = _estimateMeters(em, event, event.startDate!, records);
+      if (meters <= 0) continue;
+      totalMeters += meters;
+      out.add(KmProgress(date: event.startDate!, trackName: event.track?.name, km: (totalMeters / 1000).round()));
+    }
+    return out;
+  }
+
+  /// Estimated distance (in metres) ridden by the member at [event], see
+  /// [estimateKm] for the heuristic. 0 when the track distance is unknown.
+  static int _estimateMeters(EventMember em, Event event, DateTime start, Iterable<Record> records) {
+    final track = event.track;
+    if (track?.distance == null || track!.distance! <= 0) return 0;
+
+    final List<int> sessionDurations = _riddenSessionDurations(em, event, start);
+
+    // lap time on this track: member's best chrono bumped by 2 %
+    // for "average lap" feel, else track's record + 15 %, else 2-minute default
+    int? lapMs;
+    for (final r in records) {
+      if (r.track?.id == track.id && r.lapTime != null) {
+        if (lapMs == null || r.lapTime! < lapMs) lapMs = r.lapTime;
+      }
+    }
+    if (lapMs != null) {
+      lapMs = (lapMs * 1.02).round();
+    } else if (track.lapRecord != null && track.lapRecord! > 0) {
+      lapMs = (track.lapRecord! * 1.15).round();
+    }
+    lapMs ??= 120 * 1000;
+
+    // full laps only, counted session by session: a lap started at the
+    // chequered flag doesn't add distance
+    int totalLaps = 0;
+    for (final int minutes in sessionDurations) {
+      totalLaps += (minutes * 60 * 1000) ~/ lapMs;
+    }
+    return track.distance! * totalLaps;
   }
 
   /// Estimate of the total riding time across past events, in minutes:
@@ -540,6 +574,16 @@ class OrganizerSpending {
 
   final String name;
   final double amount;
+}
+
+/// One point of [MemberStatsUtils.kmProgress]: the estimated km ridden
+/// in total once the event of [date] (on [trackName]) is over.
+class KmProgress {
+  const KmProgress({required this.date, required this.trackName, required this.km});
+
+  final DateTime date;
+  final String? trackName;
+  final int km;
 }
 
 /// One entry in [MemberStatsUtils.participationsPerYear]. Pure data,

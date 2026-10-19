@@ -46,6 +46,7 @@ import 'package:ccteam/utils/strings.dart';
 import 'package:ccteam/utils/track_utils.dart';
 import 'package:ccteam/widgets/random_pattern_painter.dart';
 import 'package:ccteam/widgets/restricted_content.dart';
+import 'package:ccteam/widgets/stats_charts.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:logging/logging.dart';
@@ -70,6 +71,9 @@ class _BikeDetailState extends State<BikeDetail> with SingleTickerProviderStateM
 
   // tabs: details (default), maintenance, equipments, statistics
   late final TabController _tabController;
+
+  // km chart unfolded under the first row of the statistics card
+  bool _showKmChart = false;
 
   @override
   void initState() {
@@ -192,8 +196,18 @@ class _BikeDetailState extends State<BikeDetail> with SingleTickerProviderStateM
 
   /// Single info row inside the details card, same idiom as the chrono detail page
   /// (icon in a soft circular halo + label above value).
-  Widget _detailRow({required IconData icon, required Color iconColor, required String label, required String value}) {
-    return Padding(
+  ///
+  /// With [chartExpanded] and [onToggleChart], the whole row toggles the chart shown below it, with a chevron on the
+  /// right, like the stats rows of the "Mon compte" page.
+  Widget _detailRow({
+    required IconData icon,
+    required Color iconColor,
+    required String label,
+    required String value,
+    bool? chartExpanded,
+    VoidCallback? onToggleChart,
+  }) {
+    final Widget row = Padding(
       padding: const EdgeInsets.symmetric(horizontal: 14.0, vertical: 12.0),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
@@ -219,9 +233,21 @@ class _BikeDetailState extends State<BikeDetail> with SingleTickerProviderStateM
               ],
             ),
           ),
+          if (chartExpanded != null && onToggleChart != null)
+            Tooltip(
+              message: chartExpanded ? AppString.hideChart : AppString.showChart,
+              child: AnimatedRotation(
+                turns: chartExpanded ? 0.5 : 0.0,
+                duration: const Duration(milliseconds: 200),
+                curve: Curves.easeOut,
+                child: Icon(Icons.expand_more, size: 22.0, color: Colors.black.withValues(alpha: 0.45)),
+              ),
+            ),
         ],
       ),
     );
+    if (chartExpanded == null || onToggleChart == null) return row;
+    return InkWell(onTap: onToggleChart, child: row);
   }
 
   Widget _divider() {
@@ -331,6 +357,13 @@ class _BikeDetailState extends State<BikeDetail> with SingleTickerProviderStateM
     final int km = MemberStatsUtils.estimateKm(eventMembers: bikeEventMembers, records: myRecords, now: now);
     final int ridingMinutes = MemberStatsUtils.estimateRidingMinutes(eventMembers: bikeEventMembers, now: now);
     final MostRiddenTrack? favTrack = MemberStatsUtils.mostRiddenTrack(eventMembers: bikeEventMembers, now: now);
+    final List<KmProgress> kmProgress = MemberStatsUtils.kmProgress(
+      eventMembers: bikeEventMembers,
+      records: myRecords,
+      now: now,
+    );
+    // a chart needs at least two track days
+    final bool hasKmChart = kmProgress.length >= 2;
 
     return Container(
       decoration: BoxDecoration(
@@ -342,39 +375,52 @@ class _BikeDetailState extends State<BikeDetail> with SingleTickerProviderStateM
         ],
       ),
       clipBehavior: Clip.antiAlias,
-      // no title, the tab already names it
-      child: Column(
-        children: <Widget>[
-          _detailRow(
-            icon: Icons.route,
-            iconColor: Colors.green[700]!,
-            label: AppString.statsKmEstimated,
-            value: "≈ $km km",
-          ),
-          _divider(),
-          _detailRow(
-            icon: Icons.timer_outlined,
-            iconColor: Colors.orange[800]!,
-            label: AppString.statsRidingTimeEstimated,
-            value: "≈ ${_ridingTimeLabel(ridingMinutes)}",
-          ),
-          _divider(),
-          _detailRow(
-            icon: Icons.event,
-            iconColor: Colors.purple[600]!,
-            label: AppString.statsTrackEventsCount,
-            value: events.toString(),
-          ),
-          if (favTrack != null) ...[
+      // paints the ripple of the expandable row over the card
+      child: Material(
+        type: MaterialType.transparency,
+        // no title, the tab already names it
+        child: Column(
+          children: <Widget>[
+            _detailRow(
+              icon: Icons.route,
+              iconColor: Colors.green[700]!,
+              label: AppString.statsKmEstimated,
+              value: "≈ $km km",
+              chartExpanded: hasKmChart ? _showKmChart : null,
+              onToggleChart: hasKmChart ? () => setState(() => _showKmChart = !_showKmChart) : null,
+            ),
+            // estimated km accumulated over the track days
+            AnimatedSize(
+              duration: const Duration(milliseconds: 220),
+              curve: Curves.easeOut,
+              alignment: Alignment.topCenter,
+              child: _showKmChart && hasKmChart ? KmProgressLineChart(points: kmProgress) : const SizedBox.shrink(),
+            ),
             _divider(),
             _detailRow(
-              icon: TrackUtils.trackIconFromName(favTrack.name),
-              iconColor: Colors.red[700]!,
-              label: AppString.statsFavoriteTrack,
-              value: "${favTrack.name} (${AppString.format(AppString.statsFavoriteTrackTimes, [favTrack.count])})",
+              icon: Icons.timer_outlined,
+              iconColor: Colors.orange[800]!,
+              label: AppString.statsRidingTimeEstimated,
+              value: "≈ ${_ridingTimeLabel(ridingMinutes)}",
             ),
+            _divider(),
+            _detailRow(
+              icon: Icons.event,
+              iconColor: Colors.purple[600]!,
+              label: AppString.statsTrackEventsCount,
+              value: events.toString(),
+            ),
+            if (favTrack != null) ...[
+              _divider(),
+              _detailRow(
+                icon: TrackUtils.trackIconFromName(favTrack.name),
+                iconColor: Colors.red[700]!,
+                label: AppString.statsFavoriteTrack,
+                value: "${favTrack.name} (${AppString.format(AppString.statsFavoriteTrackTimes, [favTrack.count])})",
+              ),
+            ],
           ],
-        ],
+        ),
       ),
     );
   }

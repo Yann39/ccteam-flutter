@@ -17,11 +17,16 @@
  * along with CCTeam. If not, see <http://www.gnu.org/licenses/>.
  */
 
+import 'dart:math' as math;
+
 import 'package:ccteam/models/bike.dart';
+import 'package:ccteam/utils/constants.dart';
+import 'package:ccteam/utils/maintenance_utils.dart';
 import 'package:ccteam/utils/member_stats.dart';
 import 'package:ccteam/utils/strings.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 /// Two compact charts displayed inline in the "My account" stats card:
 /// a donut showing how the member's past participations split across
@@ -328,6 +333,211 @@ class EventsPerYearBarChart extends StatelessWidget {
             ),
           ),
           duration: const Duration(milliseconds: 600),
+          curve: Curves.easeOutCubic,
+        ),
+      ),
+    );
+  }
+}
+
+/// Step line chart of the estimated km accumulated over time, one dot per
+/// track day. The X axis is the calendar (so the winter breaks show as flat
+/// stretches), labelled by month or by year depending on the span; the Y
+/// axis shows the km. Green, like the "Km estimés" row it unfolds under.
+///
+/// Tapping a dot pins a tooltip with its date, track and running total,
+/// until another tap. Built-in touches are off for that: they would hide the
+/// tooltip as soon as the finger lifts.
+class KmProgressLineChart extends StatefulWidget {
+  const KmProgressLineChart({Key? key, required this.points}) : super(key: key);
+
+  final List<KmProgress> points;
+
+  @override
+  State<KmProgressLineChart> createState() => _KmProgressLineChartState();
+}
+
+class _KmProgressLineChartState extends State<KmProgressLineChart> {
+  static final NumberFormat _axisKmFormat = NumberFormat('#,##0', 'fr_CH');
+
+  /// Month steps the X labels may use, the first one leaving at most 4 labels wins.
+  static const List<int> _monthSteps = <int>[1, 2, 3, 6, 12, 24, 36, 60];
+
+  int? _selected;
+
+  /// Position of [date] on the X axis, in months.
+  static double _monthX(DateTime date) =>
+      date.year * 12 + (date.month - 1) + (date.day - 1) / DateUtils.getDaysInMonth(date.year, date.month);
+
+  /// Round step for the Y axis, about a quarter of [maxKm] (1, 2, 2.5 or 5 × a power of ten).
+  static double _kmStep(int maxKm) {
+    final double raw = maxKm / 4;
+    if (raw <= 1) return 1;
+    final double magnitude = math.pow(10, (math.log(raw) / math.ln10).floor()).toDouble();
+    for (final double factor in const <double>[1, 2, 2.5, 5, 10]) {
+      if (factor * magnitude >= raw) return factor * magnitude;
+    }
+    return 10 * magnitude;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final List<KmProgress> points = widget.points;
+    // a single dot isn't a trend, the row above already gives the figure
+    if (points.length < 2) return const SizedBox.shrink();
+
+    final Color color = Colors.green[700]!;
+    final TextStyle axisStyle = TextStyle(
+      color: Colors.black.withAlpha(150),
+      fontSize: 10.5,
+      fontFeatures: const <FontFeature>[FontFeature.tabularFigures()],
+    );
+
+    final List<FlSpot> spots = <FlSpot>[for (final p in points) FlSpot(_monthX(p.date), p.km.toDouble())];
+    final double firstX = spots.first.x;
+    final double lastX = spots.last.x;
+    final double span = math.max(lastX - firstX, 1.0);
+    final int monthStep = _monthSteps.firstWhere((step) => span / step <= 4, orElse: () => _monthSteps.last);
+
+    final double kmStep = _kmStep(points.last.km);
+    final double maxY = math.max(((points.last.km * 1.1) / kmStep).ceil() * kmStep, kmStep);
+
+    final int? selected = _selected != null && _selected! < spots.length ? _selected : null;
+    final LineChartBarData line = LineChartBarData(
+      spots: spots,
+      color: color,
+      barWidth: 2.5,
+      isStrokeCapRound: true,
+      // steps: the km stay flat between two track days (winter breaks included) and jump on the day
+      isStepLineChart: true,
+      lineChartStepData: const LineChartStepData(stepDirection: LineChartStepData.stepDirectionForward),
+      dotData: FlDotData(
+        // dozens of dots would only blur the line
+        show: spots.length <= 30,
+        getDotPainter: (spot, percent, bar, index) =>
+            FlDotCirclePainter(radius: 3.0, color: color, strokeWidth: 1.5, strokeColor: Colors.white),
+      ),
+      belowBarData: BarAreaData(
+        show: true,
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: <Color>[Colors.green[400]!.withValues(alpha: 0.35), Colors.green[400]!.withValues(alpha: 0.02)],
+        ),
+      ),
+      showingIndicators: selected == null ? const <int>[] : <int>[selected],
+    );
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(6.0, 12.0, 18.0, 10.0),
+      child: SizedBox(
+        height: 160,
+        child: LineChart(
+          LineChartData(
+            minX: firstX - span * 0.03,
+            maxX: lastX + span * 0.03,
+            minY: 0,
+            maxY: maxY,
+            lineBarsData: <LineChartBarData>[line],
+            showingTooltipIndicators: selected == null
+                ? const <ShowingTooltipIndicators>[]
+                : <ShowingTooltipIndicators>[
+                    ShowingTooltipIndicators(<LineBarSpot>[LineBarSpot(line, 0, spots[selected])]),
+                  ],
+            borderData: FlBorderData(show: false),
+            gridData: FlGridData(
+              show: true,
+              drawVerticalLine: false,
+              horizontalInterval: kmStep,
+              getDrawingHorizontalLine: (_) =>
+                  FlLine(color: Colors.white.withValues(alpha: 0.8), strokeWidth: 1.0, dashArray: const <int>[4, 4]),
+            ),
+            titlesData: FlTitlesData(
+              topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+              rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+              leftTitles: AxisTitles(
+                sideTitles: SideTitles(
+                  showTitles: true,
+                  reservedSize: 40.0,
+                  interval: kmStep,
+                  getTitlesWidget: (double value, TitleMeta meta) => SideTitleWidget(
+                    meta: meta,
+                    space: 6.0,
+                    child: Text(_axisKmFormat.format(value.round()), style: axisStyle),
+                  ),
+                ),
+              ),
+              bottomTitles: AxisTitles(
+                sideTitles: SideTitles(
+                  showTitles: true,
+                  reservedSize: 24.0,
+                  interval: monthStep.toDouble(),
+                  // calendar boundaries only (month starts, or January for yearly steps), not the range edges
+                  minIncluded: false,
+                  maxIncluded: false,
+                  getTitlesWidget: (double value, TitleMeta meta) {
+                    final int month = value.round();
+                    final DateTime date = DateTime(month ~/ 12, month % 12 + 1);
+                    return SideTitleWidget(
+                      meta: meta,
+                      space: 6.0,
+                      fitInside: SideTitleFitInsideData.fromTitleMeta(meta, distanceFromEdge: 0),
+                      child: Text(
+                        monthStep >= 12 ? date.year.toString() : DateFormat('MMM yy', 'fr').format(date),
+                        style: axisStyle,
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ),
+            lineTouchData: LineTouchData(
+              handleBuiltInTouches: false,
+              touchSpotThreshold: 24.0,
+              touchCallback: (FlTouchEvent event, LineTouchResponse? response) {
+                // a tap pins the nearest dot (or clears it away from the dots), a long press scrubs along the line
+                if (event is! FlTapUpEvent && event is! FlLongPressStart && event is! FlLongPressMoveUpdate) return;
+                final List<TouchLineBarSpot>? touched = response?.lineBarSpots;
+                final int? index = touched == null || touched.isEmpty ? null : touched.first.spotIndex;
+                if (index != _selected) setState(() => _selected = index);
+              },
+              getTouchedSpotIndicator: (LineChartBarData bar, List<int> indexes) => indexes
+                  .map(
+                    (_) => TouchedSpotIndicatorData(
+                      FlLine(color: color.withValues(alpha: 0.5), strokeWidth: 1.5, dashArray: const <int>[3, 3]),
+                      FlDotData(
+                        getDotPainter: (spot, percent, bar, index) =>
+                            FlDotCirclePainter(radius: 5.0, color: color, strokeWidth: 2.0, strokeColor: Colors.white),
+                      ),
+                    ),
+                  )
+                  .toList(),
+              touchTooltipData: LineTouchTooltipData(
+                getTooltipColor: (_) => Colors.blueGrey[800]!,
+                tooltipBorderRadius: BorderRadius.circular(6.0),
+                tooltipPadding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 6.0),
+                maxContentWidth: 180.0,
+                fitInsideHorizontally: true,
+                fitInsideVertically: true,
+                getTooltipItems: (List<LineBarSpot> touchedSpots) => touchedSpots.map((LineBarSpot spot) {
+                  final KmProgress point = points[spot.spotIndex];
+                  return LineTooltipItem(
+                    DateFormat(DATE_FORMAT_DAY).format(point.date),
+                    const TextStyle(color: Colors.white70, fontSize: 11.0),
+                    children: <TextSpan>[
+                      if (point.trackName != null && point.trackName!.isNotEmpty)
+                        TextSpan(text: '\n${point.trackName}'),
+                      TextSpan(
+                        text: '\n≈ ${MaintenanceUtils.formatKm(point.km)}',
+                        style: const TextStyle(color: Colors.white, fontSize: 12.5, fontWeight: FontWeight.w700),
+                      ),
+                    ],
+                  );
+                }).toList(),
+              ),
+            ),
+          ),
+          duration: const Duration(milliseconds: 300),
           curve: Curves.easeOutCubic,
         ),
       ),
