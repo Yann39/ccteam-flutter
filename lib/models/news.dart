@@ -86,7 +86,7 @@ class News {
         createdOn = json['createdOn'] != null ? DateTime.parse(json['createdOn']) : null,
         createdBy = json['createdBy'] != null ? Member.fromJson(json['createdBy']) : null,
         modifiedOn = json['modifiedOn'] != null ? DateTime.parse(json['modifiedOn']) : null,
-        modifiedBy = json['modifiedBy'] != null ? Member.fromJson(json['createdBy']) : null;
+        modifiedBy = json['modifiedBy'] != null ? Member.fromJson(json['modifiedBy']) : null;
 
   /// Convert [News] object to the corresponding JSON map
   Map<String, dynamic> toJson() => {
