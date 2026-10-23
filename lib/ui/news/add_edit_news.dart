@@ -188,7 +188,8 @@ class _AddEditNewsState extends State<AddEditNews> {
     );
 
     return FormScaffold(
-      title: AppString.newsCreate,
+      // if id is set this is an update, else a creation
+      title: _newsCreationProvider.news.id != null ? AppString.newsEdit : AppString.newsCreate,
       formKey: _formKey,
       loadingStatus: _newsCreationProvider.loadingStatus,
       onSave: () => submitForm(_newsCreationProvider.news),
