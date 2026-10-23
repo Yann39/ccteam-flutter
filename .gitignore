@@ -15,4 +15,3 @@ packages
 android/key.properties
 **/.cxx
 .flutter-plugins-dependencies
-pubspec.lock
