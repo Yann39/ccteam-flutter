@@ -294,10 +294,28 @@ class LoginProvider extends ChangeNotifier {
   /// Check if the user needs to authenticate.
   /// Used to be called on app start.
   /// If email is found in shared preferences and exists in the database, user will be consider as logged in.
+  ///
+  /// It is called from the constructor without being awaited, so any unexpected error (a plugin failing on the
+  /// device for instance) is caught here, otherwise the app would stay on the loading page forever.
   Future<void> _checkUser() async {
     _log.info("Checking user...");
     _setAuthStatus(AuthStatus.Initializing);
 
+    try {
+      await _restoreSession();
+    } catch (error, stackTrace) {
+      _log.severe("Unexpected error while checking user, going to the login page", error, stackTrace);
+      _setLoginStatus(LoginStatus.EmailStep);
+      _setAuthStatus(AuthStatus.Unauthenticated);
+      _messageProvider.setMessage(
+        AppString.format(AppString.errorUnknown, [error.toString()]),
+        MessageType.ERROR,
+      );
+    }
+  }
+
+  /// Restore the session stored in shared preferences (e-mail and JWT) and load the logged member from the database.
+  Future<void> _restoreSession() async {
     // read shared preference to get any e-mail and JWT
     final SharedPreferences _prefs = await SharedPreferences.getInstance();
     final String? _email = _prefs.getString('email');
