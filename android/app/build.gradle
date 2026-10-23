@@ -6,10 +6,18 @@ plugins {
 // Firebase (push notifications). Applied only when the configuration file
 // downloaded from the Firebase console is present, so the project still
 // builds on a machine without it (Firebase is then disabled at runtime).
+// A release build fails without it, so that a version without push
+// notifications cannot be published by mistake.
 if (file('google-services.json').exists()) {
     apply plugin: 'com.google.gms.google-services'
 } else {
     logger.warn("google-services.json not found in android/app, Firebase (push notifications) will be disabled in this build")
+    gradle.taskGraph.whenReady { graph ->
+        if (graph.allTasks.any { it.project == project && it.name.contains('Release') }) {
+            throw new GradleException("google-services.json not found in android/app, it is required for a release build " +
+                    "(download it from the Firebase console)")
+        }
+    }
 }
 
 def localProperties = new Properties()

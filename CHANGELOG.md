@@ -117,3 +117,9 @@
 - Improved motorcycle maintenance history page UI
 - Fixed motorcycle maintenance history timeline horizontal alignment
 - Fixed last modifier of a news item wrongly read from the creator
+
+# 1.3.2
+
+in progress
+
+- Fixed push notifications not working
