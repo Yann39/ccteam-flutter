@@ -120,7 +120,7 @@
 
 # 1.3.2
 
-in progress
+2026-10-23
 
 - Fixed app stuck on the loading page at startup
 - Fixed push notifications not working
