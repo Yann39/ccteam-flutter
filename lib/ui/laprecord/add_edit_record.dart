@@ -311,7 +311,8 @@ class _AddEditRecordState extends State<AddEditRecord> {
     );
 
     return FormScaffold(
-      title: AppString.recordEdit,
+      // if id is set this is an update, else a creation
+      title: _recordCreationProvider.record.id != null ? AppString.recordEdit : AppString.recordCreate,
       formKey: _formKey,
       loadingStatus: _recordCreationProvider.loadingStatus,
       onSave: submitForm,

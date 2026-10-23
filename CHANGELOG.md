@@ -125,4 +125,5 @@ in progress
 - Fixed app stuck on the loading page at startup
 - Fixed push notifications not working
 - Fixed title of the news form showing "Ajouter une actualité" when editing a news item
+- Fixed title of the lap record form showing "Modifier un chrono" when adding a lap record
 - Display an error and go to the login page if an unexpected error occurs at startup, instead of loading forever
