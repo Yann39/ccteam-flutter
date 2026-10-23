@@ -513,6 +513,7 @@ class AppString {
       'N\'oubliez pas d\'ajouter dans l\'application une icône et une photo de couverture pour ce circuit, sinon les visuels par défaut seront utilisés.';
 
   static const String eventCreate = 'Ajouter un événement';
+  static const String eventEdit = 'Modifier un événement';
   static const String eventCreated = 'L\'événement à été créée avec succès !';
   static const String eventCreationFailed = 'Échec lors de la création de l\'événement';
   static const String eventUpdated = 'L\'événement à été mise à jour avec succès !';

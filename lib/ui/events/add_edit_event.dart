@@ -420,7 +420,8 @@ class _AddEditEventState extends State<AddEditEvent> {
     );
 
     return FormScaffold(
-      title: AppString.eventCreate,
+      // if id is set this is an update, else a creation
+      title: _eventCreationProvider.event.id != null ? AppString.eventEdit : AppString.eventCreate,
       formKey: _formKey,
       loadingStatus: _eventCreationProvider.loadingStatus,
       onSave: () => submitForm(_eventCreationProvider.event),
