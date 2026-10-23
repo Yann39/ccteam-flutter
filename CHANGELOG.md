@@ -109,7 +109,7 @@
 
 # 1.3.1
 
-in progress
+2026-10-23
 
 - Added option to reorder the motorbike equipment list
 - Organized motorcycle data into tabs

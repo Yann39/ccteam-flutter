@@ -2,8 +2,8 @@
 
 **Flutter** mobile application for the **CCTeam** motorcycle racing club
 
-![Version](https://img.shields.io/badge/Version-1.3.0-2AAB92.svg)
-![Static Badge](https://img.shields.io/badge/Last_update-16_October_2026-blue)
+![Version](https://img.shields.io/badge/Version-1.3.1-2AAB92.svg)
+![Static Badge](https://img.shields.io/badge/Last_update-23_October_2026-blue)
 
 ![Version](https://img.shields.io/badge/Flutter-3.47.7-44D1FD.svg)
 ![Version](https://img.shields.io/badge/Dart-3.15.5-08589C.svg)
@@ -51,12 +51,12 @@ It also allows members to manage their profiles, bikes, lap records, and organiz
 - **Member functionalities**:
   - View news, events, members and tracks details (lap records, bike servicing, etc.).
   - Manage their profile (avatar, contact details, etc.).
-  - Manage their bikes, including specifications and servicing records.
+  - Manage their bikes, including specifications, equipment, and servicing records.
   - Organize their riding sessions by joining or leaving sessions.
   - Record and manage lap times on different tracks.
   - View statistics and performance metrics.
   - View the photo gallery of the club's events and activities.
-  - Push notifications for event reminders and new news items.
+  - Push notifications for event reminders, bike servicing reminders, and new news items.
 
 ## Screenshots
 
